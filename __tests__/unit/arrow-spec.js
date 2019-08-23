@@ -2,9 +2,9 @@ import Arrow from '../../src/arrow/index';
 import { Canvas } from '@antv/g';
 
 describe('gui arrow', () => {
-  const scrollBarDiv = document.createElement('div');
-  scrollBarDiv.id = 'canvasContainer';
-  document.body.appendChild(scrollBarDiv);
+  const div = document.createElement('div');
+  div.id = 'canvasContainer';
+  document.body.appendChild(div);
 
   const canvas = new Canvas({
     containerId: 'canvasContainer',
@@ -14,17 +14,49 @@ describe('gui arrow', () => {
   });
 
   it('initialize', () => {
-    const arrow = new Arrow({
-      x: 50,
-      y: 50,
+    const arrow1 = new Arrow({
+      position: { x: 50, y: 50 },
       width: 20,
       height: 20,
       direction: 'down',
-      attrs: {
+      shapeAttrs: {
         fill: '#CCCCCC',
       },
     });
-    canvas.add(arrow.shape);
+
+    const arrow2 = new Arrow({
+      position: { x: 100, y: 50 },
+      shapeAttrs: {
+        fill: 'green',
+      },
+    });
+
+    const arrow3 = new Arrow({
+      position: { x: 150, y: 50 },
+      direction: 'up',
+      shapeAttrs: {
+        fill: 'blue',
+      },
+    });
+
+    const arrow4 = new Arrow({
+      position: { x: 200, y: 50 },
+      direction: 'left',
+      shapeAttrs: {
+        fill: 'red',
+        cursor: 'pointer',
+      },
+    });
+
+    canvas.add(arrow1);
+    canvas.add(arrow2);
+    canvas.add(arrow3);
+    canvas.add(arrow4);
+
+    arrow4.on('click', (e) => {
+      console.log(e);
+    });
+
     canvas.draw();
   });
 });
