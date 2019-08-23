@@ -1,7 +1,7 @@
-import * as G from '@antv/g';
+import { Group, Path, PointType } from '@antv/g';
 import * as _ from '@antv/util';
 
-const dir_mapper = {
+const DIR_MAPPER = {
   right: (90 * Math.PI) / 180,
   left: ((360 - 90) * Math.PI) / 180,
   up: 0,
@@ -9,52 +9,72 @@ const dir_mapper = {
 };
 
 interface ArrowCfg {
+  position: PointType,
   width?: number;
   height?: number;
   direction?: string;
-  x: number;
-  y: number;
-  attrs?: any;
+  shapeAttrs?: any;
 }
 
-export default class Arrow {
-  public width: number = 10;
-  public height: number = 10;
-  public direction: string = 'right';
-  public x: number;
-  public y: number;
-  public attrs: {};
-  public shape: any;
+export default class Arrow extends Group {
+
+  private position: PointType;
+  private width: number;
+  private height: number;
+  private direction: string;
+  private shapeAttrs: object;
+
   constructor(cfg: ArrowCfg) {
-    _.assign(this, cfg);
+    super();
+
+    // 解构，追加默认值
+    const {
+      position = { x: 0, y: 0 },
+      width = 10, height = 10,
+      direction = 'right',
+      shapeAttrs = {},
+    } = cfg;
+
+    this.position = position;
+    this.width = width;
+    this.height = height;
+    this.direction = direction;
+    this.shapeAttrs = shapeAttrs;
+
     this._init();
   }
 
   private _init() {
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    const points = [{ x: 0, y: -centerY }, { x: -centerX, y: centerY }, { x: centerX, y: centerY }];
+    const points = [
+      { x: 0, y: -centerY },
+      { x: -centerX, y: centerY },
+      { x: centerX, y: centerY },
+    ];
 
-    this.shape = new G.Path({
-      attrs: _.deepMix(
-        {
-          path: [
-            ['M', points[0].x, points[0].y],
-            ['L', points[1].x, points[1].y],
-            ['L', points[2].x, points[2].y],
-            ['Z'],
-          ],
-        },
-        this.attrs
-      ),
+    const shape = new Path({
+      attrs: {
+        path: [
+          ['M', points[0].x, points[0].y],
+          ['L', points[1].x, points[1].y],
+          ['L', points[2].x, points[2].y],
+          ['Z'],
+        ],
+        ...this.shapeAttrs,
+      },
     });
 
-    const transformMatrix = [];
-    /** rotate */
-    transformMatrix.push(['r', dir_mapper[this.direction]]);
-    /** transform */
-    transformMatrix.push(['t', this.x, this.y]);
+    this.add(shape);
 
-    this.shape.transform(transformMatrix);
+    // rotate
+    this.rotate(DIR_MAPPER[this.direction]);
+    // move to
+    this.move(this.position.x, this.position.y);
+
+    shape.on('click', (e: any) => {
+      e.stopPropagation();
+      this.emit('click', e);
+    });
   }
 }
