@@ -93,6 +93,20 @@ export default class Slider extends Group {
   }
 
   /**
+   * 更新 range 范围
+   * @param start
+   * @param end
+   */
+  public setRange(start, end) {
+    // start、end 只能是 0~1 范围
+    this.start = Math.min(1, Math.max(start, 0));
+    this.end = Math.min(1, Math.max(end, 0));
+
+    // 更新 ui，不自动绘制
+    this._updateUI();
+  }
+
+  /**
    * 初始化组件结构
    * @private
    */
