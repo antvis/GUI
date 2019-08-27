@@ -49,6 +49,7 @@ describe('slider', () => {
     slider.on('sliderchange', (range) => {
       expect(range).to.be.eql([0, 0.7]);
       done();
+      slider.off('sliderchange');
     });
 
     slider.foreground.emit('mousedown', {

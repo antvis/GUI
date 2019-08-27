@@ -3,12 +3,12 @@
  */
 
 export const BACKGROUND_STYLE = {
-  fill: 'red', // todo
-  opacity: 0.15,
+  fill: '#F2F4F5',
+  opacity: 1, // todo 不透明，无法显示趋势缩略图
 };
 
 export const FOREGROUND_STYLE = {
-  fill: '#5b8ff9', // todo
+  fill: '#5B8FF9',
   opacity: 0.15,
   cursor: 'move',
 };
@@ -20,7 +20,8 @@ export const HANDLER_STYLE = {
 
 export const TEXT_STYLE = {
   textBaseline: 'middle',
-  fill: 'black',
+  fill: '#000',
+  opacity: 0.45,
 };
 
 export const SLIDER_CHANGE = 'sliderchange';
