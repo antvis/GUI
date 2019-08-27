@@ -128,9 +128,9 @@ export default class Slider extends Group {
     // 2. 前景 选中背景框
     this.foreground = this.addShape('rect', {
       attrs: {
-        x: 0,
+        // x: 0,
         y: 0,
-        width: 0,
+        // width: 0,
         height,
         ...this.foregroundStyle,
       },
@@ -143,9 +143,9 @@ export default class Slider extends Group {
     // 3. 左右文字
     this.minText = this.addShape('text', {
       attrs: {
-        x: 0,
+        // x: 0,
         y: height / 2,
-        testAlign: 'right',
+        textAlign: 'right',
         text: 'min',
         ...this.textStyle,
       },
@@ -153,9 +153,9 @@ export default class Slider extends Group {
 
     this.maxText = this.addShape('text', {
       attrs: {
-        x: 0,
+        // x: 0,
         y: height / 2,
-        testAlign: 'left',
+        textAlign: 'left',
         text: 'max',
         ...this.textStyle,
       },
@@ -164,7 +164,7 @@ export default class Slider extends Group {
     // 4. 左右滑块
     this.minHandler = this.addShape('image', {
       attrs: {
-        x: 0,
+        // x: 0,
         y: (height - handlerHeight) / 2,
         height: handlerHeight,
         width,
@@ -175,7 +175,7 @@ export default class Slider extends Group {
 
     this.maxHandler = this.addShape('image', {
       attrs: {
-        x: 0,
+        // x: 0,
         y: (height - handlerHeight) / 2,
         width,
         height: handlerHeight,
@@ -268,6 +268,7 @@ export default class Slider extends Group {
     if (containerDOM) {
       containerDOM.removeEventListener('mousemove', this.onMouseMove);
       containerDOM.removeEventListener('mouseup', this.onMouseUp);
+      // 防止滑动到 canvas 外部之后，状态丢失
       containerDOM.removeEventListener('mouseleave', this.onMouseUp);
     }
   };
@@ -277,6 +278,7 @@ export default class Slider extends Group {
    * @param offsetRange
    */
   private adjustOffsetRange(offsetRange: number): number {
+    // 针对不同的滑动组件，处理的方式不同
     switch (this.currentHandler) {
       case this.minHandler: {
         const min = 0 - this.start;
@@ -332,12 +334,50 @@ export default class Slider extends Group {
     // 滑块相关的大小信息
     const handlerWidth = _.get(this.handlerStyle, 'width', 10);
 
+    const [ minAttrs, maxAttrs ] = this._dodgeText([min, max]);
     // 2. 左侧滑块和文字
     this.minHandler.attr('x', min - handlerWidth / 2);
-    this.minText.attr('x', min);
+    // this.minText.attr('x', min);
+    _.each(minAttrs, (v, k) => this.minText.attr(k, v));
 
     // 3. 右侧滑块和文字
     this.maxHandler.attr('x', max - handlerWidth / 2);
-    this.maxText.attr('x', max);
+    // this.maxText.attr('x', max);
+    _.each(maxAttrs, (v, k) => this.maxText.attr(k, v));
+  }
+
+  /**
+   * 调整 text 的位置，自动躲避
+   * 根据位置，调整返回新的位置
+   * @param range
+   */
+  private _dodgeText(range: [number, number]): [object, object] {
+    const PADDING = 4;
+    let minText = this.minText;
+    let maxText = this.maxText;
+
+    let [min, max] = range;
+    let sorted = false;
+
+    // 如果交换了位置，则对应的 min max 也交互
+    if (min > max) {
+      [min, max] = [max, min];
+      [minText, maxText] = [maxText, minText];
+      sorted = true;
+    }
+
+    // 避让规则，优先显示在两侧，只有显示不下的时候，才显示在中间
+    const minBBox = minText.getBBox();
+    const maxBBox = maxText.getBBox();
+
+    const minAttrs = minBBox.width > min - PADDING ?
+      { x: min + PADDING, textAlign: 'left' } :
+      { x: min - PADDING, textAlign: 'right' };
+
+    const maxAttrs = maxBBox.width > this.width - max - PADDING ?
+      { x: max - PADDING, textAlign: 'right' } :
+      { x: max + PADDING, textAlign: 'left' };
+
+    return !sorted ? [minAttrs , maxAttrs] : [maxAttrs , minAttrs];
   }
 }
