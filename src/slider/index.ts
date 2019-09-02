@@ -3,9 +3,10 @@
  * @author hustcc
  */
 
-import { Event, Group, Image, Rect, Text } from '@antv/g';
+import { Event, Group, Rect, Text } from '@antv/g';
 import * as _ from '@antv/util';
 import { BACKGROUND_STYLE, FOREGROUND_STYLE, HANDLER_STYLE, SLIDER_CHANGE, TEXT_STYLE } from './constant';
+import Handler from './handler';
 
 export interface SliderCfg {
   // position size
@@ -47,11 +48,11 @@ export default class Slider extends Group {
   /* 前景框，选中的区域 */
   private foreground: Rect;
   /* 左侧(上侧)的按钮 */
-  private minHandler: Image;
+  private minHandler: Handler;
   /* 左侧文本 */
   private minText: Text;
   /* 由侧(下侧)的按钮 */
-  private maxHandler: Image;
+  private maxHandler: Handler;
   /* 右侧文本 */
   private maxText: Text;
 
@@ -59,7 +60,7 @@ export default class Slider extends Group {
   private start: number;
   private end: number;
 
-  private currentHandler: Image | Rect;
+  private currentHandler: Handler | Rect;
   private prevX: number = 0;
   private prevY: number = 0;
 
@@ -162,27 +163,26 @@ export default class Slider extends Group {
     });
 
     // 4. 左右滑块
-    this.minHandler = this.addShape('image', {
-      attrs: {
-        // x: 0,
-        y: (height - handlerHeight) / 2,
-        height: handlerHeight,
-        width,
-        cursor: 'ew-resize',
-        ...this.handlerStyle,
-      },
+    this.minHandler = new Handler({
+      x: 0,
+      y: (height - handlerHeight) / 2,
+      width,
+      height: handlerHeight,
+      cursor: 'ew-resize',
+      ...this.handlerStyle,
     });
 
-    this.maxHandler = this.addShape('image', {
-      attrs: {
-        // x: 0,
-        y: (height - handlerHeight) / 2,
-        width,
-        height: handlerHeight,
-        cursor: 'ew-resize',
-        ...this.handlerStyle,
-      },
+    this.add(this.minHandler);
+
+    this.maxHandler = new Handler({
+      x: 0,
+      y: (height - handlerHeight) / 2,
+      width,
+      height: handlerHeight,
+      cursor: 'ew-resize',
+      ...this.handlerStyle,
     });
+    this.add(this.maxHandler);
 
     // 根据 start end 更新 ui 的位置信息
     this._updateUI();
@@ -213,7 +213,7 @@ export default class Slider extends Group {
     this.foreground.on('mousedown', this.onMouseDown(this.foreground))
   }
 
-  private onMouseDown = (handler: Image | Rect) => (e: Event) => {
+  private onMouseDown = (handler: Handler | Rect) => (e: Event) => {
     // 1. 记录点击的滑块
     this.currentHandler = handler;
 
@@ -336,12 +336,12 @@ export default class Slider extends Group {
 
     const [ minAttrs, maxAttrs ] = this._dodgeText([min, max]);
     // 2. 左侧滑块和文字
-    this.minHandler.attr('x', min - handlerWidth / 2);
+    this.minHandler.setX(min - handlerWidth / 2);
     // this.minText.attr('x', min);
     _.each(minAttrs, (v, k) => this.minText.attr(k, v));
 
     // 3. 右侧滑块和文字
-    this.maxHandler.attr('x', max - handlerWidth / 2);
+    this.maxHandler.setX(max - handlerWidth / 2);
     // this.maxText.attr('x', max);
     _.each(maxAttrs, (v, k) => this.maxText.attr(k, v));
   }

@@ -3,8 +3,8 @@
  */
 
 export const BACKGROUND_STYLE = {
-  fill: '#F2F4F5',
-  opacity: 1, // todo 不透明，无法显示趋势缩略图
+  fill: '#416180 ',
+  opacity: 0.05,
 };
 
 export const FOREGROUND_STYLE = {
@@ -14,8 +14,8 @@ export const FOREGROUND_STYLE = {
 };
 
 export const HANDLER_STYLE = {
-  img: 'https://gw.alipayobjects.com/zos/rmsportal/QXtfhORGlDuRvLXFzpsQ.png',
   width: 10,
+  height: 24,
 };
 
 export const TEXT_STYLE = {
