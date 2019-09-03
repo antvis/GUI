@@ -20,5 +20,5 @@ install:
 script:
   - |
     if [ "$TEST_TYPE" = ci ]; then
-      npm run test
+      npm run ci
     fi
