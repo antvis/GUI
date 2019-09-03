@@ -1,4 +1,4 @@
-import { Event, Group, Rect } from '@antv/g';
+import { Canvas, Group, Rect } from '@antv/g';
 import * as _  from '@antv/util';
 
 interface IStyle {
@@ -165,13 +165,14 @@ export default class Handler extends Group {
    * 因为 get('canvas') 因为构建顺序问题，导致不存在，所以采用这种方式拿到 canvas
    * @private
    */
-  private _getCanvas(): Group {
+  private _getCanvas(): Canvas {
     let t: Group = this;
 
     while (t.get('parent')) {
       t = t.get('parent');
     }
 
-    return t;
+    // 最顶层的 parent 就是 canvas 实例
+    return t as Canvas;
   }
 }
