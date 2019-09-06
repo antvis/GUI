@@ -1,5 +1,5 @@
 import * as domUtil from '@antv/dom-util';
-import { Group, Shape } from '@antv/g';
+import { Event, Group, Shape } from '@antv/g';
 import * as _ from '@antv/util';
 import { PointObject, ScrollBarCfg, ScrollBarTheme } from './interface';
 import { DEFAULT_THEME } from './style';
@@ -26,6 +26,9 @@ export default class ScrollBar extends Group {
 
   // 鼠标 drag 过程中的开始位置
   private _startPos: number;
+
+  // 通过拖拽开始的事件是 mousedown 还是 touchstart 来决定是移动端还是 pc 端
+  private _isMobile: boolean = false;
 
   // 清除事件
   private _clearEvents: () => void;
@@ -246,18 +249,22 @@ export default class ScrollBar extends Group {
 
   // 事件绑定
   private _bindEvents() {
-    // 暂时只考虑 mouse 事件，不考虑 touch 事件
-    this.on('mousedown', this._onMouseDown);
+    this.on('mousedown', this._onStartEvent(false));
+    this.on('touchstart', this._onStartEvent(true));
     this.trackShape.on('click', this._onTrackClick);
 
     this.thumbShape.on('mouseover', this._onTrackMouseOver);
     this.thumbShape.on('mouseout', this._onTrackMouseOut);
   }
 
-  private _onMouseDown = (e) => {
+  private _onStartEvent = (isMobile: boolean) => (e: Event) => {
+    this._isMobile = isMobile;
     // 阻止冒泡
     e.event.preventDefault();
-    const { clientX, clientY } = e;
+
+    const event = this._isMobile ? _.get(e.event, 'touches.0', e) : e;
+
+    const { clientX, clientY } = event;
 
     // 将开始的点记录下来
     this._startPos = this.isHorizontal ? clientX : clientY;
@@ -268,15 +275,24 @@ export default class ScrollBar extends Group {
   private _bindLaterEvent() {
     const containerDOM = this.get('canvas').get('containerDOM');
 
-    const e1 = domUtil.addEventListener(containerDOM, 'mousemove', this._onMouseMove);
-    const e2 = domUtil.addEventListener(containerDOM, 'mouseup', this._onMouseUp);
-    // 为了保证划出 canvas containerDom 时还没触发 mouseup
-    const e3 = domUtil.addEventListener(containerDOM, 'mouseleave', this._onMouseUp);
+    let events = [];
+    if (this._isMobile) {
+      events = [
+        domUtil.addEventListener(containerDOM, 'touchmove', this._onMouseMove),
+        domUtil.addEventListener(containerDOM, 'touchend', this._onMouseUp),
+        domUtil.addEventListener(containerDOM, 'touchcancel', this._onMouseUp),
+      ];
+    } else {
+      events = [
+        domUtil.addEventListener(containerDOM, 'mousemove', this._onMouseMove),
+        domUtil.addEventListener(containerDOM, 'mouseup', this._onMouseUp),
+        // 为了保证划出 canvas containerDom 时还没触发 mouseup
+        domUtil.addEventListener(containerDOM, 'mouseleave', this._onMouseUp),
+      ];
+    }
 
     this._clearEvents = () => {
-      e1.remove();
-      e2.remove();
-      e3.remove();
+      events.forEach(e => { e.remove(); })
     };
   }
 
@@ -294,10 +310,15 @@ export default class ScrollBar extends Group {
   };
 
   // 拖拽滑块的事件回调
+  // 这里是 dom 原生事件，绑定在 dom 元素上的
   private _onMouseMove = (e) => {
     e.preventDefault();
 
-    const { clientX, clientY } = e;
+    const event = this._isMobile ? _.get(e, 'touches.0', e) : e;
+
+    const clientX = event.clientX;
+    const clientY = event.clientY;
+
     // 鼠标松开的位置
     const endPos = this.isHorizontal ? clientX : clientY;
     // 滑块需要移动的距离, 由于这里是对滑块监听，所以移动的距离就是 diffDis, 如果监听对象是 container dom，则需要算比例
