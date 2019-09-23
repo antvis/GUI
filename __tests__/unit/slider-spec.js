@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { Slider } from '../../src/';
 import { Canvas } from '@antv/g';
 import * as Simulate from 'event-simulate';
+import { TrendData } from '../constant';
 
 describe('slider', () => {
   const div = document.createElement('div');
@@ -20,6 +21,11 @@ describe('slider', () => {
     y: 50,
     width: 200,
     height: 16,
+
+    trendCfg: {
+      data: TrendData,
+      isArea: true,
+    },
 
     start: 0.1,
     end: 0.9,
