@@ -1,63 +1,11 @@
 import { expect } from 'chai';
 import { Canvas } from '@antv/g';
 import { Trend } from '../../src';
+import { TrendData } from '../constant';
 
 describe('gui trend', () => {
   const div = document.createElement('div');
   document.body.appendChild(div);
-
-  const data = [
-    21,
-    13,
-    19,
-    25,
-    18,
-    4,
-    21,
-    19,
-    22,
-    26,
-    3,
-    13,
-    5,
-    23,
-    24,
-    9,
-    29,
-    2,
-    27,
-    26,
-    29,
-    7,
-    19,
-    29,
-    15,
-    3,
-    9,
-    11,
-    29,
-    30,
-    4,
-    24,
-    23,
-    16,
-    21,
-    7,
-    24,
-    19,
-    18,
-    16,
-    1,
-    15,
-    27,
-    13,
-    23,
-    16,
-    4,
-    1,
-    1,
-    20,
-  ];
 
   const canvas = new Canvas({
     containerDOM: div,
@@ -69,7 +17,7 @@ describe('gui trend', () => {
     const trend = new Trend({
       x: 100,
       y: 50,
-      data,
+      data: TrendData,
     });
     canvas.add(trend);
     canvas.draw();
@@ -82,7 +30,7 @@ describe('gui trend', () => {
       x: 100,
       y: 150,
       isArea: true,
-      data,
+      data: TrendData,
     });
 
     canvas.add(trend);
@@ -96,7 +44,7 @@ describe('gui trend', () => {
       x: 100,
       y: 250,
       isArea: true,
-      data,
+      data: TrendData,
       smooth: false,
       backgroundStyle: {
         fill: 'grey',

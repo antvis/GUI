@@ -3,7 +3,7 @@ import * as _ from '@antv/util';
 import { AREA_STYLE, BACKGROUND_STYLE, LINE_STYLE } from './constant';
 import { dataToPath } from './path';
 
-export interface TrendProps {
+export interface TrendCfg {
   // 位置大小
   readonly x: number;
   readonly y: number;
@@ -41,7 +41,7 @@ export default class Trend extends Group {
   private lineStyle: object;
   private areaStyle: object;
 
-  constructor(props: TrendProps) {
+  constructor(cfg: TrendCfg) {
     super();
 
     const {
@@ -55,7 +55,7 @@ export default class Trend extends Group {
       backgroundStyle,
       lineStyle,
       areaStyle,
-    } = props;
+    } = cfg;
 
     this.x = x;
     this.y = y;

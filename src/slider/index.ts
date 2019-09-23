@@ -5,8 +5,20 @@
 
 import { Event, Group, Rect, Text } from '@antv/g';
 import * as _ from '@antv/util';
+import Trend from '../trend';
 import { BACKGROUND_STYLE, FOREGROUND_STYLE, HANDLER_STYLE, SLIDER_CHANGE, TEXT_STYLE } from './constant';
 import Handler from './handler';
+
+interface TrendCfg {
+  // 数据
+  readonly data: number[];
+  // 样式
+  readonly smooth?: boolean;
+  readonly isArea?: boolean;
+  readonly backgroundStyle?: object;
+  readonly lineStyle?: object;
+  readonly areaStyle?: object;
+}
 
 export interface SliderCfg {
   // position size
@@ -14,7 +26,9 @@ export interface SliderCfg {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+
   // style
+  readonly trendCfg: TrendCfg;
   readonly backgroundStyle?: CSSStyleDeclaration;
   readonly foregroundStyle?: CSSStyleDeclaration;
   readonly handlerStyle?: CSSStyleDeclaration;
@@ -35,14 +49,15 @@ export default class Slider extends Group {
   private width: number;
   private height: number;
 
+  private trendCfg: TrendCfg;
   // 样式配置
   private backgroundStyle: any;
   private foregroundStyle: any;
   private handlerStyle: any;
   private textStyle: any;
 
-
   // 组件内部子组件实例
+  private trend: Trend;
   /* 背景框 */
   private background: Rect;
   /* 前景框，选中的区域 */
@@ -68,10 +83,18 @@ export default class Slider extends Group {
     super();
 
     const {
-      x = 0, y = 0, width = 100, height = 16,
-      backgroundStyle = {}, foregroundStyle = {}, handlerStyle = {}, textStyle = {},
+      x = 0,
+      y = 0,
+      width = 100,
+      height = 16,
+      trendCfg,
+      backgroundStyle = {},
+      foregroundStyle = {},
+      handlerStyle = {},
+      textStyle = {},
       // 缩略轴的初始位置
-      start = 0, end = 1,
+      start = 0,
+      end = 1,
     } = cfg;
 
     // position size
@@ -80,6 +103,7 @@ export default class Slider extends Group {
     this.width = width;
     this.height = height;
 
+    this.trendCfg = trendCfg;
     // style
     this.backgroundStyle = { ...BACKGROUND_STYLE, ...backgroundStyle };
     this.foregroundStyle = { ...FOREGROUND_STYLE, ...foregroundStyle };
@@ -114,6 +138,18 @@ export default class Slider extends Group {
   private _initial() {
     const width = this.width;
     const height = this.height;
+
+    // 趋势图数据
+    if (_.size(_.get(this.trendCfg, 'data'))) {
+      this.trend = new Trend({
+        x: 0,
+        y: 0,
+        width,
+        height,
+        ...this.trendCfg,
+      });
+      this.add(this.trend);
+    }
 
     // 1. 背景
     this.background = this.addShape('rect', {
@@ -210,7 +246,7 @@ export default class Slider extends Group {
     this.maxHandler.on('mousedown', this.onMouseDown(this.maxHandler));
 
     // 3. 前景选中区域
-    this.foreground.on('mousedown', this.onMouseDown(this.foreground))
+    this.foreground.on('mousedown', this.onMouseDown(this.foreground));
   }
 
   private onMouseDown = (handler: Handler | Rect) => (e: Event) => {
@@ -255,7 +291,7 @@ export default class Slider extends Group {
     this.get('canvas').draw();
 
     // 因为存储的 start、end 可能不一定是按大小存储的，所以排序一下，对外是 end >= start
-    this.emit(SLIDER_CHANGE, [ this.start, this.end ].sort());
+    this.emit(SLIDER_CHANGE, [this.start, this.end].sort());
   };
 
   private onMouseUp = () => {
@@ -334,7 +370,7 @@ export default class Slider extends Group {
     // 滑块相关的大小信息
     const handlerWidth = _.get(this.handlerStyle, 'width', 10);
 
-    const [ minAttrs, maxAttrs ] = this._dodgeText([min, max]);
+    const [minAttrs, maxAttrs] = this._dodgeText([min, max]);
     // 2. 左侧滑块和文字
     this.minHandler.setX(min - handlerWidth / 2);
     // this.minText.attr('x', min);
@@ -370,14 +406,16 @@ export default class Slider extends Group {
     const minBBox = minText.getBBox();
     const maxBBox = maxText.getBBox();
 
-    const minAttrs = minBBox.width > min - PADDING ?
-      { x: min + PADDING, textAlign: 'left' } :
-      { x: min - PADDING, textAlign: 'right' };
+    const minAttrs =
+      minBBox.width > min - PADDING
+        ? { x: min + PADDING, textAlign: 'left' }
+        : { x: min - PADDING, textAlign: 'right' };
 
-    const maxAttrs = maxBBox.width > this.width - max - PADDING ?
-      { x: max - PADDING, textAlign: 'right' } :
-      { x: max + PADDING, textAlign: 'left' };
+    const maxAttrs =
+      maxBBox.width > this.width - max - PADDING
+        ? { x: max - PADDING, textAlign: 'right' }
+        : { x: max + PADDING, textAlign: 'left' };
 
-    return !sorted ? [minAttrs , maxAttrs] : [maxAttrs , minAttrs];
+    return !sorted ? [minAttrs, maxAttrs] : [maxAttrs, minAttrs];
   }
 }
