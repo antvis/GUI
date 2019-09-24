@@ -128,25 +128,15 @@ export default class Slider extends Group {
   }
 
   /**
-   * 更新 range 范围
-   * @param start
-   * @param end
-   */
-  public setRange(start, end) {
-    // start、end 只能是 0~1 范围
-    this.start = Math.min(1, Math.max(start, 0));
-    this.end = Math.min(1, Math.max(end, 0));
-
-    // 更新 ui，不自动绘制
-    this._updateUI();
-  }
-
-  /**
    * 更新配置
    * @param cfg
    */
   public update(cfg: Partial<SliderCfg>) {
-    const { x, y, width, height, minText, maxText } = cfg;
+    const { x, y, width, height, minText, maxText, start, end } = cfg;
+
+    // start、end 只能是 0~1 范围
+    this.start = Math.min(1, Math.max(start, 0));
+    this.end = Math.min(1, Math.max(end, 0));
 
     // 如果传了则更新，没有传则不更新
     // @ts-ignore
@@ -159,6 +149,7 @@ export default class Slider extends Group {
       maxText,
     });
 
+    // 更新 ui，不自动绘制
     this._updateUI();
   }
 
@@ -193,7 +184,31 @@ export default class Slider extends Group {
       },
     });
 
-    // 2. 前景 选中背景框
+    // 2. 左右文字
+    this.minTextShape = this.addShape('text', {
+      attrs: {
+        // x: 0,
+        y: height / 2,
+        textAlign: 'right',
+        text: this.minText,
+        silent: false,
+        ...this.textStyle,
+      },
+    });
+
+    this.maxTextShape = this.addShape('text', {
+      attrs: {
+        // x: 0,
+        y: height / 2,
+        textAlign: 'left',
+        text: this.maxText,
+        silent: false,
+
+        ...this.textStyle,
+      },
+    });
+
+    // 3. 前景 选中背景框
     this.foregroundShape = this.addShape('rect', {
       attrs: {
         // x: 0,
@@ -207,27 +222,6 @@ export default class Slider extends Group {
     // 滑块相关的大小信息
     const handlerWidth = _.get(this.handlerStyle, 'width', 10);
     const handlerHeight = _.get(this.handlerStyle, 'height', 24);
-
-    // 3. 左右文字
-    this.minTextShape = this.addShape('text', {
-      attrs: {
-        // x: 0,
-        y: height / 2,
-        textAlign: 'right',
-        text: this.minText,
-        ...this.textStyle,
-      },
-    });
-
-    this.maxTextShape = this.addShape('text', {
-      attrs: {
-        // x: 0,
-        y: height / 2,
-        textAlign: 'left',
-        text: this.maxText,
-        ...this.textStyle,
-      },
-    });
 
     // 4. 左右滑块
     this.minHandlerShape = new Handler({

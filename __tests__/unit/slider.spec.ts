@@ -47,11 +47,12 @@ describe('slider', () => {
     expect(slider.textStyle.textBaseline).toEqual('middle');
   });
 
-  it('setRange', () => {
-    slider.setRange(0.3, 1.1);
+  it('update', () => {
     slider.update({
       minText: 'new min',
       maxText: 'new max',
+      start: 0.3,
+      end: 1.1,
     });
     // @ts-ignore
     expect(slider.start).toEqual(0.3);

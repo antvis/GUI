@@ -47,8 +47,19 @@ slider.on('sliderchange', (range) => {
 - API
 
 ```ts
-// 选中 0.2 ~ 0.8 范围
-slider.setRange(0.2, 0.8);
+// 更新一些配置
+// 位置，大小
+// 滑块文本和位置
+slider.update({
+  x,
+  y,
+  width,
+  height,
+  minText,
+  maxText,
+  start,
+  end,
+});
 ```
 
 ## License
