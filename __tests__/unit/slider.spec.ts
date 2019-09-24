@@ -28,6 +28,8 @@ describe('slider', () => {
 
     start: 0.1,
     end: 0.9,
+    minText: 'min',
+    maxText: 'max',
   });
 
   const containerDOM = canvas.get('containerDOM');
@@ -47,10 +49,18 @@ describe('slider', () => {
 
   it('setRange', () => {
     slider.setRange(0.3, 1.1);
+    slider.update({
+      minText: 'new min',
+      maxText: 'new max',
+    });
     // @ts-ignore
     expect(slider.start).toEqual(0.3);
     // @ts-ignore
     expect(slider.end).toEqual(1);
+    // @ts-ignore
+    expect(slider.minText).toEqual('new min');
+    // @ts-ignore
+    expect(slider.maxText).toEqual('new max');
   });
 
   it('drag', (done) => {
@@ -61,7 +71,7 @@ describe('slider', () => {
     });
 
     // @ts-ignore
-    slider.foreground.emit('mousedown', {
+    slider.foregroundShape.emit('mousedown', {
       event: {
         pageX: 70,
         pageY: 70,

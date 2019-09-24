@@ -19,6 +19,8 @@ export interface SliderCfg {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+  // 背景趋势图组件的配置（不传则不需要背景）
+  readonly trendCfg?: TrendCfg;
   // style
   readonly backgroundStyle?: CSSStyleDeclaration;
   readonly foregroundStyle?: CSSStyleDeclaration;
@@ -27,26 +29,27 @@ export interface SliderCfg {
   // 初始位置
   readonly start?: number;
   readonly end?: number;
+  // 最大最小文本
+  readonly minText?: string;
+  readonly maxText?: string;
 }
 ```
 
 - 事件
 
-
 ```ts
 slider.on('sliderchange', (range) => {
-  const [ start, end ] = range;
+  const [start, end] = range;
   // do something with selected range
 });
 ```
 
- - API
- 
+- API
+
 ```ts
 // 选中 0.2 ~ 0.8 范围
 slider.setRange(0.2, 0.8);
 ```
-
 
 ## License
 

@@ -28,7 +28,7 @@ export interface SliderCfg {
   readonly height: number;
 
   // style
-  readonly trendCfg: TrendCfg;
+  readonly trendCfg?: TrendCfg;
   readonly backgroundStyle?: CSSStyleDeclaration;
   readonly foregroundStyle?: CSSStyleDeclaration;
   readonly handlerStyle?: CSSStyleDeclaration;
@@ -36,6 +36,9 @@ export interface SliderCfg {
   // 初始位置
   readonly start?: number;
   readonly end?: number;
+  // 滑块文本
+  readonly minText?: string;
+  readonly maxText?: string;
 }
 
 /**
@@ -57,23 +60,25 @@ export default class Slider extends Group {
   private textStyle: any;
 
   // 组件内部子组件实例
-  private trend: Trend;
+  private trendShape: Trend;
   /* 背景框 */
-  private background: Rect;
+  private backgroundShape: Rect;
   /* 前景框，选中的区域 */
-  private foreground: Rect;
+  private foregroundShape: Rect;
   /* 左侧(上侧)的按钮 */
-  private minHandler: Handler;
+  private minHandlerShape: Handler;
   /* 左侧文本 */
-  private minText: Text;
+  private minTextShape: Text;
   /* 由侧(下侧)的按钮 */
-  private maxHandler: Handler;
+  private maxHandlerShape: Handler;
   /* 右侧文本 */
-  private maxText: Text;
+  private maxTextShape: Text;
 
   // 交互相关的数据信息
   private start: number;
   private end: number;
+  private minText: string;
+  private maxText: string;
 
   private currentHandler: Handler | Rect;
   private prevX: number = 0;
@@ -95,6 +100,8 @@ export default class Slider extends Group {
       // 缩略轴的初始位置
       start = 0,
       end = 1,
+      minText = '',
+      maxText = '',
     } = cfg;
 
     // position size
@@ -114,6 +121,9 @@ export default class Slider extends Group {
     this.start = start;
     this.end = end;
 
+    this.minText = minText;
+    this.maxText = maxText;
+
     this._initial();
   }
 
@@ -132,6 +142,27 @@ export default class Slider extends Group {
   }
 
   /**
+   * 更新配置
+   * @param cfg
+   */
+  public update(cfg: Partial<SliderCfg>) {
+    const { x, y, width, height, minText, maxText } = cfg;
+
+    // 如果传了则更新，没有传则不更新
+    // @ts-ignore
+    _.assign(this, {
+      x,
+      y,
+      width,
+      height,
+      minText,
+      maxText,
+    });
+
+    this._updateUI();
+  }
+
+  /**
    * 初始化组件结构
    * @private
    */
@@ -141,18 +172,18 @@ export default class Slider extends Group {
 
     // 趋势图数据
     if (_.size(_.get(this.trendCfg, 'data'))) {
-      this.trend = new Trend({
+      this.trendShape = new Trend({
         x: 0,
         y: 0,
         width,
         height,
         ...this.trendCfg,
       });
-      this.add(this.trend);
+      this.add(this.trendShape);
     }
 
     // 1. 背景
-    this.background = this.addShape('rect', {
+    this.backgroundShape = this.addShape('rect', {
       attrs: {
         x: 0,
         y: 0,
@@ -163,7 +194,7 @@ export default class Slider extends Group {
     });
 
     // 2. 前景 选中背景框
-    this.foreground = this.addShape('rect', {
+    this.foregroundShape = this.addShape('rect', {
       attrs: {
         // x: 0,
         y: 0,
@@ -178,28 +209,28 @@ export default class Slider extends Group {
     const handlerHeight = _.get(this.handlerStyle, 'height', 24);
 
     // 3. 左右文字
-    this.minText = this.addShape('text', {
+    this.minTextShape = this.addShape('text', {
       attrs: {
         // x: 0,
         y: height / 2,
         textAlign: 'right',
-        text: 'min',
+        text: this.minText,
         ...this.textStyle,
       },
     });
 
-    this.maxText = this.addShape('text', {
+    this.maxTextShape = this.addShape('text', {
       attrs: {
         // x: 0,
         y: height / 2,
         textAlign: 'left',
-        text: 'max',
+        text: this.maxText,
         ...this.textStyle,
       },
     });
 
     // 4. 左右滑块
-    this.minHandler = new Handler({
+    this.minHandlerShape = new Handler({
       x: 0,
       y: (height - handlerHeight) / 2,
       width,
@@ -208,9 +239,9 @@ export default class Slider extends Group {
       ...this.handlerStyle,
     });
 
-    this.add(this.minHandler);
+    this.add(this.minHandlerShape);
 
-    this.maxHandler = new Handler({
+    this.maxHandlerShape = new Handler({
       x: 0,
       y: (height - handlerHeight) / 2,
       width,
@@ -218,7 +249,7 @@ export default class Slider extends Group {
       cursor: 'ew-resize',
       ...this.handlerStyle,
     });
-    this.add(this.maxHandler);
+    this.add(this.maxHandlerShape);
 
     // 根据 start end 更新 ui 的位置信息
     this._updateUI();
@@ -240,13 +271,13 @@ export default class Slider extends Group {
    */
   private _bindEvents() {
     // 1. 左滑块的滑动
-    this.minHandler.on('mousedown', this.onMouseDown(this.minHandler));
+    this.minHandlerShape.on('mousedown', this.onMouseDown(this.minHandlerShape));
 
     // 2. 右滑块的滑动
-    this.maxHandler.on('mousedown', this.onMouseDown(this.maxHandler));
+    this.maxHandlerShape.on('mousedown', this.onMouseDown(this.maxHandlerShape));
 
     // 3. 前景选中区域
-    this.foreground.on('mousedown', this.onMouseDown(this.foreground));
+    this.foregroundShape.on('mousedown', this.onMouseDown(this.foregroundShape));
   }
 
   private onMouseDown = (handler: Handler | Rect) => (e: Event) => {
@@ -316,19 +347,19 @@ export default class Slider extends Group {
   private adjustOffsetRange(offsetRange: number): number {
     // 针对不同的滑动组件，处理的方式不同
     switch (this.currentHandler) {
-      case this.minHandler: {
+      case this.minHandlerShape: {
         const min = 0 - this.start;
         const max = 1 - this.start;
 
         return Math.min(max, Math.max(min, offsetRange));
       }
-      case this.maxHandler: {
+      case this.maxHandlerShape: {
         const min = 0 - this.end;
         const max = 1 - this.end;
 
         return Math.min(max, Math.max(min, offsetRange));
       }
-      case this.foreground: {
+      case this.foregroundShape: {
         const min = 0 - this.start;
         const max = 1 - this.end;
 
@@ -342,13 +373,13 @@ export default class Slider extends Group {
   private updateStartEnd(offsetRange: number) {
     // 操作不同的组件，反馈不一样
     switch (this.currentHandler) {
-      case this.minHandler:
+      case this.minHandlerShape:
         this.start += offsetRange;
         break;
-      case this.maxHandler:
+      case this.maxHandlerShape:
         this.end += offsetRange;
         break;
-      case this.foreground:
+      case this.foregroundShape:
         this.start += offsetRange;
         this.end += offsetRange;
         break;
@@ -364,22 +395,26 @@ export default class Slider extends Group {
     const max = this.end * this.width;
 
     // 1. foreground
-    this.foreground.attr('x', min);
-    this.foreground.attr('width', max - min);
+    this.foregroundShape.attr('x', min);
+    this.foregroundShape.attr('width', max - min);
 
     // 滑块相关的大小信息
     const handlerWidth = _.get(this.handlerStyle, 'width', 10);
 
-    const [minAttrs, maxAttrs] = this._dodgeText([min, max]);
-    // 2. 左侧滑块和文字
-    this.minHandler.setX(min - handlerWidth / 2);
-    // this.minText.attr('x', min);
-    _.each(minAttrs, (v, k) => this.minText.attr(k, v));
+    // 设置文本
+    this.minTextShape.attr('text', this.minText);
+    this.maxTextShape.attr('text', this.maxText);
 
-    // 3. 右侧滑块和文字
-    this.maxHandler.setX(max - handlerWidth / 2);
+    const [minAttrs, maxAttrs] = this._dodgeText([min, max]);
+    // 2. 左侧滑块和文字位置
+    this.minHandlerShape.setX(min - handlerWidth / 2);
+    // this.minText.attr('x', min);
+    _.each(minAttrs, (v, k) => this.minTextShape.attr(k, v));
+
+    // 3. 右侧滑块和文字位置
+    this.maxHandlerShape.setX(max - handlerWidth / 2);
     // this.maxText.attr('x', max);
-    _.each(maxAttrs, (v, k) => this.maxText.attr(k, v));
+    _.each(maxAttrs, (v, k) => this.maxTextShape.attr(k, v));
   }
 
   /**
@@ -389,8 +424,8 @@ export default class Slider extends Group {
    */
   private _dodgeText(range: [number, number]): [object, object] {
     const PADDING = 4;
-    let minText = this.minText;
-    let maxText = this.maxText;
+    let minTextShape = this.minTextShape;
+    let maxTextShape = this.maxTextShape;
 
     let [min, max] = range;
     let sorted = false;
@@ -398,13 +433,13 @@ export default class Slider extends Group {
     // 如果交换了位置，则对应的 min max 也交互
     if (min > max) {
       [min, max] = [max, min];
-      [minText, maxText] = [maxText, minText];
+      [minTextShape, maxTextShape] = [maxTextShape, minTextShape];
       sorted = true;
     }
 
     // 避让规则，优先显示在两侧，只有显示不下的时候，才显示在中间
-    const minBBox = minText.getBBox();
-    const maxBBox = maxText.getBBox();
+    const minBBox = minTextShape.getBBox();
+    const maxBBox = maxTextShape.getBBox();
 
     const minAttrs =
       minBBox.width > min - PADDING
