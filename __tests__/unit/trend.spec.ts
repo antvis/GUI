@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { Canvas } from '@antv/g';
 import { Trend } from '../../src';
 import { TrendData } from '../constant';
@@ -22,7 +21,7 @@ describe('gui trend', () => {
     canvas.add(trend);
     canvas.draw();
 
-    expect(trend.areaShape).to.be.undefined;
+    expect(trend.areaShape).toBeUndefined();
   });
 
   it('area', () => {
@@ -36,7 +35,7 @@ describe('gui trend', () => {
     canvas.add(trend);
     canvas.draw();
 
-    expect(trend.areaShape).not.to.be.undefined;
+    expect(trend.areaShape).not.toBeUndefined();
   });
 
   it('style', () => {
@@ -61,6 +60,6 @@ describe('gui trend', () => {
     canvas.add(trend);
     canvas.draw();
 
-    expect(trend.areaShape.attr('fill')).to.eql('green');
+    expect(trend.areaShape.attr('fill')).toBe('green');
   });
 });

@@ -5,12 +5,12 @@ import { dataToPath } from './path';
 
 export interface TrendCfg {
   // 位置大小
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
   // 数据
-  readonly data: number[];
+  readonly data?: number[];
   // 样式
   readonly smooth?: boolean;
   readonly isArea?: boolean;

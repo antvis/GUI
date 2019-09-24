@@ -1,5 +1,5 @@
-import Arrow from '../../src/arrow/index';
 import { Canvas } from '@antv/g';
+import { Arrow } from '../../src';
 
 describe('gui arrow', () => {
   const div = document.createElement('div');

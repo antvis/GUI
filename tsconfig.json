@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": ["dom", "es7"],
-    "types": ["mocha"]
+    "types": ["jest"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/node_modules/*"]

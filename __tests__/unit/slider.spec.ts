@@ -1,7 +1,6 @@
-import { expect } from 'chai';
-import { Slider } from '../../src/';
 import { Canvas } from '@antv/g';
 import * as Simulate from 'event-simulate';
+import { Slider } from '../../src/';
 import { TrendData } from '../constant';
 
 describe('slider', () => {
@@ -37,27 +36,31 @@ describe('slider', () => {
     canvas.add(slider);
     canvas.draw();
 
-    expect(slider.x).to.eql(50);
-    expect(slider.y).to.eql(50);
-    expect(slider.width).to.eql(200);
-    expect(slider.height).to.eql(16);
+    expect(slider.x).toEqual(50);
+    expect(slider.y).toEqual(50);
+    expect(slider.width).toEqual(200);
+    expect(slider.height).toEqual(16);
 
-    expect(slider.textStyle.textBaseline).to.eql('middle');
+    // @ts-ignore
+    expect(slider.textStyle.textBaseline).toEqual('middle');
   });
 
   it('setRange', () => {
     slider.setRange(0.3, 1.1);
-    expect(slider.start).to.eql(0.3);
-    expect(slider.end).to.eql(1);
+    // @ts-ignore
+    expect(slider.start).toEqual(0.3);
+    // @ts-ignore
+    expect(slider.end).toEqual(1);
   });
 
   it('drag', (done) => {
     slider.on('sliderchange', (range) => {
-      expect(range).to.be.eql([0, 0.7]);
+      expect(range).toEqual([0, 0.7]);
       done();
       slider.off('sliderchange');
     });
 
+    // @ts-ignore
     slider.foreground.emit('mousedown', {
       event: {
         pageX: 70,
@@ -76,7 +79,9 @@ describe('slider', () => {
 
     Simulate.simulate(containerDOM, 'mouseup');
 
-    expect(slider.start).to.eql(0);
-    expect(slider.end).to.eql(0.7);
+    // @ts-ignore
+    expect(slider.start).toEqual(0);
+    // @ts-ignore
+    expect(slider.end).toEqual(0.7);
   });
 });

@@ -44,10 +44,10 @@ export interface SliderCfg {
  */
 export default class Slider extends Group {
   // 位置大小配置
-  private x: number;
-  private y: number;
-  private width: number;
-  private height: number;
+  public x: number;
+  public y: number;
+  public width: number;
+  public height: number;
 
   private trendCfg: TrendCfg;
   // 样式配置
