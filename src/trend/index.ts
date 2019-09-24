@@ -1,16 +1,16 @@
 import { Group, Path, Rect } from '@antv/g';
 import * as _ from '@antv/util';
 import { AREA_STYLE, BACKGROUND_STYLE, LINE_STYLE } from './constant';
-import { dataToPath } from './path';
+import { dataToPath, linePathToAreaPath } from './path';
 
 export interface TrendCfg {
   // 位置大小
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
   // 数据
-  readonly data: number[];
+  readonly data?: number[];
   // 样式
   readonly smooth?: boolean;
   readonly isArea?: boolean;
@@ -102,10 +102,11 @@ export default class Trend extends Group {
 
     // area
     // 在 path 的基础上，增加两个坐标点
+    const areaPath = linePathToAreaPath(path, width, height);
     if (isArea) {
       this.areaShape = this.addShape('path', {
         attrs: {
-          path,
+          path: areaPath,
           ...areaStyle,
         },
       });

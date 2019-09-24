@@ -29,7 +29,7 @@ export function getLinePath(points: Point[]): any[][] {
  * 将点连成平滑的曲线
  * @param points
  */
-export function getSmoothLinePath(points: Point[]) {
+export function getSmoothLinePath(points: Point[]): any[][] {
   if (points.length <= 2) {
     // 两点以内直接绘制成路径
     return getLinePath(points);
@@ -62,7 +62,7 @@ export function getSmoothLinePath(points: Point[]) {
  * @param height
  * @param smooth
  */
-export function dataToPath(data: number[], width: number, height: number, smooth: boolean = true) {
+export function dataToPath(data: number[], width: number, height: number, smooth: boolean = true): any[][] {
   // 利用 scale 来获取 y 上的映射
   const y = new Linear({
     values: data,
@@ -73,8 +73,24 @@ export function dataToPath(data: number[], width: number, height: number, smooth
   });
 
   const points = _.map(data, (v: number, idx: number) => {
-    return [y.scale(idx) * width, x.scale(v) * height] as [number, number];
+    return [x.scale(idx) * width, height - y.scale(v) * height] as [number, number];
   });
 
   return smooth ? getSmoothLinePath(points) : getLinePath(points);
+}
+
+/**
+ * 线 path 转 area path
+ * @param path
+ * @param width
+ * @param height
+ */
+export function linePathToAreaPath(path: any[][], width: number, height: number): any[][] {
+  const areaPath = [...path];
+
+  areaPath.push(['L', width, 0]);
+  areaPath.push(['L', 0, height]);
+  areaPath.push(['Z']);
+
+  return areaPath;
 }
