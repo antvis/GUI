@@ -17,7 +17,7 @@ describe('slider', () => {
 
   const slider = new Slider({
     x: 50,
-    y: 50,
+    y: 300,
     width: 200,
     height: 16,
 
@@ -39,7 +39,7 @@ describe('slider', () => {
     canvas.draw();
 
     expect(slider.x).toEqual(50);
-    expect(slider.y).toEqual(50);
+    expect(slider.y).toEqual(300);
     expect(slider.width).toEqual(200);
     expect(slider.height).toEqual(16);
 
