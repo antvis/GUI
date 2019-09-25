@@ -7,9 +7,19 @@
     "importHelpers": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["dom", "es7"],
-    "types": ["jest"]
+    "lib": [
+      "dom",
+      "es7"
+    ],
+    "types": [
+      "jest",
+    ]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/node_modules/*"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*"
+  ]
 }
