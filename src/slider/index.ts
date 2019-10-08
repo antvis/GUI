@@ -29,10 +29,10 @@ export interface SliderCfg {
 
   // style
   readonly trendCfg?: TrendCfg;
-  readonly backgroundStyle?: CSSStyleDeclaration;
-  readonly foregroundStyle?: CSSStyleDeclaration;
-  readonly handlerStyle?: CSSStyleDeclaration;
-  readonly textStyle?: CSSStyleDeclaration;
+  readonly backgroundStyle?: any;
+  readonly foregroundStyle?: any;
+  readonly handlerStyle?: any;
+  readonly textStyle?: any;
   // 初始位置
   readonly start?: number;
   readonly end?: number;
