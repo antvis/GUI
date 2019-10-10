@@ -266,12 +266,15 @@ export default class Slider extends Group {
   private _bindEvents() {
     // 1. 左滑块的滑动
     this.minHandlerShape.on('mousedown', this.onMouseDown(this.minHandlerShape));
+    this.minHandlerShape.on('touchstart', this.onMouseDown(this.minHandlerShape));
 
     // 2. 右滑块的滑动
     this.maxHandlerShape.on('mousedown', this.onMouseDown(this.maxHandlerShape));
+    this.maxHandlerShape.on('touchstart', this.onMouseDown(this.maxHandlerShape));
 
     // 3. 前景选中区域
     this.foregroundShape.on('mousedown', this.onMouseDown(this.foregroundShape));
+    this.foregroundShape.on('touchstart', this.onMouseDown(this.foregroundShape));
   }
 
   private onMouseDown = (handler: Handler | Rect) => (e: Event) => {
@@ -282,14 +285,22 @@ export default class Slider extends Group {
     const { event } = e;
     event.stopPropagation();
     event.preventDefault();
-    this.prevX = event.pageX;
-    this.prevY = event.pageY;
+
+    // 兼容移动端获取数据
+    this.prevX = _.get(event, 'touches.0.pageX', event.pageX);
+    this.prevY = _.get(event, 'touches.0.pageY', event.pageY);
 
     // 3. 开始滑动的时候，绑定 move 和 up 事件
     const containerDOM = this.get('canvas').get('containerDOM');
+
     containerDOM.addEventListener('mousemove', this.onMouseMove);
     containerDOM.addEventListener('mouseup', this.onMouseUp);
     containerDOM.addEventListener('mouseleave', this.onMouseUp);
+
+    // 移动端事件
+    containerDOM.addEventListener('touchmove', this.onMouseMove);
+    containerDOM.addEventListener('touchend', this.onMouseUp);
+    containerDOM.addEventListener('touchcancel', this.onMouseUp);
   };
 
   private onMouseMove = (e: MouseEvent) => {
@@ -297,8 +308,8 @@ export default class Slider extends Group {
     e.stopPropagation();
     e.preventDefault();
 
-    const x = e.pageX;
-    const y = e.pageY;
+    const x = _.get(e, 'touches.0.pageX', e.pageX);
+    const y = _.get(e, 'touches.0.pageY', e.pageY);
 
     // 横向的 slider 只处理 x
     const offsetX = x - this.prevX;
@@ -331,6 +342,11 @@ export default class Slider extends Group {
       containerDOM.removeEventListener('mouseup', this.onMouseUp);
       // 防止滑动到 canvas 外部之后，状态丢失
       containerDOM.removeEventListener('mouseleave', this.onMouseUp);
+
+      // 移动端事件
+      containerDOM.removeEventListener('touchmove', this.onMouseMove);
+      containerDOM.removeEventListener('touchend', this.onMouseUp);
+      containerDOM.removeEventListener('touchcancel', this.onMouseUp);
     }
   };
 
