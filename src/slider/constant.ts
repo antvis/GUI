@@ -13,8 +13,10 @@ export const FOREGROUND_STYLE = {
   cursor: 'move',
 };
 
+export const DEFAULT_HANDLER_WIDTH = 10;
+
 export const HANDLER_STYLE = {
-  width: 10,
+  width: DEFAULT_HANDLER_WIDTH,
   height: 24,
 };
 
