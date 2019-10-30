@@ -6,7 +6,14 @@
 import { Event, Group, Rect, Text } from '@antv/g';
 import * as _ from '@antv/util';
 import Trend from '../trend';
-import { BACKGROUND_STYLE, FOREGROUND_STYLE, HANDLER_STYLE, SLIDER_CHANGE, TEXT_STYLE } from './constant';
+import {
+  BACKGROUND_STYLE,
+  DEFAULT_HANDLER_WIDTH,
+  FOREGROUND_STYLE,
+  HANDLER_STYLE,
+  SLIDER_CHANGE,
+  TEXT_STYLE,
+} from './constant';
 import Handler from './handler';
 
 interface TrendCfg {
@@ -409,7 +416,7 @@ export default class Slider extends Group {
     this.foregroundShape.attr('width', max - min);
 
     // 滑块相关的大小信息
-    const handlerWidth = _.get(this.handlerStyle, 'width', 10);
+    const handlerWidth = _.get(this.handlerStyle, 'width', DEFAULT_HANDLER_WIDTH);
 
     // 设置文本
     this.minTextShape.attr('text', this.minText);
@@ -433,7 +440,8 @@ export default class Slider extends Group {
    * @param range
    */
   private _dodgeText(range: [number, number]): [object, object] {
-    const PADDING = 4;
+    const PADDING = 2;
+    const handlerWidth = _.get(this.handlerStyle, 'width', DEFAULT_HANDLER_WIDTH);
     let minTextShape = this.minTextShape;
     let maxTextShape = this.maxTextShape;
 
@@ -453,13 +461,13 @@ export default class Slider extends Group {
 
     const minAttrs =
       minBBox.width > min - PADDING
-        ? { x: min + PADDING, textAlign: 'left' }
-        : { x: min - PADDING, textAlign: 'right' };
+        ? { x: min + handlerWidth / 2 + PADDING, textAlign: 'left' }
+        : { x: min - handlerWidth / 2 - PADDING, textAlign: 'right' };
 
     const maxAttrs =
       maxBBox.width > this.width - max - PADDING
-        ? { x: max - PADDING, textAlign: 'right' }
-        : { x: max + PADDING, textAlign: 'left' };
+        ? { x: max - handlerWidth / 2 - PADDING, textAlign: 'right' }
+        : { x: max + handlerWidth / 2 + PADDING, textAlign: 'left' };
 
     return !sorted ? [minAttrs, maxAttrs] : [maxAttrs, minAttrs];
   }
