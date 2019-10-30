@@ -154,6 +154,7 @@ export default class ScrollBar extends Group {
     // 发送事件
     this.emit('scrollchange', {
       thumbOffset: this.thumbOffset,
+      ratio: _.clamp(this.thumbOffset / (this.trackLen - this.thumbLen), 0, 1),
     });
 
     // 渲染
@@ -292,7 +293,9 @@ export default class ScrollBar extends Group {
     }
 
     this._clearEvents = () => {
-      events.forEach(e => { e.remove(); })
+      events.forEach((e) => {
+        e.remove();
+      });
     };
   }
 
