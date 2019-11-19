@@ -250,8 +250,9 @@ export default class ScrollBar extends Group {
   // 事件绑定
   private _bindEvents() {
     this.on('mousedown', this._onStartEvent(false));
-    this.on('touchstart', this._onStartEvent(true));
     this.on('mouseup', this._onMouseUp);
+
+    this.on('touchstart', this._onStartEvent(true));
     this.on('touchend', this._onMouseUp);
     this.trackShape.on('click', this._onTrackClick);
 
