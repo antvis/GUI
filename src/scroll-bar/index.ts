@@ -252,7 +252,7 @@ export default class ScrollBar extends Group {
     this.on('mousedown', this._onStartEvent(false));
     this.on('touchstart', this._onStartEvent(true));
     this.on('mouseup', this._onMouseUp);
-    this.on('touchstart', this._onMouseUp);
+    this.on('touchend', this._onMouseUp);
     this.trackShape.on('click', this._onTrackClick);
 
     this.thumbShape.on('mouseover', this._onTrackMouseOver);
