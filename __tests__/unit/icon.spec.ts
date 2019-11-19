@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { Canvas } from '@antv/g';
 import { Icon } from '../../src';
 
@@ -46,10 +45,11 @@ describe('gui icon', () => {
     }, 1000);
 
     it('icon', () => {
-      expect(icon1.position).to.eql({ x: 100, y: 50 });
+      // @ts-ignore
+      expect(icon1.position).toEqual({ x: 100, y: 50 });
 
       // default margin is 8
-      expect(icon2.getBBox().width > 16 + 8).to.eql(true);
+      expect(icon2.getBBox().width > 16 + 8).toBe(true);
     });
 
     it('event', () => {
@@ -62,10 +62,12 @@ describe('gui icon', () => {
         cnt++;
       });
 
+      // @ts-ignore
       icon1.bg.emit('click');
+      // @ts-ignore
       icon2.bg.emit('click');
 
-      expect(cnt).to.be.equal(2);
+      expect(cnt).toBe(2);
     });
   });
 });

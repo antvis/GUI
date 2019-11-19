@@ -1,8 +1,7 @@
-import { expect } from 'chai';
 import { Canvas } from '@antv/g';
+import * as _ from '@antv/util';
 import * as Simulate from 'event-simulate';
 import { ScrollBar } from '../../src';
-import * as _ from '@antv/util';
 
 describe('gui scrollBar', () => {
   describe('x scrollBar', () => {
@@ -32,8 +31,8 @@ describe('gui scrollBar', () => {
 
     const scrollBar = new ScrollBar(scrollBarCfg);
     it('constructor', () => {
-      expect(scrollBar.isHorizontal).to.eql(true);
-      expect(scrollBar.trackLen).to.eql(380);
+      expect(scrollBar.isHorizontal).toBe(true);
+      expect(scrollBar.trackLen).toEqual(380);
     });
 
     canvas.add(scrollBar);
@@ -47,7 +46,8 @@ describe('gui scrollBar', () => {
           preventDefault: _.identity,
         },
       });
-      expect(scrollBar._startPos).to.eql(30);
+      // @ts-ignore
+      expect(scrollBar._startPos).toEqual(30);
     });
 
     it('mousemove', () => {
@@ -55,8 +55,9 @@ describe('gui scrollBar', () => {
         clientX: 80,
         clientY: 180,
       });
-      expect(scrollBar.thumbOffset).to.eql(80);
+      expect(scrollBar.thumbOffset).toEqual(80);
 
+      // @ts-ignore
       Simulate.simulate(canvas.get('containerDOM'), 'mouseup', scrollBar.clearEvents);
     });
 
@@ -68,7 +69,7 @@ describe('gui scrollBar', () => {
         clientY: 180,
       });
 
-      expect(scrollBar.thumbOffset).to.eql(80);
+      expect(scrollBar.thumbOffset).toEqual(72);
     });
 
     it('track-clickPos + thumbLen < thumbLen', () => {
@@ -78,7 +79,7 @@ describe('gui scrollBar', () => {
         clientX: -20,
         clientY: 180,
       });
-      expect(scrollBar.thumbOffset).to.eql(0);
+      expect(scrollBar.thumbOffset).toEqual(0);
     });
 
     it('track-clickPos + thumbLen > trackLen', () => {
@@ -88,34 +89,34 @@ describe('gui scrollBar', () => {
         clientX: 400,
         clientY: 180,
       });
-      expect(scrollBar.thumbOffset).to.eql(360);
+      expect(scrollBar.thumbOffset).toEqual(360);
     });
 
     it('updateTrackLen', () => {
       scrollBar.updateTrackLen(190);
-      expect(scrollBar.thumbLen).to.eql(10);
-      expect(scrollBar.thumbOffset).to.eql(180);
-      expect(scrollBar.trackLen).to.eql(190);
+      expect(scrollBar.thumbLen).toEqual(10);
+      expect(scrollBar.thumbOffset).toEqual(180);
+      expect(scrollBar.trackLen).toEqual(190);
     });
 
     it('updateThumbLen', () => {
       scrollBar.updateThumbLen(30);
-      expect(scrollBar.thumbLen).to.eql(30);
+      expect(scrollBar.thumbLen).toEqual(30);
     });
 
     it('updateScrollBarPos', () => {
       scrollBar.updateScrollBarPos({ x: 20, y: 180 });
-      expect(scrollBar.position).eql({ x: 20, y: 180 });
+      expect(scrollBar.position).toEqual({ x: 20, y: 180 });
     });
 
     it('updateThumbOffset & newOffset + thumbLen > trackLen', () => {
       scrollBar.updateThumbOffset(380);
-      expect(scrollBar.thumbOffset).to.eql(160);
+      expect(scrollBar.thumbOffset).toEqual(160);
     });
 
     it('updateThumbOffset & newOffset + thumbLen < thumbLen', () => {
       scrollBar.updateThumbOffset(-20);
-      expect(scrollBar.thumbOffset).to.eql(0);
+      expect(scrollBar.thumbOffset).toEqual(0);
     });
   });
 
@@ -156,7 +157,8 @@ describe('gui scrollBar', () => {
           preventDefault: _.identity,
         },
       });
-      expect(scrollBar._startPos).to.eql(30);
+      // @ts-ignore
+      expect(scrollBar._startPos).toEqual(30);
     });
 
     it('mousemove', () => {
@@ -164,7 +166,8 @@ describe('gui scrollBar', () => {
         clientX: 180,
         clientY: 80,
       });
-      expect(scrollBar.thumbOffset).to.eql(80);
+      expect(scrollBar.thumbOffset).toEqual(80);
+      // @ts-ignore
       Simulate.simulate(canvas.get('containerDOM'), 'mouseup', scrollBar.clearEvents);
     });
 
@@ -175,21 +178,21 @@ describe('gui scrollBar', () => {
         clientX: 180,
         clientY: 100,
       });
-      expect(scrollBar.thumbOffset).to.eql(0);
+      expect(scrollBar.thumbOffset).toEqual(0);
     });
     it('updateTrackLen', () => {
       scrollBar.updateTrackLen(300);
-      expect(scrollBar.trackLen).to.eql(300);
+      expect(scrollBar.trackLen).toEqual(300);
     });
 
     it('updateThumbLen', () => {
       scrollBar.updateThumbLen(30);
-      expect(scrollBar.thumbLen).to.eql(30);
+      expect(scrollBar.thumbLen).toEqual(30);
     });
 
     it('updateThumbOffset', () => {
       scrollBar.on('scrollchange', (obj) => {
-        expect(obj.thumbOffset).to.eql(30);
+        expect(obj.thumbOffset).toEqual(30);
       });
       scrollBar.updateThumbOffset(30);
       scrollBar.off('scrollchange');
@@ -204,17 +207,19 @@ describe('gui scrollBar', () => {
       scrollBar.updateThumbLen(30);
       scrollBar.updateThumbOffset(30);
       scrollBar.updateScrollBarPos({ x: 180, y: 10 });
-      expect(count).to.eql(0);
+      expect(count).toEqual(0);
     });
 
     // 鼠标移动上去的时候，改变颜色
     it('mouse over / out', () => {
+      // @ts-ignore
       scrollBar.thumbShape.emit('mouseover');
 
-      expect(scrollBar.thumbShape.attrs.stroke).to.be.equal('rgba(0,0,0,0.2)');
+      expect(scrollBar.thumbShape.attrs.stroke).toEqual('rgba(0,0,0,0.2)');
 
+      // @ts-ignore
       scrollBar.thumbShape.emit('mouseout');
-      expect(scrollBar.thumbShape.attrs.stroke).to.be.equal('rgba(0,0,0,0.15)');
+      expect(scrollBar.thumbShape.attrs.stroke).toEqual('rgba(0,0,0,0.15)');
     });
   });
 });
