@@ -250,6 +250,7 @@ export default class ScrollBar extends Group {
   // 事件绑定
   private _bindEvents() {
     this.on('mousedown', this._onStartEvent(false));
+    // TODO container mouseup事件没响应，在此兼容一下
     this.on('mouseup', this._onMouseUp);
 
     this.on('touchstart', this._onStartEvent(true));
