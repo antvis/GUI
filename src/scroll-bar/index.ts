@@ -251,7 +251,8 @@ export default class ScrollBar extends Group {
   // 事件绑定
   private _bindEvents() {
     this.on('mousedown', this._onStartEvent(false));
-    // TODO container mouseup事件没响应，在此兼容一下
+    // 因为上层交叉表交互 prevent 事件，导致 containerDOM 上的 mouseup 事件没有执行，
+    // 整个拖拽过程没有 cancel 掉。
     this.on('mouseup', this._onMouseUp);
 
     this.on('touchstart', this._onStartEvent(true));
