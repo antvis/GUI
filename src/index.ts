@@ -3,3 +3,4 @@ export { default as Icon } from './icon';
 export { default as Arrow } from './arrow';
 export { default as Slider } from './slider';
 export { default as Trend } from './trend';
+export { default as PlayLine } from './play-line';
