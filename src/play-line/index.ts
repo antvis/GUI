@@ -215,26 +215,39 @@ export default class PlayLine extends Group {
     const index = _.findIndex(ticks, (tick) => tick === tickValue);
     const x = this.playLine.x + index * interval;
     const y = this.config.y + height / 2;
+    const r = height * 0.15;
 
-    this.playSelect = this.addShape('circle', {
-      attrs: {
-        x,
-        y,
-        r: height * 0.15,
-        fill: '#607889',
-      },
-    });
+    if (this.playSelect) {
+      this.playSelect.attr('x', x);
+      this.playSelect.attr('y', y);
+      this.playSelect.attr('r', r);
+    } else {
+      this.playSelect = this.addShape('circle', {
+        attrs: {
+          x,
+          y,
+          r,
+          fill: '#607889',
+        },
+      });
+    }
 
-    this.playSelectText = this.addShape('text', {
-      attrs: {
-        x,
-        y: y - height * 0.15 - 14,
-        text: this.currentTick,
-        textAlign: 'center',
-        textBaseline: 'top',
-        fill: '#607889',
-      },
-    });
+    if (this.playSelectText) {
+      this.playSelectText.attr('x', x);
+      this.playSelectText.attr('y', y - height * 0.15 - 14);
+      this.playSelectText.attr('text', this.currentTick);
+    } else {
+      this.playSelectText = this.addShape('text', {
+        attrs: {
+          x,
+          y: y - height * 0.15 - 14,
+          text: this.currentTick,
+          textAlign: 'center',
+          textBaseline: 'top',
+          fill: '#607889',
+        },
+      });
+    }
   }
 
   /** 输入当前圆点位置，输出离哪个 tick 的位置最近 */
