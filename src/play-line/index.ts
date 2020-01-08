@@ -7,7 +7,12 @@ import { Event, Group, Shape } from '@antv/g';
 import * as _ from '@antv/util';
 import Button from './button';
 
+const PLAYLINE_START = 'playlinestart';
 const PLAYLINE_CHANGE = 'playlinechange';
+const PLAYLINE_END = 'playlineend';
+
+const PADDING_LEFT = 20;
+const PADDING_RIGHT = 20;
 
 /** 播放轴配置项 */
 interface PlayLineCfg {
@@ -19,14 +24,12 @@ interface PlayLineCfg {
 
   /** 刻度值 */
   readonly ticks: string[];
-  /** 播放速度，1s 跑多少 px，默认 10 */
+  /** 播放速度，1 个 tick 花费时间 */
   readonly speed?: number;
   /** 默认当前刻度值 */
   readonly defaultCurrentTick?: string;
   /** 是否循环播放 */
   readonly loop?: boolean;
-  /** 组件 padding */
-  readonly padding?: number[];
 }
 
 /**
@@ -68,10 +71,8 @@ export default class PlayLine extends Group {
     this.config = _.deepMix(
       {},
       {
-        speed: 8,
+        speed: 1,
         loop: false,
-        /** 右侧要留一些 padding，防止标签溢出 */
-        padding: [0, 20, 0, 0],
       },
       cfg
     );
@@ -109,18 +110,19 @@ export default class PlayLine extends Group {
   }
 
   private renderPlayButton() {
-    const { height, padding } = this.config;
-    const r = (height - padding[0] - padding[2]) / 2;
+    const { height, x, y } = this.config;
+    const ratio = 0.8;
+    const r = (height / 2) * ratio;
     if (this.playLineButton) {
       this.playLineButton.update({
-        x: padding[3] + r,
-        y: padding[0] + r,
+        x: x + r,
+        y: y + r + (height * (1 - ratio)) / 2,
         r,
       });
     } else {
       this.playLineButton = new Button({
-        x: padding[3] + r,
-        y: padding[0] + r,
+        x: x + r,
+        y: y + r + (height * (1 - ratio)) / 2,
         r,
         isPlay: this.isPlay,
       });
@@ -146,18 +148,17 @@ export default class PlayLine extends Group {
   }
 
   private renderPlayLine() {
-    const { width, height, ticks, padding } = this.config;
-    const contentHeight = height - padding[0] - padding[2];
+    const { width, height, ticks, x, y } = this.config;
 
     if (!this.playLine) {
       this.playLine = {} as any;
     }
 
-    /** 默认高度是真实高度 20% */
-    this.playLine.height = contentHeight * 0.2;
-    this.playLine.x = padding[3] + contentHeight + 30;
-    this.playLine.y = padding[0] + (contentHeight / 2 - this.playLine.height / 2);
-    this.playLine.width = width - this.playLine.x - padding[1];
+    /** 默认高度是真实高度 15% */
+    this.playLine.height = height * 0.15;
+    this.playLine.x = x + height + PADDING_LEFT;
+    this.playLine.y = y + (height / 2 - this.playLine.height / 2);
+    this.playLine.width = width - this.playLine.x - PADDING_RIGHT;
 
     if (this.playLine && this.playLine.shape) {
       this.playLine.shape.attr('path', this.getPlayLinePath());
@@ -178,9 +179,11 @@ export default class PlayLine extends Group {
         text.destroy();
       });
     }
+    let lastX = -Infinity;
     this.playLine.textList = ticks.map((tick, index) => {
       this.tickPosList.push(this.playLine.x + index * interval);
-      return this.addShape('text', {
+
+      const text = this.addShape('text', {
         attrs: {
           x: this.playLine.x + index * interval,
           y: this.playLine.y + this.playLine.height + 5,
@@ -191,22 +194,33 @@ export default class PlayLine extends Group {
           opacity: 0.35,
         },
       });
+
+      const bbox = text.getBBox();
+
+      // 抽样，标签与标签间距不小于 10
+      if (bbox.minX > lastX) {
+        text.show();
+        lastX = bbox.minX + bbox.width + 10;
+      } else {
+        text.hide();
+      }
+
+      return text;
     });
   }
 
   private renderPlaySelect(tickValue: string) {
-    const { ticks, height, padding } = this.config;
-    const contentHeight = height - padding[0] - padding[2];
+    const { ticks, height } = this.config;
     const interval = this.playLine.width / (ticks.length - 1);
     const index = _.findIndex(ticks, (tick) => tick === tickValue);
     const x = this.playLine.x + index * interval;
-    const y = padding[0] + contentHeight / 2;
+    const y = this.config.y + height / 2;
 
     this.playSelect = this.addShape('circle', {
       attrs: {
         x,
         y,
-        r: contentHeight * 0.15,
+        r: height * 0.15,
         fill: '#607889',
       },
     });
@@ -214,7 +228,7 @@ export default class PlayLine extends Group {
     this.playSelectText = this.addShape('text', {
       attrs: {
         x,
-        y: y - contentHeight * 0.15 - 14,
+        y: y - height * 0.15 - 14,
         text: this.currentTick,
         textAlign: 'center',
         textBaseline: 'top',
@@ -264,7 +278,6 @@ export default class PlayLine extends Group {
     if (this.currentTick !== this.config.ticks[index]) {
       this.currentTick = this.config.ticks[index];
       this.playSelectText.attr('text', this.currentTick);
-
       this.emit(PLAYLINE_CHANGE, this.currentTick);
     }
 
@@ -297,6 +310,8 @@ export default class PlayLine extends Group {
   private onPlaySelectMouseUp = (e: Event) => {
     this.syncCurrnentTick();
 
+    this.emit(PLAYLINE_END, null);
+
     // 取消事件
     const containerDOM = this.get('canvas').get('containerDOM');
     if (containerDOM) {
@@ -316,10 +331,14 @@ export default class PlayLine extends Group {
     event.stopPropagation();
     event.preventDefault();
 
-    // 取消播放状态
-    this.isPlay = false;
-    // 拖动过程中的播放暂停不需要调整 tick 位置，防止偏移
-    this.changePlayStatus(false);
+    if (this.isPlay === false) {
+      this.emit(PLAYLINE_START, null);
+    } else {
+      // 取消播放状态
+      this.isPlay = false;
+      // 拖动过程中的播放暂停不需要调整 tick 位置，防止偏移
+      this.changePlayStatus(false);
+    }
 
     this.prevX = _.get(e, 'touches.0.pageX', event.pageX);
 
@@ -336,12 +355,17 @@ export default class PlayLine extends Group {
 
   private startPlay() {
     return window.requestAnimationFrame(() => {
-      const { speed } = this.config;
+      const { speed, ticks } = this.config;
+      const { width } = this.playLine;
 
-      const offsetX = speed / (1000 / 60);
+      const tickInterval = width / ticks.length;
+      const offsetX = tickInterval / ((speed * 1000) / 60);
+
       this.setPlaySelectX(offsetX);
 
-      this.playHandler = this.startPlay();
+      if (this.isPlay) {
+        this.playHandler = this.startPlay();
+      }
     });
   }
 
@@ -352,12 +376,14 @@ export default class PlayLine extends Group {
     if (this.isPlay) {
       // 开始播放
       this.playHandler = this.startPlay();
+      this.emit(PLAYLINE_START, null);
     } else {
       // 结束播放
       if (this.playHandler) {
         window.cancelAnimationFrame(this.playHandler);
         if (isSync) {
           this.syncCurrnentTick();
+          this.emit(PLAYLINE_END, null);
         }
       }
     }
