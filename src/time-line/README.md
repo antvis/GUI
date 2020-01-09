@@ -1,6 +1,6 @@
 # desc
 
-播放轴(PlayLine)
+播放轴(TimeLine)
 
 ## options
 
@@ -20,9 +20,9 @@ loop: boolean;
 ## usage
 
 ```
-import { PlayLine } from '@antv/gui';
+import { TimeLine } from '@antv/gui';
 
-const playLine = new PlayLine({
+const timeLine = new TimeLine({
   x: 0,
   y: 0,
   width: 1000,
@@ -33,14 +33,14 @@ const playLine = new PlayLine({
 });
 
 // 监听播放轴开始
-this.playline.on('playlinestart', () => {
+this.timeline.on('timelinestart', () => {
 });
 
 // 监听播放轴结束
-this.playline.on('playlineend', () => {
+this.timeline.on('timelineend', () => {
 });
 
 // 监听播放轴变化
-this.playline.on('playlinechange', () => {
+this.timeline.on('timelinechange', () => {
 });
 ```

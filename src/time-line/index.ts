@@ -7,15 +7,15 @@ import { Event, Group, Shape } from '@antv/g';
 import * as _ from '@antv/util';
 import Button from './button';
 
-const PLAYLINE_START = 'playlinestart';
-const PLAYLINE_CHANGE = 'playlinechange';
-const PLAYLINE_END = 'playlineend';
+const TIMELINE_START = 'timelinestart';
+const TIMELINE_CHANGE = 'timelinechange';
+const TIMELINE_END = 'timelineend';
 
 const PADDING_LEFT = 20;
 const PADDING_RIGHT = 20;
 
 /** 播放轴配置项 */
-interface PlayLineCfg {
+interface TimeLineCfg {
   /** 播放轴位置数据 */
   readonly x: number;
   readonly y: number;
@@ -36,9 +36,9 @@ interface PlayLineCfg {
  * 参考示例
  * https://www.gapminder.org/tools/#$state$time$value=1870&delay:100;;&chart-type=bubbles
  */
-export default class PlayLine extends Group {
+export default class TimeLine extends Group {
   /** 播放轴配置 */
-  private config: PlayLineCfg;
+  private config: TimeLineCfg;
   /** 是否处于播放状态 */
   private isPlay: boolean;
   /** 当前处于刻度值 */
@@ -47,8 +47,8 @@ export default class PlayLine extends Group {
   private tickPosList: number[];
 
   /** 组件 */
-  private playLineButton: Button;
-  private playLine: {
+  private timeLineButton: Button;
+  private timeLine: {
     x: number;
     y: number;
     width: number;
@@ -56,8 +56,8 @@ export default class PlayLine extends Group {
     shape: Shape;
     textList: Shape[];
   };
-  private playSelect: Shape;
-  private playSelectText: Shape;
+  private timeSelect: Shape;
+  private timeSelectText: Shape;
 
   /** 偏移量 */
   private prevX: number;
@@ -65,7 +65,7 @@ export default class PlayLine extends Group {
   /** 动画 id */
   private playHandler: number;
 
-  constructor(cfg: PlayLineCfg) {
+  constructor(cfg: TimeLineCfg) {
     super();
 
     this.config = _.deepMix(
@@ -81,20 +81,20 @@ export default class PlayLine extends Group {
   }
 
   // 更新配置
-  public update(cfg: Partial<PlayLineCfg>) {
+  public update(cfg: Partial<TimeLineCfg>) {
     this.config = _.deepMix({}, this.config, cfg);
 
     const { ticks } = this.config;
     this.currentTick = ticks.includes(this.currentTick) ? this.currentTick : ticks[0];
     this.renderPlayButton();
-    this.renderPlayLine();
-    this.renderPlaySelect(this.currentTick);
+    this.renderTimeLine();
+    this.renderTimeSelect(this.currentTick);
   }
 
   public destroy() {
     super.destroy();
-    this.playLineButton.off();
-    this.playSelect.off();
+    this.timeLineButton.off();
+    this.timeSelect.off();
   }
 
   private init() {
@@ -103,8 +103,8 @@ export default class PlayLine extends Group {
     if (ticks && ticks.length) {
       this.currentTick = this.config.ticks.includes(defaultCurrentTick) ? defaultCurrentTick : ticks[0];
       this.renderPlayButton();
-      this.renderPlayLine();
-      this.renderPlaySelect(this.currentTick);
+      this.renderTimeLine();
+      this.renderTimeSelect(this.currentTick);
       this.initEvent();
     }
   }
@@ -113,25 +113,25 @@ export default class PlayLine extends Group {
     const { height, x, y } = this.config;
     const ratio = 0.8;
     const r = (height / 2) * ratio;
-    if (this.playLineButton) {
-      this.playLineButton.update({
+    if (this.timeLineButton) {
+      this.timeLineButton.update({
         x: x + r,
         y: y + r + (height * (1 - ratio)) / 2,
         r,
       });
     } else {
-      this.playLineButton = new Button({
+      this.timeLineButton = new Button({
         x: x + r,
         y: y + r + (height * (1 - ratio)) / 2,
         r,
         isPlay: this.isPlay,
       });
-      this.add(this.playLineButton);
+      this.add(this.timeLineButton);
     }
   }
 
-  private getPlayLinePath() {
-    const { x, y, width, height } = this.playLine;
+  private getTimeLinePath() {
+    const { x, y, width, height } = this.timeLine;
     const r = height / 2;
 
     if (width > 0) {
@@ -147,46 +147,46 @@ export default class PlayLine extends Group {
     return [];
   }
 
-  private renderPlayLine() {
+  private renderTimeLine() {
     const { width, height, ticks, x, y } = this.config;
 
-    if (!this.playLine) {
-      this.playLine = {} as any;
+    if (!this.timeLine) {
+      this.timeLine = {} as any;
     }
 
     /** 默认高度是真实高度 15% */
-    this.playLine.height = height * 0.15;
-    this.playLine.x = x + height + PADDING_LEFT;
-    this.playLine.y = y + (height / 2 - this.playLine.height / 2);
-    this.playLine.width = width - this.playLine.x - PADDING_RIGHT;
+    this.timeLine.height = height * 0.15;
+    this.timeLine.x = x + height + PADDING_LEFT;
+    this.timeLine.y = y + (height / 2 - this.timeLine.height / 2);
+    this.timeLine.width = width - this.timeLine.x - PADDING_RIGHT;
 
-    if (this.playLine && this.playLine.shape) {
-      this.playLine.shape.attr('path', this.getPlayLinePath());
+    if (this.timeLine && this.timeLine.shape) {
+      this.timeLine.shape.attr('path', this.getTimeLinePath());
     } else {
-      this.playLine.shape = this.addShape('path', {
+      this.timeLine.shape = this.addShape('path', {
         attrs: {
-          path: this.getPlayLinePath(),
+          path: this.getTimeLinePath(),
           fill: '#607889',
           opacity: 0.2,
         },
       });
     }
 
-    const interval = this.playLine.width / (ticks.length - 1);
+    const interval = this.timeLine.width / (ticks.length - 1);
     this.tickPosList = [];
-    if (this.playLine.textList && this.playLine.textList.length) {
-      this.playLine.textList.forEach((text) => {
+    if (this.timeLine.textList && this.timeLine.textList.length) {
+      this.timeLine.textList.forEach((text) => {
         text.destroy();
       });
     }
     let lastX = -Infinity;
-    this.playLine.textList = ticks.map((tick, index) => {
-      this.tickPosList.push(this.playLine.x + index * interval);
+    this.timeLine.textList = ticks.map((tick, index) => {
+      this.tickPosList.push(this.timeLine.x + index * interval);
 
       const text = this.addShape('text', {
         attrs: {
-          x: this.playLine.x + index * interval,
-          y: this.playLine.y + this.playLine.height + 5,
+          x: this.timeLine.x + index * interval,
+          y: this.timeLine.y + this.timeLine.height + 5,
           text: tick,
           textAlign: 'center',
           textBaseline: 'top',
@@ -209,20 +209,20 @@ export default class PlayLine extends Group {
     });
   }
 
-  private renderPlaySelect(tickValue: string) {
+  private renderTimeSelect(tickValue: string) {
     const { ticks, height } = this.config;
-    const interval = this.playLine.width / (ticks.length - 1);
+    const interval = this.timeLine.width / (ticks.length - 1);
     const index = _.findIndex(ticks, (tick) => tick === tickValue);
-    const x = this.playLine.x + index * interval;
+    const x = this.timeLine.x + index * interval;
     const y = this.config.y + height / 2;
     const r = height * 0.15;
 
-    if (this.playSelect) {
-      this.playSelect.attr('x', x);
-      this.playSelect.attr('y', y);
-      this.playSelect.attr('r', r);
+    if (this.timeSelect) {
+      this.timeSelect.attr('x', x);
+      this.timeSelect.attr('y', y);
+      this.timeSelect.attr('r', r);
     } else {
-      this.playSelect = this.addShape('circle', {
+      this.timeSelect = this.addShape('circle', {
         attrs: {
           x,
           y,
@@ -232,12 +232,12 @@ export default class PlayLine extends Group {
       });
     }
 
-    if (this.playSelectText) {
-      this.playSelectText.attr('x', x);
-      this.playSelectText.attr('y', y - height * 0.15 - 14);
-      this.playSelectText.attr('text', this.currentTick);
+    if (this.timeSelectText) {
+      this.timeSelectText.attr('x', x);
+      this.timeSelectText.attr('y', y - height * 0.15 - 14);
+      this.timeSelectText.attr('text', this.currentTick);
     } else {
-      this.playSelectText = this.addShape('text', {
+      this.timeSelectText = this.addShape('text', {
         attrs: {
           x,
           y: y - height * 0.15 - 14,
@@ -251,32 +251,32 @@ export default class PlayLine extends Group {
   }
 
   /** 输入当前圆点位置，输出离哪个 tick 的位置最近 */
-  private adjustTickIndex(playSelectX: number) {
+  private adjustTickIndex(timeSelectX: number) {
     for (let i = 0; i < this.tickPosList.length - 1; i++) {
-      if (this.tickPosList[i] <= playSelectX && playSelectX <= this.tickPosList[i + 1]) {
-        return Math.abs(this.tickPosList[i] - playSelectX) < Math.abs(playSelectX - this.tickPosList[i + 1])
+      if (this.tickPosList[i] <= timeSelectX && timeSelectX <= this.tickPosList[i + 1]) {
+        return Math.abs(this.tickPosList[i] - timeSelectX) < Math.abs(timeSelectX - this.tickPosList[i + 1])
           ? i
           : i + 1;
       }
     }
   }
 
-  /** 拖动或自动播放过程中，设置 PlaySelect 的位置 */
-  private setPlaySelectX(offsetX: number) {
-    let playSelectX = this.playSelect.attr('x') + offsetX;
+  /** 拖动或自动播放过程中，设置 TimeSelect 的位置 */
+  private setTimeSelectX(offsetX: number) {
+    let timeSelectX = this.timeSelect.attr('x') + offsetX;
     // 防止左右溢出
-    if (playSelectX < this.playLine.x) {
-      playSelectX = this.playLine.x;
+    if (timeSelectX < this.timeLine.x) {
+      timeSelectX = this.timeLine.x;
     }
-    if (playSelectX > this.playLine.x + this.playLine.width) {
-      playSelectX = this.playLine.x + this.playLine.width;
+    if (timeSelectX > this.timeLine.x + this.timeLine.width) {
+      timeSelectX = this.timeLine.x + this.timeLine.width;
       // 正在播放场景
       if (this.isPlay) {
         // 如果是循环
         if (this.config.loop) {
           // 当前滑动点已经处于最后一个 tick 上，才能重置回去，继续循环
-          if (this.playSelect.attr('x') === this.playLine.x + this.playLine.width) {
-            playSelectX = this.playLine.x;
+          if (this.timeSelect.attr('x') === this.timeLine.x + this.timeLine.width) {
+            timeSelectX = this.timeLine.x;
           }
         } else {
           this.isPlay = false;
@@ -284,14 +284,14 @@ export default class PlayLine extends Group {
         }
       }
     }
-    this.playSelect.attr('x', playSelectX);
-    this.playSelectText.attr('x', playSelectX);
+    this.timeSelect.attr('x', timeSelectX);
+    this.timeSelectText.attr('x', timeSelectX);
 
-    const index = this.adjustTickIndex(playSelectX);
+    const index = this.adjustTickIndex(timeSelectX);
     if (this.currentTick !== this.config.ticks[index]) {
       this.currentTick = this.config.ticks[index];
-      this.playSelectText.attr('text', this.currentTick);
-      this.emit(PLAYLINE_CHANGE, this.currentTick);
+      this.timeSelectText.attr('text', this.currentTick);
+      this.emit(TIMELINE_CHANGE, this.currentTick);
     }
 
     this.get('canvas').draw();
@@ -300,52 +300,52 @@ export default class PlayLine extends Group {
   /** 同步圆点到 currnentTick */
   private syncCurrnentTick() {
     const { ticks } = this.config;
-    const interval = this.playLine.width / (ticks.length - 1);
+    const interval = this.timeLine.width / (ticks.length - 1);
     const index = _.findIndex(ticks, (tick) => tick === this.currentTick);
-    const x = this.playLine.x + index * interval;
-    this.playSelect.attr('x', x);
-    this.playSelectText.attr('x', x);
+    const x = this.timeLine.x + index * interval;
+    this.timeSelect.attr('x', x);
+    this.timeSelectText.attr('x', x);
     this.get('canvas').draw();
   }
 
-  private onPlaySelectMouseMove = (e: MouseEvent) => {
+  private onTimeSelectMouseMove = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
     const x = _.get(e, 'touches.0.pageX', e.pageX);
     const offsetX = x - this.prevX;
 
-    this.setPlaySelectX(offsetX);
+    this.setTimeSelectX(offsetX);
 
     this.prevX = x;
   };
 
-  private onPlaySelectMouseUp = (e: Event) => {
+  private onTimeSelectMouseUp = (e: Event) => {
     this.syncCurrnentTick();
 
-    this.emit(PLAYLINE_END, null);
+    this.emit(TIMELINE_END, null);
 
     // 取消事件
     const containerDOM = this.get('canvas').get('containerDOM');
     if (containerDOM) {
-      containerDOM.removeEventListener('mousemove', this.onPlaySelectMouseMove);
-      containerDOM.removeEventListener('mouseup', this.onPlaySelectMouseUp);
+      containerDOM.removeEventListener('mousemove', this.onTimeSelectMouseMove);
+      containerDOM.removeEventListener('mouseup', this.onTimeSelectMouseUp);
       // 防止滑动到 canvas 外部之后，状态丢失
-      containerDOM.removeEventListener('mouseleave', this.onPlaySelectMouseUp);
+      containerDOM.removeEventListener('mouseleave', this.onTimeSelectMouseUp);
       // 移动端事件
-      containerDOM.removeEventListener('touchmove', this.onPlaySelectMouseMove);
-      containerDOM.removeEventListener('touchend', this.onPlaySelectMouseUp);
-      containerDOM.removeEventListener('touchcancel', this.onPlaySelectMouseUp);
+      containerDOM.removeEventListener('touchmove', this.onTimeSelectMouseMove);
+      containerDOM.removeEventListener('touchend', this.onTimeSelectMouseUp);
+      containerDOM.removeEventListener('touchcancel', this.onTimeSelectMouseUp);
     }
   };
 
-  private onPlaySelectMouseDown = (e: Event) => {
+  private onTimeSelectMouseDown = (e: Event) => {
     const { event } = e;
     event.stopPropagation();
     event.preventDefault();
 
     if (this.isPlay === false) {
-      this.emit(PLAYLINE_START, null);
+      this.emit(TIMELINE_START, null);
     } else {
       // 取消播放状态
       this.isPlay = false;
@@ -357,24 +357,24 @@ export default class PlayLine extends Group {
 
     // 开始滑动的时候，绑定 move 和 up 事件
     const containerDOM = this.get('canvas').get('containerDOM');
-    containerDOM.addEventListener('mousemove', this.onPlaySelectMouseMove);
-    containerDOM.addEventListener('mouseup', this.onPlaySelectMouseUp);
-    containerDOM.addEventListener('mouseleave', this.onPlaySelectMouseUp);
+    containerDOM.addEventListener('mousemove', this.onTimeSelectMouseMove);
+    containerDOM.addEventListener('mouseup', this.onTimeSelectMouseUp);
+    containerDOM.addEventListener('mouseleave', this.onTimeSelectMouseUp);
     // 移动端事件
-    containerDOM.addEventListener('touchmove', this.onPlaySelectMouseMove);
-    containerDOM.addEventListener('touchend', this.onPlaySelectMouseUp);
-    containerDOM.addEventListener('touchcancel', this.onPlaySelectMouseUp);
+    containerDOM.addEventListener('touchmove', this.onTimeSelectMouseMove);
+    containerDOM.addEventListener('touchend', this.onTimeSelectMouseUp);
+    containerDOM.addEventListener('touchcancel', this.onTimeSelectMouseUp);
   };
 
   private startPlay() {
     return window.requestAnimationFrame(() => {
       const { speed, ticks } = this.config;
-      const { width } = this.playLine;
+      const { width } = this.timeLine;
 
       const tickInterval = width / ticks.length;
       const offsetX = tickInterval / ((speed * 1000) / 60);
 
-      this.setPlaySelectX(offsetX);
+      this.setTimeSelectX(offsetX);
 
       if (this.isPlay) {
         this.playHandler = this.startPlay();
@@ -383,20 +383,20 @@ export default class PlayLine extends Group {
   }
 
   private changePlayStatus(isSync = true) {
-    this.playLineButton.update({
+    this.timeLineButton.update({
       isPlay: this.isPlay,
     });
     if (this.isPlay) {
       // 开始播放
       this.playHandler = this.startPlay();
-      this.emit(PLAYLINE_START, null);
+      this.emit(TIMELINE_START, null);
     } else {
       // 结束播放
       if (this.playHandler) {
         window.cancelAnimationFrame(this.playHandler);
         if (isSync) {
           this.syncCurrnentTick();
-          this.emit(PLAYLINE_END, null);
+          this.emit(TIMELINE_END, null);
         }
       }
     }
@@ -405,12 +405,12 @@ export default class PlayLine extends Group {
 
   private initEvent() {
     /** 播放/暂停事件 */
-    this.playLineButton.on('click', () => {
+    this.timeLineButton.on('click', () => {
       this.isPlay = !this.isPlay;
       this.changePlayStatus();
     });
 
     /** 播放轴上圆点滑动事件 */
-    this.playSelect.on('mousedown', this.onPlaySelectMouseDown);
+    this.timeSelect.on('mousedown', this.onTimeSelectMouseDown);
   }
 }
