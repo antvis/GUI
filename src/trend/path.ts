@@ -1,6 +1,5 @@
 import * as pathUtil from '@antv/path-util';
-import Category from '@antv/scale/lib/category';
-import Linear from '@antv/scale/lib/linear';
+import { Category, Linear } from '@antv/scale';
 import * as _ from '@antv/util';
 
 type Point = [number, number];
