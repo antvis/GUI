@@ -158,7 +158,9 @@ export default class ScrollBar extends Group {
     });
 
     // 渲染
-    this.get('canvas').draw();
+    if (this.get('canvas')) {
+      this.get('canvas').draw();
+    }
   }
 
   public updateTheme(theme: ScrollBarTheme) {
