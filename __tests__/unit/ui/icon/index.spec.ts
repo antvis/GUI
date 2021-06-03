@@ -35,7 +35,5 @@ describe('icon', () => {
     });
 
     canvas.appendChild(icon);
-
-    // todo 单侧mak
   });
 });
