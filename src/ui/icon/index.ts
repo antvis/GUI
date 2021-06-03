@@ -15,17 +15,6 @@ export class Icon extends CustomElement {
    */
   public static tag = 'icon';
 
-  private static ICON_TYPE_MAP = new Map<string, any>();
-
-  /**
-   * 注册 icon 类型
-   * @param type
-   * @param path
-   */
-  public static registerIcon = (type: string, path: any) => {
-    Icon.ICON_TYPE_MAP.set(type, path);
-  };
-
   /**
    * 图标
    */

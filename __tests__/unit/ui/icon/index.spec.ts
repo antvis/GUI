@@ -24,18 +24,18 @@ describe('icon', () => {
 
     const icon = new Icon({
       attrs: {
-        symbol: 'square',
+        symbol: 'triangle-down',
         x: 50,
         y: 50,
-        size: 16,
+        size: 10,
+        spacing: 4,
         fill: 'green',
-        text: 'Good',
+        text: '10.24%',
       },
     });
 
     canvas.appendChild(icon);
 
-    // todo 单侧
+    // todo 单侧mak
   });
-  3;
 });

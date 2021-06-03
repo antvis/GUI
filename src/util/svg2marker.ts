@@ -3,7 +3,6 @@
  * translate svg string to G.Marker
  */
 import svgPathParser from 'svg-path-parser';
-import { memoize } from '@antv/util';
 
 type IPointPair = [number | undefined, number | undefined];
 
@@ -19,8 +18,6 @@ type ISVGPathCmd = {
   y2?: number;
 };
 
-const parser: (path: string) => ISVGPathCmd[] = memoize(svgPathParser);
-
 /**
  *  Return function to register a Marker Symbol for give SVG Path
  *
@@ -34,7 +31,7 @@ export function path2marker(
   viewBoxHeight: number = 1014
 ): (x: number, y: number, r: number) => (string | number)[][] {
   return (x: number, y: number, r: number): (string | number)[][] => {
-    const paths: ISVGPathCmd[] = parser(svgPath);
+    const paths: ISVGPathCmd[] = svgPathParser(svgPath);
 
     return paths.map((path: ISVGPathCmd) => {
       const arr: (string | number)[] = [];
