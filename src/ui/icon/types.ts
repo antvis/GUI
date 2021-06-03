@@ -1,11 +1,12 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
+import { MarkerOptions } from '../marker';
 
 export type IconOptions = ShapeCfg & {
   attrs: {
     /**
-     * icon 的图标类型，iconfont 上的 unicode
+     * symbol 的图标类型，也可以自定义
      */
-    type: string;
+    symbol: MarkerOptions['symbol'];
     /**
      * 图标的大小，默认为 16px
      */
@@ -17,7 +18,7 @@ export type IconOptions = ShapeCfg & {
     /**
      * 图标的样式
      */
-    iconStyle?: ShapeAttrs;
+    markerStyle?: ShapeAttrs;
     /**
      * 间距，默认为 8px
      */

@@ -4,7 +4,7 @@ import { CustomElement, DisplayObject } from '../../types';
 import { MarkerOptions, FunctionalSymbol } from './types';
 import { circle, square, diamond, triangleDown, triangle } from './symbol';
 
-export { MarkerOptions };
+export { MarkerOptions, FunctionalSymbol };
 
 /**
  * Marker
@@ -47,7 +47,7 @@ export class Marker extends CustomElement {
   }
 
   attributeChangedCallback(name: string, value: any): void {
-    console.log(111, name, value);
+    console.log('attributeChangedCallback', name, value);
   }
 
   public getPathShape() {

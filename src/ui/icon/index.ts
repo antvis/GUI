@@ -1,6 +1,7 @@
-import { Text, Path } from '@antv/g';
+import { Text } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { CustomElement, DisplayObject } from '../../types';
+import { Marker } from '../marker';
 import { IconOptions } from './types';
 
 export { IconOptions };
@@ -44,12 +45,7 @@ export class Icon extends CustomElement {
       size: 16,
       fill: '#1890ff',
       spacing: 8,
-      iconStyle: {
-        // 字体名称
-        fontFamily: 'iconfont',
-        fontSize: 16,
-        textAlign: 'left',
-        textBaseline: 'top',
+      markerStyle: {
         fill: '#1890ff',
       },
       textStyle: {
@@ -68,7 +64,7 @@ export class Icon extends CustomElement {
   }
 
   attributeChangedCallback(name: string, value: any): void {
-    console.log(111, name, value);
+    console.log('attributeChangedCallback', name, value);
   }
 
   /**
@@ -89,18 +85,19 @@ export class Icon extends CustomElement {
    * 根据 type 获取 maker shape
    */
   private init(): void {
-    const { x, y, type, size, fill, spacing, text, textStyle, iconStyle } = this.attributes;
+    const { x, y, symbol, size, fill, spacing, text, textStyle, markerStyle } = this.attributes;
 
     //  1. 图标
-    this.iconShape = new Path({
+    this.iconShape = new Marker({
       attrs: {
         // 左上角锚点
         x: 0,
         y: 0,
-        path: Icon.ICON_TYPE_MAP.get(type),
-        ...iconStyle,
+        symbol,
+        ...markerStyle,
         // 优先级
         fill,
+        r: size / 2,
       },
     });
     this.appendChild(this.iconShape);
@@ -109,8 +106,8 @@ export class Icon extends CustomElement {
     this.textShape = new Text({
       attrs: {
         // 居中，和 icon 间距 8px
-        x: size + spacing,
-        y: size / 2,
+        x: size / 2 + spacing,
+        y: 0,
         ...textStyle,
         text,
       },

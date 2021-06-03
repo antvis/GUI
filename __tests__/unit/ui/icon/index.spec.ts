@@ -24,7 +24,7 @@ describe('icon', () => {
 
     const icon = new Icon({
       attrs: {
-        type: 'e7a4',
+        symbol: 'square',
         x: 50,
         y: 50,
         size: 16,
@@ -35,9 +35,7 @@ describe('icon', () => {
 
     canvas.appendChild(icon);
 
-    // @ts-ignore
-    window.icon = icon;
-    // expect(icon.getBounds()).toEqual({});
+    // todo 单侧
   });
   3;
 });
