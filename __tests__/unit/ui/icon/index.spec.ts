@@ -11,7 +11,7 @@ const renderer = new CanvasRenderer({
 });
 
 describe('icon', () => {
-  test('basic', () => {
+  test('basic', async () => {
     const div = createDiv();
 
     // @ts-ignore
@@ -24,17 +24,19 @@ describe('icon', () => {
 
     const icon = new Icon({
       attrs: {
-        type: 'submit',
+        type: 'e7a4',
         x: 50,
         y: 50,
         size: 16,
         fill: 'green',
-        text: 'submit',
+        text: 'Good',
       },
     });
 
     canvas.appendChild(icon);
 
+    // @ts-ignore
+    window.icon = icon;
     // expect(icon.getBounds()).toEqual({});
   });
   3;

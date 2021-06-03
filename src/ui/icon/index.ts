@@ -1,14 +1,29 @@
-import { Text, Rect } from '@antv/g';
+import { Text, Path } from '@antv/g';
+import { deepMix } from '@antv/util';
 import { CustomElement, DisplayObject } from '../../types';
 import { IconOptions } from './types';
 
 export { IconOptions };
 
+/**
+ * 带文本的 图标组件，支持 iconfont 组件
+ */
 export class Icon extends CustomElement {
   /**
    * 标签类型
    */
   public static tag = 'icon';
+
+  private static ICON_TYPE_MAP = new Map<string, any>();
+
+  /**
+   * 注册 icon 类型
+   * @param type
+   * @param path
+   */
+  public static registerIcon = (type: string, path: any) => {
+    Icon.ICON_TYPE_MAP.set(type, path);
+  };
 
   /**
    * 图标
@@ -20,36 +35,36 @@ export class Icon extends CustomElement {
    */
   private textShape: DisplayObject;
 
+  /**
+   * 默认参数
+   */
+  private static defaultOptions = {
+    type: Icon.tag,
+    attrs: {
+      size: 16,
+      fill: '#1890ff',
+      spacing: 8,
+      iconStyle: {
+        // 字体名称
+        fontFamily: 'iconfont',
+        fontSize: 16,
+        textAlign: 'left',
+        textBaseline: 'top',
+        fill: '#1890ff',
+      },
+      textStyle: {
+        fontSize: 12,
+        textAlign: 'left',
+        textBaseline: 'middle',
+        fill: '#000',
+      },
+    },
+  };
+
   constructor(options: IconOptions) {
-    super({
-      ...options,
-      type: Icon.tag,
-    });
+    super(deepMix({}, Icon.defaultOptions, options));
 
-    const { x, y, type, size, fill, text, textStyle } = this.attributes;
-
-    //  1. 图标
-    this.iconShape = this.getMarker(type, x, y, size, fill);
-    this.appendChild(this.iconShape!);
-
-    // 2. 文字
-    this.textShape = this.appendChild(
-      new Text({
-        attrs: {
-          // 居中，和 icon 间距 8px
-          x: size + 8,
-          y: size / 2,
-          text,
-          textAlign: 'left',
-          textBaseline: 'middle',
-          fontSize: 12,
-          ...textStyle,
-        },
-      })
-    );
-
-    // 整体偏移 x y 位置
-    this.translate(x, y);
+    this.init();
   }
 
   attributeChangedCallback(name: string, value: any): void {
@@ -73,15 +88,36 @@ export class Icon extends CustomElement {
   /**
    * 根据 type 获取 maker shape
    */
-  private getMarker(type: string, x: number, y: number, size: number, fill: string): DisplayObject {
-    return new Rect({
+  private init(): void {
+    const { x, y, type, size, fill, spacing, text, textStyle, iconStyle } = this.attributes;
+
+    //  1. 图标
+    this.iconShape = new Path({
       attrs: {
+        // 左上角锚点
         x: 0,
         y: 0,
-        width: size,
-        height: size,
+        path: Icon.ICON_TYPE_MAP.get(type),
+        ...iconStyle,
+        // 优先级
         fill,
       },
     });
+    this.appendChild(this.iconShape);
+
+    // 2. 文字
+    this.textShape = new Text({
+      attrs: {
+        // 居中，和 icon 间距 8px
+        x: size + spacing,
+        y: size / 2,
+        ...textStyle,
+        text,
+      },
+    });
+    this.textShape = this.appendChild(this.textShape);
+
+    // 3. 最后移动到对应的位置
+    this.translate(x, y);
   }
 }
