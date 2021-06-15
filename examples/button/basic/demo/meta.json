@@ -1,0 +1,16 @@
+{
+  "title": {
+    "zh": "中文分类",
+    "en": "Category"
+  },
+  "demos": [
+    {
+      "filename": "button.ts",
+      "title": {
+        "zh": "文本按钮 text button",
+        "en": "text button"
+      },
+      "screenshot": ""
+    }
+  ]
+}
