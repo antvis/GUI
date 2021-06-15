@@ -15,7 +15,9 @@
   ],
   "scripts": {
     "start": "gatsby clean && npm run site:develop",
+    "start-win": "gatsby clean && npm run site:develop-win",
     "site:develop": "PORT=3000 gatsby develop --open -H 0.0.0.0",
+    "site:develop-win": "set PORT=3000 && gatsby develop --open -H 0.0.0.0",
     "site:build": "npm run site:clean && gatsby build --prefix-paths",
     "clean": "rimraf lib esm dist",
     "lint-staged": "lint-staged",
@@ -24,6 +26,7 @@
     "fix": "eslint ./src/**/*.ts ./__tests__/**/*.ts --fix && prettier ./src ./__tests__ --write ",
     "test": "jest",
     "test-live": "DEBUG_MODE=1 jest --watch ./__tests__",
+    "text-live-win": "set DEBUG=* && jest --watch",
     "build": "father-build & limit-size",
     "ci": "run-s lint test build",
     "prepublishOnly": "npm run ci",
