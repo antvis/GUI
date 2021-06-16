@@ -23,9 +23,13 @@ export type ButtonOptions = ShapeCfg & {
      */
     size?: 'small' | 'middle' | 'large';
     /**
+     * 文本与按钮边缘的间距
+     */
+    padding?: number;
+    /**
      * 省略超长文本
      */
-    ellipsis: boolean;
+    ellipsis?: boolean;
     /**
      * 按钮类型
      */
