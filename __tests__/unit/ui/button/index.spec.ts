@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Button } from '../../../../src';
@@ -28,6 +27,9 @@ describe('button', () => {
         y: 50,
         text: 'button',
         type: 'primary',
+        size: 'large',
+        ellipsis: true,
+        disabled: true,
       },
     });
 

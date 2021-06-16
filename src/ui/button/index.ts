@@ -23,12 +23,7 @@ export class Button extends CustomElement {
   private background: DisplayObject;
 
   constructor(options: ButtonOptions) {
-    // const { size = 'middle', type = 'default' } = options.attrs;
-
-    super(
-      // deepMix({}, Button.defaultOptions, { attrs: Button.sizeStyle[size] }, { attrs: Button.typeStyle[type] }, options)
-      deepMix({}, Button.defaultOptions, options)
-    );
+    super(deepMix({}, Button.defaultOptions, options));
 
     this.init();
   }
