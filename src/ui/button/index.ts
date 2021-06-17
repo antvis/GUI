@@ -1,127 +1,11 @@
 import { Rect, Text } from '@antv/g';
-import _ from 'lodash';
 import { deepMix, pick } from '@antv/util';
 import { ButtonOptions } from './types';
 import { CustomElement, ShapeAttrs, DisplayObject } from '../../types';
 import { getEllipsisText } from '../../util';
+import { SIZESTYLE, TYPESTYLE, DISABLEDSTYLE } from './constant';
 
 export { ButtonOptions };
-
-/**
- * 尺寸配置
- */
-const sizeStyle = {
-  small: {
-    textStyle: {
-      fontSize: 10,
-    },
-    buttonStyle: {
-      width: 40,
-      height: 20,
-    },
-  },
-  middle: {
-    textStyle: {
-      fontSize: 12,
-    },
-    buttonStyle: {
-      width: 60,
-      height: 30,
-    },
-  },
-  large: {
-    textStyle: {
-      fontSize: 16,
-    },
-    buttonStyle: {
-      width: 80,
-      height: 40,
-    },
-  },
-};
-
-/**
- * 类型配置
- */
-const typeStyle = {
-  primary: {
-    textStyle: {
-      fill: '#fff',
-    },
-    buttonStyle: {
-      fill: '#1890ff',
-      lineWidth: 0,
-    },
-    hoverStyle: {
-      textStyle: {},
-      buttonStyle: {
-        fill: '#40a9ff',
-      },
-    },
-  },
-  dashed: {
-    textStyle: {},
-    buttonStyle: {
-      stroke: '#bbb',
-      lineDash: [5, 5],
-    },
-    hoverStyle: {
-      textStyle: {},
-      buttonStyle: {},
-    },
-  },
-  link: {
-    textStyle: {
-      fill: '#1890ff',
-    },
-    buttonStyle: {
-      lineWidth: 0,
-    },
-    hoverStyle: { textStyle: {}, buttonStyle: {} },
-  },
-  text: {
-    textStyle: {
-      fill: '#000',
-    },
-    buttonStyle: {
-      lineWidth: 0,
-    },
-    hoverStyle: { textStyle: {}, buttonStyle: {} },
-  },
-  default: {
-    textStyle: {
-      fill: '#000',
-    },
-    buttonStyle: { stroke: '#bbb' },
-    hoverStyle: {
-      textStyle: {
-        fill: '#1890ff',
-      },
-      buttonStyle: {
-        stroke: '#1890ff',
-      },
-    },
-  },
-};
-
-/**
- * disabled style
- */
-const disabledStyle = {
-  // 严格需要替换的样式
-  strict: {
-    textStyle: {
-      fill: '#b8b8b8',
-    },
-    buttonStyle: {
-      stroke: '#d9d9d9',
-    },
-  },
-  textStyle: {},
-  buttonStyle: {
-    fill: '#f5f5f5',
-  },
-};
 
 export class Button extends CustomElement {
   /**
@@ -195,22 +79,20 @@ export class Button extends CustomElement {
     const { size, type, disabled } = this.attributes;
     const mixedStyle = deepMix(
       {},
-      typeStyle[type][name],
-      name === 'hoverStyle' ? {} : sizeStyle[size][name],
+      TYPESTYLE[type][name],
+      name === 'hoverStyle' ? {} : SIZESTYLE[size][name],
       this.attributes[name]
     );
 
     if (disabled && name !== 'hoverStyle') {
-      // 从disabledStyle中pick mixedStyle里已有的style
+      // 从DISABLEDSTYLE中pick中pick mixedStyle里已有的style
       Object.keys(mixedStyle).forEach((key) => {
-        if (key in disabledStyle[name]) {
-          // mixedStyle[key] = disabledStyle[name][key];
-          mixedStyle[key] = _.get(disabledStyle, [name, key]);
+        if (key in DISABLEDSTYLE[name]) {
+          mixedStyle[key] = DISABLEDSTYLE[name][key];
         }
       });
-      Object.keys(disabledStyle.strict[name]).forEach((key) => {
-        mixedStyle[key] = _.get(disabledStyle, ['strict', name, key]);
-        // mixedStyle[key] = disabledStyle.strict[name][key];
+      Object.keys(DISABLEDSTYLE.strict[name]).forEach((key) => {
+        mixedStyle[key] = DISABLEDSTYLE.strict[name][key];
       });
     }
 
