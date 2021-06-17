@@ -15,9 +15,7 @@
   ],
   "scripts": {
     "start": "gatsby clean && npm run site:develop",
-    "start-win": "gatsby clean && npm run site:develop-win",
     "site:develop": "PORT=3000 gatsby develop --open -H 0.0.0.0",
-    "site:develop-win": "set PORT=3000 && gatsby develop --open -H 0.0.0.0",
     "site:build": "npm run site:clean && gatsby build --prefix-paths",
     "clean": "rimraf lib esm dist",
     "lint-staged": "lint-staged",
@@ -26,7 +24,6 @@
     "fix": "eslint ./src/**/*.ts ./__tests__/**/*.ts --fix && prettier ./src ./__tests__ --write ",
     "test": "jest",
     "test-live": "DEBUG_MODE=1 jest --watch ./__tests__",
-    "test-live-win": "set DEBUG=* && jest --watch",
     "build": "father-build & limit-size",
     "ci": "run-s lint test build",
     "prepublishOnly": "npm run ci",
@@ -41,13 +38,13 @@
   "dependencies": {
     "@antv/g": "^1.0.0-alpha.0",
     "@antv/g-canvas": "^1.0.0-alpha.0",
-    "@antv/gatsby-theme-antv": "^1.1.5",
     "@antv/util": "^2.0.13",
-    "csstype": "^3.0.8",
+    "svg-path-parser": "^1.1.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-i18next": "^11.7.0",
-    "svg-path-parser": "^1.1.0"
+    "babel-polyfill": "^6.26.0",
+    "@antv/gatsby-theme-antv": "^1.1.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
@@ -55,7 +52,6 @@
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.19.0",
-    "babel-polyfill": "^6.26.0",
     "eslint": "^7.22.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.1.0",
@@ -83,9 +79,6 @@
     "preset": "ts-jest",
     "collectCoverage": true,
     "testRegex": "(/__tests__/.*\\.(test|spec))\\.ts$",
-    "setupFilesAfterEnv": [
-      "./jest.setup.js"
-    ],
     "collectCoverageFrom": [
       "src/**/*.ts"
     ]
