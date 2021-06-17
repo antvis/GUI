@@ -5,10 +5,26 @@
   },
   "demos": [
     {
-      "filename": "button.ts",
+      "filename": "simple-button.ts",
       "title": {
-        "zh": "文本按钮 text button",
-        "en": "text button"
+        "zh": "简单按钮 text button",
+        "en": "Simple text button"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "custom-button.ts",
+      "title": {
+        "zh": "自定义 button",
+        "en": "Custom button"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "disabled-button.ts",
+      "title": {
+        "zh": "禁用 button",
+        "en": "Disabled button"
       },
       "screenshot": ""
     }

@@ -16,12 +16,30 @@ const canvas = new Canvas({
   renderer,
 });
 
-const icon = new Button({
+const button = new Button({
   attrs: {
     x: 50,
     y: 50,
-    text: 'button',
+    text: 'Custom Button',
+    type: 'primary',
+    size: 'large',
+    ellipsis: true,
+    buttonStyle: {
+      width: 130,
+      lineDash: [10, 5],
+      lineWidth: 2,
+      radius: 10,
+      stroke: '#000',
+    },
+    hoverStyle: {
+      textStyle: {
+        fill: '#000',
+      },
+      buttonStyle: {
+        fill: 'red',
+      },
+    },
   },
 });
 
-canvas.appendChild(icon);
+canvas.appendChild(button);

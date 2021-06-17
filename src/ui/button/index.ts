@@ -1,10 +1,127 @@
 import { Rect, Text } from '@antv/g';
+import _ from 'lodash';
 import { deepMix, pick } from '@antv/util';
 import { ButtonOptions } from './types';
 import { CustomElement, ShapeAttrs, DisplayObject } from '../../types';
 import { getEllipsisText } from '../../util';
 
 export { ButtonOptions };
+
+/**
+ * 尺寸配置
+ */
+const sizeStyle = {
+  small: {
+    textStyle: {
+      fontSize: 10,
+    },
+    buttonStyle: {
+      width: 40,
+      height: 20,
+    },
+  },
+  middle: {
+    textStyle: {
+      fontSize: 12,
+    },
+    buttonStyle: {
+      width: 60,
+      height: 30,
+    },
+  },
+  large: {
+    textStyle: {
+      fontSize: 16,
+    },
+    buttonStyle: {
+      width: 80,
+      height: 40,
+    },
+  },
+};
+
+/**
+ * 类型配置
+ */
+const typeStyle = {
+  primary: {
+    textStyle: {
+      fill: '#fff',
+    },
+    buttonStyle: {
+      fill: '#1890ff',
+      lineWidth: 0,
+    },
+    hoverStyle: {
+      textStyle: {},
+      buttonStyle: {
+        fill: '#40a9ff',
+      },
+    },
+  },
+  dashed: {
+    textStyle: {},
+    buttonStyle: {
+      stroke: '#bbb',
+      lineDash: [5, 5],
+    },
+    hoverStyle: {
+      textStyle: {},
+      buttonStyle: {},
+    },
+  },
+  link: {
+    textStyle: {
+      fill: '#1890ff',
+    },
+    buttonStyle: {
+      lineWidth: 0,
+    },
+    hoverStyle: { textStyle: {}, buttonStyle: {} },
+  },
+  text: {
+    textStyle: {
+      fill: '#000',
+    },
+    buttonStyle: {
+      lineWidth: 0,
+    },
+    hoverStyle: { textStyle: {}, buttonStyle: {} },
+  },
+  default: {
+    textStyle: {
+      fill: '#000',
+    },
+    buttonStyle: { stroke: '#bbb' },
+    hoverStyle: {
+      textStyle: {
+        fill: '#1890ff',
+      },
+      buttonStyle: {
+        stroke: '#1890ff',
+      },
+    },
+  },
+};
+
+/**
+ * disabled style
+ */
+const disabledStyle = {
+  // 严格需要替换的样式
+  strict: {
+    textStyle: {
+      fill: '#b8b8b8',
+    },
+    buttonStyle: {
+      stroke: '#d9d9d9',
+    },
+  },
+  textStyle: {},
+  buttonStyle: {
+    fill: '#f5f5f5',
+  },
+};
 
 export class Button extends CustomElement {
   /**
@@ -45,105 +162,10 @@ export class Button extends CustomElement {
       buttonStyle: {
         lineWidth: 1,
         radius: 5,
-        fill: '#fff',
-      },
-    },
-  };
-
-  /**
-   * 尺寸配置
-   */
-  private static sizeStyle = {
-    small: {
-      textStyle: {
-        fontSize: 10,
-      },
-      buttonStyle: {
-        width: 40,
-        height: 20,
-      },
-    },
-    middle: {
-      textStyle: {
-        fontSize: 12,
-      },
-      buttonStyle: {
-        width: 60,
-        height: 30,
-      },
-    },
-    large: {
-      textStyle: {
-        fontSize: 16,
-      },
-      buttonStyle: {
-        width: 80,
-        height: 40,
-      },
-    },
-  };
-
-  /**
-   * 类型配置
-   */
-  private static typeStyle = {
-    primary: {
-      textStyle: {
-        fill: '#fff',
-      },
-      buttonStyle: {
-        fill: '#1890ff',
-        lineWidth: 0,
-      },
-      hoverStyle: {
-        textStyle: {},
-        buttonStyle: {
-          fill: '#40a9ff',
-        },
-      },
-    },
-    ghost: { textStyle: {}, buttonStyle: {}, hoverStyle: { textStyle: {}, buttonStyle: {} } },
-    dashed: {
-      textStyle: {},
-      buttonStyle: {
-        stroke: '#bbb',
-        lineDash: [5, 5],
       },
       hoverStyle: {
         textStyle: {},
         buttonStyle: {},
-      },
-    },
-    link: {
-      textStyle: {
-        fill: '#1890ff',
-      },
-      buttonStyle: {
-        lineWidth: 0,
-      },
-      hoverStyle: { textStyle: {}, buttonStyle: {} },
-    },
-    text: {
-      textStyle: {
-        fill: '#000',
-      },
-      buttonStyle: {
-        lineWidth: 0,
-      },
-      hoverStyle: { textStyle: {}, buttonStyle: {} },
-    },
-    default: {
-      textStyle: {
-        fill: '#000',
-      },
-      buttonStyle: { stroke: '#bbb' },
-      hoverStyle: {
-        textStyle: {
-          fill: '#1890ff',
-        },
-        buttonStyle: {
-          stroke: '#1890ff',
-        },
       },
     },
   };
@@ -170,20 +192,36 @@ export class Button extends CustomElement {
    * 根据size、type属性生成实际渲染的属性
    */
   private getMixinStyle(name: 'textStyle' | 'buttonStyle' | 'hoverStyle') {
-    const { size, type } = this.attributes;
-    return deepMix(
+    const { size, type, disabled } = this.attributes;
+    const mixedStyle = deepMix(
       {},
-      name === 'hoverStyle' ? {} : Button.sizeStyle[size][name],
-      Button.typeStyle[type][name],
+      typeStyle[type][name],
+      name === 'hoverStyle' ? {} : sizeStyle[size][name],
       this.attributes[name]
     );
+
+    if (disabled && name !== 'hoverStyle') {
+      // 从disabledStyle中pick mixedStyle里已有的style
+      Object.keys(mixedStyle).forEach((key) => {
+        if (key in disabledStyle[name]) {
+          // mixedStyle[key] = disabledStyle[name][key];
+          mixedStyle[key] = _.get(disabledStyle, [name, key]);
+        }
+      });
+      Object.keys(disabledStyle.strict[name]).forEach((key) => {
+        mixedStyle[key] = _.get(disabledStyle, ['strict', name, key]);
+        // mixedStyle[key] = disabledStyle.strict[name][key];
+      });
+    }
+
+    return mixedStyle;
   }
 
   /**
    * 初始化button
    */
   private init(): void {
-    const { x, y, text, disabled, padding, ellipsis, onClick } = this.attributes;
+    const { x, y, text, padding, ellipsis, onClick } = this.attributes;
     const textStyle = this.getMixinStyle('textStyle');
     const buttonStyle = this.getMixinStyle('buttonStyle');
 
@@ -232,7 +270,7 @@ export class Button extends CustomElement {
         x: -newWidth / 2,
         y: 0,
         ...this.getMixinStyle('buttonStyle'),
-        width: newWidth,
+        // width: newWidth,
       },
     });
 
@@ -242,7 +280,7 @@ export class Button extends CustomElement {
     // 设置位置
     this.translate(x, y);
 
-    this.bindEvents(onClick, disabled);
+    this.bindEvents(onClick);
   }
 
   /**
@@ -254,7 +292,9 @@ export class Button extends CustomElement {
     });
   }
 
-  private bindEvents(onClick: Function, disabled: Boolean): void {
+  private bindEvents(onClick: Function): void {
+    const { disabled } = this.attributes;
+
     if (!disabled && onClick) {
       this.on('click', () => {
         // 点击事件

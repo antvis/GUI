@@ -5,7 +5,7 @@ export type ButtonOptions = ShapeCfg & {
     /**
      * 按钮类型
      */
-    type?: 'primary' | 'ghost' | 'dashed' | 'link' | 'text' | 'default';
+    type?: 'primary' | 'dashed' | 'link' | 'text' | 'default';
     /**
      * 按钮尺寸
      */
