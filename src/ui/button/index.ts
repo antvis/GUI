@@ -3,7 +3,7 @@ import { deepMix, pick } from '@antv/util';
 import { ButtonOptions } from './types';
 import { CustomElement, ShapeAttrs, DisplayObject } from '../../types';
 import { getEllipsisText } from '../../util';
-import { SIZESTYLE, TYPESTYLE, DISABLEDSTYLE } from './constant';
+import { SIZE_STYLE, TYPE_STYLE, DISABLED_STYLE } from './constant';
 
 export { ButtonOptions };
 
@@ -79,20 +79,20 @@ export class Button extends CustomElement {
     const { size, type, disabled } = this.attributes;
     const mixedStyle = deepMix(
       {},
-      TYPESTYLE[type][name],
-      name === 'hoverStyle' ? {} : SIZESTYLE[size][name],
+      TYPE_STYLE[type][name],
+      name === 'hoverStyle' ? {} : SIZE_STYLE[size][name],
       this.attributes[name]
     );
 
     if (disabled && name !== 'hoverStyle') {
-      // 从DISABLEDSTYLE中pick中pick mixedStyle里已有的style
+      // 从DISABLED_STYLE中pick中pick mixedStyle里已有的style
       Object.keys(mixedStyle).forEach((key) => {
-        if (key in DISABLEDSTYLE[name]) {
-          mixedStyle[key] = DISABLEDSTYLE[name][key];
+        if (key in DISABLED_STYLE[name]) {
+          mixedStyle[key] = DISABLED_STYLE[name][key];
         }
       });
-      Object.keys(DISABLEDSTYLE.strict[name]).forEach((key) => {
-        mixedStyle[key] = DISABLEDSTYLE.strict[name][key];
+      Object.keys(DISABLED_STYLE.strict[name]).forEach((key) => {
+        mixedStyle[key] = DISABLED_STYLE.strict[name][key];
       });
     }
 

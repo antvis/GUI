@@ -1,7 +1,7 @@
 /**
  * 尺寸配置
  */
-export const SIZESTYLE = {
+export const SIZE_STYLE = {
   small: {
     textStyle: {
       fontSize: 10,
@@ -34,7 +34,7 @@ export const SIZESTYLE = {
 /**
  * 类型配置
  */
-export const TYPESTYLE = {
+export const TYPE_STYLE = {
   primary: {
     textStyle: {
       fill: '#fff',
@@ -98,7 +98,7 @@ export const TYPESTYLE = {
 /**
  * disabled style
  */
-export const DISABLEDSTYLE = {
+export const DISABLED_STYLE = {
   // 严格需要替换的样式
   strict: {
     textStyle: {
