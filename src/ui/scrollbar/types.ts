@@ -1,7 +1,5 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
 
-export type Range = [number, number];
-
 export interface ScrollStyle {
   default: ShapeAttrs;
   active: ShapeAttrs;
@@ -19,17 +17,17 @@ export type ScrollbarOptions = ShapeCfg & {
     /**
      * 轨道宽度
      */
-    width: number;
+    width?: number;
 
     /**
      * 轨道高度
      */
-    height: number;
+    height?: number;
 
     /**
      * 滚动条的值
      */
-    value: number;
+    value?: number;
 
     /**
      * 可滚动范围的值的上限
@@ -49,7 +47,7 @@ export type ScrollbarOptions = ShapeCfg & {
     /**
      * 滑块长度
      */
-    thumbLen: number;
+    thumbLen?: number;
 
     /**
      * 滑轨样式

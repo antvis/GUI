@@ -1,9 +1,9 @@
 import { Rect } from '@antv/g';
 import { Event } from '@antv/g-base';
 import { clamp, deepMix } from '@antv/util';
-import { CustomElement, DisplayObject } from '../../types';
 import { ScrollbarOptions } from './types';
 import { applyAttrs, isPC } from '../../util';
+import { CustomElement, DisplayObject } from '../../types';
 
 export { ScrollbarOptions };
 
@@ -35,18 +35,18 @@ export class Scrollbar extends CustomElement {
       orient: 'vertical',
 
       // 轨道宽高
-      // width
-      // height
+      width: 10,
+      height: 200,
+      value: 0,
 
       // 滑块范围控制
       min: 0,
       max: 1,
-
       // 滑块是否为圆角
       isRound: true,
 
       // 滑块长度
-      // thumbLen
+      thumbLen: 20,
 
       // 滑块内边距
       padding: {
@@ -78,8 +78,6 @@ export class Scrollbar extends CustomElement {
 
   constructor(options: ScrollbarOptions) {
     super(deepMix({}, Scrollbar.defaultOptions, options));
-
-    // this.setRange(this.attributes.range);
     this.init();
   }
 
@@ -303,9 +301,7 @@ export class Scrollbar extends CustomElement {
   }
 
   private onThumbDragStart = (e: MouseEvent) => {
-    // e.stopPropagation();
-    console.log('start', e);
-
+    e.stopPropagation();
     this.prevPos = this.getOrientPos([e.x, e.y]);
     if (isPC()) {
       document.addEventListener('mousemove', this.onThumbDragging);
