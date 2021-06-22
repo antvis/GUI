@@ -340,7 +340,7 @@ export class Scrollbar extends CustomElement {
    * 滚轮事件
    */
   private onWheeling = () => {
-    this.on('wheel', (e) => {
+    document.addEventListener('wheel', (e) => {
       this.setRelatedOffset(e.deltaY);
     });
   };
