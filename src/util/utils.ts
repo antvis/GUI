@@ -11,3 +11,18 @@ export const applyAttrs = (group: DisplayObject, shape: string, attrs: ShapeAttr
     group[shape].attr(attr[0], attr[1]);
   });
 };
+
+/**
+ * 平台判断
+ */
+export const isPC = (userAgent = undefined) => {
+  const userAgentInfo = userAgent || navigator.userAgent;
+  const Agents = ['Android', 'iPhone', 'SymbianOS', 'Windows Phone', 'iPad', 'iPod'];
+  let flag = true;
+  Agents.forEach((item) => {
+    if (userAgentInfo.indexOf(item) > 0) {
+      flag = false;
+    }
+  });
+  return flag;
+};
