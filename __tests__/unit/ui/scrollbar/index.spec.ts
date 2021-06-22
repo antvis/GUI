@@ -89,6 +89,9 @@ describe('scrollbar', () => {
     );
 
     canvas.appendChild(scrollbar);
+
+    scrollbar.destroy();
+    canvas.destroy();
   });
 
   test('horizontal', async () => {
@@ -167,5 +170,7 @@ describe('scrollbar', () => {
     });
 
     canvas.appendChild(scrollbar);
+    scrollbar.destroy();
+    canvas.destroy();
   });
 });
