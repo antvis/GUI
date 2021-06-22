@@ -21,8 +21,8 @@ import { Scrollbar } from '@antv/gui';
 | width      | Width                                              | <code>number</code>                                   | `[]`       |
 | disabled   | Height                                             | <code>number<code>                                    | `[]`       |
 | value      | 值                                                 | <code>number<code> ∈ [0, 1]                           | `0`        |
-| max        | The upper limit of values of the scrollable range. | <code>number<code> ∈ [0, 1)                           | `0`        |
-| min        | The lower limit of values of the scrollable range. | <code>number<code> ∈ (min, 1]                         | `1`        |
+| min        | The lower limit of values of the scrollable range. | <code>number<code> ∈ [0, 1)                           | `1`        |
+| max        | The upper limit of values of the scrollable range. | <code>number<code> ∈ (min, 1]                         | `0`        |
 | trackStyle | The style of scrollbar track                       | <code>{default: ShapeAttrs, active: ShapeAttrs}<code> | `[]`       |
 | isRound    | Whether the scrollbar thumb has round edge         | <code>boolean</code>                                  | `true`     |
 | thumbLen   | The length of scrollbar thumb                      | <code>boolean</code>                                  | `[]`       |

@@ -21,8 +21,8 @@ import { Scrollbar } from '@antv/gui';
 | width      | 宽度                 | <code>number</code>                                   | `[]`       |
 | disabled   | 高度                 | <code>number<code>                                    | `[]`       |
 | value      | 值                   | <code>number<code> ∈ [0, 1]                           | `0`        |
-| max        | 可滚动范围的值的上限 | <code>number<code> ∈ [0, 1)                           | `0`        |
-| min        | 可滚动范围的值的下限 | <code>number<code> ∈ (min, 1]                         | `1`        |
+| min        | 可滚动范围的值的下限 | <code>number<code> ∈ [0, 1)                           | `0`        |
+| max        | 可滚动范围的值的上限 | <code>number<code> ∈ (min, 1]                         | `1`        |
 | trackStyle | 滑轨样式             | <code>{default: ShapeAttrs, active: ShapeAttrs}<code> | `[]`       |
 | isRound    | 滑块是否圆角         | <code>boolean</code>                                  | `true`     |
 | thumbLen   | 滑块长度             | <code>boolean</code>                                  | `[]`       |
