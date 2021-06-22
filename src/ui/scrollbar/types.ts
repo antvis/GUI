@@ -3,13 +3,11 @@ import { ShapeAttrs, ShapeCfg } from '../../types';
 export type Range = [number, number];
 
 export interface ScrollStyle {
-  track: ShapeAttrs;
-  thumb: ShapeAttrs;
+  default: ShapeAttrs;
+  active: ShapeAttrs;
 }
 
 export type Orient = 'horizontal' | 'vertical';
-export type ScrollSize = 'small' | 'medium' | 'large';
-export type ThumbShape = 'rect' | 'round';
 
 export type ScrollbarOptions = ShapeCfg & {
   attrs: {
@@ -19,38 +17,48 @@ export type ScrollbarOptions = ShapeCfg & {
     orient?: Orient;
 
     /**
-     * 轨道长度
+     * 轨道宽度
      */
-    length: number;
+    width: number;
 
     /**
-     * 滑块范围
+     * 轨道高度
      */
-    range?: Range;
+    height: number;
 
     /**
-     * 滑块范围控制
+     * 滚动条的值
      */
-    limit?: Range;
+    value: number;
 
     /**
-     * 滚动条尺寸
+     * 可滚动范围的值的上限
      */
-    size?: ScrollSize;
+    min?: number;
 
     /**
-     * 滑块形状
+     * 可滚动范围的值的下限
      */
-    shape?: ThumbShape;
+    max?: number;
 
     /**
-     * 滚动条样式
+     * 滑块是否圆角
      */
-    scrollStyle?: ScrollStyle;
+    isRound?: boolean;
 
     /**
-     * hover样式
+     * 滑块长度
      */
-    hoverStyle?: ScrollStyle;
+    thumbLen: number;
+
+    /**
+     * 滑轨样式
+     */
+    trackStyle?: ScrollStyle;
+
+    /**
+     * 滑块样式
+     */
+    thumbStyle?: ScrollStyle;
   };
 };

@@ -1,10 +1,9 @@
 import { Rect } from '@antv/g';
 import { Event } from '@antv/g-base';
-import { deepMix, get } from '@antv/util';
+import { clamp, deepMix } from '@antv/util';
 import { CustomElement, DisplayObject } from '../../types';
-import { ScrollbarOptions, ScrollStyle, Range } from './types';
-import { SIZE_STYLE } from './constant';
-import { applyAttrs } from '../../util';
+import { ScrollbarOptions } from './types';
+import { applyAttrs, isPC } from '../../util';
 
 export { ScrollbarOptions };
 
@@ -13,11 +12,6 @@ export class Scrollbar extends CustomElement {
    * tag
    */
   public static tag = 'scrollbar';
-
-  /**
-   * 滑块容器
-   */
-  // private containerShape: DisplayObject;
 
   /**
    * 轨道
@@ -39,38 +33,43 @@ export class Scrollbar extends CustomElement {
     attrs: {
       // 滑条朝向
       orient: 'vertical',
-      // 滑块范围
-      range: [0, 0.25],
+
+      // 轨道宽高
+      // width
+      // height
+
       // 滑块范围控制
-      limit: [0, 1],
-      // 滚动条尺寸
-      size: 'medium',
-      // 滑块形状
-      shape: 'rect',
-      offset: [0, 0],
-      // 滑块两侧内边距
-      // 这里的padding是相对于滑块的上下左右，而不是屏幕
+      min: 0,
+      max: 1,
+
+      // 滑块是否为圆角
+      isRound: true,
+
+      // 滑块长度
+      // thumbLen
+
+      // 滑块内边距
       padding: {
-        top: 3,
-        right: 1,
-        bottom: 3,
-        left: 1,
+        top: 2,
+        right: 2,
+        bottom: 2,
+        left: 2,
       },
-      // 滚动条样式
-      scrollStyle: {
-        track: {
+
+      trackStyle: {
+        default: {
           fill: '#fafafa',
           lineWidth: 1,
           stroke: '#e8e8e8',
         },
-        thumb: {
+        active: {},
+      },
+
+      thumbStyle: {
+        default: {
           fill: '#c1c1c1',
         },
-      },
-      // hover样式
-      hoverStyle: {
-        track: {},
-        thumb: {
+        active: {
           fill: '#7d7d7d',
         },
       },
@@ -79,8 +78,8 @@ export class Scrollbar extends CustomElement {
 
   constructor(options: ScrollbarOptions) {
     super(deepMix({}, Scrollbar.defaultOptions, options));
-    // 修正滑块位置
-    this.setRange(this.attributes.range);
+
+    // this.setRange(this.attributes.range);
     this.init();
   }
 
@@ -98,234 +97,168 @@ export class Scrollbar extends CustomElement {
   }
 
   /**
-   * 计算滑块的两端及中点在轨道的比例位置
+   * 计算滑块重心在轨道的比例位置
    * @param offset 额外的偏移量
    */
-  public getValue(offset = 0) {
-    const { orient } = this.attributes;
-    const { x, y, width, height } = this.thumbShape.attributes;
-    const { x: X, y: Y, width: W, height: H } = this.getTrackInner();
+  public getValue() {
+    return this.getAttribute('value');
+  }
 
-    let stVal: number;
-    let midVal: number;
-    let endVal: number;
-    if (orient === 'vertical') {
-      const _ = height / H;
-      stVal = (y - Y + offset) / H;
-      midVal = _ / 2 + stVal;
-      endVal = _ + stVal;
-    } else if (orient === 'horizontal') {
-      const _ = width / W;
-      stVal = (x - X + offset) / W;
-      midVal = _ / 2 + stVal;
-      endVal = _ + stVal;
-    } else {
-      return this.throwInvalidOrient();
-    }
-    return { range: [stVal, endVal] as Range, value: midVal };
+  /**
+   * 设置value
+   * @param value 当前位置的占比
+   */
+  public setValue(value: number) {
+    const { value: oldValue, padding } = this.attributes;
+    this.setAttribute('value', value);
+    const thumbOffset = this.valueOffset(value);
+    this.setThumbOffset(thumbOffset + this.getOrientPos([padding.left, padding.top]));
+    // 通知触发valueChange
+    this.onValueChanged(oldValue);
   }
 
   /**
    * 值改变事件
    */
-  public onValueChanged() {
-    this.emit('scroll', {});
-  }
+  public onValueChanged = (oldValue: any) => {
+    const newValue = this.getValue();
+    if (oldValue === newValue) return;
+    this.emit('scroll', newValue);
+    this.emit('valuechange', {
+      oldValue,
+      value: newValue,
+    });
+  };
 
   /**
-   * 获得合法的range值
+   * value - offset 相互转换
+   * @param num
+   * @param reverse true - value -> offset; false - offset -> value
+   * @returns
    */
-  private getLegalRange(range: Range, limit: Range = this.getAttribute('limit')) {
-    const length = range[1] - range[0];
-    // 低于下限
-    if (range[0] <= limit[0]) {
-      return [limit[0], limit[0] + length];
+  private valueOffset(num: number, reverse = false) {
+    const { thumbLen, min, max } = this.attributes;
+    const L = this.getTrackLen() - thumbLen;
+    if (!reverse) {
+      // value2offset
+      return L * clamp(num, min, max);
     }
-    // 高于上限
-    if (range[1] >= limit[1]) {
-      return [limit[1] - length, limit[1]];
-    }
-    return range;
+    // offset2value
+    return num / L;
   }
 
   /**
    * 获得轨道可用空间
    */
   private getTrackInner() {
-    const { orient, size, length, padding } = this.attributes;
-    const trackWidth = get(SIZE_STYLE, [size, 'track', 'width']);
-    const VP = padding.top + padding.bottom;
-    const HP = padding.left + padding.right;
-
-    const base = {
-      x: this.getOrientPos([padding.top, padding.left]),
-      y: this.getOrientPos([padding.right, padding.top]),
+    const { width, height, padding } = this.attributes;
+    return {
+      x: padding.left,
+      y: padding.top,
+      width: width - (padding.left + padding.right),
+      height: height - (padding.top + padding.bottom),
     };
-
-    if (orient === 'vertical') {
-      return {
-        ...base,
-        width: trackWidth - HP,
-        height: length - VP,
-      };
-    }
-
-    if (orient === 'horizontal') {
-      return {
-        ...base,
-        width: length - VP,
-        height: trackWidth - HP,
-      };
-    }
-
-    return this.throwInvalidOrient();
   }
 
   /**
-   * 设置滑块范围
+   * 获得轨道长度
    */
-  private setRange(range: Range) {
-    const legalRange = this.getLegalRange(range);
-    console.log('legalRange', legalRange);
-
-    this.setAttribute('range', legalRange);
-
-    const { x, y, width, height } = this.getTrackInner();
-    const { orient } = this.attributes;
-    // 设置滑块坐标
-    this.thumbShape &&
-      this.thumbShape.setAttribute(
-        orient === 'vertical' ? 'y' : 'x',
-        legalRange[0] * this.getOrientPos([width, height]) + this.getOrientPos([x, y])
-      );
+  private getTrackLen() {
+    const { width, height } = this.getTrackInner();
+    return this.getOrientPos([width, height]);
   }
 
-  private getRange() {
-    return this.getAttribute('range');
+  /**
+   * 将滑块移动至指定位置
+   * @param thumbOffset 滑块位置偏移量
+   */
+  private setThumbOffset(thumbOffset: number) {
+    this.thumbShape.setAttribute(this.getOrientPos(['x', 'y']), thumbOffset);
   }
 
   /**
    * 设置相对偏移，鼠标拖动、滚轮滑动时使用
+   * @param offset 鼠标的偏移量
    */
-  private setRelatedOffset(offset: number) {
-    const range = this.getRange();
-    const { width, height } = this.getTrackInner();
-
-    const length = this.getOrientPos([width, height]);
-
-    // 偏移后的起始偏移
-    const st = Number((range[0] + offset / length).toFixed(4));
-    const end = Number((range[1] + offset / length).toFixed(4));
-
-    this.setRange([st, end]);
-  }
-
-  private throwInvalidOrient = () => {
-    throw new Error(`Invalid Orientation: ${this.attributes.orient}`);
-  };
-
-  private getMixinStyle(name: 'scrollStyle' | 'hoverStyle'): ScrollStyle {
-    const { size } = this.attributes;
-    const mixedStyle = deepMix({}, SIZE_STYLE[size], this.attributes[name]);
-    return mixedStyle;
+  private setRelatedOffset(deltaOffset: number) {
+    const value = this.getValue();
+    this.setValue(this.valueOffset(deltaOffset, true) + value);
   }
 
   /**
    * 生成轨道属性
    */
   private getTrackAttrs() {
-    const { orient, length } = this.attributes;
-    const { track: trackStyle } = this.getMixinStyle('scrollStyle');
-    const baseAttrs = {
+    const { width, height, trackStyle } = this.attributes;
+    return {
       x: 0,
       y: 0,
-      ...trackStyle,
+      ...trackStyle.default,
+      width,
+      height,
     };
-    if (orient === 'vertical') {
-      return {
-        ...baseAttrs,
-        width: trackStyle.width,
-        height: length,
-      };
-    }
-    if (orient === 'horizontal') {
-      return {
-        ...baseAttrs,
-        width: length,
-        height: trackStyle.width,
-      };
-    }
-    return this.throwInvalidOrient();
   }
 
   /**
    * 生成滑块属性
    */
   private getThumbAttrs() {
-    const { thumb: thumbStyle } = this.getMixinStyle('scrollStyle');
-    const { orient, shape } = this.attributes;
-    const range = this.getRange();
-    console.log('thumbRange: ', range);
-
+    const { orient, value, isRound, thumbLen, thumbStyle } = this.attributes;
     const trackInner = this.getTrackInner();
     const { x, y, width, height } = trackInner;
+    const baseAttrs = {
+      ...trackInner,
+      ...thumbStyle.default,
+    };
 
+    let half = width / 2;
     if (orient === 'vertical') {
-      const halfWidth = width / 2;
       return {
-        ...trackInner,
-        ...thumbStyle,
-        y: y + range[0] * height,
-        height: height * (range[1] - range[0]),
-        radius: shape === 'rect' ? 0 : halfWidth,
+        ...baseAttrs,
+        y: y + this.valueOffset(value),
+        height: thumbLen,
+        radius: isRound ? half : 0,
       };
     }
-    if (orient === 'horizontal') {
-      const halfHeight = height / 2;
-      return {
-        ...trackInner,
-        ...thumbStyle,
-        x: x + range[0] * width,
-        width: width * (range[1] - range[0]),
-        radius: shape === 'rect' ? 0 : halfHeight,
-      };
-    }
-    return this.throwInvalidOrient();
+
+    half = height / 2;
+    return {
+      ...baseAttrs,
+      x: x + this.valueOffset(value),
+      width: thumbLen,
+      radius: isRound ? half : 0,
+    };
   }
 
   private init() {
-    const { x, y } = this.attributes;
-
     this.trackShape = new Rect({
       attrs: this.getTrackAttrs(),
     });
     this.appendChild(this.trackShape);
-
-    // 获得滑块范围
-    // 滑块最大长度
-    console.log(this.getThumbAttrs());
-
     this.thumbShape = new Rect({
       attrs: this.getThumbAttrs(),
     });
-    console.log(this.thumbShape);
-
     this.appendChild(this.thumbShape);
+
+    const { x, y } = this.attributes;
     this.translate(x, y);
     this.bindEvents();
   }
 
   private bindEvents() {
     this.trackShape.addEventListener('click', this.onTrackClick);
-    this.onThumbHover();
     this.thumbShape.addEventListener('mousedown', this.onThumbDragStart);
+    this.thumbShape.addEventListener('touchstart', this.onThumbDragStart);
+    this.onTrackHover();
+    this.onThumbHover();
+    this.onWheeling();
   }
 
   /**
    * 根据orient取出对应轴向上的值
    * 主要用于取鼠标坐标在orient方向上的位置
    */
-  private getOrientPos(pos: [number, number]) {
+  private getOrientPos<T>(pos: [T, T]) {
     const { orient } = this.attributes;
     return orient === 'horizontal' ? pos[0] : pos[1];
   }
@@ -333,55 +266,82 @@ export class Scrollbar extends CustomElement {
   /**
    * 点击轨道事件
    */
-  private onTrackClick(e: Event) {
-    console.log('onTrackClick: ', e);
-  }
+  private onTrackClick = (e: Event) => {
+    const { x, y, padding, thumbLen } = this.attributes;
+    const basePos = this.getOrientPos([x + padding.left, y + padding.top]);
+    const clickPos = this.getOrientPos([e.x, e.y]) - thumbLen / 2;
+    const value = this.valueOffset(clickPos - basePos, true);
+    this.setValue(value);
+  };
 
   /**
    * 滑块悬浮事件
    */
   private onThumbHover() {
+    const { thumbStyle } = this.attributes;
     // 滑块hover
     this.thumbShape.addEventListener('mouseenter', () => {
-      const hoverStyle = this.getMixinStyle('hoverStyle');
-      applyAttrs(this, 'thumbShape', hoverStyle.thumb);
+      applyAttrs(this, 'thumbShape', thumbStyle.active);
     });
     this.thumbShape.addEventListener('mouseleave', () => {
-      const hoverStyle = this.getMixinStyle('scrollStyle');
-      applyAttrs(this, 'thumbShape', hoverStyle.thumb);
+      applyAttrs(this, 'thumbShape', thumbStyle.default);
     });
   }
 
-  private onThumbDragStart = (e: Event) => {
-    e.stopPropagation();
+  /**
+   * 滑轨悬浮事件
+   */
+  private onTrackHover() {
+    const { trackStyle } = this.attributes;
+    // 滑块hover
+    this.trackShape.addEventListener('mouseenter', () => {
+      applyAttrs(this, 'trackShape', trackStyle.active);
+    });
+    this.trackShape.addEventListener('mouseleave', () => {
+      applyAttrs(this, 'trackShape', trackStyle.default);
+    });
+  }
+
+  private onThumbDragStart = (e: MouseEvent) => {
+    // e.stopPropagation();
+    console.log('start', e);
+
     this.prevPos = this.getOrientPos([e.x, e.y]);
-    document.addEventListener('mousemove', this.onThumbDragging);
-    document.addEventListener('mouseup', this.onThumbDragEnd);
+    if (isPC()) {
+      document.addEventListener('mousemove', this.onThumbDragging);
+      document.addEventListener('mouseup', this.onThumbDragEnd);
+    } else {
+      document.addEventListener('touchmove', this.onThumbDragging);
+      document.addEventListener('touchcancel', this.onThumbDragEnd);
+    }
   };
 
-  private onThumbDragging = (e: MouseEvent) => {
+  private onThumbDragging = (e: MouseEvent | TouchEvent) => {
     e.stopPropagation();
-    const currPos = this.getOrientPos([e.offsetX, e.offsetY]);
+    // @ts-ignore
+    const currPos = this.getOrientPos(isPC() ? [e.offsetX, e.offsetY] : [e.touches[0].clientX, e.touches[0].clientY]);
     const diff = currPos - this.prevPos;
-
-    // TODO: 如果指针坐标超出轨道，则不触发
     this.setRelatedOffset(diff);
     this.prevPos = currPos;
   };
 
-  private onThumbDragEnd = (e: Event) => {
+  private onThumbDragEnd = (e: MouseEvent) => {
     e.preventDefault();
-    document.removeEventListener('mousemove', this.onThumbDragging);
-    document.removeEventListener('mouseup', this.onThumbDragEnd);
+    if (isPC()) {
+      document.removeEventListener('mousemove', this.onThumbDragging);
+      document.removeEventListener('mouseup', this.onThumbDragEnd);
+    } else {
+      document.removeEventListener('touchmove', this.onThumbDragging);
+      document.removeEventListener('touchcancel', this.onThumbDragEnd);
+    }
   };
 
   /**
-   * 滚动开始时触发
+   * 滚轮事件
    */
-  // private onScrollStart(e: Event) {}
-
-  /**
-   * 滚动结束时触发
-   */
-  // private onScrollEnd() {}
+  private onWheeling = () => {
+    this.on('wheel', (e) => {
+      this.setRelatedOffset(e.deltaY);
+    });
+  };
 }

@@ -37,6 +37,7 @@
   ],
   "dependencies": {
     "@antv/g": "^1.0.0-alpha.0",
+    "@antv/g-base": "^0.5.9",
     "@antv/g-canvas": "^1.0.0-alpha.0",
     "@antv/gatsby-theme-antv": "^1.1.5",
     "@antv/util": "^2.0.13",
@@ -81,7 +82,6 @@
     "preset": "ts-jest",
     "collectCoverage": true,
     "testRegex": "(/__tests__/.*\\.(test|spec))\\.ts$",
-
     "setupFilesAfterEnv": [
       "./jest.setup.js"
     ],
