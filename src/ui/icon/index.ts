@@ -1,8 +1,9 @@
 import { Rect, Text } from '@antv/g';
-import { deepMix } from '@antv/util';
-import { CustomElement, DisplayObject } from '../../types';
-import { Marker } from '../marker';
+import { deepMix, pick } from '@antv/util';
 import { IconOptions } from './types';
+import { Marker } from '../marker';
+import { measureTextWidth } from '../../util';
+import { CustomElement, DisplayObject } from '../../types';
 
 export { IconOptions };
 
@@ -42,6 +43,7 @@ export class Icon extends CustomElement {
       markerStyle: {
         fill: '#1890ff',
       },
+      textAlign: 'right',
       textStyle: {
         fontSize: 12,
         textAlign: 'left',
@@ -79,7 +81,7 @@ export class Icon extends CustomElement {
    * 根据 type 获取 maker shape
    */
   private init(): void {
-    const { x, y, symbol, size, fill, spacing, text, textStyle, markerStyle } = this.attributes;
+    const { x, y, symbol, size, fill, spacing, text, textAlign, textStyle, markerStyle } = this.attributes;
 
     //  图标
     this.iconShape = new Marker({
@@ -100,12 +102,29 @@ export class Icon extends CustomElement {
     this.textShape = new Text({
       attrs: {
         // 居中，和 icon 间距 4px
-        x: size / 2 + spacing,
+        x: 0,
         y: 0,
         ...textStyle,
         text,
       },
     });
+
+    this.textShape.setAttribute(
+      'x',
+      (() => {
+        const textPos = size / 2 + spacing;
+        const style = pick(this.textShape.attr(), ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'fontVariant']);
+        const textLen = measureTextWidth(text, style);
+        if (textAlign === 'left') {
+          return -(textLen + textPos);
+        }
+        if (textAlign === 'center') {
+          return -(textLen / 2);
+        }
+        return textPos;
+      })()
+    );
+
     this.appendChild(this.textShape);
 
     // 背景

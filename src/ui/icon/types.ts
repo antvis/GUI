@@ -28,6 +28,10 @@ export type IconOptions = ShapeCfg & {
      */
     text?: string;
     /**
+     * 文本相较于图标的位置
+     */
+    textAlign?: 'left' | 'center' | 'right';
+    /**
      * 文本的样式
      */
     textStyle?: ShapeAttrs;
