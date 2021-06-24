@@ -43,7 +43,7 @@ export class Icon extends CustomElement {
       markerStyle: {
         fill: '#1890ff',
       },
-      textAlign: 'right',
+      textLocation: 'right',
       textStyle: {
         fontSize: 12,
         textAlign: 'left',
@@ -81,7 +81,7 @@ export class Icon extends CustomElement {
    * 根据 type 获取 maker shape
    */
   private init(): void {
-    const { x, y, symbol, size, fill, spacing, text, textAlign, textStyle, markerStyle } = this.attributes;
+    const { x, y, symbol, size, fill, spacing, text, textLocation, textStyle, markerStyle } = this.attributes;
 
     //  图标
     this.iconShape = new Marker({
@@ -112,14 +112,16 @@ export class Icon extends CustomElement {
     this.textShape.setAttribute(
       'x',
       (() => {
-        const textPos = size / 2 + spacing;
-        const style = pick(this.textShape.attr(), ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'fontVariant']);
-        const textLen = measureTextWidth(text, style);
-        if (textAlign === 'left') {
-          return -(textLen + textPos);
+        const _ = size / 2 + spacing;
+        const textLen = measureTextWidth(
+          text,
+          pick(this.textShape.attr(), ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'fontVariant'])
+        );
+        if (textLocation === 'left') {
+          return -(textLen + _);
         }
-        if (textAlign === 'right') {
-          return textPos;
+        if (textLocation === 'right') {
+          return _;
         }
         // center
         return -(textLen / 2);
@@ -129,10 +131,10 @@ export class Icon extends CustomElement {
       'y',
       (() => {
         const _ = size + spacing;
-        if (textAlign === 'above') {
+        if (textLocation === 'above') {
           return -_;
         }
-        if (textAlign === 'under') {
+        if (textLocation === 'under') {
           return _;
         }
         return 0;
