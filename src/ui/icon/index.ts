@@ -118,10 +118,24 @@ export class Icon extends CustomElement {
         if (textAlign === 'left') {
           return -(textLen + textPos);
         }
-        if (textAlign === 'center') {
-          return -(textLen / 2);
+        if (textAlign === 'right') {
+          return textPos;
         }
-        return textPos;
+        // center
+        return -(textLen / 2);
+      })()
+    );
+    this.textShape.setAttribute(
+      'y',
+      (() => {
+        const _ = size + spacing;
+        if (textAlign === 'above') {
+          return -_;
+        }
+        if (textAlign === 'under') {
+          return _;
+        }
+        return 0;
       })()
     );
 

@@ -30,7 +30,7 @@ export type IconOptions = ShapeCfg & {
     /**
      * 文本相较于图标的位置
      */
-    textAlign?: 'left' | 'center' | 'right';
+    textAlign?: 'left' | 'center' | 'right' | 'above' | 'under';
     /**
      * 文本的样式
      */
