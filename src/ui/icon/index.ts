@@ -77,6 +77,11 @@ export class Icon extends CustomElement {
     return this.textShape;
   }
 
+  public setText(text: string) {
+    this.textShape.setAttribute('text', text);
+    this.setAttribute('text', text);
+  }
+
   /**
    * 根据 type 获取 maker shape
    */
