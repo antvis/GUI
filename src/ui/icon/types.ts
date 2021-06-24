@@ -28,12 +28,13 @@ export type IconOptions = ShapeCfg & {
      */
     text?: string;
     /**
-     * 文本相较于图标的位置
-     */
-    textLocation?: 'left' | 'center' | 'right' | 'above' | 'under';
-    /**
      * 文本的样式
      */
-    textStyle?: ShapeAttrs;
+    textStyle?: ShapeAttrs & {
+      /**
+       * 文本相较于图标的位置
+       */
+      position?: 'left' | 'center' | 'right' | 'above' | 'below';
+    };
   };
 };
