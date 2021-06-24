@@ -1,5 +1,4 @@
 import { Rect } from '@antv/g';
-import { Event } from '@antv/g-base';
 import { clamp, deepMix } from '@antv/util';
 import { ScrollbarOptions } from './types';
 import { applyAttrs, isPC } from '../../util';
@@ -84,14 +83,11 @@ export class Scrollbar extends CustomElement {
   attributeChangedCallback(name: string, value: any): void {
     // 变更属性时需要重新计算value
     console.log('attributeChangedCallback', name, value);
-  }
-
-  public getTrackShape() {
-    return this.trackShape;
-  }
-
-  public getThumbShape() {
-    return this.thumbShape;
+    if (name === 'value') {
+      const { padding } = this.attributes;
+      const thumbOffset = this.valueOffset(value);
+      this.setThumbOffset(thumbOffset + this.getOrientVal([padding.left, padding.top]));
+    }
   }
 
   /**
@@ -107,18 +103,34 @@ export class Scrollbar extends CustomElement {
    * @param value 当前位置的占比
    */
   public setValue(value: number) {
-    const { value: oldValue, padding } = this.attributes;
+    const { value: oldValue } = this.attributes;
     this.setAttribute('value', value);
-    const thumbOffset = this.valueOffset(value);
-    this.setThumbOffset(thumbOffset + this.getOrientVal([padding.left, padding.top]));
     // 通知触发valueChange
     this.onValueChanged(oldValue);
   }
 
   /**
+   * 设置相对偏移，鼠标拖动、滚轮滑动时使用
+   * @param offset 鼠标、滚轮的偏移量
+   */
+  public setOffset(deltaOffset: number) {
+    const value = this.getValue();
+    this.setValue(this.valueOffset(deltaOffset, true) + value);
+  }
+
+  private init() {
+    this.createTrack();
+    this.createThumb();
+
+    const { x, y } = this.attributes;
+    this.translate(x, y);
+    this.bindEvents();
+  }
+
+  /**
    * 值改变事件
    */
-  public onValueChanged = (oldValue: any) => {
+  private onValueChanged = (oldValue: any) => {
     const newValue = this.getValue();
     if (oldValue === newValue) return;
     this.emit('scroll', newValue);
@@ -148,7 +160,7 @@ export class Scrollbar extends CustomElement {
   /**
    * 获得轨道可用空间
    */
-  private getTrackInner() {
+  private getAvailableSpace() {
     const { width, height, padding } = this.attributes;
     return {
       x: padding.left,
@@ -162,7 +174,7 @@ export class Scrollbar extends CustomElement {
    * 获得轨道长度
    */
   private getTrackLen() {
-    const { width, height } = this.getTrackInner();
+    const { width, height } = this.getAvailableSpace();
     return this.getOrientVal([width, height]);
   }
 
@@ -172,15 +184,6 @@ export class Scrollbar extends CustomElement {
    */
   private setThumbOffset(thumbOffset: number) {
     this.thumbShape.setAttribute(this.getOrientVal(['x', 'y']), thumbOffset);
-  }
-
-  /**
-   * 设置相对偏移，鼠标拖动、滚轮滑动时使用
-   * @param offset 鼠标的偏移量
-   */
-  private setRelatedOffset(deltaOffset: number) {
-    const value = this.getValue();
-    this.setValue(this.valueOffset(deltaOffset, true) + value);
   }
 
   /**
@@ -205,7 +208,7 @@ export class Scrollbar extends CustomElement {
    */
   private createThumb() {
     const { orient, value, isRound, thumbLen, thumbStyle } = this.attributes;
-    const trackInner = this.getTrackInner();
+    const trackInner = this.getAvailableSpace();
     const { x, y, width, height } = trackInner;
     const baseAttrs = {
       ...trackInner,
@@ -235,37 +238,27 @@ export class Scrollbar extends CustomElement {
     this.appendChild(this.thumbShape);
   }
 
-  private init() {
-    this.createTrack();
-    this.createThumb();
-
-    const { x, y } = this.attributes;
-    this.translate(x, y);
-    this.bindEvents();
-  }
-
   private bindEvents() {
     this.trackShape.on('click', this.onTrackClick);
     this.thumbShape.on('mousedown', this.onThumbDragStart);
     this.thumbShape.on('touchstart', this.onThumbDragStart);
     this.onTrackHover();
     this.onThumbHover();
-    this.onWheeling();
   }
 
   /**
    * 根据orient取出对应轴向上的值
    * 主要用于取鼠标坐标在orient方向上的位置
    */
-  private getOrientVal<T>(pos: [T, T]) {
+  private getOrientVal<T>(values: [T, T]) {
     const { orient } = this.attributes;
-    return orient === 'horizontal' ? pos[0] : pos[1];
+    return orient === 'horizontal' ? values[0] : values[1];
   }
 
   /**
    * 点击轨道事件
    */
-  private onTrackClick = (e: Event) => {
+  private onTrackClick = (e) => {
     const { x, y, padding, thumbLen } = this.attributes;
     const basePos = this.getOrientVal([x + padding.left, y + padding.top]);
     const clickPos = this.getOrientVal([e.x, e.y]) - thumbLen / 2;
@@ -318,7 +311,7 @@ export class Scrollbar extends CustomElement {
     // @ts-ignore
     const currPos = this.getOrientVal(isPC() ? [e.offsetX, e.offsetY] : [e.touches[0].clientX, e.touches[0].clientY]);
     const diff = currPos - this.prevPos;
-    this.setRelatedOffset(diff);
+    this.setOffset(diff);
     this.prevPos = currPos;
   };
 
@@ -331,14 +324,5 @@ export class Scrollbar extends CustomElement {
       document.removeEventListener('touchmove', this.onThumbDragging);
       document.removeEventListener('touchcancel', this.onThumbDragEnd);
     }
-  };
-
-  /**
-   * 滚轮事件
-   */
-  private onWheeling = () => {
-    document.addEventListener('wheel', (e) => {
-      this.setRelatedOffset(e.deltaY);
-    });
   };
 }
