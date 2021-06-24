@@ -110,7 +110,7 @@ export class Scrollbar extends CustomElement {
     const { value: oldValue, padding } = this.attributes;
     this.setAttribute('value', value);
     const thumbOffset = this.valueOffset(value);
-    this.setThumbOffset(thumbOffset + this.getOrientPos([padding.left, padding.top]));
+    this.setThumbOffset(thumbOffset + this.getOrientVal([padding.left, padding.top]));
     // 通知触发valueChange
     this.onValueChanged(oldValue);
   }
@@ -163,7 +163,7 @@ export class Scrollbar extends CustomElement {
    */
   private getTrackLen() {
     const { width, height } = this.getTrackInner();
-    return this.getOrientPos([width, height]);
+    return this.getOrientVal([width, height]);
   }
 
   /**
@@ -171,7 +171,7 @@ export class Scrollbar extends CustomElement {
    * @param thumbOffset 滑块位置偏移量
    */
   private setThumbOffset(thumbOffset: number) {
-    this.thumbShape.setAttribute(this.getOrientPos(['x', 'y']), thumbOffset);
+    this.thumbShape.setAttribute(this.getOrientVal(['x', 'y']), thumbOffset);
   }
 
   /**
@@ -186,21 +186,24 @@ export class Scrollbar extends CustomElement {
   /**
    * 生成轨道属性
    */
-  private getTrackAttrs() {
+  private createTrack() {
     const { width, height, trackStyle } = this.attributes;
-    return {
-      x: 0,
-      y: 0,
-      ...trackStyle.default,
-      width,
-      height,
-    };
+    this.trackShape = new Rect({
+      attrs: {
+        x: 0,
+        y: 0,
+        ...trackStyle.default,
+        width,
+        height,
+      },
+    });
+    this.appendChild(this.trackShape);
   }
 
   /**
    * 生成滑块属性
    */
-  private getThumbAttrs() {
+  private createThumb() {
     const { orient, value, isRound, thumbLen, thumbStyle } = this.attributes;
     const trackInner = this.getTrackInner();
     const { x, y, width, height } = trackInner;
@@ -209,34 +212,32 @@ export class Scrollbar extends CustomElement {
       ...thumbStyle.default,
     };
 
-    let half = width / 2;
-    if (orient === 'vertical') {
-      return {
-        ...baseAttrs,
-        y: y + this.valueOffset(value),
-        height: thumbLen,
-        radius: isRound ? half : 0,
-      };
-    }
-
-    half = height / 2;
-    return {
-      ...baseAttrs,
-      x: x + this.valueOffset(value),
-      width: thumbLen,
-      radius: isRound ? half : 0,
-    };
+    this.thumbShape = new Rect({
+      attrs: (() => {
+        let half = width / 2;
+        if (orient === 'vertical') {
+          return {
+            ...baseAttrs,
+            y: y + this.valueOffset(value),
+            height: thumbLen,
+            radius: isRound ? half : 0,
+          };
+        }
+        half = height / 2;
+        return {
+          ...baseAttrs,
+          x: x + this.valueOffset(value),
+          width: thumbLen,
+          radius: isRound ? half : 0,
+        };
+      })(),
+    });
+    this.appendChild(this.thumbShape);
   }
 
   private init() {
-    this.trackShape = new Rect({
-      attrs: this.getTrackAttrs(),
-    });
-    this.appendChild(this.trackShape);
-    this.thumbShape = new Rect({
-      attrs: this.getThumbAttrs(),
-    });
-    this.appendChild(this.thumbShape);
+    this.createTrack();
+    this.createThumb();
 
     const { x, y } = this.attributes;
     this.translate(x, y);
@@ -244,9 +245,9 @@ export class Scrollbar extends CustomElement {
   }
 
   private bindEvents() {
-    this.trackShape.addEventListener('click', this.onTrackClick);
-    this.thumbShape.addEventListener('mousedown', this.onThumbDragStart);
-    this.thumbShape.addEventListener('touchstart', this.onThumbDragStart);
+    this.trackShape.on('click', this.onTrackClick);
+    this.thumbShape.on('mousedown', this.onThumbDragStart);
+    this.thumbShape.on('touchstart', this.onThumbDragStart);
     this.onTrackHover();
     this.onThumbHover();
     this.onWheeling();
@@ -256,7 +257,7 @@ export class Scrollbar extends CustomElement {
    * 根据orient取出对应轴向上的值
    * 主要用于取鼠标坐标在orient方向上的位置
    */
-  private getOrientPos<T>(pos: [T, T]) {
+  private getOrientVal<T>(pos: [T, T]) {
     const { orient } = this.attributes;
     return orient === 'horizontal' ? pos[0] : pos[1];
   }
@@ -266,8 +267,8 @@ export class Scrollbar extends CustomElement {
    */
   private onTrackClick = (e: Event) => {
     const { x, y, padding, thumbLen } = this.attributes;
-    const basePos = this.getOrientPos([x + padding.left, y + padding.top]);
-    const clickPos = this.getOrientPos([e.x, e.y]) - thumbLen / 2;
+    const basePos = this.getOrientVal([x + padding.left, y + padding.top]);
+    const clickPos = this.getOrientVal([e.x, e.y]) - thumbLen / 2;
     const value = this.valueOffset(clickPos - basePos, true);
     this.setValue(value);
   };
@@ -278,11 +279,11 @@ export class Scrollbar extends CustomElement {
   private onThumbHover() {
     const { thumbStyle } = this.attributes;
     // 滑块hover
-    this.thumbShape.addEventListener('mouseenter', () => {
-      applyAttrs(this, 'thumbShape', thumbStyle.active);
+    this.thumbShape.on('mouseenter', () => {
+      applyAttrs(this.thumbShape, thumbStyle.active);
     });
-    this.thumbShape.addEventListener('mouseleave', () => {
-      applyAttrs(this, 'thumbShape', thumbStyle.default);
+    this.thumbShape.on('mouseleave', () => {
+      applyAttrs(this.thumbShape, thumbStyle.default);
     });
   }
 
@@ -292,17 +293,17 @@ export class Scrollbar extends CustomElement {
   private onTrackHover() {
     const { trackStyle } = this.attributes;
     // 滑块hover
-    this.trackShape.addEventListener('mouseenter', () => {
-      applyAttrs(this, 'trackShape', trackStyle.active);
+    this.trackShape.on('mouseenter', () => {
+      applyAttrs(this.trackShape, trackStyle.active);
     });
-    this.trackShape.addEventListener('mouseleave', () => {
-      applyAttrs(this, 'trackShape', trackStyle.default);
+    this.trackShape.on('mouseleave', () => {
+      applyAttrs(this.trackShape, trackStyle.default);
     });
   }
 
   private onThumbDragStart = (e: MouseEvent) => {
     e.stopPropagation();
-    this.prevPos = this.getOrientPos([e.x, e.y]);
+    this.prevPos = this.getOrientVal([e.x, e.y]);
     if (isPC()) {
       document.addEventListener('mousemove', this.onThumbDragging);
       document.addEventListener('mouseup', this.onThumbDragEnd);
@@ -315,7 +316,7 @@ export class Scrollbar extends CustomElement {
   private onThumbDragging = (e: MouseEvent | TouchEvent) => {
     e.stopPropagation();
     // @ts-ignore
-    const currPos = this.getOrientPos(isPC() ? [e.offsetX, e.offsetY] : [e.touches[0].clientX, e.touches[0].clientY]);
+    const currPos = this.getOrientVal(isPC() ? [e.offsetX, e.offsetY] : [e.touches[0].clientX, e.touches[0].clientY]);
     const diff = currPos - this.prevPos;
     this.setRelatedOffset(diff);
     this.prevPos = currPos;

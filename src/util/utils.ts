@@ -6,9 +6,9 @@ import { DisplayObject, ShapeAttrs } from 'types';
  * @param shape
  * @param attrs
  */
-export const applyAttrs = (group: DisplayObject, shape: string, attrs: ShapeAttrs) => {
+export const applyAttrs = (target: DisplayObject, attrs: ShapeAttrs) => {
   Object.entries(attrs).forEach(([attrName, attrValue]) => {
-    group[shape].attr(attrName, attrValue);
+    target.attr(attrName, attrValue);
   });
 };
 
