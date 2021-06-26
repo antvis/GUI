@@ -239,9 +239,9 @@ export class Scrollbar extends CustomElement {
   }
 
   private bindEvents() {
-    this.trackShape.on('click', this.onTrackClick);
-    this.thumbShape.on('mousedown', this.onThumbDragStart);
-    this.thumbShape.on('touchstart', this.onThumbDragStart);
+    this.trackShape.addEventListener('click', this.onTrackClick);
+    this.thumbShape.addEventListener('mousedown', this.onThumbDragStart);
+    this.thumbShape.addEventListener('touchstart', this.onThumbDragStart);
     this.onTrackHover();
     this.onThumbHover();
   }
@@ -272,10 +272,10 @@ export class Scrollbar extends CustomElement {
   private onThumbHover() {
     const { thumbStyle } = this.attributes;
     // 滑块hover
-    this.thumbShape.on('mouseenter', () => {
+    this.thumbShape.addEventListener('mouseenter', () => {
       applyAttrs(this.thumbShape, thumbStyle.active);
     });
-    this.thumbShape.on('mouseleave', () => {
+    this.thumbShape.addEventListener('mouseleave', () => {
       applyAttrs(this.thumbShape, thumbStyle.default);
     });
   }
@@ -286,10 +286,10 @@ export class Scrollbar extends CustomElement {
   private onTrackHover() {
     const { trackStyle } = this.attributes;
     // 滑块hover
-    this.trackShape.on('mouseenter', () => {
+    this.trackShape.addEventListener('mouseenter', () => {
       applyAttrs(this.trackShape, trackStyle.active);
     });
-    this.trackShape.on('mouseleave', () => {
+    this.trackShape.addEventListener('mouseleave', () => {
       applyAttrs(this.trackShape, trackStyle.default);
     });
   }
