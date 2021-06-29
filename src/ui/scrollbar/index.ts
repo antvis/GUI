@@ -82,7 +82,6 @@ export class Scrollbar extends CustomElement {
 
   attributeChangedCallback(name: string, value: any): void {
     // 变更属性时需要重新计算value
-    console.log('attributeChangedCallback', name, value);
     if (name === 'value') {
       const { padding } = this.attributes;
       const thumbOffset = this.valueOffset(value);
@@ -240,10 +239,9 @@ export class Scrollbar extends CustomElement {
 
   private bindEvents() {
     this.trackShape.addEventListener('click', this.onTrackClick);
-    this.thumbShape.addEventListener('mousedown', this.onThumbDragStart);
-    this.thumbShape.addEventListener('touchstart', this.onThumbDragStart);
-    this.onTrackHover();
-    this.onThumbHover();
+    this.thumbShape.addEventListener('mousedown', this.onDragStart);
+    this.thumbShape.addEventListener('touchstart', this.onDragStart);
+    this.onHover();
   }
 
   /**
@@ -267,10 +265,10 @@ export class Scrollbar extends CustomElement {
   };
 
   /**
-   * 滑块悬浮事件
+   * 悬浮事件
    */
-  private onThumbHover() {
-    const { thumbStyle } = this.attributes;
+  private onHover() {
+    const { thumbStyle, trackStyle } = this.attributes;
     // 滑块hover
     this.thumbShape.addEventListener('mouseenter', () => {
       applyAttrs(this.thumbShape, thumbStyle.active);
@@ -278,14 +276,8 @@ export class Scrollbar extends CustomElement {
     this.thumbShape.addEventListener('mouseleave', () => {
       applyAttrs(this.thumbShape, thumbStyle.default);
     });
-  }
 
-  /**
-   * 滑轨悬浮事件
-   */
-  private onTrackHover() {
-    const { trackStyle } = this.attributes;
-    // 滑块hover
+    // 滑轨hover
     this.trackShape.addEventListener('mouseenter', () => {
       applyAttrs(this.trackShape, trackStyle.active);
     });
@@ -294,19 +286,16 @@ export class Scrollbar extends CustomElement {
     });
   }
 
-  private onThumbDragStart = (e: MouseEvent) => {
+  private onDragStart = (e: MouseEvent) => {
     e.stopPropagation();
     this.prevPos = this.getOrientVal([e.x, e.y]);
-    if (isPC()) {
-      document.addEventListener('mousemove', this.onThumbDragging);
-      document.addEventListener('mouseup', this.onThumbDragEnd);
-    } else {
-      document.addEventListener('touchmove', this.onThumbDragging);
-      document.addEventListener('touchcancel', this.onThumbDragEnd);
-    }
+    document.addEventListener('mousemove', this.onDragging);
+    document.addEventListener('mouseup', this.onDragEnd);
+    document.addEventListener('touchmove', this.onDragging);
+    document.addEventListener('touchcancel', this.onDragEnd);
   };
 
-  private onThumbDragging = (e: MouseEvent | TouchEvent) => {
+  private onDragging = (e: MouseEvent | TouchEvent) => {
     e.stopPropagation();
     // @ts-ignore
     const currPos = this.getOrientVal(isPC() ? [e.offsetX, e.offsetY] : [e.touches[0].clientX, e.touches[0].clientY]);
@@ -315,14 +304,11 @@ export class Scrollbar extends CustomElement {
     this.prevPos = currPos;
   };
 
-  private onThumbDragEnd = (e: MouseEvent) => {
+  private onDragEnd = (e: MouseEvent) => {
     e.preventDefault();
-    if (isPC()) {
-      document.removeEventListener('mousemove', this.onThumbDragging);
-      document.removeEventListener('mouseup', this.onThumbDragEnd);
-    } else {
-      document.removeEventListener('touchmove', this.onThumbDragging);
-      document.removeEventListener('touchcancel', this.onThumbDragEnd);
-    }
+    document.removeEventListener('mousemove', this.onDragging);
+    document.removeEventListener('mouseup', this.onDragEnd);
+    document.removeEventListener('touchmove', this.onDragging);
+    document.removeEventListener('touchcancel', this.onDragEnd);
   };
 }
