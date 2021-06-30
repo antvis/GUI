@@ -23,8 +23,8 @@
     "lint": "eslint ./src/**/*.ts ./__tests__/**/*.ts && prettier ./src ./__tests__ --check ",
     "fix": "eslint ./src/**/*.ts ./__tests__/**/*.ts --fix && prettier ./src ./__tests__ --write ",
     "test": "jest",
-    "test-live": "DEBUG_MODE=1 jest --watch ./__tests__",
-    "build": "father-build && limit-size",
+    "test-live": "DEBUG_MODE=1 jest --watch ./__tests__/unit/ui/spark",
+    "build": "father-build & limit-size",
     "ci": "run-s lint test build",
     "prepublishOnly": "npm run ci",
     "prepare": "husky install"
@@ -40,6 +40,8 @@
     "@antv/g-canvas": "^1.0.0-alpha.0",
     "@antv/gatsby-theme-antv": "^1.1.5",
     "@antv/util": "^2.0.13",
+    "@antv/path-util": "^2.0.9",
+    "@antv/scale": "^0.4.3",
     "csstype": "^3.0.8",
     "svg-path-parser": "^1.1.0"
   },
