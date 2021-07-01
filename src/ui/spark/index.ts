@@ -285,14 +285,14 @@ export class Spark extends CustomElement {
             id: `bar-${i}-${j}`,
             attrs: {
               y: y.map(val),
-              height: height - y.map(val) - (i > 0 ? 40 - y.map(data[i - 1][j]) : 0),
+              height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
               fill: this.getColor(i),
               ...columnStyle,
               ...(isStack
                 ? {
                     x: x.map(j),
                     width: bandWidth,
-                    height: height - y.map(val) - (i > 0 ? 40 - y.map(data[i - 1][j]) : 0),
+                    height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
                   }
                 : { x: x.map(j) + barWidth * i, width: barWidth, height: height - y.map(val) }),
             },
