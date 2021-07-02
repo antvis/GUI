@@ -37,7 +37,6 @@ describe('spark', () => {
     });
 
     const path0 = spark.getElementById('line-path-0').getAttribute('path');
-    console.log(path0);
     const y = (val) => {
       return (1 - (val + 10) / 25) * 50;
     };
@@ -51,6 +50,7 @@ describe('spark', () => {
     expect(path0[5][2]).toBe(y(10));
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('stack line', () => {
@@ -81,6 +81,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('stack curve', () => {
@@ -111,6 +112,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('area line', () => {
@@ -144,6 +146,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('area curve', () => {
@@ -177,6 +180,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('area stack line', () => {
@@ -211,6 +215,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
   test('area stack curve', () => {
     const div = createDiv();
@@ -244,6 +249,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('basic bar', () => {
@@ -273,6 +279,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('stack bar', () => {
@@ -303,6 +310,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
   test('group bar', () => {
     const div = createDiv();
@@ -332,6 +340,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
   test('stack group bar', () => {
     const div = createDiv();
@@ -362,6 +371,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
   });
 
   test('color', () => {
@@ -405,5 +415,7 @@ describe('spark', () => {
     });
 
     canvas.appendChild(spark);
+    spark.destroy();
+    canvas.destroy();
   });
 });
