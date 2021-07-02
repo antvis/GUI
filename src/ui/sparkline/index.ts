@@ -1,8 +1,8 @@
 import { Path, Rect } from '@antv/g';
-import { clone, deepMix, isNumber, isEqual, isArray, isFunction } from '@antv/util';
-import { catmullRom2Bezier } from '@antv/path-util';
+import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { SparkOptions } from './types';
+import { pointsToLine, pointsToCurve } from './path';
 import { CustomElement, DisplayObject } from '../../types';
 
 type Point = [number, number];
@@ -10,8 +10,8 @@ type PathCommand = any[][][];
 
 export { SparkOptions };
 
-export class Spark extends CustomElement {
-  public static tag = 'Spark';
+export class Sparkline extends CustomElement {
+  public static tag = 'Sparkline';
 
   private static defaultOptions = {
     attrs: {
@@ -39,7 +39,7 @@ export class Spark extends CustomElement {
   private reverseCurve: any[][];
 
   constructor(options: SparkOptions) {
-    super(deepMix({}, Spark.defaultOptions, options));
+    super(deepMix({}, Sparkline.defaultOptions, options));
     this.init();
   }
 
@@ -62,7 +62,7 @@ export class Spark extends CustomElement {
       case 'line':
         this.createLine();
         break;
-      case 'bar':
+      case 'column':
         this.createBar();
         break;
       default:
@@ -115,31 +115,6 @@ export class Spark extends CustomElement {
         range: [height, 0],
       }),
     };
-  }
-
-  /**
-   * 根据点数据生成折线path
-   */
-  private pointsToLine(points: Point[]) {
-    return points.map((point, idx) => [idx === 0 ? 'M' : 'L', ...point]);
-  }
-
-  /**
-   * 根据点数据生成曲线path
-   */
-  private pointsToCurve(points: Point[]) {
-    if (points.length <= 2) {
-      return this.pointsToLine(points);
-    }
-    const data = [];
-    points.forEach((point) => {
-      if (!isEqual(point, data.slice(data.length - 2))) {
-        data.push(...point);
-      }
-    });
-    const path = catmullRom2Bezier(data, false);
-    path.unshift(['M', 0, 0], ['M', ...points[0]]);
-    return path;
   }
 
   /**
@@ -225,9 +200,9 @@ export class Spark extends CustomElement {
         if (!this.reverseCurve) {
           this.reverseCurve = [];
         }
-        this.reverseCurve.push(this.pointsToCurve(clone(_).reverse()));
+        this.reverseCurve.push(pointsToCurve(clone(_).reverse()));
       }
-      return smooth ? this.pointsToCurve(_) : this.pointsToLine(_);
+      return smooth ? pointsToCurve(_) : pointsToLine(_);
     });
 
     linesPath.forEach((path, idx) => {
@@ -281,8 +256,8 @@ export class Spark extends CustomElement {
         const barWidth = bandWidth / data.length;
         this.sparkShapes.appendChild(
           new Rect({
-            name: 'bar',
-            id: `bar-${i}-${j}`,
+            name: 'column',
+            id: `column-${i}-${j}`,
             attrs: {
               y: y.map(val),
               height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),

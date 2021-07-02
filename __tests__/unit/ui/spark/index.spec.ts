@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Spark } from '../../../../src';
+import { Sparkline } from '../../../../src';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -21,7 +21,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -64,7 +64,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -95,7 +95,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -126,7 +126,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -160,7 +160,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -194,7 +194,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -228,7 +228,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -263,7 +263,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -293,7 +293,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -323,7 +323,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -353,7 +353,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -385,7 +385,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Spark({
+    const spark = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
