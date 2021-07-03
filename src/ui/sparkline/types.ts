@@ -1,7 +1,5 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
 
-export type SparkPlot = 'line' | 'bar';
-
 export type SparkOptions = ShapeCfg & {
   data?: number[] | number[][];
   width?: number;
