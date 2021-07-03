@@ -1,6 +1,6 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
 
-export type SparkOptions = ShapeCfg & {
+export type SparklineOptions = ShapeCfg & {
   data?: number[] | number[][];
   width?: number;
   height?: number;

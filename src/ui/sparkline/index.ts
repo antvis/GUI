@@ -2,7 +2,7 @@ import { Path, Rect } from '@antv/g';
 import { clone, deepMix, min, minBy, max, maxBy, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
-import { SparkOptions } from './types';
+import { SparklineOptions } from './types';
 import {
   getStackedData,
   dataToLines,
@@ -14,7 +14,7 @@ import {
 } from './path';
 import { CustomElement, DisplayObject } from '../../types';
 
-export { SparkOptions };
+export { SparklineOptions };
 
 export class Sparkline extends CustomElement {
   public static tag = 'Sparkline';
@@ -42,7 +42,7 @@ export class Sparkline extends CustomElement {
 
   private sparkShapes: DisplayObject;
 
-  constructor(options: SparkOptions) {
+  constructor(options: SparklineOptions) {
     super(deepMix({}, Sparkline.defaultOptions, options));
     this.init();
   }
