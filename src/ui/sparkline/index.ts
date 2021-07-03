@@ -1,12 +1,18 @@
 import { Path, Rect } from '@antv/g';
-import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
+import { clone, deepMix, min, minBy, max, maxBy, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
+import { PathCommand } from '@antv/g-base';
 import { SparkOptions } from './types';
-import { pointsToLine, pointsToCurve } from './path';
+import {
+  getStackedData,
+  dataToLines,
+  lineToLinePath,
+  lineToCurvePath,
+  linesToAreaPaths,
+  linesToStackAreaPaths,
+  linesToStackCurveAreaPaths,
+} from './path';
 import { CustomElement, DisplayObject } from '../../types';
-
-type Point = [number, number];
-type PathCommand = any[][][];
 
 export { SparkOptions };
 
@@ -35,8 +41,6 @@ export class Sparkline extends CustomElement {
   };
 
   private sparkShapes: DisplayObject;
-
-  private reverseCurve: any[][];
 
   constructor(options: SparkOptions) {
     super(deepMix({}, Sparkline.defaultOptions, options));
@@ -89,16 +93,8 @@ export class Sparkline extends CustomElement {
    */
   private createScales(data: number[][]) {
     const { type, width, height, isGroup, barPadding } = this.attributes;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    data.forEach((item) => {
-      item.forEach((d) => {
-        minY = d < minY ? d : minY;
-        maxY = d > maxY ? d : maxY;
-      });
-    });
-
     return {
+      type,
       x:
         type === 'line'
           ? new Linear({
@@ -111,54 +107,10 @@ export class Sparkline extends CustomElement {
               paddingInner: isGroup ? barPadding : 0,
             }),
       y: new Linear({
-        domain: [minY, maxY],
+        domain: [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))],
         range: [height, 0],
       }),
     };
-  }
-
-  /**
-   * 将折线转化为封闭path
-   */
-  private pathToArea(paths: PathCommand, yScale: Linear): PathCommand {
-    const { width, isStack } = this.attributes;
-    const areaPaths = clone(paths);
-    const basePath = () => {
-      const split = yScale.map(0);
-      return [['L', width, split], ['L', 0, split], ['Z']];
-    };
-
-    for (let idx = paths.length - 1; idx >= 0; idx -= 1) {
-      const curr = areaPaths[idx];
-      if (isStack) {
-        // 如果是最底下的线，则以y=0为基线
-        // 其余线以其下方线为基线
-        if (idx === 0) {
-          curr.push(...basePath());
-        } else {
-          // 判断折线、曲线
-          if (curr[1][0] === 'L') {
-            const prev = clone(areaPaths[idx - 1]);
-            // 直接连接成封闭图形
-            prev.reverse();
-            prev.forEach((point) => {
-              curr.push(['L', ...point.slice(-2)]);
-            });
-          } else {
-            // TODO 一系列骚操作，后期待优化
-            const prevPathReversed = this.reverseCurve[idx - 1];
-            prevPathReversed.shift();
-            prevPathReversed[0][0] = 'L';
-            curr.push(...prevPathReversed, curr[1]);
-          }
-          curr.push(['Z']);
-        }
-      } else {
-        // 0 基准线
-        curr.push(...basePath());
-      }
-    }
-    return areaPaths;
   }
 
   /**
@@ -173,13 +125,7 @@ export class Sparkline extends CustomElement {
       data = [data];
     }
     if (isStack) {
-      // 生成堆叠数据
-      for (let i = 1; i < _.length; i += 1) {
-        const datum = data[i];
-        for (let j = 0; j < datum.length; j += 1) {
-          datum[j] += data[i - 1][j];
-        }
-      }
+      data = getStackedData(data);
     }
     return data;
   }
@@ -188,24 +134,17 @@ export class Sparkline extends CustomElement {
    * 创建迷你折线图
    */
   private createLine() {
-    const { lineStyle, smooth, areaStyle } = this.attributes;
+    const { isStack, lineStyle, smooth, areaStyle, width } = this.attributes;
     const data = this.getData();
-    const { x, y } = this.createScales(data);
-    const linesPath = data.map((points) => {
-      const _ = points.map((val: number, idx: number) => {
-        return [x.map(idx), y.map(val)] as Point;
-      });
-      if (smooth && areaStyle) {
-        // 同时生成反向曲线
-        if (!this.reverseCurve) {
-          this.reverseCurve = [];
-        }
-        this.reverseCurve.push(pointsToCurve(clone(_).reverse()));
-      }
-      return smooth ? pointsToCurve(_) : pointsToLine(_);
+    const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
+    const lines = dataToLines(data, { type: 'line', x, y });
+    const linesPaths: PathCommand[][] = [];
+    // 线条path
+    lines.forEach((line) => {
+      linesPaths.push(smooth ? lineToCurvePath(line) : lineToLinePath(line));
     });
-
-    linesPath.forEach((path, idx) => {
+    // 绘制线条
+    linesPaths.forEach((path, idx) => {
       this.sparkShapes.appendChild(
         new Path({
           name: 'line',
@@ -221,7 +160,18 @@ export class Sparkline extends CustomElement {
 
     // 生成area图形
     if (areaStyle) {
-      this.pathToArea(linesPath, y).forEach((path, idx) => {
+      const baseline = y.map(0);
+      // 折线、堆叠折线和普通曲线直接
+      let areaPaths: PathCommand[][];
+      if (isStack) {
+        areaPaths = smooth
+          ? linesToStackCurveAreaPaths(lines, width, baseline)
+          : linesToStackAreaPaths(lines, width, baseline);
+      } else {
+        areaPaths = linesToAreaPaths(lines, smooth, width, baseline);
+      }
+
+      areaPaths.forEach((path, idx) => {
         this.sparkShapes.appendChild(
           new Path({
             name: 'area',
