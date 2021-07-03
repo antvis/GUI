@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Spark } from '@antv/gui';
+import { Sparkline } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -16,14 +16,13 @@ const canvas = new Canvas({
   renderer,
 });
 
-const spark = new Spark({
+const sparkline = new Sparkline({
   attrs: {
     x: 10,
     y: 10,
     width: 300,
     height: 40,
     smooth: true,
-    isStack: true,
     areaStyle: {
       lineWidth: 0,
       opacity: 0.5,
@@ -36,4 +35,4 @@ const spark = new Spark({
   },
 });
 
-canvas.appendChild(spark);
+canvas.appendChild(sparkline);

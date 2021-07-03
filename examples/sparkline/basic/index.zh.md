@@ -1,4 +1,4 @@
 ---
-title: Spark
+title: Sparkline
 order: 5
 ---

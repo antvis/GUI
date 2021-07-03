@@ -1,5 +1,5 @@
 ---
-title: Spark
+title: Sparkline
 order: 6
 ---
 
@@ -10,14 +10,14 @@ order: 6
 ## 引入
 
 ```ts
-import { Spark } from '@antv/gui';
+import { Sparkline } from '@antv/gui';
 ```
 
 ## 配置项
 
 | **属性**    | **描述**           | **类型**                                                 | **默认值**                                               |
 | ----------- | ------------------ | -------------------------------------------------------- | -------------------------------------------------------- |
-| type        | spark 类型         | <code>line &#124; bar </code>                            | `default`                                                |
+| type        | sparkline 类型         | <code>line &#124; bar </code>                            | `default`                                                |
 | width       | 宽度               | <code>number</code>                                      | `200`                                                    |
 | height      | 高度               | <code>number<code>                                       | `20`                                                     |
 | data        | 数据               | <code>number[] &#124; number[][]<code>                   | `[]`                                                     |

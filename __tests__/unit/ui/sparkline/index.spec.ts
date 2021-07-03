@@ -9,7 +9,7 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
-describe('spark', () => {
+describe('sparkline', () => {
   test('basic line', async () => {
     const div = createDiv();
 
@@ -21,7 +21,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -36,7 +36,7 @@ describe('spark', () => {
       },
     });
 
-    const path0 = spark.getElementById('line-path-0').getAttribute('path');
+    const path0 = sparkline.getElementById('line-path-0').getAttribute('path');
     const y = (val) => {
       return (1 - (val + 10) / 25) * 50;
     };
@@ -49,8 +49,8 @@ describe('spark', () => {
     expect(path0[4][2]).toBe(y(15));
     expect(path0[5][2]).toBe(y(10));
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('stack line', () => {
@@ -64,7 +64,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -80,8 +80,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('stack curve', () => {
@@ -95,7 +95,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -111,8 +111,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('area line', () => {
@@ -126,7 +126,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -145,8 +145,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('area curve', () => {
@@ -160,7 +160,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -179,8 +179,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('area stack line', () => {
@@ -194,7 +194,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -214,8 +214,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
   test('area stack curve', () => {
     const div = createDiv();
@@ -228,7 +228,7 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
@@ -248,8 +248,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('basic bar', () => {
@@ -263,11 +263,11 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
-        type: 'bar',
+        type: 'column',
         width: 300,
         height: 50,
         data: [
@@ -278,8 +278,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('stack bar', () => {
@@ -293,11 +293,11 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
-        type: 'bar',
+        type: 'column',
         width: 300,
         height: 50,
         isStack: true,
@@ -309,8 +309,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
   test('group bar', () => {
     const div = createDiv();
@@ -323,11 +323,11 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
-        type: 'bar',
+        type: 'column',
         width: 300,
         height: 50,
         isGroup: true,
@@ -339,8 +339,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
   test('stack group bar', () => {
     const div = createDiv();
@@ -353,11 +353,11 @@ describe('spark', () => {
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
-        type: 'bar',
+        type: 'column',
         width: 300,
         height: 50,
         isStack: true,
@@ -370,8 +370,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
   });
 
   test('color', () => {
@@ -380,16 +380,16 @@ describe('spark', () => {
     // @ts-ignore
     const canvas = new Canvas({
       container: div,
-      width: 300,
+      width: 350,
       height: 300,
       renderer,
     });
 
-    const spark = new Sparkline({
+    const sparkline = new Sparkline({
       attrs: {
         x: 10,
         y: 10,
-        type: 'bar',
+        type: 'column',
         width: 300,
         height: 50,
         isStack: true,
@@ -414,8 +414,8 @@ describe('spark', () => {
       },
     });
 
-    canvas.appendChild(spark);
-    spark.destroy();
-    canvas.destroy();
+    canvas.appendChild(sparkline);
+    // sparkline.destroy();
+    // canvas.destroy();
   });
 });
