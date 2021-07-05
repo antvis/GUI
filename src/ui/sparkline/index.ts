@@ -4,7 +4,7 @@ import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
 import { SparklineOptions } from './types';
 import {
-  getStackedData,
+  Data,
   dataToLines,
   lineToLinePath,
   lineToCurvePath,
@@ -114,18 +114,47 @@ export class Sparkline extends CustomElement {
   }
 
   /**
+   * 获得数据的最值
+   */
+  private getRange(data: Data) {
+    return [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))];
+  }
+
+  /**
    * 将data统一格式化为数组形式
    * 如果堆叠，则生成堆叠数据
    */
-  private getData(): number[][] {
-    const { data: _, isStack } = this.attributes;
+  private getData(): Data {
+    const { data: _ } = this.attributes;
     let data = clone(_);
-    // 将number[] -> number[][]
+    // number[] -> number[][]
     if (isNumber(data[0])) {
       data = [data];
     }
-    if (isStack) {
-      data = getStackedData(data);
+    return data;
+  }
+
+  /**
+   * 数据转换为堆叠数据
+   */
+  private getStackedData(): Data {
+    const _ = this.getData();
+    const data = clone(_);
+    // 生成堆叠数据
+    const datumLen = data[0].length;
+    // 上一个堆叠的数据值，分别记录正负
+    const [positivePrev, negativePrev] = [new Array(datumLen).fill(0), new Array(datumLen).fill(0)];
+    for (let i = 0; i < data.length; i += 1) {
+      const datum = data[i];
+      for (let j = 0; j < datumLen; j += 1) {
+        if (datum[j] >= 0) {
+          datum[j] += positivePrev[j];
+          positivePrev[j] = datum[j];
+        } else {
+          datum[j] += negativePrev[j];
+          negativePrev[j] = datum[j];
+        }
+      }
     }
     return data;
   }
@@ -135,7 +164,7 @@ export class Sparkline extends CustomElement {
    */
   private createLine() {
     const { isStack, lineStyle, smooth, areaStyle, width } = this.attributes;
-    const data = this.getData();
+    const data = isStack ? this.getStackedData() : this.getData();
     const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
     const lines = dataToLines(data, { type: 'line', x, y });
     const linesPaths: PathCommand[][] = [];
@@ -160,7 +189,10 @@ export class Sparkline extends CustomElement {
 
     // 生成area图形
     if (areaStyle) {
-      const baseline = y.map(0);
+      console.log(data);
+
+      const range = this.getRange(data);
+      const baseline = y.map(range[0] < 0 ? 0 : range[0]);
       // 折线、堆叠折线和普通曲线直接
       let areaPaths: PathCommand[][];
       if (isStack) {
@@ -185,8 +217,6 @@ export class Sparkline extends CustomElement {
         );
       });
     }
-
-    // return lines;
   }
 
   /**
@@ -194,12 +224,19 @@ export class Sparkline extends CustomElement {
    */
   private createBar() {
     const { isStack, height, columnStyle } = this.attributes;
-    const data = this.getData();
+    const data = isStack ? this.getStackedData() : this.getData();
     const { x, y } = this.createScales(data) as {
       x: Band;
       y: Linear;
     };
+    const [minVal, maxVal] = this.getRange(data);
+    const heightScale = new Linear({
+      domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
+      range: [0, height],
+    });
+
     const bandWidth = x.getBandWidth();
+    const rawData = this.getData();
 
     data.forEach((column, i) => {
       column.forEach((val, j) => {
@@ -209,17 +246,21 @@ export class Sparkline extends CustomElement {
             name: 'column',
             id: `column-${i}-${j}`,
             attrs: {
-              y: y.map(val),
-              height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
               fill: this.getColor(i),
               ...columnStyle,
               ...(isStack
                 ? {
                     x: x.map(j),
+                    y: y.map(val),
                     width: bandWidth,
-                    height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
+                    height: heightScale.map(rawData[i][j]),
                   }
-                : { x: x.map(j) + barWidth * i, width: barWidth, height: height - y.map(val) }),
+                : {
+                    x: x.map(j) + barWidth * i,
+                    y: val >= 0 ? y.map(val) : y.map(0),
+                    width: barWidth,
+                    height: heightScale.map(Math.abs(val)),
+                  }),
             },
           })
         );

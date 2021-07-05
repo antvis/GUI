@@ -20,20 +20,6 @@ export type Scales = {
 );
 
 /**
- * 数据转换为堆叠数据
- */
-export function getStackedData(data: Data) {
-  // 生成堆叠数据
-  for (let i = 1; i < data.length; i += 1) {
-    const datum = data[i];
-    for (let j = 0; j < datum.length; j += 1) {
-      datum[j] += data[i - 1][j];
-    }
-  }
-  return data;
-}
-
-/**
  * 根据数据获得每条线各点x，y值
  */
 export function dataToLines(data: Data, scales: Scales) {
