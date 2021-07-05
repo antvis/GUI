@@ -23,7 +23,7 @@
     "lint": "eslint ./src/**/*.ts ./__tests__/**/*.ts && prettier ./src ./__tests__ --check ",
     "fix": "eslint ./src/**/*.ts ./__tests__/**/*.ts --fix && prettier ./src ./__tests__ --write ",
     "test": "jest",
-    "test-live": "DEBUG_MODE=1 jest --watch ./__tests__",
+    "test-live": "DEBUG_MODE=1 jest --watch ./__tests__/unit/ui/slider",
     "build": "father-build & limit-size",
     "ci": "run-s lint test build",
     "prepublishOnly": "npm run ci",
@@ -81,13 +81,19 @@
     "preset": "ts-jest",
     "collectCoverage": true,
     "testRegex": "(/__tests__/.*\\.(test|spec))\\.ts$",
-
     "setupFilesAfterEnv": [
       "./jest.setup.js"
     ],
     "collectCoverageFrom": [
       "src/**/*.ts"
-    ]
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsConfig": {
+          "target": "ES2019"
+        }
+      }
+    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [
