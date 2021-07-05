@@ -52,11 +52,9 @@ export class Sparkline extends CustomElement {
   }
 
   private init() {
-    const { x, y, type, width, height } = this.attributes;
+    const { type, width, height } = this.attributes;
     this.sparkShapes = new Rect({
       attrs: {
-        x,
-        y,
         width,
         height,
       },
@@ -93,6 +91,7 @@ export class Sparkline extends CustomElement {
    */
   private createScales(data: number[][]) {
     const { type, width, height, isGroup, barPadding } = this.attributes;
+    const [minVal, maxVal] = [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))];
     return {
       type,
       x:
@@ -107,7 +106,7 @@ export class Sparkline extends CustomElement {
               paddingInner: isGroup ? barPadding : 0,
             }),
       y: new Linear({
-        domain: [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))],
+        domain: [minVal >= 0 ? 0 : minVal, maxVal],
         range: [height, 0],
       }),
     };
