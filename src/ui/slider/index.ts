@@ -1,5 +1,5 @@
 import { Rect, Text } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, get } from '@antv/util';
 // import { SliderOptions, HandleCfg, MiniMap, Pair } from './types';
 import { SliderOptions, HandleCfg, Pair } from './types';
 import { Marker } from '../marker';
@@ -7,7 +7,7 @@ import { CustomElement, DisplayObject, ShapeAttrs } from '../../types';
 // import { /* applyAttrs */ measureTextWidth } from '../../util';
 const applyAttrs = (target: DisplayObject, attrs: ShapeAttrs) => {
   Object.entries(attrs).forEach(([attrName, attrValue]) => {
-    target.attr(attrName, attrValue);
+    target.setAttribute(attrName, attrValue);
   });
 };
 
@@ -17,11 +17,6 @@ type HandleType = 'start' | 'end';
 
 export class Slider extends CustomElement {
   public static tag = 'slider';
-
-  /**
-   * 容器
-   */
-  private containerShape: DisplayObject;
 
   private backgroundShape: DisplayObject;
 
@@ -33,12 +28,19 @@ export class Slider extends CustomElement {
 
   private endHandle: DisplayObject;
 
+  /**
+   * 选区开始的位置
+   */
+  private selectionStartPos: number;
+
+  private selectionWidth: number;
+
   private prevPos: number;
 
   /**
    * drag事件当前选中的对象
    */
-  private currTarget: DisplayObject;
+  private target: string;
 
   constructor(options: SliderOptions) {
     super(deepMix({}, Slider.defaultOptions, options));
@@ -57,9 +59,9 @@ export class Slider extends CustomElement {
       height: 20,
       padding: {
         left: 20,
-        right: 0,
-        top: 0,
-        bottom: 0,
+        right: 10,
+        top: 10,
+        bottom: 10,
       },
       backgroundStyle: {
         fill: '#fff',
@@ -71,13 +73,13 @@ export class Slider extends CustomElement {
         opacity: 0.5,
         stroke: '#afc9fb',
         lineWidth: 1,
-      },
-      brushStyle: {
-        fill: '#eef3ff',
+        active: {
+          fill: '#ccdaf5',
+        },
       },
       handle: {
         show: true,
-        size: 20,
+        size: 10,
         formatter: (val: string) => val,
         spacing: 10,
         handleIcon: 'circle',
@@ -97,7 +99,9 @@ export class Slider extends CustomElement {
   };
 
   attributeChangedCallback(name: string, value: any) {
-    value;
+    if (name === 'values') {
+      this.emit('valuechange', value);
+    }
     if (name in ['names', 'values']) {
       this.setHandle();
     }
@@ -108,7 +112,7 @@ export class Slider extends CustomElement {
   }
 
   public setValues(values: SliderOptions['values']) {
-    this.setAttribute('values', values);
+    this.setAttribute('values', this.getSafetyValues(values));
   }
 
   public getNames() {
@@ -122,43 +126,38 @@ export class Slider extends CustomElement {
   private init() {
     this.createBackground();
     this.createForeground();
-    // this.createContainer();
     this.createHandles();
     this.bindEvents();
-    console.log(this.getElementsByName('handleIcon'));
   }
 
   /**
    * 获得安全的Values
-   * @param adjust  true: 超出范围时移动至合法区间； false: 超出范围时取min、max；
    */
-  private getSafetyValues(values?: Pair<number>, adjust: boolean = false): Pair<number> {
+  private getSafetyValues(values?: Pair<number>): Pair<number> {
     const { min, max } = this.attributes;
-    const [sV, eV] = values || this.getValues();
-    let startVal = sV;
-    let endVal = eV;
+    const [prevStart, prevEnd] = this.getValues();
+    let [startVal, endVal] = values || [prevStart, prevEnd];
+    const range = endVal - startVal;
     // 交换startVal endVal
     if (startVal > endVal) {
       [startVal, endVal] = [endVal, startVal];
     }
     // 超出范围就全选
-    if (endVal - startVal > max - min) {
+    if (range > max - min) {
       return [min, max];
     }
-    const lOffset = min - startVal;
-    // 无论是否调整都整体右移
-    if (endVal < min) {
-      return [min, endVal + lOffset];
-    }
+
     if (startVal < min) {
-      return adjust ? [min, endVal + lOffset] : [min, endVal];
-    }
-    const rOffset = endVal - max;
-    if (startVal > max) {
-      return [startVal - rOffset, max];
+      if (prevStart === min && prevEnd === endVal) {
+        return [min, endVal];
+      }
+      return [min, range + min];
     }
     if (endVal > max) {
-      return adjust ? [startVal - rOffset, max] : [startVal, max];
+      if (prevEnd === max && prevStart === startVal) {
+        return [startVal, max];
+      }
+      return [max - range, max];
     }
     return [startVal, endVal];
   }
@@ -173,37 +172,25 @@ export class Slider extends CustomElement {
     };
   }
 
-  private getStyle(name: string, isActive?: boolean) {
-    const style = this.getAttribute(name);
+  /**
+   * 获取style
+   * @param name style名
+   * @param isActive 是否是active style
+   * @returns ShapeAttrs
+   */
+  private getStyle(name: string | string[], isActive?: boolean, handleType?: HandleType) {
+    const { active, ...args } = get(handleType ? this.getHandleCfg(handleType) : this.attributes, name);
     if (isActive) {
-      return style.active || {};
+      return active || {};
     }
-    return style.default || style;
-  }
-
-  private createContainer() {
-    // 待子组件创建完成后，计算包围盒并设置padding
-    const { padding } = this.attributes;
-    const innerWidth = 0;
-    const innerHeight = 0;
-    this.containerShape = new Rect({
-      name: 'container',
-      attrs: {
-        x: 0,
-        y: 0,
-        width: padding.left + padding.right + innerWidth,
-        height: padding.top + padding.bottom + innerHeight,
-        opacity: 0,
-      },
-    });
-    this.appendChild(this.containerShape);
-    this.containerShape.toBack();
+    return args?.default || args;
   }
 
   private createBackground() {
     this.backgroundShape = new Rect({
       name: 'background',
       attrs: {
+        cursor: 'crosshair',
         ...this.getAvailableSpace(),
         ...this.getStyle('backgroundStyle'),
       },
@@ -214,22 +201,23 @@ export class Slider extends CustomElement {
   private createMiniMap() {}
 
   /**
-   * 根据orient和padding计算前景的x y width height
+   * 计算蒙板坐标和宽高
+   * 默认用来计算前景位置大小
    */
-  private calcForegroundPosition() {
-    const [start, end] = this.getSafetyValues();
-    const { x, y, width, height } = this.getAvailableSpace();
+  private calcMask(values?: Pair<number>) {
+    const [start, end] = this.getSafetyValues(values);
+    const { width, height } = this.getAvailableSpace();
     return this.getOrientVal([
       {
-        y,
+        y: 0,
         height,
-        x: start * width + x,
+        x: start * width,
         width: (end - start) * width,
       },
       {
-        x,
+        x: 0,
         width,
-        y: start * height + y,
+        y: start * height,
         height: (end - start) * height,
       },
     ]);
@@ -239,11 +227,12 @@ export class Slider extends CustomElement {
     this.foregroundShape = new Rect({
       name: 'foreground',
       attrs: {
-        ...this.calcForegroundPosition(),
+        cursor: 'move',
+        ...this.calcMask(),
         ...this.getStyle('foregroundStyle'),
       },
     });
-    this.appendChild(this.foregroundShape);
+    this.backgroundShape.appendChild(this.foregroundShape);
   }
 
   /**
@@ -266,16 +255,12 @@ export class Slider extends CustomElement {
    * 3. 更新文本位置
    */
   private setHandle() {
-    applyAttrs(this.foregroundShape, {
-      ...this.calcForegroundPosition(),
+    applyAttrs(this.foregroundShape, this.calcMask());
+    applyAttrs(this.startHandle, this.calcHandlePosition('start'));
+    applyAttrs(this.endHandle, this.calcHandlePosition('end'));
+    this.getElementsByName('handleText').forEach((handleText) => {
+      applyAttrs(handleText, this.calcHandleText(handleText.getConfig().identity));
     });
-    applyAttrs(this.startHandle, {
-      ...this.calcHandlePosition('start'),
-    });
-    applyAttrs(this.endHandle, {
-      ...this.calcHandlePosition('end'),
-    });
-    this.setHandleText();
   }
 
   /**
@@ -289,66 +274,49 @@ export class Slider extends CustomElement {
     const { size, spacing, formatter, textStyle } = this.getHandleCfg(handleType);
     // 相对于获取两端可用空间
     const { width: iW, height: iH } = this.getAvailableSpace();
-    const { x: fX, y: fY, width: fW, height: fH } = this.calcForegroundPosition();
-    let x = 0;
-    let y = 0;
+    const { x: fX, y: fY, width: fW, height: fH } = this.calcMask();
 
     const formattedText = formatter(handleType === 'start' ? names[0] : names[1]);
-
     const _ = new Text({
       attrs: {
         text: formattedText,
         ...textStyle,
       },
     });
-
     // 文字的包围盒
     const tBox = _.getBounds();
     _.destroy();
+
+    let x = 0;
+    let y = 0;
+    const R = size / 2;
     if (orient === 'horizontal') {
-      // 文本宽度
       const textWidth = tBox.getMax()[0] - tBox.getMin()[0];
-      const ss = spacing + size / 2;
-      const _ = ss + textWidth / 2;
+      const sh = spacing + R;
+      const _ = sh + textWidth / 2;
       if (handleType === 'start') {
-        // 左边可用空间
-        const aLeft = fX - ss;
-        x = aLeft > textWidth ? -_ : _;
+        const left = fX - sh - textWidth;
+        x = left > 0 ? -_ : _;
       } else {
-        // 右边可用空间
-        const aRight = iW - fX - fW - ss;
-        x = aRight > textWidth ? _ : -_;
+        x = iW - fX - fW - sh > textWidth ? _ : -_;
       }
     } else {
-      const _ = spacing + size / 2;
-      // 文本高度
+      const _ = spacing + R;
       const textHeight = tBox.getMax()[1] - tBox.getMin()[1];
       if (handleType === 'start') {
-        // 上方可用空间
-        const aAbove = fY - size / 2;
-        y = aAbove > textHeight ? -_ : _;
+        y = fY - R > textHeight ? -_ : _;
       } else {
-        // 下方可用空间
-        const aBelow = iH - fY - fH - size / 2;
-        y = aBelow > textHeight ? _ : -_;
+        y = iH - fY - fH - R > textHeight ? _ : -_;
       }
     }
     return { x, y, text: formattedText };
-  }
-
-  private setHandleText() {
-    applyAttrs(this.startHandle.getElementsByName('handleText')[0], {
-      ...this.calcHandleText('start'),
-    });
-    applyAttrs(this.endHandle.getElementsByName('handleText')[0], {
-      ...this.calcHandleText('end'),
-    });
   }
 
   private createHandle(options: HandleCfg, handleType: HandleType) {
     const { show, size, textStyle, handleIcon: icon, handleStyle } = options;
     const handleIcon = new Marker({
       name: 'handleIcon',
+      identity: handleType,
       attrs: {
         r: size / 2,
         ...(show
@@ -363,12 +331,13 @@ export class Slider extends CustomElement {
                 opacity: 0,
               },
             }),
-        cursor: 'ew-resize',
+        cursor: this.getOrientVal(['ew-resize', 'ns-resize']),
       },
     });
 
     const handleText = new Text({
       name: 'handleText',
+      identity: handleType,
       attrs: {
         // TODO 之后考虑添加文字超长省略，可以在calcHandleTextPosition中实现
         ...textStyle,
@@ -378,10 +347,10 @@ export class Slider extends CustomElement {
 
     // 用 Group 创建对象会提示没有attrs属性
     const handle = new DisplayObject({
-      name: `${handleType}Handle`,
-      attrs: {
-        ...this.calcHandlePosition(handleType),
-      },
+      // name: `${handleType}Handle`,
+      name: 'handle',
+      identity: handleType,
+      attrs: this.calcHandlePosition(handleType),
     });
     handle.appendChild(handleIcon);
     handle.appendChild(handleText);
@@ -389,11 +358,14 @@ export class Slider extends CustomElement {
   }
 
   private getHandleCfg(handleType: HandleType) {
-    const { handle } = this.attributes;
-    if (handleType in handle) {
-      return handle[handleType];
+    const { start, end, ...args } = this.getAttribute('handle');
+    let _ = {};
+    if (handleType === 'start') {
+      _ = start;
+    } else if (handleType === 'end') {
+      _ = end;
     }
-    return handle;
+    return deepMix({}, args, _);
   }
 
   private createHandles() {
@@ -404,11 +376,19 @@ export class Slider extends CustomElement {
   }
 
   private bindEvents() {
-    this.foregroundShape.addEventListener('mousedown', this.onForeDragStart);
-    this.startHandle
-      .getElementsByName('handleIcon')[0]
-      .addEventListener('mousedown', this.onHandleDragStart(this.startHandle));
-    this.endHandle.getElementsByName('handleIcon')[0].on('mousedown', this.onHandleDragStart(this.endHandle));
+    // Drag and brush
+    this.backgroundShape.addEventListener('mousedown', this.onDragStart('background'));
+    this.backgroundShape.addEventListener('touchstart', this.onDragStart('background'));
+
+    this.foregroundShape.addEventListener('mousedown', this.onDragStart('foreground'));
+    this.foregroundShape.addEventListener('touchstart', this.onDragStart('foreground'));
+
+    this.getElementsByName('handleIcon').forEach((handleIcon) => {
+      handleIcon.addEventListener('mousedown', this.onDragStart(`${handleIcon.getConfig().identity}Handle`));
+      handleIcon.addEventListener('touchstart', this.onDragStart(`${handleIcon.getConfig().identity}Handle`));
+    });
+    // Hover
+    this.bindHoverEvents();
   }
 
   private getOrientVal<T>([x, y]: Pair<T>) {
@@ -416,77 +396,86 @@ export class Slider extends CustomElement {
     return orient === 'horizontal' ? x : y;
   }
 
-  private setForeOffset(offset: number) {
-    const { width, height } = this.getAvailableSpace();
-    const dVal = offset / this.getOrientVal([width, height]);
-    const [startVal, endVal] = this.getValues();
-    this.setValues(this.getSafetyValues([startVal + dVal, endVal + dVal], true));
+  private setValuesOffset(stOffset: number, endOffset: number = 0) {
+    const [oldStartVal, oldEndVal] = this.getValues();
+    this.setValues([oldStartVal + stOffset, oldEndVal + endOffset].sort() as Pair<number>);
   }
 
-  private onHandleDragStart = (target: DisplayObject) => (e) => {
-    e.stopPropagation();
-    this.currTarget = target;
-    this.prevPos = this.getOrientVal([e.x, e.y]);
-    this.addEventListener('mousemove', this.onHandleDragging);
-    document.addEventListener('mouseup', this.onHandleDragEnd);
-  };
-
-  private onHandleDragging = (e) => {
-    e.stopPropagation();
-    const currPos = this.getOrientVal([e.x, e.y]);
-    const _ = currPos - this.prevPos;
-
-    if (!_) {
-      return;
-    }
+  private getRatio(val: number) {
     const { width, height } = this.getAvailableSpace();
-    const dVal = _ / this.getOrientVal([width, height]);
+    return val / this.getOrientVal([width, height]);
+  }
 
-    const [startVal, endVal] = this.getValues();
-    let newValues = [startVal + dVal, endVal];
-    if (this.currTarget.getConfig().name === 'endHandle') {
-      newValues = [startVal, endVal + dVal];
-    }
-    this.prevPos = currPos;
-    this.setValues(this.getSafetyValues(newValues as Pair<number>));
-  };
-
-  private onHandleDragEnd = () => {
-    this.removeEventListener('mousemove', this.onHandleDragging);
-    document.removeEventListener('mouseup', this.onHandleDragEnd);
-  };
-
-  private onForeDragStart = (e) => {
+  private onDragStart = (target: string) => (e) => {
     e.stopPropagation();
+    this.target = target;
     this.prevPos = this.getOrientVal([e.x, e.y]);
-    this.addEventListener('mousemove', this.onForeDragging);
-    document.addEventListener('mouseup', this.onForeDragEnd);
+    const { x, y } = this.getAvailableSpace();
+    const { x: X, y: Y } = this.attributes;
+    this.selectionStartPos = this.getRatio(this.prevPos - this.getOrientVal([x, y]) - this.getOrientVal([X, Y]));
+    this.selectionWidth = 0;
+    this.addEventListener('mousemove', this.onDragging);
+    this.addEventListener('touchmove', this.onDragging);
+    document.addEventListener('mouseup', this.onDragEnd);
+    document.addEventListener('touchend', this.onDragEnd);
   };
 
-  private onForeDragging = (e) => {
+  private onDragging = (e) => {
     e.stopPropagation();
     const currPos = this.getOrientVal([e.x, e.y]);
     const _ = currPos - this.prevPos;
-    this.setForeOffset(_);
+    if (!_) return;
+    const dVal = this.getRatio(_); // _ / this.getOrientVal([width, height]);
+
+    switch (this.target) {
+      case 'startHandle':
+        this.setValuesOffset(dVal);
+        break;
+      case 'endHandle':
+        this.setValuesOffset(0, dVal);
+        break;
+      case 'foreground':
+        this.setValuesOffset(dVal, dVal);
+        break;
+      case 'background':
+        // 绘制蒙板
+        this.selectionWidth += dVal;
+        this.setValues([this.selectionStartPos, this.selectionStartPos + this.selectionWidth].sort() as Pair<number>);
+        break;
+      default:
+        break;
+    }
+
     this.prevPos = currPos;
   };
 
-  private onForeDragEnd = () => {
-    this.removeEventListener('mousemove', this.onForeDragging);
-    document.removeEventListener('mouseup', this.onForeDragEnd);
+  private onDragEnd = () => {
+    this.removeEventListener('mousemove', this.onDragging);
+    this.removeEventListener('mousemove', this.onDragging);
+    document.removeEventListener('mouseup', this.onDragEnd);
+    document.removeEventListener('touchend', this.onDragEnd);
   };
 
-  private onBrushStart = () => {
-    // 记录当前坐标
-  };
+  private bindHoverEvents = () => {
+    this.foregroundShape.addEventListener('mouseenter', () => {
+      applyAttrs(this.foregroundShape, this.getStyle('foregroundStyle', true));
+    });
+    this.foregroundShape.addEventListener('mouseleave', () => {
+      applyAttrs(this.foregroundShape, this.getStyle('foregroundStyle'));
+    });
 
-  private onBrushing = () => {
-    // 更新rect大小
-    // 如果鼠标右移、下移，更新宽、高即可
-    // 否则同时更新x、y和宽、高
-  };
-
-  private onBrushEnd = () => {
-    // 使用this.setValues()方法重新绘制
+    this.getElementsByName('handle').forEach((handle) => {
+      const icon = handle.getElementsByName('handleIcon')[0];
+      const text = handle.getElementsByName('handleText')[0];
+      console.log(icon);
+      handle.addEventListener('mouseenter', () => {
+        applyAttrs(icon, this.getStyle('handleStyle', true, icon.getConfig().identity));
+        applyAttrs(text, this.getStyle('textStyle', true, text.getConfig().identity));
+      });
+      handle.addEventListener('mouseleave', () => {
+        applyAttrs(icon, this.getStyle('handleStyle', false, icon.getConfig().identity));
+        applyAttrs(text, this.getStyle('textStyle', false, text.getConfig().identity));
+      });
+    });
   };
 }

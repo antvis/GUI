@@ -56,9 +56,6 @@ export type MixAttrs =
     };
 
 export type SliderOptions = ShapeCfg & {
-  /**
-   * slider 方向
-   */
   orient?: 'vertical' | 'horizontal';
   values?: Pair<number>;
   names?: Pair<string>;
@@ -66,27 +63,15 @@ export type SliderOptions = ShapeCfg & {
   max?: number;
   width?: number;
   height?: number;
-
   padding?: {
     left: number;
     right: number;
     top: number;
     buttons: number;
   };
-
-  /**
-   * 背景样式
-   */
   backgroundStyle?: MixAttrs;
-
-  /**
-   * 前景样式
-   */
+  selectionStyle?: MixAttrs;
   foregroundStyle?: MixAttrs;
-
-  /**
-   * 手柄
-   */
   handle?:
     | HandleCfg
     | {
