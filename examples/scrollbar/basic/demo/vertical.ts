@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Sparkline } from '@antv/gui';
+import { Scrollbar } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -11,24 +11,20 @@ const renderer = new CanvasRenderer({
 // @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 350,
+  width: 300,
   height: 300,
   renderer,
 });
 
-const sparkbar = new Sparkline({
+const scrollbar = new Scrollbar({
   attrs: {
-    x: 10,
-    y: 10,
-    type: 'column',
-    width: 300,
-    height: 40,
-    data: [
-      [10, 2, 3, 4, 15, 10, 5, 0, 3, 1],
-      [5, 7, 10, 3, 10, 6, 10, 1, 5, 0],
-      [1, 3, 4, 10, 15, 13, 3, 3, 10, 12],
-    ],
+    x: 50,
+    y: 5,
+    value: 0.1,
+    width: 10,
+    height: 120,
+    thumbLen: 20,
   },
 });
 
-canvas.appendChild(sparkbar);
+canvas.appendChild(scrollbar);
