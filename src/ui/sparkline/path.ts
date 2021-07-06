@@ -22,7 +22,7 @@ export type Scales = {
 /**
  * 根据数据获得每条线各点x，y值
  */
-export function dataToLines(data: Data, scales: Scales) {
+export function dataToLines(data: Data, scales: Scales): Line[] {
   const { x, y } = scales;
   return data.map((points) => {
     const _ = points.map((val: number, idx: number) => {
@@ -36,7 +36,8 @@ export function dataToLines(data: Data, scales: Scales) {
  * 根据线的点数据生成折线path
  */
 export function lineToLinePath(line: Line, reverse = false) {
-  const _ = line.map((point: Point, idx: number) => [idx === 0 ? 'M' : 'L', ...point]) as PathCommand[];
+  const M = reverse ? line.length - 1 : 0;
+  const _ = line.map((point: Point, idx: number) => [idx === M ? 'M' : 'L', ...point]) as PathCommand[];
   return reverse ? _.reverse() : _;
 }
 
