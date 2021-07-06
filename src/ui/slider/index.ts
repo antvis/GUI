@@ -1,8 +1,8 @@
 import { Rect, Text } from '@antv/g';
-import { deepMix, get } from '@antv/util';
+import { deepMix, get, isFunction, isString, isObject } from '@antv/util';
 // import { SliderOptions, HandleCfg, MiniMap, Pair } from './types';
 import { SliderOptions, HandleCfg, Pair } from './types';
-import { Marker } from '../marker';
+import { Marker, MarkerOptions } from '../marker';
 import { Sparkline } from '../sparkline';
 import { CustomElement, DisplayObject, ShapeAttrs } from '../../types';
 // import { /* applyAttrs */ measureTextWidth } from '../../util';
@@ -69,6 +69,7 @@ export class Slider extends CustomElement {
         stroke: '#e4eaf5',
         lineWidth: 1,
       },
+      sparklineCfg: {},
       foregroundStyle: {
         fill: '#afc9fb',
         opacity: 0.5,
@@ -95,7 +96,6 @@ export class Slider extends CustomElement {
           lineWidth: 1,
         },
       },
-      miniMap: {},
     },
   };
 
@@ -337,8 +337,42 @@ export class Slider extends CustomElement {
     return { x, y, text: formattedText };
   }
 
+  /**
+   * 解析icon类型
+   */
+  private parseIcon(icon: MarkerOptions['symbol'] | string) {
+    // MarkerOptions['symbol']: string | FunctionalSymbol
+    let type = 'unknown';
+    if (isObject(icon) && icon instanceof Image) type = 'Image';
+    else if (isFunction(icon)) type = 'symbol';
+    else if (isString(icon)) {
+      const dataURLsPattern = new RegExp('data:(image|text)');
+      if (icon.match(dataURLsPattern)) {
+        type = 'base64';
+      } else if (/^(https?:\/\/(([a-zA-Z0-9]+-?)+[a-zA-Z0-9]+\.)+[a-zA-Z]+)(:\d+)?(\/.*)?(\?.*)?(#.*)?$/.test(icon)) {
+        type = 'url';
+      }
+    }
+    return type;
+  }
+
   private createHandle(options: HandleCfg, handleType: HandleType) {
     const { show, size, textStyle, handleIcon: icon, handleStyle } = options;
+    const iconType = this.parseIcon(icon);
+
+    switch (iconType) {
+      case 'Image':
+        break;
+      case 'symbol':
+        break;
+      case 'base64':
+        break;
+      case 'url':
+        break;
+      default:
+        break;
+    }
+
     const handleIcon = new Marker({
       name: 'handleIcon',
       identity: handleType,

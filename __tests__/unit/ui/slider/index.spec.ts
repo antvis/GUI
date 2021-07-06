@@ -9,14 +9,14 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
-describe('marker', () => {
+describe('slider', () => {
   test('basic', async () => {
     const div = createDiv();
 
     // @ts-ignore
     const canvas = new Canvas({
       container: div,
-      width: 300,
+      width: 800,
       height: 300,
       renderer,
     });
@@ -25,10 +25,24 @@ describe('marker', () => {
       attrs: {
         x: 50,
         y: 50,
-        width: 200,
-        height: 40,
+        width: 600,
+        height: 80,
         values: [0.4, 0.7],
-        names: ['A', 'V'],
+        names: ['Abcas', 'Vxczxz'],
+        backgroundStyle: {
+          lineWidth: 2,
+        },
+        sparklineCfg: {
+          // type: 'column',
+          // isStack: true,
+          data: [
+            [1, 3, 2, -4],
+            [5, 1, 5, -8],
+          ],
+          areaStyle: {
+            opacity: 0.5,
+          },
+        },
       },
     });
 
