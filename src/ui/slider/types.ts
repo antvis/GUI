@@ -1,5 +1,6 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
 import { MarkerOptions } from '../marker';
+import { SparklineOptions } from '../sparkline';
 
 export type Pair<T> = [T, T];
 
@@ -32,20 +33,6 @@ export type HandleCfg = {
    * 手柄图标样式
    */
   handleStyle: ShapeAttrs;
-};
-
-export type MiniMap = {
-  /**
-   * number[] 单线
-   * number[][] 多线
-   */
-  data: number[] | number[][];
-  /**
-   * 平滑曲线
-   */
-  smooth: boolean;
-  lineStyle: ShapeAttrs;
-  areaStyle: ShapeAttrs;
 };
 
 export type MixAttrs =
@@ -82,5 +69,5 @@ export type SliderOptions = ShapeCfg & {
   /**
    * 缩略图数据及其配置
    */
-  miniMap?: MiniMap;
+  sparklineCfg?: SparklineOptions;
 };

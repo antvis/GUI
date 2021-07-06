@@ -3,6 +3,7 @@ import { deepMix, get } from '@antv/util';
 // import { SliderOptions, HandleCfg, MiniMap, Pair } from './types';
 import { SliderOptions, HandleCfg, Pair } from './types';
 import { Marker } from '../marker';
+import { Sparkline } from '../sparkline';
 import { CustomElement, DisplayObject, ShapeAttrs } from '../../types';
 // import { /* applyAttrs */ measureTextWidth } from '../../util';
 const applyAttrs = (target: DisplayObject, attrs: ShapeAttrs) => {
@@ -20,7 +21,7 @@ export class Slider extends CustomElement {
 
   private backgroundShape: DisplayObject;
 
-  private miniMapShape: DisplayObject;
+  private sparklineShape: DisplayObject;
 
   private foregroundShape: DisplayObject;
 
@@ -125,6 +126,7 @@ export class Slider extends CustomElement {
 
   private init() {
     this.createBackground();
+    this.createSparkline();
     this.createForeground();
     this.createHandles();
     this.bindEvents();
@@ -198,7 +200,29 @@ export class Slider extends CustomElement {
     this.appendChild(this.backgroundShape);
   }
 
-  private createMiniMap() {}
+  /**
+   * 生成sparkline
+   */
+  private createSparkline() {
+    const { orient, sparklineCfg } = this.attributes;
+    // 暂时只在水平模式下绘制
+    if (orient !== 'horizontal') {
+      return;
+    }
+    const { width, height } = this.getAvailableSpace();
+    const { lineWidth: bkgLW } = this.getStyle('backgroundStyle');
+    this.sparklineShape = new Sparkline({
+      attrs: {
+        x: bkgLW / 2,
+        y: bkgLW / 2,
+        width: width - bkgLW,
+        height: height - bkgLW,
+        ...sparklineCfg,
+      },
+    });
+    this.backgroundShape.appendChild(this.sparklineShape);
+    this.sparklineShape.toBack();
+  }
 
   /**
    * 计算蒙板坐标和宽高
@@ -207,6 +231,7 @@ export class Slider extends CustomElement {
   private calcMask(values?: Pair<number>) {
     const [start, end] = this.getSafetyValues(values);
     const { width, height } = this.getAvailableSpace();
+
     return this.getOrientVal([
       {
         y: 0,
@@ -467,7 +492,6 @@ export class Slider extends CustomElement {
     this.getElementsByName('handle').forEach((handle) => {
       const icon = handle.getElementsByName('handleIcon')[0];
       const text = handle.getElementsByName('handleText')[0];
-      console.log(icon);
       handle.addEventListener('mouseenter', () => {
         applyAttrs(icon, this.getStyle('handleStyle', true, icon.getConfig().identity));
         applyAttrs(text, this.getStyle('textStyle', true, text.getConfig().identity));
