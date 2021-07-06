@@ -12,6 +12,7 @@ import {
   linesToStackAreaPaths,
   linesToStackCurveAreaPaths,
 } from './path';
+import { getStackedData } from './utils';
 import { CustomElement, DisplayObject } from '../../types';
 
 export { SparklineOptions };
@@ -107,7 +108,7 @@ export class Sparkline extends CustomElement {
               paddingInner: isGroup ? barPadding : 0,
             }),
       y: new Linear({
-        domain: [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))],
+        domain: this.getRange(data),
         range: [height, 0],
       }),
     };
@@ -135,36 +136,12 @@ export class Sparkline extends CustomElement {
   }
 
   /**
-   * 数据转换为堆叠数据
-   */
-  private getStackedData(): Data {
-    const _ = this.getData();
-    const data = clone(_);
-    // 生成堆叠数据
-    const datumLen = data[0].length;
-    // 上一个堆叠的数据值，分别记录正负
-    const [positivePrev, negativePrev] = [new Array(datumLen).fill(0), new Array(datumLen).fill(0)];
-    for (let i = 0; i < data.length; i += 1) {
-      const datum = data[i];
-      for (let j = 0; j < datumLen; j += 1) {
-        if (datum[j] >= 0) {
-          datum[j] += positivePrev[j];
-          positivePrev[j] = datum[j];
-        } else {
-          datum[j] += negativePrev[j];
-          negativePrev[j] = datum[j];
-        }
-      }
-    }
-    return data;
-  }
-
-  /**
    * 创建迷你折线图
    */
   private createLine() {
     const { isStack, lineStyle, smooth, areaStyle, width } = this.attributes;
-    const data = isStack ? this.getStackedData() : this.getData();
+    let data = this.getData();
+    if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
     const lines = dataToLines(data, { type: 'line', x, y });
     const linesPaths: PathCommand[][] = [];
@@ -189,8 +166,6 @@ export class Sparkline extends CustomElement {
 
     // 生成area图形
     if (areaStyle) {
-      console.log(data);
-
       const range = this.getRange(data);
       const baseline = y.map(range[0] < 0 ? 0 : range[0]);
       // 折线、堆叠折线和普通曲线直接
@@ -224,7 +199,8 @@ export class Sparkline extends CustomElement {
    */
   private createBar() {
     const { isStack, height, columnStyle } = this.attributes;
-    const data = isStack ? this.getStackedData() : this.getData();
+    let data = this.getData();
+    if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as {
       x: Band;
       y: Linear;
