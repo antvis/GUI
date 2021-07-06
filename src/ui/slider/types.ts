@@ -4,6 +4,10 @@ import { SparklineOptions } from '../sparkline';
 
 export type Pair<T> = [T, T];
 
+export type MixAttrs = ShapeAttrs & {
+  active?: ShapeAttrs;
+};
+
 export type HandleCfg = {
   /**
    * 是否显示Handle
@@ -28,19 +32,12 @@ export type HandleCfg = {
   /**
    * 手柄图标
    */
-  handleIcon?: MarkerOptions['symbol'];
+  handleIcon?: MarkerOptions['symbol'] | string;
   /**
    * 手柄图标样式
    */
-  handleStyle: ShapeAttrs;
+  handleStyle: MixAttrs;
 };
-
-export type MixAttrs =
-  | ShapeAttrs
-  | {
-      default: ShapeAttrs;
-      active: ShapeAttrs;
-    };
 
 export type SliderOptions = ShapeCfg & {
   orient?: 'vertical' | 'horizontal';
