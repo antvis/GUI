@@ -1,10 +1,10 @@
 import { Path, Rect } from '@antv/g';
-import { clone, deepMix, min, minBy, max, maxBy, isNumber, isArray, isFunction } from '@antv/util';
+import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
 import { SparklineOptions } from './types';
 import {
-  getStackedData,
+  Data,
   dataToLines,
   lineToLinePath,
   lineToCurvePath,
@@ -12,6 +12,7 @@ import {
   linesToStackAreaPaths,
   linesToStackCurveAreaPaths,
 } from './path';
+import { getRange, getStackedData } from './utils';
 import { CustomElement, DisplayObject } from '../../types';
 
 export { SparklineOptions };
@@ -91,7 +92,7 @@ export class Sparkline extends CustomElement {
    */
   private createScales(data: number[][]) {
     const { type, width, height, isGroup, barPadding } = this.attributes;
-    const [minVal, maxVal] = [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))];
+    const [minVal, maxVal] = getRange(data);
     return {
       type,
       x:
@@ -116,15 +117,12 @@ export class Sparkline extends CustomElement {
    * 将data统一格式化为数组形式
    * 如果堆叠，则生成堆叠数据
    */
-  private getData(): number[][] {
-    const { data: _, isStack } = this.attributes;
+  private getData(): Data {
+    const { data: _ } = this.attributes;
     let data = clone(_);
-    // 将number[] -> number[][]
+    // number[] -> number[][]
     if (isNumber(data[0])) {
       data = [data];
-    }
-    if (isStack) {
-      data = getStackedData(data);
     }
     return data;
   }
@@ -134,7 +132,8 @@ export class Sparkline extends CustomElement {
    */
   private createLine() {
     const { isStack, lineStyle, smooth, areaStyle, width } = this.attributes;
-    const data = this.getData();
+    let data = this.getData();
+    if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
     const lines = dataToLines(data, { type: 'line', x, y });
     const linesPaths: PathCommand[][] = [];
@@ -159,7 +158,8 @@ export class Sparkline extends CustomElement {
 
     // 生成area图形
     if (areaStyle) {
-      const baseline = y.map(0);
+      const range = getRange(data);
+      const baseline = y.map(range[0] < 0 ? 0 : range[0]);
       // 折线、堆叠折线和普通曲线直接
       let areaPaths: PathCommand[][];
       if (isStack) {
@@ -184,8 +184,6 @@ export class Sparkline extends CustomElement {
         );
       });
     }
-
-    // return lines;
   }
 
   /**
@@ -193,12 +191,20 @@ export class Sparkline extends CustomElement {
    */
   private createBar() {
     const { isStack, height, columnStyle } = this.attributes;
-    const data = this.getData();
+    let data = this.getData();
+    if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as {
       x: Band;
       y: Linear;
     };
+    const [minVal, maxVal] = getRange(data);
+    const heightScale = new Linear({
+      domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
+      range: [0, height],
+    });
+
     const bandWidth = x.getBandWidth();
+    const rawData = this.getData();
 
     data.forEach((column, i) => {
       column.forEach((val, j) => {
@@ -208,17 +214,21 @@ export class Sparkline extends CustomElement {
             name: 'column',
             id: `column-${i}-${j}`,
             attrs: {
-              y: y.map(val),
-              height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
               fill: this.getColor(i),
               ...columnStyle,
               ...(isStack
                 ? {
                     x: x.map(j),
+                    y: y.map(val),
                     width: bandWidth,
-                    height: height - y.map(val) - (i > 0 ? height - y.map(data[i - 1][j]) : 0),
+                    height: heightScale.map(rawData[i][j]),
                   }
-                : { x: x.map(j) + barWidth * i, width: barWidth, height: height - y.map(val) }),
+                : {
+                    x: x.map(j) + barWidth * i,
+                    y: val >= 0 ? y.map(val) : y.map(0),
+                    width: barWidth,
+                    height: heightScale.map(Math.abs(val)),
+                  }),
             },
           })
         );
