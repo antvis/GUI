@@ -1,6 +1,5 @@
-import { Rect, Text } from '@antv/g';
+import { Rect, Text, Image, Line } from '@antv/g';
 import { deepMix, get, isFunction, isString, isObject } from '@antv/util';
-// import { SliderOptions, HandleCfg, MiniMap, Pair } from './types';
 import { SliderOptions, HandleCfg, Pair } from './types';
 import { Marker, MarkerOptions } from '../marker';
 import { Sparkline } from '../sparkline';
@@ -59,17 +58,17 @@ export class Slider extends CustomElement {
       width: 200,
       height: 20,
       padding: {
-        left: 20,
-        right: 10,
-        top: 10,
-        bottom: 10,
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
       },
       backgroundStyle: {
         fill: '#fff',
         stroke: '#e4eaf5',
         lineWidth: 1,
       },
-      sparklineCfg: {},
+      // sparklineCfg: {},
       foregroundStyle: {
         fill: '#afc9fb',
         opacity: 0.5,
@@ -84,7 +83,6 @@ export class Slider extends CustomElement {
         size: 10,
         formatter: (val: string) => val,
         spacing: 10,
-        handleIcon: 'circle',
         textStyle: {
           fill: '#63656e',
           textAlign: 'center',
@@ -92,7 +90,7 @@ export class Slider extends CustomElement {
         },
         handleStyle: {
           stroke: '#c5c5c5',
-          fill: '#9bc2ff',
+          fill: '#fff',
           lineWidth: 1,
         },
       },
@@ -135,7 +133,7 @@ export class Slider extends CustomElement {
   /**
    * 获得安全的Values
    */
-  private getSafetyValues(values?: Pair<number>): Pair<number> {
+  private getSafetyValues(values = this.getValues(), precision = 4): Pair<number> {
     const { min, max } = this.attributes;
     const [prevStart, prevEnd] = this.getValues();
     let [startVal, endVal] = values || [prevStart, prevEnd];
@@ -161,7 +159,13 @@ export class Slider extends CustomElement {
       }
       return [max - range, max];
     }
-    return [startVal, endVal];
+    const _ = (num: number) => {
+      const temp = 10 ** precision;
+      return Number(Math.round(num * temp).toFixed(0)) / temp;
+    };
+
+    // 保留小数
+    return [_(startVal), _(endVal)];
   }
 
   private getAvailableSpace() {
@@ -206,7 +210,7 @@ export class Slider extends CustomElement {
   private createSparkline() {
     const { orient, sparklineCfg } = this.attributes;
     // 暂时只在水平模式下绘制
-    if (orient !== 'horizontal') {
+    if (orient !== 'horizontal' || !sparklineCfg) {
       return;
     }
     const { width, height } = this.getAvailableSpace();
@@ -297,11 +301,13 @@ export class Slider extends CustomElement {
   private calcHandleText(handleType: HandleType) {
     const { orient, names } = this.attributes;
     const { size, spacing, formatter, textStyle } = this.getHandleCfg(handleType);
+    const values = this.getSafetyValues();
+
     // 相对于获取两端可用空间
     const { width: iW, height: iH } = this.getAvailableSpace();
     const { x: fX, y: fY, width: fW, height: fH } = this.calcMask();
 
-    const formattedText = formatter(handleType === 'start' ? names[0] : names[1]);
+    const formattedText = formatter(...(handleType === 'start' ? [names[0], values[0]] : [names[1], values[1]]));
     const _ = new Text({
       attrs: {
         text: formattedText,
@@ -341,7 +347,6 @@ export class Slider extends CustomElement {
    * 解析icon类型
    */
   private parseIcon(icon: MarkerOptions['symbol'] | string) {
-    // MarkerOptions['symbol']: string | FunctionalSymbol
     let type = 'unknown';
     if (isObject(icon) && icon instanceof Image) type = 'Image';
     else if (isFunction(icon)) type = 'symbol';
@@ -351,48 +356,115 @@ export class Slider extends CustomElement {
         type = 'base64';
       } else if (/^(https?:\/\/(([a-zA-Z0-9]+-?)+[a-zA-Z0-9]+\.)+[a-zA-Z]+)(:\d+)?(\/.*)?(\?.*)?(#.*)?$/.test(icon)) {
         type = 'url';
+      } else {
+        // 不然就当作symbol string 处理
+        type = 'symbol';
       }
     }
     return type;
   }
 
+  /**
+   * 创建手柄
+   */
   private createHandle(options: HandleCfg, handleType: HandleType) {
     const { show, size, textStyle, handleIcon: icon, handleStyle } = options;
     const iconType = this.parseIcon(icon);
-
-    switch (iconType) {
-      case 'Image':
-        break;
-      case 'symbol':
-        break;
-      case 'base64':
-        break;
-      case 'url':
-        break;
-      default:
-        break;
-    }
-
-    const handleIcon = new Marker({
+    const baseCfg = {
       name: 'handleIcon',
       identity: handleType,
-      attrs: {
-        r: size / 2,
-        ...(show
-          ? {
-              symbol: icon,
-              ...handleStyle,
-            }
-          : {
-              // 如果不显示的话，就创建透明的rect
-              symbol: 'square',
-              markerStyle: {
-                opacity: 0,
-              },
-            }),
-        cursor: this.getOrientVal(['ew-resize', 'ns-resize']),
-      },
-    });
+    };
+    const cursor = this.getOrientVal(['ew-resize', 'ns-resize']);
+
+    const handleIcon = (() => {
+      if (!show) {
+        // 如果不显示的话，就创建透明的rect
+        return new Marker({
+          ...baseCfg,
+          attrs: {
+            r: size / 2,
+            symbol: 'square',
+            markerStyle: {
+              opacity: 0,
+            },
+            cursor,
+          },
+        });
+      }
+
+      if (['base64', 'url', 'Image'].includes(iconType)) {
+        // TODO G那边似乎还是有点问题，暂不考虑Image
+        return new Image({
+          ...baseCfg,
+          attrs: {
+            x: -size / 2,
+            y: -size / 2,
+            width: size,
+            height: size,
+            img: icon,
+            cursor,
+          },
+        });
+      }
+      if (iconType === 'symbol') {
+        return new Marker({
+          ...baseCfg,
+          attrs: {
+            r: size / 2,
+            symbol: icon,
+            cursor,
+            ...handleStyle,
+          },
+        });
+      }
+
+      const width = size;
+      const height = size * 2.4;
+
+      // 创建默认图形
+      const handleBody = new Rect({
+        ...baseCfg,
+        attrs: {
+          cursor,
+          width,
+          height,
+          x: -width / 2,
+          y: -height / 2,
+          radius: size / 4,
+          ...handleStyle,
+        },
+      });
+      const { stroke, lineWidth } = handleStyle;
+      const X1 = (1 / 3) * width;
+      const X2 = (2 / 3) * width;
+      const Y1 = (1 / 4) * height;
+      const Y2 = (3 / 4) * height;
+
+      const createLine = (x1: number, y1: number, x2: number, y2: number) => {
+        return new Line({
+          name: 'line',
+          attrs: {
+            x1,
+            y1,
+            x2,
+            y2,
+            cursor,
+            stroke,
+            lineWidth,
+          },
+        });
+      };
+
+      handleBody.appendChild(createLine(X1, Y1, X1, Y2));
+      handleBody.appendChild(createLine(X2, Y1, X2, Y2));
+
+      // 根据orient进行rotate
+      // 设置旋转中心
+      handleBody.setOrigin(width / 2, height / 2);
+      handleBody.rotate(this.getOrientVal([0, 90]));
+
+      return handleBody;
+    })();
 
     const handleText = new Text({
       name: 'handleText',
@@ -406,7 +478,6 @@ export class Slider extends CustomElement {
 
     // 用 Group 创建对象会提示没有attrs属性
     const handle = new DisplayObject({
-      // name: `${handleType}Handle`,
       name: 'handle',
       identity: handleType,
       attrs: this.calcHandlePosition(handleType),
@@ -484,7 +555,7 @@ export class Slider extends CustomElement {
     const currPos = this.getOrientVal([e.x, e.y]);
     const _ = currPos - this.prevPos;
     if (!_) return;
-    const dVal = this.getRatio(_); // _ / this.getOrientVal([width, height]);
+    const dVal = this.getRatio(_);
 
     switch (this.target) {
       case 'startHandle':
