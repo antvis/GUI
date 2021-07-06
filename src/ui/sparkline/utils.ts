@@ -1,5 +1,12 @@
-import { clone } from '@antv/util';
+import { clone, min, minBy, max, maxBy } from '@antv/util';
 import { Data } from './path';
+
+/**
+ * 获得数据的最值
+ */
+export function getRange(data: Data) {
+  return [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))];
+}
 
 /**
  * 数据转换为堆叠数据

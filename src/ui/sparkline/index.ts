@@ -1,5 +1,5 @@
 import { Path, Rect } from '@antv/g';
-import { clone, deepMix, min, minBy, max, maxBy, isNumber, isArray, isFunction } from '@antv/util';
+import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
 import { SparklineOptions } from './types';
@@ -12,7 +12,7 @@ import {
   linesToStackAreaPaths,
   linesToStackCurveAreaPaths,
 } from './path';
-import { getStackedData } from './utils';
+import { getRange, getStackedData } from './utils';
 import { CustomElement, DisplayObject } from '../../types';
 
 export { SparklineOptions };
@@ -94,6 +94,7 @@ export class Sparkline extends CustomElement {
    */
   private createScales(data: number[][]) {
     const { type, width, height, isGroup, barPadding } = this.attributes;
+    const [minVal, maxVal] = getRange(data);
     return {
       type,
       x:
@@ -108,17 +109,10 @@ export class Sparkline extends CustomElement {
               paddingInner: isGroup ? barPadding : 0,
             }),
       y: new Linear({
-        domain: this.getRange(data),
+        domain: [minVal > 0 ? 0 : minVal, maxVal],
         range: [height, 0],
       }),
     };
-  }
-
-  /**
-   * 获得数据的最值
-   */
-  private getRange(data: Data) {
-    return [min(minBy(data, (arr) => min(arr))), max(maxBy(data, (arr) => max(arr)))];
   }
 
   /**
@@ -166,7 +160,7 @@ export class Sparkline extends CustomElement {
 
     // 生成area图形
     if (areaStyle) {
-      const range = this.getRange(data);
+      const range = getRange(data);
       const baseline = y.map(range[0] < 0 ? 0 : range[0]);
       // 折线、堆叠折线和普通曲线直接
       let areaPaths: PathCommand[][];
@@ -205,7 +199,7 @@ export class Sparkline extends CustomElement {
       x: Band;
       y: Linear;
     };
-    const [minVal, maxVal] = this.getRange(data);
+    const [minVal, maxVal] = getRange(data);
     const heightScale = new Linear({
       domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
       range: [0, height],
