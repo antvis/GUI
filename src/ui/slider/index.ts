@@ -537,8 +537,8 @@ export class Slider extends CustomElement {
     if (size) return size;
 
     // 没设置size的话，高度就取height的80%高度，手柄宽度是高度的1/2.4
-    const { height } = this.attributes;
-    return (height * 0.8) / 2.4;
+    const { width, height } = this.attributes;
+    return (this.getOrientVal([height, width]) * 0.8) / 2.4;
   }
 
   private createHandles() {
