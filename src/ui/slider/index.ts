@@ -3,13 +3,8 @@ import { deepMix, get, isFunction, isString, isObject } from '@antv/util';
 import { SliderOptions, HandleCfg, Pair } from './types';
 import { Marker, MarkerOptions } from '../marker';
 import { Sparkline } from '../sparkline';
-import { CustomElement, DisplayObject, ShapeAttrs } from '../../types';
-// import { /* applyAttrs */ measureTextWidth } from '../../util';
-const applyAttrs = (target: DisplayObject, attrs: ShapeAttrs) => {
-  Object.entries(attrs).forEach(([attrName, attrValue]) => {
-    target.setAttribute(attrName, attrValue);
-  });
-};
+import { CustomElement, DisplayObject } from '../../types';
+import { applyAttrs, toPrecision } from '../../util';
 
 export { SliderOptions };
 
@@ -18,14 +13,38 @@ type HandleType = 'start' | 'end';
 export class Slider extends CustomElement {
   public static tag = 'slider';
 
+  /**
+   * 层级关系
+   * backgroundShape
+   *  |- sparklineShape
+   *  |- foregroundShape
+   *       |- startHandle
+   *       |- endHandle
+   */
+
+  /**
+   * 背景
+   */
   private backgroundShape: DisplayObject;
 
+  /**
+   * 缩略图
+   */
   private sparklineShape: DisplayObject;
 
+  /**
+   * 前景，即选区
+   */
   private foregroundShape: DisplayObject;
 
+  /**
+   * 起始手柄
+   */
   private startHandle: DisplayObject;
 
+  /**
+   * 终点手柄
+   */
   private endHandle: DisplayObject;
 
   /**
@@ -33,8 +52,14 @@ export class Slider extends CustomElement {
    */
   private selectionStartPos: number;
 
+  /**
+   * 选区宽度
+   */
   private selectionWidth: number;
 
+  /**
+   * 记录上一次鼠标事件所在坐标
+   */
   private prevPos: number;
 
   /**
@@ -57,6 +82,14 @@ export class Slider extends CustomElement {
       max: 1,
       width: 200,
       height: 20,
+      sparklineCfg: {
+        padding: {
+          left: 1,
+          right: 1,
+          top: 1,
+          bottom: 1,
+        },
+      },
       padding: {
         left: 0,
         right: 0,
@@ -68,7 +101,6 @@ export class Slider extends CustomElement {
         stroke: '#e4eaf5',
         lineWidth: 1,
       },
-      // sparklineCfg: {},
       foregroundStyle: {
         fill: '#afc9fb',
         opacity: 0.5,
@@ -80,7 +112,6 @@ export class Slider extends CustomElement {
       },
       handle: {
         show: true,
-        size: 10,
         formatter: (val: string) => val,
         spacing: 10,
         textStyle: {
@@ -159,13 +190,9 @@ export class Slider extends CustomElement {
       }
       return [max - range, max];
     }
-    const _ = (num: number) => {
-      const temp = 10 ** precision;
-      return Number(Math.round(num * temp).toFixed(0)) / temp;
-    };
 
     // 保留小数
-    return [_(startVal), _(endVal)];
+    return [toPrecision(startVal, precision), toPrecision(endVal, precision)];
   }
 
   private getAvailableSpace() {
@@ -209,19 +236,23 @@ export class Slider extends CustomElement {
    */
   private createSparkline() {
     const { orient, sparklineCfg } = this.attributes;
+    console.log(sparklineCfg);
+
     // 暂时只在水平模式下绘制
-    if (orient !== 'horizontal' || !sparklineCfg) {
+    if (orient !== 'horizontal') {
       return;
     }
+    const { padding, ...args } = sparklineCfg;
+
     const { width, height } = this.getAvailableSpace();
     const { lineWidth: bkgLW } = this.getStyle('backgroundStyle');
     this.sparklineShape = new Sparkline({
       attrs: {
-        x: bkgLW / 2,
-        y: bkgLW / 2,
-        width: width - bkgLW,
-        height: height - bkgLW,
-        ...sparklineCfg,
+        x: bkgLW / 2 + padding.left,
+        y: bkgLW / 2 + padding.top,
+        width: width - bkgLW - padding.left - padding.right,
+        height: height - bkgLW - padding.top - padding.bottom,
+        ...args,
       },
     });
     this.backgroundShape.appendChild(this.sparklineShape);
@@ -300,7 +331,8 @@ export class Slider extends CustomElement {
    */
   private calcHandleText(handleType: HandleType) {
     const { orient, names } = this.attributes;
-    const { size, spacing, formatter, textStyle } = this.getHandleCfg(handleType);
+    const { spacing, formatter, textStyle } = this.getHandleCfg(handleType);
+    const size = this.getHandleSize(handleType);
     const values = this.getSafetyValues();
 
     // 相对于获取两端可用空间
@@ -368,7 +400,8 @@ export class Slider extends CustomElement {
    * 创建手柄
    */
   private createHandle(options: HandleCfg, handleType: HandleType) {
-    const { show, size, textStyle, handleIcon: icon, handleStyle } = options;
+    const { show, textStyle, handleIcon: icon, handleStyle } = options;
+    const size = this.getHandleSize(handleType);
     const iconType = this.parseIcon(icon);
     const baseCfg = {
       name: 'handleIcon',
@@ -496,6 +529,16 @@ export class Slider extends CustomElement {
       _ = end;
     }
     return deepMix({}, args, _);
+  }
+
+  private getHandleSize(handleType: HandleType) {
+    const handleCfg = this.getHandleCfg(handleType);
+    const { size } = handleCfg;
+    if (size) return size;
+
+    // 没设置size的话，高度就取height的80%高度，手柄宽度是高度的1/2.4
+    const { height } = this.attributes;
+    return (height * 0.8) / 2.4;
   }
 
   private createHandles() {
