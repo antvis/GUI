@@ -380,7 +380,7 @@ export class Slider extends CustomElement {
    */
   private parseIcon(icon: MarkerOptions['symbol'] | string) {
     let type = 'unknown';
-    if (isObject(icon) && icon instanceof Image) type = 'Image';
+    if (isObject(icon) && icon instanceof Image) type = 'image';
     else if (isFunction(icon)) type = 'symbol';
     else if (isString(icon)) {
       const dataURLsPattern = new RegExp('data:(image|text)');
@@ -425,7 +425,7 @@ export class Slider extends CustomElement {
         });
       }
 
-      if (['base64', 'url', 'Image'].includes(iconType)) {
+      if (['base64', 'url', 'image'].includes(iconType)) {
         // TODO G那边似乎还是有点问题，暂不考虑Image
         return new Image({
           ...baseCfg,
