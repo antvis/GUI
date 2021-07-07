@@ -28,7 +28,7 @@ const slider = new Slider({
       start: {
         size: 15,
         formatter: (name, value) => {
-          return `${name}: ${value * 100}%`;
+          return `${name}: ${(value * 100).toFixed(2)}%`;
         },
         handleIcon: 'https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*N4ZMS7gHsUIAAAAAAAAAAABkARQnAQ',
       },
