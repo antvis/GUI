@@ -1,23 +1,7 @@
 import { clone, isEqual } from '@antv/util';
-import { Linear, Band } from '@antv/scale';
 import { catmullRom2Bezier } from '@antv/path-util';
 import { PathCommand } from '@antv/g-base';
-
-export type Point = [number, number];
-export type Line = Point[];
-export type Data = number[][];
-export type Scales = {
-  y: Linear;
-} & (
-  | {
-      type: 'line';
-      x: Linear;
-    }
-  | {
-      type: 'column';
-      x: Band;
-    }
-);
+import { Data, Line, Point, Scales } from './types';
 
 /**
  * 根据数据获得每条线各点x，y值
