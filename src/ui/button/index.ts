@@ -1,7 +1,7 @@
 import { Rect, Text } from '@antv/g';
 import { deepMix, pick } from '@antv/util';
 import { ButtonOptions } from './types';
-import { CustomElement, ShapeAttrs, DisplayObject } from '../../types';
+import { CustomElement, DisplayObject } from '../../types';
 import { getEllipsisText } from '../../util';
 import { SIZE_STYLE, TYPE_STYLE, DISABLED_STYLE } from './constant';
 
@@ -165,15 +165,6 @@ export class Button extends CustomElement {
     this.bindEvents(onClick);
   }
 
-  /**
-   * 应用多个属性
-   */
-  private applyAttrs(shape: 'textShape' | 'background', attrs: ShapeAttrs) {
-    Object.entries(attrs).forEach((attr) => {
-      this[shape].attr(attr[0], attr[1]);
-    });
-  }
-
   private bindEvents(onClick: Function): void {
     const { disabled } = this.attributes;
 
@@ -188,8 +179,8 @@ export class Button extends CustomElement {
       if (!disabled) {
         // 鼠标悬浮事件
         const hoverStyle = this.getMixinStyle('hoverStyle');
-        this.applyAttrs('textShape', hoverStyle.textStyle);
-        this.applyAttrs('background', hoverStyle.buttonStyle);
+        this.textShape.attr(hoverStyle.textStyle);
+        this.background.attr(hoverStyle.buttonStyle);
         this.attr('cursor', 'pointer');
       } else {
         // 设置指针icon
@@ -199,8 +190,8 @@ export class Button extends CustomElement {
 
     this.on('mouseleave', () => {
       // 恢复默认状态
-      this.applyAttrs('textShape', this.getMixinStyle('textStyle'));
-      this.applyAttrs('background', this.getMixinStyle('buttonStyle'));
+      this.textShape.attr(this.getMixinStyle('textStyle'));
+      this.background.attr(this.getMixinStyle('buttonStyle'));
     });
   }
 }

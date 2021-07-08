@@ -1,7 +1,7 @@
 import { Rect } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
 import { ScrollbarOptions } from './types';
-import { applyAttrs, isPC } from '../../util';
+import { isPC } from '../../util';
 import { CustomElement, DisplayObject } from '../../types';
 
 export { ScrollbarOptions };
@@ -271,18 +271,18 @@ export class Scrollbar extends CustomElement {
     const { thumbStyle, trackStyle } = this.attributes;
     // 滑块hover
     this.thumbShape.addEventListener('mouseenter', () => {
-      applyAttrs(this.thumbShape, thumbStyle.active);
+      this.thumbShape.attr(thumbStyle.active);
     });
     this.thumbShape.addEventListener('mouseleave', () => {
-      applyAttrs(this.thumbShape, thumbStyle.default);
+      this.thumbShape.attr(thumbStyle.default);
     });
 
     // 滑轨hover
     this.trackShape.addEventListener('mouseenter', () => {
-      applyAttrs(this.trackShape, trackStyle.active);
+      this.trackShape.attr(trackStyle.active);
     });
     this.trackShape.addEventListener('mouseleave', () => {
-      applyAttrs(this.trackShape, trackStyle.default);
+      this.trackShape.attr(trackStyle.default);
     });
   }
 

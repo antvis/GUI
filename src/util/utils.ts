@@ -1,17 +1,3 @@
-import { DisplayObject, ShapeAttrs } from '../types';
-
-/**
- * 对 Group 中名为 shape 的 DisplayObject 对象应用 attrs 中的属性
- * @param group
- * @param shape
- * @param attrs
- */
-export function applyAttrs(target: DisplayObject, attrs: ShapeAttrs) {
-  Object.entries(attrs).forEach(([attrName, attrValue]) => {
-    target.setAttribute(attrName, attrValue);
-  });
-}
-
 /**
  * 平台判断
  */

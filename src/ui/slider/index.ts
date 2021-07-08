@@ -4,7 +4,7 @@ import { SliderOptions, HandleCfg, Pair } from './types';
 import { Marker, MarkerOptions } from '../marker';
 import { Sparkline } from '../sparkline';
 import { CustomElement, DisplayObject } from '../../types';
-import { applyAttrs, toPrecision } from '../../util';
+import { toPrecision } from '../../util';
 
 export { SliderOptions };
 
@@ -151,6 +151,12 @@ export class Slider extends CustomElement {
 
   public setNames(names: SliderOptions['names']) {
     this.setAttribute('names', names);
+  }
+
+  public update(cfg: SliderOptions) {
+    const { values, names } = cfg;
+    this.setValues(values);
+    this.setNames(names);
   }
 
   private init() {
@@ -315,11 +321,11 @@ export class Slider extends CustomElement {
    * 3. 更新文本位置
    */
   private setHandle() {
-    applyAttrs(this.foregroundShape, this.calcMask());
-    applyAttrs(this.startHandle, this.calcHandlePosition('start'));
-    applyAttrs(this.endHandle, this.calcHandlePosition('end'));
+    this.foregroundShape.attr(this.calcMask());
+    this.startHandle.attr(this.calcHandlePosition('start'));
+    this.endHandle.attr(this.calcHandlePosition('end'));
     this.getElementsByName('handleText').forEach((handleText) => {
-      applyAttrs(handleText, this.calcHandleText(handleText.getConfig().identity));
+      handleText.attr(this.calcHandleText(handleText.getConfig().identity));
     });
   }
 
@@ -631,22 +637,22 @@ export class Slider extends CustomElement {
 
   private bindHoverEvents = () => {
     this.foregroundShape.addEventListener('mouseenter', () => {
-      applyAttrs(this.foregroundShape, this.getStyle('foregroundStyle', true));
+      this.foregroundShape.attr(this.getStyle('foregroundStyle'));
     });
     this.foregroundShape.addEventListener('mouseleave', () => {
-      applyAttrs(this.foregroundShape, this.getStyle('foregroundStyle'));
+      this.foregroundShape.attr(this.getStyle('foregroundStyle'));
     });
 
     this.getElementsByName('handle').forEach((handle) => {
       const icon = handle.getElementsByName('handleIcon')[0];
       const text = handle.getElementsByName('handleText')[0];
       handle.addEventListener('mouseenter', () => {
-        applyAttrs(icon, this.getStyle('handleStyle', true, icon.getConfig().identity));
-        applyAttrs(text, this.getStyle('textStyle', true, text.getConfig().identity));
+        icon.attr(this.getStyle('handleStyle', true, icon.getConfig().identity));
+        text.attr(this.getStyle('textStyle', true, text.getConfig().identity));
       });
       handle.addEventListener('mouseleave', () => {
-        applyAttrs(icon, this.getStyle('handleStyle', false, icon.getConfig().identity));
-        applyAttrs(text, this.getStyle('textStyle', false, text.getConfig().identity));
+        icon.attr(this.getStyle('handleStyle', false, icon.getConfig().identity));
+        text.attr(this.getStyle('textStyle', false, text.getConfig().identity));
       });
     });
   };

@@ -1,5 +1,4 @@
-import { DisplayObject } from '@antv/g';
-import { applyAttrs, isPC } from '../../../src/util';
+import { isPC } from '../../../src/util';
 
 describe('platform', () => {
   const USER_AGENTS_PC = {
@@ -36,44 +35,5 @@ describe('platform', () => {
     Object.entries(USER_AGENTS_MOBILE).forEach((item) => {
       expect(isPC(item[1])).toBe(false);
     });
-  });
-});
-
-describe('applyAttrs', () => {
-  test('init', () => {
-    const DO = new DisplayObject({
-      attrs: {
-        x: 1,
-        y: 2,
-        width: 10,
-        height: 100,
-      },
-    });
-    const { x, y, width, height } = DO.attributes;
-    expect(x).toBe(1);
-    expect(y).toBe(2);
-    expect(width).toBe(10);
-    expect(height).toBe(100);
-  });
-
-  test('changeAttrs', () => {
-    const DO = new DisplayObject({
-      attrs: {
-        x: 1,
-        y: 2,
-        width: 10,
-        height: 100,
-      },
-    });
-
-    applyAttrs(DO, {
-      x: 100,
-      y: 20,
-    });
-    const { x, y, width, height } = DO.attributes;
-    expect(x).toBe(100);
-    expect(y).toBe(20);
-    expect(width).toBe(10);
-    expect(height).toBe(100);
   });
 });
