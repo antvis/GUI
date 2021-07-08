@@ -2,9 +2,8 @@ import { Path, Rect } from '@antv/g';
 import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
-import { SparklineOptions } from './types';
+import { Data, SparklineOptions } from './types';
 import {
-  Data,
   dataToLines,
   lineToLinePath,
   lineToCurvePath,
@@ -49,18 +48,21 @@ export class Sparkline extends CustomElement {
   }
 
   attributeChangedCallback(name: string, value: any) {
+    // 如果type变了，需要清空this.sparkShapes子元素
+    if (name === 'type') {
+      this.sparkShapes.removeChildren();
+    }
     console.log(name, value);
   }
 
+  public update(attrs: SparklineOptions['attrs']) {
+    this.attr(attrs);
+    this.init();
+  }
+
   private init() {
-    const { data, type, width, height } = this.attributes;
-    this.sparkShapes = new Rect({
-      attrs: {
-        width,
-        height,
-      },
-    });
-    this.appendChild(this.sparkShapes);
+    const { data, type } = this.attributes;
+    this.createContainer();
     if (!data) return;
     switch (type) {
       case 'line':
@@ -128,6 +130,17 @@ export class Sparkline extends CustomElement {
     return data;
   }
 
+  private createContainer() {
+    const { width, height } = this.attributes;
+    if (!this.sparkShapes) {
+      this.sparkShapes = new Rect({
+        attrs: {},
+      });
+      this.appendChild(this.sparkShapes);
+    }
+    this.sparkShapes.attr({ width, height });
+  }
+
   /**
    * 创建迷你折线图
    */
@@ -144,17 +157,17 @@ export class Sparkline extends CustomElement {
     });
     // 绘制线条
     linesPaths.forEach((path, idx) => {
-      this.sparkShapes.appendChild(
-        new Path({
+      const id = `line-path-${idx}`;
+      let el = this.getElementById(id);
+      if (!el) {
+        el = new Path({
+          id,
           name: 'line',
-          id: `line-path-${idx}`,
-          attrs: {
-            path,
-            stroke: this.getColor(idx),
-            ...lineStyle,
-          },
-        })
-      );
+          attrs: {},
+        });
+        this.sparkShapes.appendChild(el);
+      }
+      el.attr({ path, stroke: this.getColor(idx), ...lineStyle });
     });
 
     // 生成area图形
@@ -172,17 +185,17 @@ export class Sparkline extends CustomElement {
       }
 
       areaPaths.forEach((path, idx) => {
-        this.sparkShapes.appendChild(
-          new Path({
+        const id = `line-area-${idx}`;
+        let el = this.getElementById(id);
+        if (!el) {
+          el = new Path({
             name: 'area',
             id: `line-area-${idx}`,
-            attrs: {
-              path,
-              fill: this.getColor(idx),
-              ...areaStyle,
-            },
-          })
-        );
+            attrs: {},
+          });
+          this.sparkShapes.appendChild(el);
+        }
+        el.attr({ path, fill: this.getColor(idx), ...areaStyle });
       });
     }
   }
@@ -209,30 +222,34 @@ export class Sparkline extends CustomElement {
 
     data.forEach((column, i) => {
       column.forEach((val, j) => {
+        const id = `column-${i}-${j}`;
+        let el = this.getElementById(id);
         const barWidth = bandWidth / data.length;
-        this.sparkShapes.appendChild(
-          new Rect({
+        if (!el) {
+          el = new Rect({
             name: 'column',
             id: `column-${i}-${j}`,
-            attrs: {
-              fill: this.getColor(i),
-              ...columnStyle,
-              ...(isStack
-                ? {
-                    x: x.map(j),
-                    y: y.map(val),
-                    width: bandWidth,
-                    height: heightScale.map(rawData[i][j]),
-                  }
-                : {
-                    x: x.map(j) + barWidth * i,
-                    y: val >= 0 ? y.map(val) : y.map(0),
-                    width: barWidth,
-                    height: heightScale.map(Math.abs(val)),
-                  }),
-            },
-          })
-        );
+            attrs: {},
+          });
+          this.sparkShapes.appendChild(el);
+        }
+        el.attr({
+          fill: this.getColor(i),
+          ...columnStyle,
+          ...(isStack
+            ? {
+                x: x.map(j),
+                y: y.map(val),
+                width: bandWidth,
+                height: heightScale.map(rawData[i][j]),
+              }
+            : {
+                x: x.map(j) + barWidth * i,
+                y: val >= 0 ? y.map(val) : y.map(0),
+                width: barWidth,
+                height: heightScale.map(Math.abs(val)),
+              }),
+        });
       });
     });
   }

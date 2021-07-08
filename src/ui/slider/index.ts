@@ -242,8 +242,6 @@ export class Slider extends CustomElement {
    */
   private createSparkline() {
     const { orient, sparklineCfg } = this.attributes;
-    console.log(sparklineCfg);
-
     // 暂时只在水平模式下绘制
     if (orient !== 'horizontal') {
       return;
