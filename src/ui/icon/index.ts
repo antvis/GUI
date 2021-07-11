@@ -1,34 +1,19 @@
 import { Rect, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { CustomElement, DisplayObject } from '../../types';
 import { Marker } from '../marker';
 import { IconOptions } from './types';
+import { Component } from '../../abstract';
 
 export { IconOptions };
 
 /**
  * 带文本的 图标组件，支持 iconfont 组件
  */
-export class Icon extends CustomElement {
+export class Icon extends Component<IconOptions> {
   /**
    * 标签类型
    */
   public static tag = 'icon';
-
-  /**
-   * 图标
-   */
-  private iconShape: DisplayObject;
-
-  /**
-   * 文本
-   */
-  private textShape: DisplayObject;
-
-  /**
-   * 背景，用于在交互中显示
-   */
-  private background: DisplayObject;
 
   /**
    * 默认参数
@@ -53,7 +38,6 @@ export class Icon extends CustomElement {
 
   constructor(options: IconOptions) {
     super(deepMix({}, Icon.defaultOptions, options));
-
     this.init();
   }
 
@@ -62,70 +46,51 @@ export class Icon extends CustomElement {
   }
 
   /**
-   * 获取 icon 图标
-   */
-  public getIconShape() {
-    return this.iconShape;
-  }
-
-  /**
-   * 获取 text 文本
-   */
-  public getTextShape() {
-    return this.textShape;
-  }
-
-  /**
    * 根据 type 获取 maker shape
    */
-  private init(): void {
-    const { x, y, symbol, size, fill, spacing, text, textStyle, markerStyle } = this.attributes;
-
-    //  图标
-    this.iconShape = new Marker({
-      attrs: {
-        // 左上角锚点
-        x: 0,
-        y: 0,
+  protected init(): void {
+    // icon
+    const iconAttrsCallback = () => {
+      const { symbol, size, fill, markerStyle } = this.attributes;
+      return {
         symbol,
         ...markerStyle,
         // 优先级
         fill,
         r: size / 2,
-      },
-    });
-    this.appendChild(this.iconShape);
+      };
+    };
+    this.appendSubComponent('iconShape', Marker, iconAttrsCallback);
 
-    // 文字
-    this.textShape = new Text({
-      attrs: {
-        // 居中，和 icon 间距 4px
+    // text
+    const textAttrsCallback = () => {
+      const { size, spacing, text, textStyle } = this.attributes;
+      return {
         x: size / 2 + spacing,
         y: 0,
         ...textStyle,
         text,
-      },
-    });
-    this.appendChild(this.textShape);
+      };
+    };
+    this.appendSubComponent('textShape', Text, textAttrsCallback);
 
-    // 背景
-    const bbox = this.getBounds();
-    this.background = new Rect({
-      attrs: {
-        // 加一个 边距
+    // background
+    const backgroundAttrsCallback = () => {
+      const { size } = this.attributes;
+      const bbox = this.getBounds();
+      return {
         x: -size / 2 - 2,
         y: -size / 2 - 2,
         width: bbox.getMax()[0] - bbox.getMin()[0],
         height: bbox.getMax()[1] - bbox.getMin()[1],
         radius: 2,
         fill: '#fff',
-      },
-    });
+      };
+    };
+    this.appendSubComponent('background', Rect, backgroundAttrsCallback);
+    this.getSubComponent('background').toBack();
 
-    this.appendChild(this.background);
-    // 放到背景中
-    this.background.toBack();
-
+    const { x, y, size } = this.attributes;
     // 3. 最后移动到对应的位置
     this.translate(x + size / 2, y + size / 2);
 
@@ -134,11 +99,11 @@ export class Icon extends CustomElement {
 
   private bindEvents() {
     this.on('mouseenter', () => {
-      this.background.attr('fill', '#F5F5F5');
+      this.getSubComponent('background').attr('fill', '#F5F5F5');
     });
 
     this.on('mouseleave', () => {
-      this.background.attr('fill', '#fff');
+      this.getSubComponent('background').attr('fill', '#fff');
     });
   }
 }
