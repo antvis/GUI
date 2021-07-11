@@ -1,3 +1,3 @@
 export { svg2marker } from './svg2marker';
 export { measureTextWidth, getEllipsisText } from './text';
-export { isPC, toPrecision } from './utils';
+export { toPrecision } from './utils';

@@ -293,7 +293,6 @@ export class Slider extends Component<SliderOptions> {
   private calcHandleText(handleType: HandleType) {
     const { orient, names } = this.attributes;
     const { spacing, formatter, textStyle } = this.getHandleCfg(handleType);
-
     const size = this.getHandleSize(handleType);
     const values = this.getSafetyValues();
 
@@ -302,7 +301,6 @@ export class Slider extends Component<SliderOptions> {
     const { x: fX, y: fY, width: fW, height: fH } = this.calcMask();
 
     const formattedText = formatter(...(handleType === 'start' ? [names[0], values[0]] : [names[1], values[1]]));
-
     const _ = new Text({
       attrs: {
         text: formattedText,
@@ -335,7 +333,6 @@ export class Slider extends Component<SliderOptions> {
         y = iH - fY - fH - R > textHeight ? _ : -_;
       }
     }
-
     return { x, y, text: formattedText };
   }
 
