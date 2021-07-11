@@ -18,7 +18,7 @@ export class Icon extends Component<IconOptions> {
   /**
    * 默认参数
    */
-  private static defaultOptions = {
+  protected static defaultOptions = {
     type: Icon.tag,
     attrs: {
       size: 16,
