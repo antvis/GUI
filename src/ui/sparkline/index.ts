@@ -1,8 +1,10 @@
-import { Path, Rect } from '@antv/g';
+import { Rect } from '@antv/g';
 import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { PathCommand } from '@antv/g-base';
 import { Data, SparklineOptions } from './types';
+import { Lines } from './lines';
+import { Columns } from './columns';
 import {
   dataToLines,
   lineToLinePath,
@@ -12,14 +14,15 @@ import {
   linesToStackCurveAreaPaths,
 } from './path';
 import { getRange, getStackedData } from './utils';
-import { CustomElement, DisplayObject } from '../../types';
+import { Component } from '../../abstract/component';
+import { DisplayObject } from '../../types';
 
 export { SparklineOptions };
 
-export class Sparkline extends CustomElement {
+export class Sparkline extends Component<SparklineOptions> {
   public static tag = 'Sparkline';
 
-  private static defaultOptions = {
+  protected static defaultOptions = {
     attrs: {
       type: 'line',
       width: 200,
@@ -52,24 +55,20 @@ export class Sparkline extends CustomElement {
     if (name === 'type') {
       this.sparkShapes.removeChildren();
     }
-    console.log(name, value);
+    console.log(value);
   }
 
-  public update(attrs: SparklineOptions['attrs']) {
-    this.attr(attrs);
-    this.init();
-  }
-
-  private init() {
+  protected init() {
     const { data, type } = this.attributes;
     this.createContainer();
     if (!data) return;
+
     switch (type) {
       case 'line':
         this.createLine();
         break;
       case 'column':
-        this.createBar();
+        this.createColumn();
         break;
       default:
         break;
@@ -131,126 +130,106 @@ export class Sparkline extends CustomElement {
   }
 
   private createContainer() {
-    const { width, height } = this.attributes;
-    if (!this.sparkShapes) {
-      this.sparkShapes = new Rect({
-        attrs: {},
-      });
-      this.appendChild(this.sparkShapes);
-    }
-    this.sparkShapes.attr({ width, height });
+    const attrsCallback = () => {
+      const { width, height } = this.attributes;
+      return { width, height };
+    };
+    this.appendSubComponent('container', Rect, attrsCallback, { name: 'container' });
   }
 
   /**
    * 创建迷你折线图
    */
   private createLine() {
-    const { isStack, lineStyle, smooth, areaStyle, width } = this.attributes;
-    let data = this.getData();
-    if (isStack) data = getStackedData(data);
-    const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
-    const lines = dataToLines(data, { type: 'line', x, y });
-    const linesPaths: PathCommand[][] = [];
-    // 线条path
-    lines.forEach((line) => {
-      linesPaths.push(smooth ? lineToCurvePath(line) : lineToLinePath(line));
-    });
-    // 绘制线条
-    linesPaths.forEach((path, idx) => {
-      const id = `line-path-${idx}`;
-      let el = this.getElementById(id);
-      if (!el) {
-        el = new Path({
-          id,
-          name: 'line',
-          attrs: {},
-        });
-        this.sparkShapes.appendChild(el);
-      }
-      el.attr({ path, stroke: this.getColor(idx), ...lineStyle });
-    });
+    const linesParamsCallback = () => {
+      const { areaStyle, isStack, lineStyle, smooth, width } = this.attributes;
+      let data = this.getData();
+      if (isStack) data = getStackedData(data);
+      const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
+      // 线条Path
+      const lines = dataToLines(data, { type: 'line', x, y });
 
-    // 生成area图形
-    if (areaStyle) {
-      const range = getRange(data);
-      const baseline = y.map(range[0] < 0 ? 0 : range[0]);
-      // 折线、堆叠折线和普通曲线直接
-      let areaPaths: PathCommand[][];
-      if (isStack) {
-        areaPaths = smooth
-          ? linesToStackCurveAreaPaths(lines, width, baseline)
-          : linesToStackAreaPaths(lines, width, baseline);
-      } else {
-        areaPaths = linesToAreaPaths(lines, smooth, width, baseline);
-      }
-
-      areaPaths.forEach((path, idx) => {
-        const id = `line-area-${idx}`;
-        let el = this.getElementById(id);
-        if (!el) {
-          el = new Path({
-            name: 'area',
-            id: `line-area-${idx}`,
-            attrs: {},
-          });
-          this.sparkShapes.appendChild(el);
+      // 生成区域path
+      let areas: PathCommand[][] = [];
+      if (areaStyle) {
+        const range = getRange(data);
+        const baseline = y.map(range[0] < 0 ? 0 : range[0]);
+        if (isStack) {
+          areas = smooth
+            ? linesToStackCurveAreaPaths(lines, width, baseline)
+            : linesToStackAreaPaths(lines, width, baseline);
+        } else {
+          areas = linesToAreaPaths(lines, smooth, width, baseline);
         }
-        el.attr({ path, fill: this.getColor(idx), ...areaStyle });
-      });
-    }
+      }
+      return {
+        linesCfg: {
+          linesAttrs: lines.map((line, idx) => {
+            return {
+              stroke: this.getColor(idx),
+              path: smooth ? lineToCurvePath(line) : lineToLinePath(line),
+              ...lineStyle,
+            };
+          }),
+          areasAttrs: areas.map((path, idx) => {
+            return {
+              path,
+              fill: this.getColor(idx),
+              ...areaStyle,
+            };
+          }),
+        },
+      };
+    };
+
+    this.appendSubComponent('lines', Lines, linesParamsCallback);
   }
 
   /**
    * 创建mini柱状图
    */
-  private createBar() {
-    const { isStack, height, columnStyle } = this.attributes;
-    let data = this.getData();
-    if (isStack) data = getStackedData(data);
-    const { x, y } = this.createScales(data) as {
-      x: Band;
-      y: Linear;
-    };
-    const [minVal, maxVal] = getRange(data);
-    const heightScale = new Linear({
-      domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
-      range: [0, height],
-    });
-
-    const bandWidth = x.getBandWidth();
-    const rawData = this.getData();
-
-    data.forEach((column, i) => {
-      column.forEach((val, j) => {
-        const id = `column-${i}-${j}`;
-        let el = this.getElementById(id);
-        const barWidth = bandWidth / data.length;
-        if (!el) {
-          el = new Rect({
-            name: 'column',
-            id: `column-${i}-${j}`,
-            attrs: {},
-          });
-          this.sparkShapes.appendChild(el);
-        }
-        el.attr({
-          fill: this.getColor(i),
-          ...columnStyle,
-          ...(isStack
-            ? {
-                x: x.map(j),
-                y: y.map(val),
-                width: bandWidth,
-                height: heightScale.map(rawData[i][j]),
-              }
-            : {
-                x: x.map(j) + barWidth * i,
-                y: val >= 0 ? y.map(val) : y.map(0),
-                width: barWidth,
-                height: heightScale.map(Math.abs(val)),
-              }),
-        });
+  private createColumn() {
+    const columnsParamsCallback = () => {
+      const { isStack, height, columnStyle } = this.attributes;
+      let data = this.getData();
+      if (isStack) data = getStackedData(data);
+      const { x, y } = this.createScales(data) as {
+        x: Band;
+        y: Linear;
+      };
+      const [minVal, maxVal] = getRange(data);
+      const heightScale = new Linear({
+        domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
+        range: [0, height],
       });
-    });
+      const bandWidth = x.getBandWidth();
+      const rawData = this.getData();
+
+      return {
+        columnsCfg: data.map((column, i) => {
+          return column.map((val, j) => {
+            const barWidth = bandWidth / data.length;
+            return {
+              fill: this.getColor(i),
+              ...columnStyle,
+              ...(isStack
+                ? {
+                    x: x.map(j),
+                    y: y.map(val),
+                    width: bandWidth,
+                    height: heightScale.map(rawData[i][j]),
+                  }
+                : {
+                    x: x.map(j) + barWidth * i,
+                    y: val >= 0 ? y.map(val) : y.map(0),
+                    width: barWidth,
+                    height: heightScale.map(Math.abs(val)),
+                  }),
+            };
+          });
+        }),
+      };
+    };
+    this.appendSubComponent('columns', Columns, columnsParamsCallback);
   }
 }

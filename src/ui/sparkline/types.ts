@@ -18,12 +18,13 @@ export type Scales = {
 );
 
 export type SparklineOptions = ShapeCfg & {
-  data?: number[] | number[][];
-  width?: number;
-  height?: number;
-  isStack?: boolean;
-  color?: string | string[] | ((idx: number) => string);
-} & (
+  attrs: {
+    data?: number[] | number[][];
+    width?: number;
+    height?: number;
+    isStack?: boolean;
+    color?: string | string[] | ((idx: number) => string);
+  } & (
     | {
         type?: 'line';
         smooth?: boolean;
@@ -36,3 +37,4 @@ export type SparklineOptions = ShapeCfg & {
         columnStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
       }
   );
+};
