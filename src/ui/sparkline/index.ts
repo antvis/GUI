@@ -50,7 +50,7 @@ export class Sparkline extends Component<SparklineOptions> {
   attributeChangedCallback(name: string, value: any) {
     // 如果type变了，需要清空this.sparkShapes子元素
     if (name === 'type') {
-      this.getSubComponent('sparkShapes').removeChildren();
+      this.getSubComponent('sparkShapes')?.removeChildren();
     }
     console.log(value);
   }

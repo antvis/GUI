@@ -21,11 +21,9 @@ export class Lines extends CustomElement {
         })
       );
     });
-    areasAttrs?.forEach((cfg, idx: number) => {
-      const id = `line-area-${idx}`;
+    areasAttrs?.forEach((cfg) => {
       this.appendChild(
         new Path({
-          id,
           name: 'area',
           attrs: cfg,
         })
