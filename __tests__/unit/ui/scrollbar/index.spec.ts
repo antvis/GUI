@@ -46,13 +46,14 @@ describe('scrollbar', () => {
     expect(scrollbar.getValue()).toBe(0.5);
 
     const { padding } = scrollbar.attributes;
-    const verticalPadding = padding.top + padding.bottom;
+    const [top, , bottom] = padding;
+    const verticalPadding = top + bottom;
 
     let value = 0.2;
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.y).toBeCloseTo(
-      padding.top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
+      top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -60,7 +61,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.y).toBeCloseTo(
-      padding.top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
+      top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -68,7 +69,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.y).toBeCloseTo(
-      padding.top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
+      top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -76,7 +77,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.y).toBeCloseTo(
-      padding.top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
+      top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -84,7 +85,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.y).toBeCloseTo(
-      padding.top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
+      top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -123,13 +124,14 @@ describe('scrollbar', () => {
     expect(scrollbar.getValue()).toBe(0.5);
 
     const { padding } = scrollbar.attributes;
-    const horizonPadding = padding.left + padding.right;
+    const [, right, , left] = padding;
+    const horizonPadding = left + right;
 
     let value = 0.2;
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.x).toBeCloseTo(
-      padding.left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
+      left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -137,7 +139,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.x).toBeCloseTo(
-      padding.left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
+      left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -145,7 +147,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.x).toBeCloseTo(
-      padding.left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
+      left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -153,7 +155,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.x).toBeCloseTo(
-      padding.left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
+      left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 
@@ -161,7 +163,7 @@ describe('scrollbar', () => {
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
     expect(scrollbar.lastChild.attributes.x).toBeCloseTo(
-      padding.left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
+      left + (width - horizonPadding - thumbLen) * clamp(value, 0, 1),
       1
     );
 

@@ -60,19 +60,9 @@ export class Slider extends Component<SliderOptions> {
       width: 200,
       height: 20,
       sparklineCfg: {
-        padding: {
-          left: 1,
-          right: 1,
-          top: 1,
-          bottom: 1,
-        },
+        padding: [1, 1, 1, 1],
       },
-      padding: {
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-      },
+      padding: [0, 0, 0, 0],
       backgroundStyle: {
         fill: '#fff',
         stroke: '#e4eaf5',
@@ -174,11 +164,12 @@ export class Slider extends Component<SliderOptions> {
 
   private getAvailableSpace() {
     const { padding, width, height } = this.attributes;
+    const [top, right, bottom, left] = padding;
     return {
-      x: padding.left,
-      y: padding.top,
-      width: width - (padding.left + padding.right),
-      height: height - (padding.top + padding.bottom),
+      x: left,
+      y: top,
+      width: width - (left + right),
+      height: height - (top + bottom),
     };
   }
 
@@ -188,7 +179,7 @@ export class Slider extends Component<SliderOptions> {
    * @param isActive 是否是active style
    * @returns ShapeAttrs
    */
-  private getStyle(name: string | string[], isActive?: boolean, handleType?: HandleType) {
+  protected getStyle(name: string | string[], isActive?: boolean, handleType?: HandleType) {
     const { active, ...args } = get(handleType ? this.getHandleCfg(handleType) : this.attributes, name);
     if (isActive) {
       return active || {};
@@ -218,13 +209,14 @@ export class Slider extends Component<SliderOptions> {
         return {};
       }
       const { padding, ...args } = sparklineCfg;
+      const [top, right, bottom, left] = padding;
       const { width, height } = this.getAvailableSpace();
       const { lineWidth: bkgLW } = this.getStyle('backgroundStyle');
       return {
-        x: bkgLW / 2 + padding.left,
-        y: bkgLW / 2 + padding.top,
-        width: width - bkgLW - padding.left - padding.right,
-        height: height - bkgLW - padding.top - padding.bottom,
+        x: bkgLW / 2 + left,
+        y: bkgLW / 2 + top,
+        width: width - bkgLW - left - right,
+        height: height - bkgLW - top - bottom,
         ...args,
       };
     };
