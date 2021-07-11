@@ -1,10 +1,10 @@
 import { Rect } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
-import { ScrollbarOptions } from './types';
+import type { ScrollbarOptions, ScrollbarAttrs } from './types';
 import { applyAttrs, isPC } from '../../util';
 import { CustomElement, DisplayObject } from '../../types';
 
-export { ScrollbarOptions };
+export type { ScrollbarOptions, ScrollbarAttrs };
 
 export class Scrollbar extends CustomElement {
   /**
@@ -47,7 +47,7 @@ export class Scrollbar extends CustomElement {
       // 滑块长度
       thumbLen: 20,
 
-      // 滑块内边距
+      // 滚动条内边距，影响滑轨的实际可用空间
       padding: {
         top: 2,
         right: 2,
