@@ -52,14 +52,9 @@ export type ScrollbarAttrs = {
   thumbLen?: number;
 
   /**
-   * 滚动条内边距，影响滑轨的实际可用空间
+   * 滚动条内边距，影响滑轨的实际可用空间 [top, right, bottom, left]
    */
-  padding?: {
-    top?: number;
-    bottom?: number;
-    left?: number;
-    right?: number;
-  };
+  padding?: [number, number, number, number];
 
   /**
    * 滑轨样式
