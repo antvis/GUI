@@ -1,3 +1,4 @@
+import { get } from '@antv/util';
 import { CustomElement, DisplayObject, ShapeCfg } from '../types';
 
 export type AttrsType = { [key: string]: any };
@@ -26,6 +27,19 @@ export abstract class Component<T extends ShapeCfg> extends CustomElement {
   public reRender(): void {
     this.removeChildren();
     this.init();
+  }
+
+  /**
+   * 获取样式属性
+   * @param name style的key值
+   * @param isActive 是否激活状态的样式
+   */
+  protected getStyle(name: string | string[], isActive?: boolean) {
+    const { active, ...args } = get(this.attributes, name);
+    if (isActive) {
+      return active || {};
+    }
+    return args?.default || args;
   }
 
   protected updateSubComponent(): void {
