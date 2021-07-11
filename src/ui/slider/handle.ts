@@ -84,9 +84,7 @@ export class Handle extends CustomElement {
       defaultHandle.appendChild(createLine(X2, Y1, X2, Y2));
       // 根据orient进行rotate
       if (orient === 'vertical') {
-        // 设置旋转中心
         defaultHandle.setOrigin(width / 2, height / 2);
-
         defaultHandle.rotate(90);
       }
       this.appendChild(defaultHandle);
@@ -94,11 +92,7 @@ export class Handle extends CustomElement {
   }
 
   attributeChangedCallback(name: string, value: any) {
-    console.log(value);
-
     if (name === 'handleCfg') {
-      console.log(value);
-
       this.render(value);
     }
   }

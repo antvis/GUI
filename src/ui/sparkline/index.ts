@@ -15,7 +15,6 @@ import {
 } from './path';
 import { getRange, getStackedData } from './utils';
 import { Component } from '../../abstract/component';
-import { DisplayObject } from '../../types';
 
 export { SparklineOptions };
 
@@ -43,8 +42,6 @@ export class Sparkline extends Component<SparklineOptions> {
     },
   };
 
-  private sparkShapes: DisplayObject;
-
   constructor(options: SparklineOptions) {
     super(deepMix({}, Sparkline.defaultOptions, options));
     this.init();
@@ -53,7 +50,7 @@ export class Sparkline extends Component<SparklineOptions> {
   attributeChangedCallback(name: string, value: any) {
     // 如果type变了，需要清空this.sparkShapes子元素
     if (name === 'type') {
-      this.sparkShapes.removeChildren();
+      this.getSubComponent('sparkShapes').removeChildren();
     }
     console.log(value);
   }
