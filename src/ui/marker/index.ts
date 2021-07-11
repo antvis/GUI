@@ -1,21 +1,19 @@
 import { Path } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
-import { CustomElement, DisplayObject } from '../../types';
 import { MarkerOptions, FunctionalSymbol } from './types';
 import { circle, square, diamond, triangleDown, triangle } from './symbol';
+import { Component } from '../../abstract';
 
 export { MarkerOptions, FunctionalSymbol };
 
 /**
  * Marker
  */
-export class Marker extends CustomElement {
+export class Marker extends Component<MarkerOptions> {
   /**
    * 标签类型
    */
   public static tag = 'marker';
-
-  private pathShape: DisplayObject;
 
   private static MARKER_SYMBOL_MAP = new Map<string, FunctionalSymbol>();
 
@@ -31,7 +29,7 @@ export class Marker extends CustomElement {
   /**
    * 默认参数
    */
-  private static defaultOptions = {
+  protected static defaultOptions = {
     type: Marker.tag,
     attrs: {
       x: 0,
@@ -42,7 +40,6 @@ export class Marker extends CustomElement {
 
   constructor(options: MarkerOptions) {
     super(deepMix({}, Marker.defaultOptions, options));
-
     this.init();
   }
 
@@ -50,29 +47,22 @@ export class Marker extends CustomElement {
     console.log('attributeChangedCallback', name, value);
   }
 
-  public getPathShape() {
-    return this.pathShape;
-  }
-
   /**
    * 根据 type 获取 maker shape
    */
-  private init(): void {
-    const { x, y, r, symbol, ...args } = this.attributes;
-
-    const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
-    const path = symbolFn(x, y, r);
-
-    this.pathShape = new Path({
-      attrs: {
-        // 左上角锚点
+  protected init(): void {
+    const pathAttrsCallback = () => {
+      const { x, y, r, symbol, ...args } = this.attributes;
+      const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
+      const path = symbolFn(x, y, r);
+      return {
         x,
         y,
         path,
         ...args,
-      },
-    });
-    this.appendChild(this.pathShape);
+      };
+    };
+    this.appendSubComponent('pathShape', Path, pathAttrsCallback);
   }
 }
 
