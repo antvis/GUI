@@ -32,9 +32,6 @@ describe('marker', () => {
     });
 
     canvas.appendChild(marker);
-
-    expect(marker.getPathShape().getBounds().center[0]).toBe(100);
-    expect(marker.getPathShape().getBounds().center[1]).toBe(100);
   });
 
   test('customize marker', async () => {
