@@ -17,24 +17,26 @@ export type Scales = {
     }
 );
 
+export type SparklineAttrs = {
+  data?: number[] | number[][];
+  width?: number;
+  height?: number;
+  isStack?: boolean;
+  color?: string | string[] | ((idx: number) => string);
+} & (
+  | {
+      type?: 'line';
+      smooth?: boolean;
+      lineStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+      areaStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+    }
+  | {
+      type: 'column';
+      isGroup?: boolean;
+      columnStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+    }
+);
+
 export type SparklineOptions = ShapeCfg & {
-  attrs: {
-    data?: number[] | number[][];
-    width?: number;
-    height?: number;
-    isStack?: boolean;
-    color?: string | string[] | ((idx: number) => string);
-  } & (
-    | {
-        type?: 'line';
-        smooth?: boolean;
-        lineStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-        areaStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-      }
-    | {
-        type: 'column';
-        isGroup?: boolean;
-        columnStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-      }
-  );
+  attrs: SparklineAttrs;
 };
