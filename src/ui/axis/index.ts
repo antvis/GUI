@@ -1,4 +1,4 @@
-import { GUI } from 'ui/core/gui';
+import { GUI } from '../core/gui';
 import { AxisOptions } from './types';
 
 export { AxisOptions };

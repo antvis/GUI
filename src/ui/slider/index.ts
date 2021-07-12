@@ -1,11 +1,10 @@
-import { Rect, Text, Image, Line } from '@antv/g';
+import { Rect, Text, Image, Line, DisplayObject } from '@antv/g';
 import { deepMix, get, isFunction, isString, isObject } from '@antv/util';
 import { GUI } from '../core/gui';
-import { DisplayObject } from '../../types';
 import { applyAttrs, toPrecision } from '../../util';
 import { Sparkline } from '../sparkline';
 import { Marker, MarkerOptions } from '../marker';
-import { SliderOptions, HandleCfg, Pair } from './types';
+import type { SliderOptions, HandleCfg, Pair } from './types';
 
 export { SliderOptions };
 
