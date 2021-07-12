@@ -3,9 +3,9 @@ import { clamp, deepMix } from '@antv/util';
 import { GUI } from '../core/gui';
 import { applyAttrs, isPC } from '../../util';
 import type { DisplayObject } from '../../types';
-import type { ScrollbarOptions } from './types';
+import type { ScrollbarOptions, ScrollbarAttrs } from './types';
 
-export { ScrollbarOptions };
+export type { ScrollbarOptions, ScrollbarAttrs };
 
 export class Scrollbar extends GUI<ScrollbarOptions> {
   /**
@@ -48,13 +48,8 @@ export class Scrollbar extends GUI<ScrollbarOptions> {
       // 滑块长度
       thumbLen: 20,
 
-      // 滑块内边距
-      padding: {
-        top: 2,
-        right: 2,
-        bottom: 2,
-        left: 2,
-      },
+      // 滚动条内边距，影响滑轨的实际可用空间
+      padding: [2, 2, 2, 2],
 
       trackStyle: {
         default: {
@@ -86,7 +81,8 @@ export class Scrollbar extends GUI<ScrollbarOptions> {
     if (name === 'value') {
       const { padding } = this.attributes;
       const thumbOffset = this.valueOffset(value);
-      this.setThumbOffset(thumbOffset + this.getOrientVal([padding.left, padding.top]));
+      const [top, , , left] = padding;
+      this.setThumbOffset(thumbOffset + this.getOrientVal([left, top]));
     }
   }
 
@@ -176,11 +172,13 @@ export class Scrollbar extends GUI<ScrollbarOptions> {
    */
   private getAvailableSpace() {
     const { width, height, padding } = this.attributes;
+    const [top, right, bottom, left] = padding;
+
     return {
-      x: padding.left,
-      y: padding.top,
-      width: width - (padding.left + padding.right),
-      height: height - (padding.top + padding.bottom),
+      x: left,
+      y: top,
+      width: width - (left + right),
+      height: height - (top + bottom),
     };
   }
 
@@ -273,7 +271,8 @@ export class Scrollbar extends GUI<ScrollbarOptions> {
    */
   private onTrackClick = (e) => {
     const { x, y, padding, thumbLen } = this.attributes;
-    const basePos = this.getOrientVal([x + padding.left, y + padding.top]);
+    const [top, , , left] = padding;
+    const basePos = this.getOrientVal([x + left, y + top]);
     const clickPos = this.getOrientVal([e.x, e.y]) - thumbLen / 2;
     const value = this.valueOffset(clickPos - basePos, true);
     this.setValue(value);
