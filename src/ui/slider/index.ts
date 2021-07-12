@@ -1,16 +1,17 @@
 import { Rect, Text, Image, Line } from '@antv/g';
 import { deepMix, get, isFunction, isString, isObject } from '@antv/util';
-import { SliderOptions, HandleCfg, Pair } from './types';
-import { Marker, MarkerOptions } from '../marker';
-import { Sparkline } from '../sparkline';
-import { CustomElement, DisplayObject } from '../../types';
+import { GUI } from '../core/gui';
+import { DisplayObject } from '../../types';
 import { applyAttrs, toPrecision } from '../../util';
+import { Sparkline } from '../sparkline';
+import { Marker, MarkerOptions } from '../marker';
+import { SliderOptions, HandleCfg, Pair } from './types';
 
 export { SliderOptions };
 
 type HandleType = 'start' | 'end';
 
-export class Slider extends CustomElement {
+export class Slider extends GUI<SliderOptions> {
   public static tag = 'slider';
 
   /**
@@ -153,12 +154,26 @@ export class Slider extends CustomElement {
     this.setAttribute('names', names);
   }
 
-  private init() {
+  public init() {
     this.createBackground();
     this.createSparkline();
     this.createForeground();
     this.createHandles();
     this.bindEvents();
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update() {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    throw new Error('Method not implemented.');
   }
 
   /**

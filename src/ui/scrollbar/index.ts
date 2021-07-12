@@ -1,12 +1,13 @@
 import { Rect } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
-import { ScrollbarOptions } from './types';
+import { GUI } from '../core/gui';
 import { applyAttrs, isPC } from '../../util';
-import { CustomElement, DisplayObject } from '../../types';
+import type { DisplayObject } from '../../types';
+import type { ScrollbarOptions } from './types';
 
 export { ScrollbarOptions };
 
-export class Scrollbar extends CustomElement {
+export class Scrollbar extends GUI<ScrollbarOptions> {
   /**
    * tag
    */
@@ -117,13 +118,27 @@ export class Scrollbar extends CustomElement {
     this.setValue(this.valueOffset(deltaOffset, true) + value);
   }
 
-  private init() {
+  public init() {
     this.createTrack();
     this.createThumb();
 
     const { x, y } = this.attributes;
     this.translate(x, y);
     this.bindEvents();
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update() {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    throw new Error('Method not implemented.');
   }
 
   /**
