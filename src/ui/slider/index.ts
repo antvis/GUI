@@ -1,10 +1,10 @@
 import { Rect, Text, DisplayObject } from '@antv/g';
 import { deepMix, get } from '@antv/util';
 import { GUI } from '../core/gui';
+import { Handle } from './handle';
+import { SliderAttrs, SliderOptions, HandleCfg, Pair } from './types';
 import { toPrecision } from '../../util';
 import { Sparkline } from '../sparkline';
-import { Handle } from './handle';
-import type { SliderAttrs, SliderOptions, HandleCfg, Pair } from './types';
 
 export { SliderAttrs, SliderOptions };
 

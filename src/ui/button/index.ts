@@ -4,7 +4,7 @@ import { GUI } from '../core/gui';
 import { getEllipsisText } from '../../util';
 import type { ShapeAttrs, DisplayObject } from '../../types';
 import { SIZE_STYLE, TYPE_STYLE, DISABLED_STYLE } from './constant';
-import type { ButtonAttrs, ButtonOptions } from './types';
+import { ButtonAttrs, ButtonOptions } from './types';
 
 export { ButtonAttrs, ButtonOptions };
 

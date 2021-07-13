@@ -2,7 +2,7 @@ import { Path, Image } from '@antv/g';
 import { deepMix, isFunction, isObject, isString } from '@antv/util';
 import { GUI } from '../core/gui';
 import type { DisplayObject } from '../../types';
-import type { MarkerAttrs, MarkerOptions, FunctionalSymbol } from './types';
+import { MarkerAttrs, MarkerOptions, FunctionalSymbol } from './types';
 import { circle, square, diamond, triangleDown, triangle } from './symbol';
 
 export { MarkerAttrs, MarkerOptions, FunctionalSymbol };
@@ -76,6 +76,7 @@ export class Marker extends GUI<MarkerAttrs> {
   private createMarker() {
     const { symbol } = this.attributes;
     const markerType = this.parseMarker(symbol);
+    console.log(markerType);
 
     if (['base64', 'url', 'image'].includes(markerType)) {
       this.markerShape = new Image({
