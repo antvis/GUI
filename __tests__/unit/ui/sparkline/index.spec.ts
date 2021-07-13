@@ -38,7 +38,9 @@ canvas.appendChild(sparkline);
 
 describe('sparkline', () => {
   test('basic line', async () => {
-    const path0 = get(sparkline, 'lines').children[0].attributes.path;
+    console.log(sparkline);
+
+    const path0 = sparkline.getElementsByName('sparkline')[0].firstChild.attr('path');
     const y = (val) => {
       return (1 - (val + 10) / 25) * 50;
     };
