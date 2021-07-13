@@ -5,7 +5,7 @@ import { PathCommand } from '@antv/g-base';
 import { GUI } from '../core/gui';
 import type { DisplayObject } from '../../types';
 import { getRange, getStackedData } from './utils';
-import type { Data, SparklineAttrs, SparklineOptions } from './types';
+import { Data, SparklineAttrs, SparklineOptions } from './types';
 import {
   dataToLines,
   lineToLinePath,
@@ -59,7 +59,6 @@ export class Sparkline extends GUI<SparklineAttrs> {
     if (name === 'type') {
       this.sparkShape?.removeChildren();
     }
-    console.log(value);
   }
 
   public init() {
@@ -82,8 +81,9 @@ export class Sparkline extends GUI<SparklineAttrs> {
   /**
    * 组件的更新
    */
-  public update() {
-    throw new Error('Method not implemented.');
+  public update(cfg: SparklineAttrs) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.init();
   }
 
   /**
@@ -157,6 +157,7 @@ export class Sparkline extends GUI<SparklineAttrs> {
       name: 'container',
       attrs: this.getContainerAttrs(),
     });
+    this.appendChild(this.containerShape);
   }
 
   private getLinesAttrs() {
@@ -208,6 +209,7 @@ export class Sparkline extends GUI<SparklineAttrs> {
       name: 'sparkline',
       attrs: this.getLinesAttrs(),
     });
+    this.containerShape.appendChild(this.sparkShape);
   }
 
   private getColumnsAttrs() {
@@ -260,5 +262,6 @@ export class Sparkline extends GUI<SparklineAttrs> {
       name: 'sparkline',
       attrs: this.getColumnsAttrs(),
     });
+    this.containerShape.appendChild(this.sparkShape);
   }
 }

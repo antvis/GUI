@@ -3,20 +3,20 @@ import { deepMix } from '@antv/util';
 import { GUI } from '../core/gui';
 import { Marker } from '../marker';
 import type { DisplayObject } from '../../types';
-import { IconOptions } from './types';
+import { IconAttrs, IconOptions } from './types';
 
 export { IconOptions };
 
 /**
  * 带文本的 图标组件，支持 iconfont 组件
  */
-export class Icon extends GUI<IconOptions> {
+export class Icon extends GUI<IconAttrs> {
   /**
    * 标签类型
    */
   public static tag = 'icon';
 
-  private markerShape: DisplayObject;
+  private markerShape: GUI;
 
   private textShape: DisplayObject;
 
@@ -25,7 +25,7 @@ export class Icon extends GUI<IconOptions> {
   /**
    * 默认参数
    */
-  protected static defaultOptions = {
+  private static defaultOptions = {
     type: Icon.tag,
     attrs: {
       size: 16,
@@ -49,7 +49,8 @@ export class Icon extends GUI<IconOptions> {
   }
 
   attributeChangedCallback(name: string, value: any): void {
-    console.log('attributeChangedCallback', name, value);
+    name;
+    value;
   }
 
   /**
@@ -61,32 +62,31 @@ export class Icon extends GUI<IconOptions> {
       name: 'tag-marker',
       attrs: this.getMarkerAttrs(),
     });
+    this.appendChild(this.markerShape);
 
     // text
     this.textShape = new Text({
       name: 'tag-text',
       attrs: this.getTextAttrs(),
     });
+    this.appendChild(this.textShape);
 
     // background
     this.backgroundShape = new Rect({
       name: 'tag-background',
       attrs: this.getBackgroundAttrs(),
     });
+    this.appendChild(this.backgroundShape);
     this.backgroundShape.toBack();
-
-    // 3. 最后移动到对应的位置
-    const { x, y, size } = this.attributes;
-    this.translate(x + size / 2, y + size / 2);
-
     this.bindEvents();
   }
 
   /**
    * 组件的更新
    */
-  public update() {
-    this.markerShape.attr(this.getMarkerAttrs());
+  public update(cfg: IconAttrs) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.markerShape.update(this.getMarkerAttrs());
     this.textShape.attr(this.getTextAttrs());
     this.backgroundShape.attr(this.getBackgroundAttrs());
   }
@@ -115,7 +115,6 @@ export class Icon extends GUI<IconOptions> {
     return {
       symbol,
       ...markerStyle,
-      // 优先级
       fill,
       r: size / 2,
     };
@@ -135,8 +134,8 @@ export class Icon extends GUI<IconOptions> {
     const { size } = this.attributes;
     const bbox = this.getBounds();
     return {
-      x: -size / 2 - 2,
-      y: -size / 2 - 2,
+      x: -size / 2 - 1,
+      y: -size / 2 - 1,
       width: bbox.getMax()[0] - bbox.getMin()[0],
       height: bbox.getMax()[1] - bbox.getMin()[1],
       radius: 2,

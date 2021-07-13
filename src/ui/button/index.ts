@@ -56,7 +56,8 @@ export class Button extends GUI<ButtonAttrs> {
   };
 
   attributeChangedCallback(name: string, value: any): void {
-    console.log('attributeChangedCallback', name, value);
+    name;
+    value;
   }
 
   /**
@@ -156,7 +157,7 @@ export class Button extends GUI<ButtonAttrs> {
    * 组件的更新
    */
   public update(cfg: ButtonAttrs) {
-    this.attr(cfg);
+    this.attr(deepMix({}, this.attributes, cfg));
   }
 
   /**

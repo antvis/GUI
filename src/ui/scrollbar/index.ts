@@ -23,7 +23,7 @@ export class Scrollbar extends GUI<ScrollbarAttrs> {
    */
   private prevPos: number;
 
-  protected static defaultOptions = {
+  private static defaultOptions = {
     type: Scrollbar.tag,
     attrs: {
       // 滑条朝向
@@ -122,15 +122,18 @@ export class Scrollbar extends GUI<ScrollbarAttrs> {
    * 组件的更新
    */
   public update(cfg: ScrollbarAttrs) {
-    this.attr(cfg);
-    throw new Error('Method not implemented.');
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.trackShape.attr(this.getTrackAttrs());
+    this.thumbShape.attr(this.getThumbAttrs());
   }
 
   /**
    * 组件的清除
    */
   public clear() {
-    throw new Error('Method not implemented.');
+    this.thumbShape.destroy();
+    this.trackShape.destroy();
+    this.destroy();
   }
 
   /**
@@ -218,6 +221,7 @@ export class Scrollbar extends GUI<ScrollbarAttrs> {
       name: 'track',
       attrs: this.getTrackAttrs(),
     });
+    this.appendChild(this.trackShape);
   }
 
   private getThumbAttrs() {
@@ -254,6 +258,7 @@ export class Scrollbar extends GUI<ScrollbarAttrs> {
       name: 'thumb',
       attrs: this.getThumbAttrs(),
     });
+    this.trackShape.appendChild(this.thumbShape);
   }
 
   private bindEvents() {

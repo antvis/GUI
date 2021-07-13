@@ -32,7 +32,7 @@ export class Marker extends GUI<MarkerAttrs> {
   /**
    * 默认参数
    */
-  protected static defaultOptions = {
+  private static defaultOptions = {
     type: Marker.tag,
     attrs: {
       x: 0,
@@ -47,7 +47,8 @@ export class Marker extends GUI<MarkerAttrs> {
   }
 
   attributeChangedCallback(name: string, value: any): void {
-    console.log('attributeChangedCallback', name, value);
+    name;
+    value;
   }
 
   /**
@@ -61,7 +62,7 @@ export class Marker extends GUI<MarkerAttrs> {
    * 组件的更新
    */
   public update(cfg: MarkerAttrs): void {
-    this.attr(cfg);
+    this.attr(deepMix({}, this.attributes, cfg));
     this.clear();
     this.createMarker();
   }
@@ -71,24 +72,26 @@ export class Marker extends GUI<MarkerAttrs> {
    */
   public clear() {
     this.markerShape.destroy();
+    this.removeChildren();
   }
 
   private createMarker() {
     const { symbol } = this.attributes;
     const markerType = this.parseMarker(symbol);
-    console.log(markerType);
-
     if (['base64', 'url', 'image'].includes(markerType)) {
       this.markerShape = new Image({
         name: 'marker-image',
         attrs: this.getMarkerImageAttrs(),
       });
+      const { r } = this.attributes;
+      this.translate(-r, -r);
     } else if (markerType === 'symbol') {
       this.markerShape = new Path({
         name: 'marker-symbol',
         attrs: this.getMarkerSymbolAttrs(),
       });
     }
+
     this.appendChild(this.markerShape);
   }
 
@@ -99,8 +102,6 @@ export class Marker extends GUI<MarkerAttrs> {
     const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
     const path = symbolFn(x, y, r);
     return {
-      x,
-      y,
       path,
       r: halfR,
       ...args,
@@ -110,12 +111,12 @@ export class Marker extends GUI<MarkerAttrs> {
   // image marker
   private getMarkerImageAttrs() {
     const { r, symbol, ...args } = this.attributes;
-    const halfR = r / 2;
+    const r2 = r * 2;
     return {
-      x: -halfR,
-      y: -halfR,
-      width: r,
-      height: r,
+      x: -r2,
+      y: -r2,
+      width: r2,
+      height: r2,
       img: symbol,
       ...args,
     };
