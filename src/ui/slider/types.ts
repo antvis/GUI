@@ -39,34 +39,36 @@ export type HandleCfg = {
   handleStyle?: MixAttrs;
 };
 
-export type SliderOptions = ShapeCfg & {
-  attrs: {
-    orient?: 'vertical' | 'horizontal';
-    values?: Pair<number>;
-    names?: Pair<string>;
-    min?: number;
-    max?: number;
-    width?: number;
-    height?: number;
-    padding?: {
-      left: number;
-      right: number;
-      top: number;
-      buttons: number;
-    };
-    backgroundStyle?: MixAttrs;
-    selectionStyle?: MixAttrs;
-    foregroundStyle?: MixAttrs;
-    handle?:
-      | HandleCfg
-      | {
-          start?: HandleCfg;
-          end?: HandleCfg;
-        };
-
-    /**
-     * 缩略图数据及其配置
-     */
-    sparklineCfg?: SparklineAttrs;
+export type SliderAttrs = {
+  orient?: 'vertical' | 'horizontal';
+  values?: Pair<number>;
+  names?: Pair<string>;
+  min?: number;
+  max?: number;
+  width?: number;
+  height?: number;
+  padding?: {
+    left: number;
+    right: number;
+    top: number;
+    buttons: number;
   };
+  backgroundStyle?: MixAttrs;
+  selectionStyle?: MixAttrs;
+  foregroundStyle?: MixAttrs;
+  handle?:
+    | HandleCfg
+    | {
+        start?: HandleCfg;
+        end?: HandleCfg;
+      };
+
+  /**
+   * 缩略图数据及其配置
+   */
+  sparklineCfg?: SparklineAttrs;
+};
+
+export type SliderOptions = ShapeCfg & {
+  attrs: SliderAttrs;
 };

@@ -1,8 +1,8 @@
 import { Rect, Image, Line } from '@antv/g';
 import { Marker, MarkerOptions } from '../marker';
-import { AttrsType } from '../../abstract/component';
 import { CustomElement, ShapeCfg } from '../../types';
 
+type AttrsType = { [key: string]: any };
 type HandleCfg = {
   type: string;
   show: boolean;

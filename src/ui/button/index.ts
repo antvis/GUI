@@ -1,13 +1,14 @@
 import { Rect, Text } from '@antv/g';
 import { deepMix, pick } from '@antv/util';
-import { ButtonOptions } from './types';
-import { CustomElement, DisplayObject } from '../../types';
+import { GUI } from '../core/gui';
 import { getEllipsisText } from '../../util';
+import type { ShapeAttrs, DisplayObject } from '../../types';
 import { SIZE_STYLE, TYPE_STYLE, DISABLED_STYLE } from './constant';
+import type { ButtonAttrs, ButtonOptions } from './types';
 
-export { ButtonOptions };
+export { ButtonAttrs, ButtonOptions };
 
-export class Button extends CustomElement {
+export class Button extends GUI<ButtonAttrs> {
   /**
    * 标签类型
    */
@@ -59,20 +60,6 @@ export class Button extends CustomElement {
   }
 
   /**
-   * 获取text
-   */
-  public getTextShape(): DisplayObject {
-    return this.textShape;
-  }
-
-  /**
-   * 获取button
-   */
-  public getBackground(): DisplayObject {
-    return this.background;
-  }
-
-  /**
    * 根据size、type属性生成实际渲染的属性
    */
   private getMixinStyle(name: 'textStyle' | 'buttonStyle' | 'hoverStyle') {
@@ -102,7 +89,7 @@ export class Button extends CustomElement {
   /**
    * 初始化button
    */
-  private init(): void {
+  public init(): void {
     const { x, y, text, padding, ellipsis, onClick } = this.attributes;
     const textStyle = this.getMixinStyle('textStyle');
     const buttonStyle = this.getMixinStyle('buttonStyle');
@@ -163,6 +150,27 @@ export class Button extends CustomElement {
     this.translate(x, y);
 
     this.bindEvents(onClick);
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update(cfg: ButtonAttrs) {
+    this.attr(cfg);
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {}
+
+  /**
+   * 应用多个属性
+   */
+  private applyAttrs(shape: 'textShape' | 'background', attrs: ShapeAttrs) {
+    Object.entries(attrs).forEach((attr) => {
+      this[shape].attr(attr[0], attr[1]);
+    });
   }
 
   private bindEvents(onClick: Function): void {

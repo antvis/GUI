@@ -1,19 +1,26 @@
 import { Rect, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
+import { GUI } from '../core/gui';
 import { Marker } from '../marker';
-import { IconOptions } from './types';
-import { Component } from '../../abstract';
+import type { DisplayObject } from '../../types';
+import type { IconOptions } from './types';
 
 export { IconOptions };
 
 /**
  * 带文本的 图标组件，支持 iconfont 组件
  */
-export class Icon extends Component<IconOptions> {
+export class Icon extends GUI<IconOptions> {
   /**
    * 标签类型
    */
   public static tag = 'icon';
+
+  private markerShape: DisplayObject;
+
+  private textShape: DisplayObject;
+
+  private backgroundShape: DisplayObject;
 
   /**
    * 默认参数
@@ -48,62 +55,92 @@ export class Icon extends Component<IconOptions> {
   /**
    * 根据 type 获取 maker shape
    */
-  protected init(): void {
-    // icon
-    const iconAttrsCallback = () => {
-      const { symbol, size, fill, markerStyle } = this.attributes;
-      return {
-        symbol,
-        ...markerStyle,
-        // 优先级
-        fill,
-        r: size / 2,
-      };
-    };
-    this.appendSubComponent('iconShape', Marker, iconAttrsCallback);
+  public init(): void {
+    // marker
+    this.markerShape = new Marker({
+      name: 'tag-marker',
+      attrs: this.getMarkerAttrs(),
+    });
 
     // text
-    const textAttrsCallback = () => {
-      const { size, spacing, text, textStyle } = this.attributes;
-      return {
-        x: size / 2 + spacing,
-        y: 0,
-        ...textStyle,
-        text,
-      };
-    };
-    this.appendSubComponent('textShape', Text, textAttrsCallback);
+    this.textShape = new Text({
+      name: 'tag-text',
+      attrs: this.getTextAttrs(),
+    });
 
     // background
-    const backgroundAttrsCallback = () => {
-      const { size } = this.attributes;
-      const bbox = this.getBounds();
-      return {
-        x: -size / 2 - 2,
-        y: -size / 2 - 2,
-        width: bbox.getMax()[0] - bbox.getMin()[0],
-        height: bbox.getMax()[1] - bbox.getMin()[1],
-        radius: 2,
-        fill: '#fff',
-      };
-    };
-    this.appendSubComponent('background', Rect, backgroundAttrsCallback);
-    this.getSubComponent('background').toBack();
+    this.backgroundShape = new Rect({
+      name: 'tag-background',
+      attrs: this.getBackgroundAttrs(),
+    });
+    this.backgroundShape.toBack();
 
-    const { x, y, size } = this.attributes;
     // 3. 最后移动到对应的位置
+    const { x, y, size } = this.attributes;
     this.translate(x + size / 2, y + size / 2);
 
     this.bindEvents();
   }
 
+  /**
+   * 组件的更新
+   */
+  public update() {
+    this.markerShape.attr(this.getMarkerAttrs());
+    this.textShape.attr(this.getTextAttrs());
+    this.backgroundShape.attr(this.getBackgroundAttrs());
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    this.markerShape.destroy();
+    this.textShape.destroy();
+    this.backgroundShape.destroy();
+  }
+
   private bindEvents() {
     this.on('mouseenter', () => {
-      this.getSubComponent('background').attr('fill', '#F5F5F5');
+      this.backgroundShape.attr('fill', '#F5F5F5');
     });
 
     this.on('mouseleave', () => {
-      this.getSubComponent('background').attr('fill', '#fff');
+      this.backgroundShape.attr('fill', '#fff');
     });
+  }
+
+  private getMarkerAttrs() {
+    const { symbol, size, fill, markerStyle } = this.attributes;
+    return {
+      symbol,
+      ...markerStyle,
+      // 优先级
+      fill,
+      r: size / 2,
+    };
+  }
+
+  private getTextAttrs() {
+    const { size, spacing, text, textStyle } = this.attributes;
+    return {
+      x: size / 2 + spacing,
+      y: 0,
+      ...textStyle,
+      text,
+    };
+  }
+
+  private getBackgroundAttrs() {
+    const { size } = this.attributes;
+    const bbox = this.getBounds();
+    return {
+      x: -size / 2 - 2,
+      y: -size / 2 - 2,
+      width: bbox.getMax()[0] - bbox.getMin()[0],
+      height: bbox.getMax()[1] - bbox.getMin()[1],
+      radius: 2,
+      fill: '#fff',
+    };
   }
 }

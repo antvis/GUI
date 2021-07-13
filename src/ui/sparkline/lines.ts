@@ -1,7 +1,7 @@
 import { Path } from '@antv/g';
-import { AttrsType } from '../../abstract/component';
 import { CustomElement, ShapeCfg } from '../../types';
 
+type AttrsType = { [key: string]: any };
 type LinesCfg = { linesAttrs: AttrsType[]; areasAttrs?: AttrsType[] };
 
 export class Lines extends CustomElement {

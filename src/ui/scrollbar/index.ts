@@ -1,15 +1,22 @@
 import { Rect } from '@antv/g';
-import { clamp, deepMix } from '@antv/util';
-import { ScrollbarOptions } from './types';
-import { Component } from '../../abstract';
+import { clamp, deepMix, get } from '@antv/util';
+import { GUI } from '../core/gui';
+import type { DisplayObject } from '../../types';
+import type { ScrollbarOptions, ScrollbarAttrs } from './types';
 
-export { ScrollbarOptions };
+export type { ScrollbarOptions, ScrollbarAttrs };
 
-export class Scrollbar extends Component<ScrollbarOptions> {
+export class Scrollbar extends GUI<ScrollbarAttrs> {
   /**
    * tag
    */
   public static tag = 'scrollbar';
+
+  // 滑道
+  private trackShape: DisplayObject;
+
+  // 滑块
+  private thumbShape: DisplayObject;
 
   /**
    * 拖动开始位置
@@ -36,7 +43,7 @@ export class Scrollbar extends Component<ScrollbarOptions> {
       // 滑块长度
       thumbLen: 20,
 
-      // 滑块内边距
+      // 滚动条内边距，影响滑轨的实际可用空间
       padding: [2, 2, 2, 2],
 
       trackStyle: {
@@ -102,13 +109,28 @@ export class Scrollbar extends Component<ScrollbarOptions> {
     this.setValue(this.valueOffset(deltaOffset, true) + value);
   }
 
-  protected init() {
+  public init() {
     this.createTrack();
     this.createThumb();
 
     const { x, y } = this.attributes;
     this.translate(x, y);
     this.bindEvents();
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update(cfg: ScrollbarAttrs) {
+    this.attr(cfg);
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -141,6 +163,18 @@ export class Scrollbar extends Component<ScrollbarOptions> {
     return num / L;
   }
 
+  /* 获取样式属性
+   * @param name style的key值
+   * @param isActive 是否激活状态的样式
+   */
+  private getStyle(name: string | string[], isActive?: boolean) {
+    const { active, ...args } = get(this.attributes, name);
+    if (isActive) {
+      return active || {};
+    }
+    return args?.default || args;
+  }
+
   /**
    * 获得轨道可用空间
    */
@@ -168,58 +202,64 @@ export class Scrollbar extends Component<ScrollbarOptions> {
    * @param thumbOffset 滑块位置偏移量
    */
   private setThumbOffset(thumbOffset: number) {
-    this.getSubComponent('thumb').setAttribute(this.getOrientVal(['x', 'y']), thumbOffset);
+    this.thumbShape.attr(this.getOrientVal(['x', 'y']), thumbOffset);
+  }
+
+  private getTrackAttrs() {
+    const { width, height } = this.attributes;
+    return { width, height, x: 0, y: 0, ...this.getStyle('trackStyle') };
   }
 
   /**
    * 生成轨道属性
    */
   private createTrack() {
-    const trackAttrsCallback = () => {
-      const { width, height } = this.attributes;
-      return { width, height, x: 0, y: 0, ...this.getStyle('trackStyle') };
+    this.trackShape = new Rect({
+      name: 'track',
+      attrs: this.getTrackAttrs(),
+    });
+  }
+
+  private getThumbAttrs() {
+    const { orient, value, isRound, thumbLen } = this.attributes;
+    const trackInner = this.getAvailableSpace();
+    const { x, y, width, height } = trackInner;
+    const baseAttrs = {
+      ...trackInner,
+      ...this.getStyle('thumbStyle'),
     };
-    this.appendSubComponent('track', Rect, trackAttrsCallback, { name: 'track' });
+    let half = width / 2;
+    if (orient === 'vertical') {
+      return {
+        ...baseAttrs,
+        y: y + this.valueOffset(value),
+        height: thumbLen,
+        radius: isRound ? half : 0,
+      };
+    }
+    half = height / 2;
+    return {
+      ...baseAttrs,
+      x: x + this.valueOffset(value),
+      width: thumbLen,
+      radius: isRound ? half : 0,
+    };
   }
 
   /**
    * 生成滑块属性
    */
   private createThumb() {
-    const thumbAttrsCallback = () => {
-      const { orient, value, isRound, thumbLen } = this.attributes;
-      const trackInner = this.getAvailableSpace();
-      const { x, y, width, height } = trackInner;
-      const baseAttrs = {
-        ...trackInner,
-        ...this.getStyle('thumbStyle'),
-      };
-      let half = width / 2;
-      if (orient === 'vertical') {
-        return {
-          ...baseAttrs,
-          y: y + this.valueOffset(value),
-          height: thumbLen,
-          radius: isRound ? half : 0,
-        };
-      }
-      half = height / 2;
-      return {
-        ...baseAttrs,
-        x: x + this.valueOffset(value),
-        width: thumbLen,
-        radius: isRound ? half : 0,
-      };
-    };
-    this.appendSubComponent('thumb', Rect, thumbAttrsCallback, { name: 'thumb' });
+    this.thumbShape = new Rect({
+      name: 'thumb',
+      attrs: this.getThumbAttrs(),
+    });
   }
 
   private bindEvents() {
-    const trackShape = this.getSubComponent('track');
-    trackShape.addEventListener('click', this.onTrackClick);
-    const thumbShape = this.getSubComponent('thumb');
-    thumbShape.addEventListener('mousedown', this.onDragStart);
-    thumbShape.addEventListener('touchstart', this.onDragStart);
+    this.trackShape.addEventListener('click', this.onTrackClick);
+    this.thumbShape.addEventListener('mousedown', this.onDragStart);
+    this.thumbShape.addEventListener('touchstart', this.onDragStart);
     this.onHover();
   }
 
@@ -249,7 +289,7 @@ export class Scrollbar extends Component<ScrollbarOptions> {
    */
   private onHover() {
     ['thumb', 'track'].forEach((name) => {
-      const target = this.getSubComponent(name);
+      const target = this[`${name}Shape`];
       target.addEventListener('mouseenter', () => {
         target.attr(this.getStyle(`${name}Style`, true));
       });

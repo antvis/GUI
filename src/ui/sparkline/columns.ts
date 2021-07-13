@@ -1,7 +1,7 @@
 import { Rect } from '@antv/g';
-import { AttrsType } from '../../abstract/component';
 import { CustomElement, ShapeCfg } from '../../types';
 
+type AttrsType = { [key: string]: any };
 type ColumnsCfg = AttrsType[][];
 
 export class Columns extends CustomElement {
