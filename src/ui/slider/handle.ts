@@ -1,42 +1,32 @@
-import { Rect, Image, Line } from '@antv/g';
-import { Marker, MarkerOptions } from '../marker';
+import { Rect, Line } from '@antv/g';
+import { Marker } from '../marker';
 import { CustomElement, ShapeCfg } from '../../types';
 
 type AttrsType = { [key: string]: any };
-type HandleCfg = {
+type HandleCfg = AttrsType & {
   type: string;
-  show: boolean;
   orient: string;
-  handleAttrs: AttrsType;
 };
 
 export class Handle extends CustomElement {
   constructor({ attrs, ...rest }: ShapeCfg) {
     super({ type: 'handle', attrs, ...rest });
-    const { show, type, orient, handleAttrs } = attrs;
-    this.render({ show, type, orient, handleAttrs });
+    const { type, orient, ...handleAttrs } = attrs;
+    this.render({ type, orient, handleAttrs });
   }
 
   public render(handleCfg: HandleCfg) {
     this.removeChildren(true);
-    const { type, show, orient, handleAttrs: attrs } = handleCfg;
+    const { type, orient, handleAttrs: attrs } = handleCfg;
 
-    if (!show) {
+    if (type === 'hide') {
       this.appendChild(
         new Rect({
           attrs,
           name: 'handleIcon',
         })
       );
-    } else if (['base64', 'url', 'image'].includes(type)) {
-      this.appendChild(
-        new Image({
-          attrs,
-          name: 'handleIcon',
-        })
-      );
     } else if (type === 'symbol') {
-      attrs as MarkerOptions;
       this.appendChild(
         new Marker({
           // @ts-ignore
