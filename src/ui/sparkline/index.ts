@@ -57,15 +57,33 @@ export class Sparkline extends GUI<SparklineAttrs> {
   attributeChangedCallback(name: string, value: any) {
     // 如果type变了，需要清空this.sparkShapes子元素
     if (name === 'type') {
-      this.sparkShape?.removeChildren();
+      this.sparkShape?.destroy();
     }
   }
 
   public init() {
-    const { data, type } = this.attributes;
     this.createContainer();
-    if (!data) return;
+    this.createSparkline();
+  }
 
+  /**
+   * 组件的更新
+   */
+  public update(cfg: SparklineAttrs) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.containerShape.removeChildren();
+    this.createSparkline();
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    throw new Error('Method not implemented.');
+  }
+
+  private createSparkline() {
+    const { type } = this.attributes;
     switch (type) {
       case 'line':
         this.createLine();
@@ -76,21 +94,6 @@ export class Sparkline extends GUI<SparklineAttrs> {
       default:
         break;
     }
-  }
-
-  /**
-   * 组件的更新
-   */
-  public update(cfg: SparklineAttrs) {
-    this.attr(deepMix({}, this.attributes, cfg));
-    this.init();
-  }
-
-  /**
-   * 组件的清除
-   */
-  public clear() {
-    throw new Error('Method not implemented.');
   }
 
   /**
@@ -139,6 +142,7 @@ export class Sparkline extends GUI<SparklineAttrs> {
    */
   private getData(): Data {
     const { data: _ } = this.attributes;
+    if (!_ || _?.length === 0) return undefined;
     let data = clone(_);
     // number[] -> number[][]
     if (isNumber(data[0])) {
@@ -163,6 +167,13 @@ export class Sparkline extends GUI<SparklineAttrs> {
   private getLinesAttrs() {
     const { areaStyle, isStack, lineStyle, smooth, width } = this.attributes;
     let data = this.getData();
+    if (!data)
+      return {
+        linesCfg: {
+          linesAttrs: [],
+          areasAttrs: [],
+        },
+      };
     if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as { x: Linear; y: Linear };
     // 线条Path
@@ -215,6 +226,10 @@ export class Sparkline extends GUI<SparklineAttrs> {
   private getColumnsAttrs() {
     const { isStack, height, columnStyle } = this.attributes;
     let data = this.getData();
+    if (!data)
+      return {
+        columnsCfg: [],
+      };
     if (isStack) data = getStackedData(data);
     const { x, y } = this.createScales(data) as {
       x: Band;
