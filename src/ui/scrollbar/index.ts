@@ -1,12 +1,13 @@
 import { Rect } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
-import { ScrollbarOptions } from './types';
+import { GUI } from '../core/gui';
 import { applyAttrs, isPC } from '../../util';
-import { CustomElement, DisplayObject } from '../../types';
+import type { DisplayObject } from '../../types';
+import type { ScrollbarOptions, ScrollbarAttrs } from './types';
 
-export { ScrollbarOptions };
+export type { ScrollbarOptions, ScrollbarAttrs };
 
-export class Scrollbar extends CustomElement {
+export class Scrollbar extends GUI<ScrollbarOptions> {
   /**
    * tag
    */
@@ -47,13 +48,8 @@ export class Scrollbar extends CustomElement {
       // 滑块长度
       thumbLen: 20,
 
-      // 滑块内边距
-      padding: {
-        top: 2,
-        right: 2,
-        bottom: 2,
-        left: 2,
-      },
+      // 滚动条内边距，影响滑轨的实际可用空间
+      padding: [2, 2, 2, 2],
 
       trackStyle: {
         default: {
@@ -85,7 +81,8 @@ export class Scrollbar extends CustomElement {
     if (name === 'value') {
       const { padding } = this.attributes;
       const thumbOffset = this.valueOffset(value);
-      this.setThumbOffset(thumbOffset + this.getOrientVal([padding.left, padding.top]));
+      const [top, , , left] = padding;
+      this.setThumbOffset(thumbOffset + this.getOrientVal([left, top]));
     }
   }
 
@@ -117,13 +114,27 @@ export class Scrollbar extends CustomElement {
     this.setValue(this.valueOffset(deltaOffset, true) + value);
   }
 
-  private init() {
+  public init() {
     this.createTrack();
     this.createThumb();
 
     const { x, y } = this.attributes;
     this.translate(x, y);
     this.bindEvents();
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update() {
+    throw new Error('Method not implemented.');
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -161,11 +172,13 @@ export class Scrollbar extends CustomElement {
    */
   private getAvailableSpace() {
     const { width, height, padding } = this.attributes;
+    const [top, right, bottom, left] = padding;
+
     return {
-      x: padding.left,
-      y: padding.top,
-      width: width - (padding.left + padding.right),
-      height: height - (padding.top + padding.bottom),
+      x: left,
+      y: top,
+      width: width - (left + right),
+      height: height - (top + bottom),
     };
   }
 
@@ -258,7 +271,8 @@ export class Scrollbar extends CustomElement {
    */
   private onTrackClick = (e) => {
     const { x, y, padding, thumbLen } = this.attributes;
-    const basePos = this.getOrientVal([x + padding.left, y + padding.top]);
+    const [top, , , left] = padding;
+    const basePos = this.getOrientVal([x + left, y + top]);
     const clickPos = this.getOrientVal([e.x, e.y]) - thumbLen / 2;
     const value = this.valueOffset(clickPos - basePos, true);
     this.setValue(value);
