@@ -14,11 +14,13 @@ export type MarkerAttrs = {
   /**
    * 标记的大小，默认为 16
    */
-  r?: number;
+  size?: number;
   /**
    * 标记的类型，或者 path callback
    */
   symbol: string | FunctionalSymbol;
+
+  [key: string]: any;
 };
 
 export type MarkerOptions = ShapeCfg & {

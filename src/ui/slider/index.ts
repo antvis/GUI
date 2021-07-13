@@ -30,16 +30,16 @@ export class Slider extends GUI<SliderAttrs> {
   private backgroundShape: DisplayObject;
 
   // 迷你图
-  private sparklineShape: DisplayObject;
+  private sparklineShape: Sparkline;
 
   // 前景、选区
   private foregroundShape: DisplayObject;
 
   // 开始滑块
-  private startHandle: DisplayObject;
+  private startHandle: Handle;
 
   // 结束滑块
-  private endHandle: DisplayObject;
+  private endHandle: Handle;
 
   /**
    * 选区开始的位置
@@ -66,7 +66,7 @@ export class Slider extends GUI<SliderAttrs> {
     this.init();
   }
 
-  protected static defaultOptions = {
+  private static defaultOptions = {
     type: Slider.tag,
     attrs: {
       orient: 'horizontal',
@@ -149,8 +149,12 @@ export class Slider extends GUI<SliderAttrs> {
    * 组件的更新
    */
   public update(cfg: SliderAttrs) {
-    this.attr(cfg);
-    throw new Error('Method not implemented.');
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.backgroundShape.attr(this.getBackgroundAttrs());
+    this.sparklineShape.update(this.getSparklineAttrs());
+    this.foregroundShape.attr(this.getForegroundAttrs());
+    this.startHandle.attr(this.getHandleAttrs('start'));
+    this.endHandle.attr(this.getHandleAttrs('end'));
   }
 
   /**
@@ -232,6 +236,8 @@ export class Slider extends GUI<SliderAttrs> {
       name: 'background',
       attrs: this.getBackgroundAttrs(),
     });
+    this.backgroundShape.toBack();
+    this.appendChild(this.backgroundShape);
   }
 
   private getSparklineAttrs() {
@@ -261,6 +267,7 @@ export class Slider extends GUI<SliderAttrs> {
       name: 'sparkline',
       attrs: this.getSparklineAttrs(),
     });
+    this.backgroundShape.appendChild(this.sparklineShape);
   }
 
   /**
@@ -296,6 +303,7 @@ export class Slider extends GUI<SliderAttrs> {
       name: 'foreground',
       attrs: this.getForegroundAttrs(),
     });
+    this.backgroundShape.appendChild(this.foregroundShape);
   }
 
   /**
@@ -322,7 +330,7 @@ export class Slider extends GUI<SliderAttrs> {
     (['start', 'end'] as HandleType[]).forEach((handleType) => {
       const handle = this[`${handleType}Handle`];
       handle.attr(this.calcHandlePosition(handleType));
-      const handleText = this[`${handleType}HandleText`];
+      const handleText = handle.getElementsByName('handleText')[0];
       handleText.attr(this.calcHandleText(handleType));
     });
   }
@@ -417,12 +425,15 @@ export class Slider extends GUI<SliderAttrs> {
         type: 'default',
         orient,
         ...attrs,
+        size,
       };
     }
     // 使用symbol
     return {
       type: 'symbol',
       ...attrs,
+      r: size,
+      symbol: handleIcon,
     };
   }
 
@@ -431,9 +442,8 @@ export class Slider extends GUI<SliderAttrs> {
    */
   private createHandle(options: HandleCfg, handleType: HandleType) {
     // 手柄容器
-    let handleEl = this[`${handleType}Handle`];
 
-    handleEl = new DisplayObject({
+    const handleEl = new DisplayObject({
       handleType,
       name: 'handle',
       attrs: this.getHandleAttrs(handleType),
@@ -454,6 +464,8 @@ export class Slider extends GUI<SliderAttrs> {
       attrs: this.getHandleIconAttrs(handleType),
     });
     handleEl.appendChild(handleIcon);
+
+    this[`${handleType}Handle`] = handleEl;
   }
 
   private getHandleCfg(handleType: HandleType) {

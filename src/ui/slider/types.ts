@@ -67,6 +67,8 @@ export type SliderAttrs = {
    * 缩略图数据及其配置
    */
   sparklineCfg?: SparklineAttrs;
+
+  [key: string]: any;
 };
 
 export type SliderOptions = ShapeCfg & {

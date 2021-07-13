@@ -23,6 +23,7 @@ export type SparklineAttrs = {
   height?: number;
   isStack?: boolean;
   color?: string | string[] | ((idx: number) => string);
+  [key: string]: any;
 } & (
   | {
       type?: 'line';

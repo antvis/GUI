@@ -30,6 +30,8 @@ export type IconAttrs = {
    * 文本的样式
    */
   textStyle?: ShapeAttrs;
+
+  [key: string]: any;
 };
 
 export type IconOptions = ShapeCfg & {

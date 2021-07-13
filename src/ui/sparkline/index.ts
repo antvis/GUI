@@ -28,7 +28,7 @@ export class Sparkline extends GUI<SparklineAttrs> {
   // Lines或者Columns
   private sparkShape: DisplayObject;
 
-  protected static defaultOptions = {
+  private static defaultOptions = {
     attrs: {
       type: 'line',
       width: 200,

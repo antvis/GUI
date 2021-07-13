@@ -65,6 +65,8 @@ export type ScrollbarAttrs = {
    * 滑块样式
    */
   thumbStyle?: ScrollStyle;
+
+  [key: string]: any;
 };
 
 /**
