@@ -55,8 +55,6 @@ describe('scrollbar', () => {
     let value = 0.2;
     scrollbar.setValue(value);
     expect(scrollbar.getValue()).toBe(value);
-    console.log(scrollbar);
-    console.log(scrollbar.lastChild);
 
     expect(scrollbar.getElementsByName('thumb')[0].attr('y')).toBeCloseTo(
       top + (height - verticalPadding - thumbLen) * clamp(value, 0, 1),
