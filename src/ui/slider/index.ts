@@ -148,8 +148,8 @@ export class Slider extends GUI<SliderAttrs> {
   /**
    * 组件的更新
    */
-  public update(cfg: SliderAttrs) {
-    this.attr(deepMix({}, this.attributes, cfg));
+  public update(attrs: SliderAttrs) {
+    this.attr(deepMix({}, this.attributes, attrs));
     this.backgroundShape.attr(this.getBackgroundAttrs());
     this.sparklineShape.update(this.getSparklineAttrs());
     this.foregroundShape.attr(this.getForegroundAttrs());
@@ -160,9 +160,7 @@ export class Slider extends GUI<SliderAttrs> {
   /**
    * 组件的清除
    */
-  public clear() {
-    throw new Error('Method not implemented.');
-  }
+  public clear() {}
 
   /**
    * 获得安全的Values
