@@ -39,7 +39,7 @@ export type HandleCfg = {
   handleStyle?: MixAttrs;
 };
 
-export type SliderAttrs = {
+export type SliderAttrs = ShapeAttrs & {
   orient?: 'vertical' | 'horizontal';
   values?: Pair<number>;
   names?: Pair<string>;
@@ -67,8 +67,6 @@ export type SliderAttrs = {
    * 缩略图数据及其配置
    */
   sparklineCfg?: SparklineAttrs;
-
-  [key: string]: any;
 };
 
 export type SliderOptions = ShapeCfg & {

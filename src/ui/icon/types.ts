@@ -1,7 +1,7 @@
 import { ShapeAttrs, ShapeCfg } from '../../types';
 import { MarkerOptions } from '../marker';
 
-export type IconAttrs = {
+export type IconAttrs = ShapeAttrs & {
   /**
    * symbol 的图标类型，也可以自定义
    */
@@ -30,8 +30,6 @@ export type IconAttrs = {
    * 文本的样式
    */
   textStyle?: ShapeAttrs;
-
-  [key: string]: any;
 };
 
 export type IconOptions = ShapeCfg & {

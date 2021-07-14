@@ -10,7 +10,7 @@ export type Orient = 'horizontal' | 'vertical';
 /**
  * 滚动条组件的属性配置
  */
-export type ScrollbarAttrs = {
+export type ScrollbarAttrs = ShapeAttrs & {
   /**
    * 滑条朝向
    */
@@ -65,8 +65,6 @@ export type ScrollbarAttrs = {
    * 滑块样式
    */
   thumbStyle?: ScrollStyle;
-
-  [key: string]: any;
 };
 
 /**

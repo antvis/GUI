@@ -5,38 +5,27 @@ export type Point = [number, number];
 export type Line = Point[];
 export type Data = number[][];
 export type Scales = {
+  type: 'line' | 'column';
   y: Linear;
-} & (
-  | {
-      type: 'line';
-      x: Linear;
-    }
-  | {
-      type: 'column';
-      x: Band;
-    }
-);
+  x: Linear | Band;
+};
 
-export type SparklineAttrs = {
+export type SparklineAttrs = ShapeAttrs & {
   data?: number[] | number[][];
   width?: number;
   height?: number;
   isStack?: boolean;
   color?: string | string[] | ((idx: number) => string);
-  [key: string]: any;
-} & (
-  | {
-      type?: 'line';
-      smooth?: boolean;
-      lineStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-      areaStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-    }
-  | {
-      type: 'column';
-      isGroup?: boolean;
-      columnStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
-    }
-);
+
+  type?: 'line' | 'column';
+  // line
+  smooth?: boolean;
+  lineStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+  areaStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+  // column
+  isGroup?: boolean;
+  columnStyle?: ShapeAttrs | ((idx: number) => ShapeAttrs);
+};
 
 export type SparklineOptions = ShapeCfg & {
   attrs: SparklineAttrs;
