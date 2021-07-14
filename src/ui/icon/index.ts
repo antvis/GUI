@@ -48,10 +48,7 @@ export class Icon extends GUI<IconAttrs> {
     this.init();
   }
 
-  attributeChangedCallback(name: string, value: any): void {
-    name;
-    value;
-  }
+  attributeChangedCallback(name: string, value: any): void {}
 
   /**
    * 根据 type 获取 maker shape

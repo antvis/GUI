@@ -55,10 +55,7 @@ export class Button extends GUI<ButtonAttrs> {
     },
   };
 
-  attributeChangedCallback(name: string, value: any): void {
-    name;
-    value;
-  }
+  attributeChangedCallback(name: string, value: any): void {}
 
   /**
    * 根据size、type属性生成实际渲染的属性
