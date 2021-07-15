@@ -1,5 +1,2 @@
-import { LegendOptions } from './types';
-
-export { LegendOptions };
-
-export class Legend {}
+export { Category } from './category';
+export { Continuous } from './continuous';
