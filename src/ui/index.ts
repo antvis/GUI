@@ -5,7 +5,7 @@ export { Marker, MarkerOptions } from './marker';
 export { Arrow, ArrowOptions } from './arrow';
 export { Axis, AxisOptions } from './axis';
 export { Button, ButtonOptions } from './button';
-export { Legend, LegendOptions } from './legend';
+export { Category, CategoryOptions, Continuous, ContinuousOptions } from './legend';
 export { Scrollbar } from './scrollbar';
 export type { ScrollbarOptions, ScrollbarAttrs } from './scrollbar';
 export { Sheet, SheetOptions } from './sheet';
