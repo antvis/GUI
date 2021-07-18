@@ -1,9 +1,9 @@
+import { DisplayObject } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { Marker } from '../marker';
 import LegendBase from './base';
 import CategoryItem from './category-item';
-import { CategoryCfg, CategoryOptions } from './types';
-import { DisplayObject } from '../../types';
+import type { CategoryCfg, CategoryOptions } from './types';
 
 export type { CategoryOptions };
 

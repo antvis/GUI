@@ -1,7 +1,7 @@
-import { Text, Rect } from '@antv/g';
+import { CustomElement, Text, Rect } from '@antv/g';
 import { Marker } from '../marker';
-import { CustomElement, ShapeCfg } from '../../types';
-import { CategoryItemsCfg } from './types';
+import type { ShapeCfg } from '../../types';
+import type { CategoryItemsCfg } from './types';
 
 type CategoryItemCfg = ShapeCfg & {
   attrs: CategoryItemsCfg['itemCfg'];

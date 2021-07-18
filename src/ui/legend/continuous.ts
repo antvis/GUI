@@ -1,10 +1,9 @@
-import { Path } from '@antv/g';
+import { DisplayObject, Path } from '@antv/g';
 import { deepMix } from '@antv/util';
 import LegendBase from './base';
-import { ContinuousCfg, ContinuousOptions } from './types';
-import { DisplayObject } from '../../types';
 import { Handle } from '../slider/handle';
-import { Pair } from '../slider/types';
+import type { Pair } from '../slider/types';
+import type { ContinuousCfg, ContinuousOptions } from './types';
 
 export type { ContinuousOptions };
 
@@ -100,7 +99,21 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   }
 
   // 创建色板
-  private createRail() {}
+  private createRail() {
+    // 确定绘制类型
+    const { rail } = this.attributes;
+    const { type, chunked } = rail;
+    if (type === 'color') {
+      // 颜色映射
+    } else if (type === 'size') {
+      // 尺寸映射
+    }
+    if (chunked) {
+      // 分块连续图例
+    } else {
+      // 连续图例
+    }
+  }
 
   // 创建色板背景
   private createRailBackground() {

@@ -1,7 +1,7 @@
 import { deepMix, get, isNumber } from '@antv/util';
 import { Rect } from '@antv/g';
 import { GUI } from '../core/gui';
-import { LegendBaseCfg, LegendBaseOptions, StyleStatus } from './types';
+import type { LegendBaseCfg, LegendBaseOptions, StyleStatus } from './types';
 
 export default abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
   public static tag = 'legendBase';
@@ -45,13 +45,13 @@ export default abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T>
     const { active, disabled, checked, ...args } = get(this.attributes, name);
     // 返回默认样式
     if (!status) return args;
-    return get(this.attributes, name)?.[status] || {};
+    return get(this.attributes, [name, status]) || {};
   }
 
   // 获取padding
   private getPadding() {
     const { padding } = this.attributes;
-    if (isNumber) {
+    if (isNumber(padding)) {
       return new Array(4).fill(padding);
     }
     return padding;
