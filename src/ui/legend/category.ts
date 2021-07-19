@@ -3,6 +3,7 @@ import { deepMix } from '@antv/util';
 import { Marker } from '../marker';
 import LegendBase from './base';
 import CategoryItem from './category-item';
+import { leftArrow, rightArrow, upArrow, downArrow } from './utils';
 import type { CategoryCfg, CategoryOptions } from './types';
 
 export type { CategoryOptions };
@@ -70,6 +71,30 @@ export class Category extends LegendBase<CategoryCfg> {
           active: {
             fill: '#2c2c2c',
           },
+        },
+      },
+    },
+    reverse: false, // 倒序放置图例
+    pageNavigator: {
+      button: {
+        marker: (type: 'prev' | 'next', orient: 'horizontal' | 'vertical') => {
+          if (orient === 'horizontal') {
+            if (type === 'prev') {
+              return leftArrow;
+            }
+            return rightArrow;
+          }
+          // vertical
+          if (type === 'prev') {
+            return upArrow;
+          }
+          return downArrow;
+        },
+        size: 12,
+        style: {
+          default: {},
+          active: {},
+          disabled: {},
         },
       },
     },
