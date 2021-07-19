@@ -1,2 +1,2 @@
-export { ShapeAttrs, ShapeCfg, CustomElement, DisplayObject } from '@antv/g';
-export { MixAttrs } from './util/style';
+export { ShapeAttrs, ShapeCfg, DisplayObject } from '@antv/g';
+export type { MixAttrs, StyleState } from './util/style';
