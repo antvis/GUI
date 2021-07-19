@@ -1,9 +1,9 @@
-import { Text } from '@antv/g';
+import { Group, Text } from '@antv/g';
 import { deepMix, last } from '@antv/util';
 import { DisplayObject } from 'types';
 import { GUI } from '../core/gui';
-import { BreadCrumbAttrs, BreadCrumbOptions, BreadCrumbItem } from './types';
-import { ACTIVE_STYLE, INACTIVE_STYLE, HOVER_STYLE } from './constants';
+import { BreadCrumbAttrs, BreadCrumbOptions, BreadCrumbItem } from './type';
+import { ACTIVE_STYLE, INACTIVE_STYLE, HOVER_STYLE } from './constant';
 
 export { BreadCrumbAttrs, BreadCrumbOptions };
 
@@ -21,7 +21,15 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
     attrs: {
       disabled: false,
       separatorPadding: 8,
-      separator: '/',
+      separator: {
+        text: '/',
+        style: INACTIVE_STYLE,
+        spacing: 8,
+      },
+      textStyle: {
+        default: INACTIVE_STYLE,
+        active: ACTIVE_STYLE,
+      },
     },
   };
 
@@ -51,6 +59,7 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
 
     let width = 0;
     items.forEach((item, idx) => {
+      // 非首项位置后面，渲染分隔符
       if (idx !== 0) {
         width = this.createSeparator(width);
       }
@@ -67,9 +76,12 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
       });
 
       if (idx !== items.length - 1) {
+        // 非最后一项的 item 绑定事件
         this.bindEvents(textShape, item);
       }
 
+      // 更新 item 的 tag
+      textShape.attr('tag', `${BreadCrumb.tag}-item`);
       this.breadcrumbItemShapes.push(textShape);
 
       // 计算并添加当前 shape 的宽度
@@ -87,10 +99,10 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
   }
 
   private getMixinStyle(breadcrumbItem: BreadCrumbItem) {
-    const { items } = this.attributes;
+    const { items, textStyle } = this.attributes;
     // 判断是否是激活态（最后一项）的面包屑
     const isActived = !!(last(items).name === breadcrumbItem.name);
-    return deepMix({}, isActived ? ACTIVE_STYLE : INACTIVE_STYLE, breadcrumbItem.style);
+    return isActived ? textStyle.active : textStyle.default;
   }
 
   /**
@@ -99,31 +111,46 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
    * @returns
    */
   private createSeparator(x: number): number {
-    const { fontSize } = INACTIVE_STYLE;
-    const { separatorPadding, separator } = this.attributes;
+    const { separator } = this.attributes;
+    const { spacing, text, style } = separator;
 
-    const separatorShape = new Text({
-      attrs: {
-        x: x + separatorPadding,
-        y: 0,
-        lineHeight: fontSize,
-        ...INACTIVE_STYLE,
-        text: separator,
-      },
-    });
+    let separatorShape;
+    // 如果分隔符是字符串，创建 Text
+    if (typeof text === 'string') {
+      separatorShape = new Text({
+        attrs: {
+          x: x + spacing,
+          y: 0,
+          lineHeight: style.fontSize,
+          ...style,
+          text,
+        },
+      });
+    } else {
+      // 如果传入的是 Group 组件
+      (text as Group).attr({ x: x + spacing, y: 0 });
+      separatorShape = text;
+    }
 
+    // 更新分隔符 tag
+    separatorShape.attr('tag', `${BreadCrumb.tag}-separator`);
     this.separatorShapes.push(separatorShape);
 
     // 计算并添加当前 shape 的宽度
     const textBbox = separatorShape.getBounds();
-    const textWidth = textBbox.getMax()[0] - textBbox.getMin()[0] + separatorPadding * 2;
+    const textWidth = textBbox.getMax()[0] - textBbox.getMin()[0] + spacing * 2;
 
     return x + textWidth;
   }
 
+  /**
+   * 面包屑绑定事件
+   * @param shape
+   * @param item
+   */
   private bindEvents(shape: DisplayObject, item: BreadCrumbItem) {
     const style = this.getMixinStyle(item);
-    const { items } = this.attributes;
+    const { items, onClick } = this.attributes;
 
     shape.on('mouseenter', () => {
       shape.attr('cursor', 'pointer');
@@ -135,9 +162,9 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
       shape.attr('cursor', 'default');
     });
 
-    if (item.onClick) {
+    if (onClick) {
       shape.on('click', () => {
-        item.onClick.call(shape, item.name, item, items);
+        onClick.call(shape, item.name, item, items);
       });
     }
   }
