@@ -12,6 +12,7 @@ export const ACTIVE_STYLE = {
 export const INACTIVE_STYLE = {
   fontSize: 14,
   fill: 'rgba(0, 0, 0, 0.45)',
+  cursor: 'pointer',
 };
 
 /**

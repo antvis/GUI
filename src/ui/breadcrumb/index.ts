@@ -214,7 +214,6 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
     const { items, onClick } = this.attributes;
 
     shape.on('mouseenter', () => {
-      shape.attr('cursor', 'pointer');
       /**
        * fixMe： hover 颜色未改变
        */
@@ -223,7 +222,6 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
 
     shape.on('mouseleave', () => {
       shape.attr(style);
-      shape.attr('cursor', 'default');
     });
 
     if (onClick) {
