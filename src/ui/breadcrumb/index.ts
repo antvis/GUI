@@ -1,9 +1,10 @@
-import { Group, Text } from '@antv/g';
-import { deepMix, last } from '@antv/util';
+import { Group, Rect, Text } from '@antv/g';
+import { deepMix, isNil, last } from '@antv/util';
 import { DisplayObject } from 'types';
 import { GUI } from '../core/gui';
 import { BreadCrumbAttrs, BreadCrumbOptions, BreadCrumbItem } from './type';
 import { ACTIVE_STYLE, INACTIVE_STYLE, HOVER_STYLE } from './constant';
+import { transformPadding } from './util';
 
 export { BreadCrumbAttrs, BreadCrumbOptions };
 
@@ -19,8 +20,6 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
   private static defaultOptions = {
     type: BreadCrumb.tag,
     attrs: {
-      disabled: false,
-      separatorPadding: 8,
       separator: {
         text: '/',
         style: INACTIVE_STYLE,
@@ -30,13 +29,14 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
         default: INACTIVE_STYLE,
         active: ACTIVE_STYLE,
       },
+      padding: [0, 0, 0, 0],
     },
   };
 
   /**
    * 面包屑容器
    */
-  private background: DisplayObject;
+  private containerShape: DisplayObject;
 
   /**
    * 面包屑子项容器
@@ -48,27 +48,62 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
    */
   private separatorShapes: DisplayObject[] = [];
 
+  /**
+   * 光标 X 位置
+   */
+  private cursorX: number = 0;
+
+  /**
+   * 光标 Y 位置
+   */
+  private cursorY: number = 0;
+
+  /**
+   * 行号
+   */
+  private lineNumber: number = 1;
+
+  /**
+   *
+   * @param options
+   */
   constructor(options: BreadCrumbOptions) {
     super(deepMix({}, BreadCrumb.defaultOptions, options));
 
+    this.initCursor();
     this.init();
+  }
+
+  /**
+   * 初始化 光标位置
+   */
+  private initCursor() {
+    const { textStyle, padding } = this.attributes;
+    const newPadding = transformPadding(padding);
+    // 如果不存在 itemShape 一定是第一行
+    if (!this.breadcrumbItemShapes.length) {
+      this.lineNumber = 1;
+    }
+    // eslint-disable-next-line prefer-destructuring
+    this.cursorX = newPadding[3];
+    this.cursorY = textStyle.default.fontSize * this.lineNumber + newPadding[0];
   }
 
   public init(): void {
     const { x, y, items } = this.attributes;
 
-    let width = 0;
     items.forEach((item, idx) => {
       // 非首项位置后面，渲染分隔符
       if (idx !== 0) {
-        width = this.createSeparator(width);
+        this.createSeparator();
       }
 
       const style = this.getMixinStyle(item);
-      const textShape = new Text({
+      const breadcrumbItemShape = new Text({
         attrs: {
-          x: width,
-          y: 0,
+          tag: `${BreadCrumb.tag}-item`,
+          x: this.cursorX,
+          y: this.cursorY,
           lineHeight: style.fontSize,
           ...style,
           text: item.name,
@@ -77,18 +112,21 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
 
       if (idx !== items.length - 1) {
         // 非最后一项的 item 绑定事件
-        this.bindEvents(textShape, item);
+        this.bindEvents(breadcrumbItemShape, item);
       }
 
-      // 更新 item 的 tag
-      textShape.attr('tag', `${BreadCrumb.tag}-item`);
-      this.breadcrumbItemShapes.push(textShape);
-
       // 计算并添加当前 shape 的宽度
-      const textBbox = textShape.getBounds();
+      const textBbox = breadcrumbItemShape.getBounds();
       const textWidth = textBbox.getMax()[0] - textBbox.getMin()[0];
-      width += textWidth;
+      this.isOverWidth(breadcrumbItemShape, this.cursorX + textWidth);
+      this.cursorX += textWidth;
+
+      // 存入 breadcrumbItemShapes
+      this.breadcrumbItemShapes.push(breadcrumbItemShape);
     });
+
+    // 创建 container 容器
+    this.createBreadcrumbContainer();
 
     // 添加面包屑和分隔符的视图
     this.breadcrumbItemShapes.forEach((shape) => this.appendChild(shape));
@@ -110,7 +148,7 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
    * @param y
    * @returns
    */
-  private createSeparator(x: number): number {
+  private createSeparator() {
     const { separator } = this.attributes;
     const { spacing, text, style } = separator;
 
@@ -119,8 +157,9 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
     if (typeof text === 'string') {
       separatorShape = new Text({
         attrs: {
-          x: x + spacing,
-          y: 0,
+          tag: `${BreadCrumb.tag}-separator`,
+          x: this.cursorX + spacing,
+          y: this.cursorY,
           lineHeight: style.fontSize,
           ...style,
           text,
@@ -128,19 +167,41 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
       });
     } else {
       // 如果传入的是 Group 组件
-      (text as Group).attr({ x: x + spacing, y: 0 });
+      (text as Group).attr({ x: this.cursorX + spacing, y: 0 });
       separatorShape = text;
     }
-
-    // 更新分隔符 tag
-    separatorShape.attr('tag', `${BreadCrumb.tag}-separator`);
-    this.separatorShapes.push(separatorShape);
 
     // 计算并添加当前 shape 的宽度
     const textBbox = separatorShape.getBounds();
     const textWidth = textBbox.getMax()[0] - textBbox.getMin()[0] + spacing * 2;
 
-    return x + textWidth;
+    this.isOverWidth(separatorShape, this.cursorX + textWidth);
+    this.cursorX += textWidth;
+
+    // 存入 separatorShapes
+    this.separatorShapes.push(separatorShape);
+  }
+
+  /**
+   * 创建面包屑组件容器
+   */
+  private createBreadcrumbContainer() {
+    const { width = this.cursorX, padding } = this.attributes;
+    let { height } = this.attributes;
+    if (isNil(height)) {
+      const newPadding = transformPadding(padding);
+      height = this.cursorY + newPadding[2];
+    }
+    this.containerShape = new Rect({
+      attrs: {
+        tag: `${BreadCrumb.tag}-container`,
+        x: 0,
+        y: 0,
+        width,
+        height,
+      },
+    });
+    this.appendChild(this.containerShape);
   }
 
   /**
@@ -154,6 +215,9 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
 
     shape.on('mouseenter', () => {
       shape.attr('cursor', 'pointer');
+      /**
+       * fixMe： hover 颜色未改变
+       */
       shape.attr(HOVER_STYLE);
     });
 
@@ -166,6 +230,27 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
       shape.on('click', () => {
         onClick.call(shape, item.name, item, items);
       });
+    }
+  }
+
+  /**
+   * 判断是否超出宽度
+   * @param shape
+   * @param newWidth
+   */
+  private isOverWidth(shape: DisplayObject, newWidth: number) {
+    const { width, padding } = this.attributes;
+    if (!isNil(width)) {
+      const newPadding = transformPadding(padding);
+      const contentWidth = width - newPadding[1];
+      if (newWidth > contentWidth) {
+        this.lineNumber += 1;
+        this.initCursor();
+        shape.attr({
+          x: this.cursorX,
+          y: this.cursorY,
+        });
+      }
     }
   }
 

@@ -15,9 +15,9 @@ export type BreadCrumbAttrs = {
   /** 起点 y 坐标位置 */
   readonly y: number;
   /** 容器宽度 */
-  readonly width: number;
+  readonly width?: number;
   /** 容器高度 */
-  readonly height: number;
+  readonly height?: number;
   /** 容器内边距。容器实际可用大小 = 容器宽高度 - 内边距 */
   readonly padding?: number | number[];
   /** 面包屑 items */
