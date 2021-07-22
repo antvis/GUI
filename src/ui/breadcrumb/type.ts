@@ -10,7 +10,7 @@ export type BreadCrumbItem = {
 };
 
 export type BreadCrumbAttrs = {
-  /** 起点 x坐标位置 */
+  /** 起点 x 坐标位置 */
   readonly x: number;
   /** 起点 y 坐标位置 */
   readonly y: number;

@@ -1,5 +1,5 @@
 import { Group, Rect, Text } from '@antv/g';
-import { deepMix, isNil, last } from '@antv/util';
+import { deepMix, isNil, last, omit } from '@antv/util';
 import { DisplayObject } from 'types';
 import { GUI } from '../core/gui';
 import { BreadCrumbAttrs, BreadCrumbOptions, BreadCrumbItem } from './type';
@@ -22,14 +22,14 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
     attrs: {
       separator: {
         text: '/',
-        style: INACTIVE_STYLE,
+        style: omit(INACTIVE_STYLE, ['cursor']),
         spacing: 8,
       },
       textStyle: {
         default: INACTIVE_STYLE,
         active: ACTIVE_STYLE,
       },
-      padding: [0, 0, 0, 0],
+      padding: [8, 8, 8, 8],
     },
   };
 
@@ -86,7 +86,7 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
     }
     // eslint-disable-next-line prefer-destructuring
     this.cursorX = newPadding[3];
-    this.cursorY = textStyle.default.fontSize * this.lineNumber + newPadding[0];
+    this.cursorY = textStyle.default.lineHeight * this.lineNumber + newPadding[0];
   }
 
   public init(): void {
@@ -186,11 +186,14 @@ export class BreadCrumb extends GUI<BreadCrumbAttrs> {
    * 创建面包屑组件容器
    */
   private createBreadcrumbContainer() {
-    const { width = this.cursorX, padding } = this.attributes;
-    let { height } = this.attributes;
+    const { padding } = this.attributes;
+    let { height, width } = this.attributes;
+    const newPadding = transformPadding(padding);
     if (isNil(height)) {
-      const newPadding = transformPadding(padding);
       height = this.cursorY + newPadding[2];
+    }
+    if (isNil(width)) {
+      width = this.cursorX + newPadding[1];
     }
     this.containerShape = new Rect({
       attrs: {
