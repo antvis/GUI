@@ -7,7 +7,7 @@ import type { DisplayObject } from '../../types';
 
 export { StatisticAttrs, StatisticOptions } from './types';
 
-export class Statistic<Attrs> extends GUI<StatisticAttrs> {
+export class Statistic extends GUI<StatisticAttrs> {
   /**
    * 标签类型
    */
@@ -66,33 +66,58 @@ export class Statistic<Attrs> extends GUI<StatisticAttrs> {
 
   public init(): void {
     const { x, y } = this.attributes;
+    this.createText();
 
-    const shapeAttrs = this.getShapeAttrs();
+    // 设置位置
+    this.translate(x, y);
+  }
 
-    // 创建文本
-    this.titleShape = new Text({
-      attrs: shapeAttrs.titleAttrs,
-    });
-
-    // 创建文本
-    this.valueShape = new Text({
-      attrs: shapeAttrs.valueAttrs,
-    });
+  public createText() {
+    this.createTitleShape();
+    this.createValueShape();
 
     if (this.fixShape.length) {
       this.fixShape.forEach((shape) => {
         this.valueShape.appendChild(shape);
       });
     }
-
-    this.appendChild(this.titleShape);
-    this.appendChild(this.valueShape);
-    // 设置位置
-    this.translate(x, y);
   }
 
-  // 创建 titleShape 和 valueShape
-  protected getShapeAttrs() {
+  // 创建标题
+  public createTitleShape() {
+    this.titleShape = new Text({
+      attrs: this.getTitleShapeAttrs(),
+    });
+    this.appendChild(this.titleShape);
+  }
+
+  // 创建内容
+  public createValueShape() {
+    this.valueShape = new Text({
+      attrs: this.getValueShapeAttrs(),
+    });
+    this.appendChild(this.valueShape);
+  }
+
+  // 获取标题配置
+  public getTitleShapeAttrs() {
+    const {
+      title: { style },
+    } = this.attributes;
+    const titleHeight = style.fontSize + 5;
+    const newTitleText = this.getNewText('title');
+
+    return {
+      x: 0,
+      y: titleHeight,
+      lineHeight: titleHeight,
+      ...style,
+      text: newTitleText,
+    };
+  }
+
+  // 获取内容配置
+  public getValueShapeAttrs() {
     const { title, value, prefix, suffix, spacing } = this.attributes;
 
     const { style: titleStyle } = title;
@@ -101,7 +126,6 @@ export class Statistic<Attrs> extends GUI<StatisticAttrs> {
     const titleHeight = titleStyle.fontSize + 5;
     const valueHeight = valueStyle.fontSize + 5;
 
-    const newTitleText = this.getNewText('title');
     let newValueText = this.getNewText('value');
     let valueX = 0;
 
@@ -118,25 +142,16 @@ export class Statistic<Attrs> extends GUI<StatisticAttrs> {
     });
 
     return {
-      titleAttrs: {
-        x: 0,
-        y: titleHeight,
-        lineHeight: titleHeight,
-        ...titleStyle,
-        text: newTitleText,
-      },
-      valueAttrs: {
-        x: valueX,
-        y: spacing + titleHeight + Math.max(valueX, valueHeight), // title 文本高度 + spacing 上下间距
-        lineHeight: valueHeight,
-        ...valueStyle,
-        text: newValueText,
-      },
+      x: valueX,
+      y: spacing + titleHeight + Math.max(valueX, valueHeight), // title 文本高度 + spacing 上下间距
+      lineHeight: valueHeight,
+      ...valueStyle,
+      text: newValueText,
     };
   }
 
   // 过滤用
-  protected getNewText(key) {
+  public getNewText(key) {
     const { text, formatter } = this.attributes[key];
     if (isNil(text)) {
       return '';
@@ -145,7 +160,7 @@ export class Statistic<Attrs> extends GUI<StatisticAttrs> {
   }
 
   // 添加 addPrefix suffix;
-  protected addFixAdapter(location: string) {
+  public addFixAdapter(location: string) {
     const fix = this.attributes[location];
     if (fix.constructor === Marker && get(fix, '__proto__') === Marker.prototype) {
       return fix;
@@ -156,11 +171,10 @@ export class Statistic<Attrs> extends GUI<StatisticAttrs> {
   /**
    * 组件的更新
    */
-  public update(cfg: Attrs) {
+  public update(cfg: StatisticAttrs) {
     this.attr(deepMix({}, this.attributes, cfg));
-    const shapeAttrs = this.getShapeAttrs();
-    this.titleShape.attr(shapeAttrs.titleAttrs);
-    this.valueShape.attr(shapeAttrs.valueAttrs);
+    this.titleShape.attr(this.getTitleShapeAttrs());
+    this.valueShape.attr(this.getValueShapeAttrs());
   }
 
   public clear() {

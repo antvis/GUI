@@ -1,5 +1,4 @@
-import moment from 'moment';
-import { Text } from '@antv/g';
+import fecha from 'fecha';
 import { deepMix, isNil } from '@antv/util';
 import { Statistic } from '../statistic';
 import type { CountdownAttrs, CountdownOptions } from './types';
@@ -14,7 +13,7 @@ const timeFormatList = {
   S: 1,
 };
 
-export class Countdown extends Statistic<CountdownAttrs> {
+export class Countdown extends Statistic {
   /**
    * 标签类型
    */
@@ -39,38 +38,20 @@ export class Countdown extends Statistic<CountdownAttrs> {
   public init(): void {
     const { x, y, value } = this.attributes;
     this.initValue = value.text;
-    const shapeAttrs = this.getShapeAttrs();
-
-    // 创建文本
-    this.titleShape = new Text({
-      attrs: shapeAttrs.titleAttrs,
-    });
-
-    // 创建文本
-    this.valueShape = new Text({
-      attrs: shapeAttrs.valueAttrs,
-    });
-
-    if (this.fixShape.length) {
-      this.fixShape.forEach((shape) => {
-        this.valueShape.appendChild(shape);
-      });
-    }
-
-    this.appendChild(this.titleShape);
-    this.appendChild(this.valueShape);
+    this.createText();
     this.timeDynamicTime();
     // 设置位置
     this.translate(x, y);
   }
 
   // 过滤用
-  protected getNewText(key) {
+  public getNewText(key) {
     const { text, formatter, format } = this.attributes[key];
+    const { initValue } = this;
     if (isNil(text) && !format) {
       return '';
     }
-    if (key === 'value' && format) {
+    if (key === 'value' && format && (Number(initValue) || isNil(initValue))) {
       return formatter ? formatter(this.timeAdapter()) : this.timeAdapter();
     }
     return formatter ? formatter(text) : text;
@@ -89,7 +70,7 @@ export class Countdown extends Statistic<CountdownAttrs> {
 
     if (isNil(this.initValue)) {
       // 初始化，没有 value 就代表 当前值 返货 moment 自定义格式就好
-      return moment().format(formatAttr);
+      return fecha.format(new Date(), formatAttr);
     }
 
     let timeStamp = Number(this.initValue); // 时间戳获取
@@ -115,8 +96,8 @@ export class Countdown extends Statistic<CountdownAttrs> {
         timeStamp -= time * timeFormatList[key];
         format = format.replace(regExp, (v) => {
           if (key === 'S') {
-            // 还有问题 1
-            return time.toString().slice(0, v.length);
+            const ms = (time / 1000).toFixed(v.length);
+            return ms.replace('0.', '');
           }
 
           if (v.length === 1) {
@@ -135,13 +116,26 @@ export class Countdown extends Statistic<CountdownAttrs> {
   // 动态时间（计时器 | 当前时间）
   public timeDynamicTime() {
     if (this.getAttribute('value')?.dynamicTime) {
-      this.update({
+      this.updateText({
         value: {
-          text: this.timeAdapter(),
+          text: this.getNewText('value'),
         },
       });
       requestAnimationFrame(() => this.timeDynamicTime());
     }
+  }
+
+  public update(cfg: CountdownAttrs) {
+    if (cfg?.value?.text) {
+      this.initValue = cfg?.value?.text;
+    }
+    this.updateText(cfg);
+  }
+
+  public updateText(cfg: CountdownAttrs) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.titleShape.attr(this.getTitleShapeAttrs());
+    this.valueShape.attr(this.getValueShapeAttrs());
   }
 
   public clear() {

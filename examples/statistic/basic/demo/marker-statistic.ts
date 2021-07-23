@@ -1,7 +1,6 @@
 import { Canvas } from '@antv/g';
+import { Marker, svg2marker, Statistic } from '@antv/gui';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Statistic } from '@antv/gui';
-import { Marker, svg2marker } from '@antv/gui';
 
 Marker.registerSymbol(
   'star',

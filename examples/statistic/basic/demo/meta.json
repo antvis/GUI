@@ -31,8 +31,16 @@
     {
       "filename": "now-countdown.ts",
       "title": {
-        "zh": "定时器 now countdown",
+        "zh": "当前时间 now countdown",
         "en": "now countdown"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "timer-countdown.ts",
+      "title": {
+        "zh": "计时器 timer countdown",
+        "en": "timer countdown"
       },
       "screenshot": ""
     }

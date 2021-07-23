@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Statistic } from '@antv/gui';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -16,17 +16,17 @@ const canvas = new Canvas({
   renderer,
 });
 
+// 精度
+const precision = 2;
 // 千位符
-const groupSeparatorChange = (value: string, groupSeparator: string | number): string =>
-  value.replace(/(\d)(?=(?:\d{3})+$)/g, `$&${groupSeparator}`);
+const groupSeparator = ',';
+
+const groupSeparatorChange = (value, groupSeparator) => value.replace(/(\d)(?=(?:\d{3})+$)/g, `$&${groupSeparator}`);
 
 // 适配text 的 千位符 精度
 const getValueAdapter = (initValue) => {
   // 转化为 string 类型
   const value = typeof initValue === 'number' ? initValue.toString() : initValue;
-
-  // 精度
-  const precision = 2;
 
   if (/^[0-9]*(\.[0-9]*)?$/.test(value)) {
     // 没有 除数字和.外的其他字符
@@ -42,7 +42,7 @@ const getValueAdapter = (initValue) => {
       : '';
 
     // 整型 添加千位符
-    const valueInt = groupSeparatorChange(valueList[0], ',');
+    const valueInt = groupSeparatorChange(valueList[0], groupSeparator);
 
     return `${valueInt}${valueFloat}`;
   }
@@ -62,7 +62,7 @@ const statistic = new Statistic({
       },
     },
     value: {
-      text: '55515.151',
+      text: '10500505515.151',
       style: {
         fontSize: 24,
         fill: '#000000d9',
