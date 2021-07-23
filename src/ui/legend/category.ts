@@ -3,8 +3,8 @@ import { deepMix } from '@antv/util';
 import { Marker } from '../marker';
 import LegendBase from './base';
 import CategoryItem from './category-item';
-import { leftArrow, rightArrow, upArrow, downArrow } from './utils';
 import type { CategoryCfg, CategoryOptions } from './types';
+import { CATEGORY_DEFAULT_OPTIONS } from './constant';
 
 export type { CategoryOptions };
 
@@ -23,81 +23,8 @@ export class Category extends LegendBase<CategoryCfg> {
   private nextNavigation: Marker;
 
   protected static defaultOptions = {
-    ...LegendBase.defaultOptions,
-    items: {
-      items: [],
-      itemCfg: {
-        height: 16,
-        width: 40,
-        spacing: 10,
-        marker: {
-          symbol: 'circle',
-          size: 16,
-          style: {
-            fill: '#f8be4b',
-            lineWidth: 0,
-            active: {
-              fill: '#f3774a',
-            },
-          },
-        },
-        name: {
-          spacing: 5,
-          style: {
-            stroke: 'gray',
-            fontSize: 16,
-            checked: {
-              stroke: 'black',
-              fontWeight: 'bold',
-            },
-          },
-          formatter: (name: string) => name,
-        },
-        value: {
-          spacing: 5,
-          align: 'right',
-          style: {
-            stroke: 'gray',
-            fontSize: 16,
-            checked: {
-              stroke: 'black',
-              fontWeight: 'bold',
-            },
-          },
-        },
-        backgroundStyle: {
-          fill: 'white',
-          opacity: 0.5,
-          active: {
-            fill: '#2c2c2c',
-          },
-        },
-      },
-    },
-    reverse: false, // 倒序放置图例
-    pageNavigator: {
-      button: {
-        marker: (type: 'prev' | 'next', orient: 'horizontal' | 'vertical') => {
-          if (orient === 'horizontal') {
-            if (type === 'prev') {
-              return leftArrow;
-            }
-            return rightArrow;
-          }
-          // vertical
-          if (type === 'prev') {
-            return upArrow;
-          }
-          return downArrow;
-        },
-        size: 12,
-        style: {
-          default: {},
-          active: {},
-          disabled: {},
-        },
-      },
-    },
+    type: Category.tag,
+    ...CATEGORY_DEFAULT_OPTIONS,
   };
 
   constructor(options: CategoryOptions) {
@@ -111,6 +38,10 @@ export class Category extends LegendBase<CategoryCfg> {
   public update(attrs: CategoryCfg) {}
 
   public clear() {}
+
+  protected createColor() {
+    return 'red';
+  }
 
   private bindEvents() {
     // 图例项hover事件
