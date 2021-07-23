@@ -1,10 +1,9 @@
 import { Group } from '@antv/g';
-import { ShapeAttrs, ShapeCfg } from '../../types';
+import type { ShapeAttrs, ShapeCfg } from '../../types';
 
 export type BreadCrumbItem = {
   /** 展示的文案 */
   name: string;
-
   /** id */
   id: string;
 };
@@ -42,7 +41,7 @@ export type BreadCrumbAttrs = {
   };
 
   /** 如果作为通用组件，给其它用户使用 */
-  readonly onclick?: (evt: any /** 这个我来定义把 */) => void;
+  readonly onClick?: (evt: any /** 这个我来定义把 */) => void;
 };
 
 export type BreadCrumbOptions = ShapeCfg & {
