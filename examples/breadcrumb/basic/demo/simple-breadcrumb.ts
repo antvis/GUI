@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Marker } from '@antv/gui';
+import { BreadCrumb } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -16,14 +16,13 @@ const canvas = new Canvas({
   renderer,
 });
 
-const marker = new Marker({
+const breadcrumb = new BreadCrumb({
   attrs: {
-    symbol: 'triangle-down',
     x: 50,
     y: 50,
-    size: 16,
-    fill: 'green',
+    items: [{ name: '测试1' }, { name: '测试2' }, { name: '测试3' }, { name: '测试4' }, { name: '测试5' }],
+    onClick: (...args) => console.log(args),
   },
 });
 
-canvas.appendChild(marker);
+canvas.appendChild(breadcrumb);
