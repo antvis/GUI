@@ -1,8 +1,8 @@
 import { DisplayObject } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { Marker } from '../marker';
-import LegendBase from './base';
-import CategoryItem from './category-item';
+import { LegendBase } from './base';
+import { CategoryItem } from './category-item';
 import type { CategoryCfg, CategoryOptions } from './types';
 import { CATEGORY_DEFAULT_OPTIONS } from './constant';
 
@@ -39,9 +39,11 @@ export class Category extends LegendBase<CategoryCfg> {
 
   public clear() {}
 
-  protected createColor() {
+  protected getColor() {
     return 'red';
   }
+
+  protected getBackgroundAttrs() {}
 
   private bindEvents() {
     // 图例项hover事件

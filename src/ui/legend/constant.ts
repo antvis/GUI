@@ -157,24 +157,18 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
     },
     indicator: {
       size: 8,
-      spacing: 10,
-      icon: {
-        marker: 'circle',
-        style: {
-          stroke: 'white',
-          lineWidth: 2,
-          fillOpacity: 0,
-        },
+      spacing: 5,
+      padding: 5,
+      backgroundStyle: {
+        fill: '#262626',
+        radius: 5,
       },
       text: {
-        align: 'inside',
         style: {
-          fill: '#63656e',
+          fill: 'white',
           fontSize: 12,
-          textAlign: 'center',
-          textBaseline: 'middle',
         },
-        formatter: (value: number) => value,
+        formatter: (value: number) => String(value),
       },
     },
   },

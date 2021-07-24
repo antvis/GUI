@@ -98,7 +98,7 @@ export function getValueOffset(
 /**
  * 将值转换至步长tick上
  */
-export function getStepValue(value: number, step: number, min: number) {
+export function getStepValueByValue(value: number, step: number, min: number) {
   const count = Math.round((value - min) / step);
   return min + count * step;
 }

@@ -1,40 +1,38 @@
-import { ShapeCfg, ShapeAttrs } from '../../types';
-import { MarkerAttrs } from '../marker/types';
-
-// 状态样式：默认状态、hover状态、禁用状态、选择状态
-export type StyleStatus = 'active' | 'disabled' | 'checked';
-type MixAttrs = ShapeAttrs &
-  {
-    [key in StyleStatus]?: ShapeAttrs;
-  };
-
+import type { ShapeCfg, ShapeAttrs, MixAttrs } from '../../types';
+import type { MarkerAttrs } from '../marker/types';
 // marker配置
 type MarkerCfg = string | MarkerAttrs['symbol'];
 
 // 色板
-type RailCfg = {
+export type RailCfg = {
+  // 色板宽度
+  width: number;
+  // 色板高度
+  height: number;
   // 色板类型
-  type: 'color' | 'size';
+  type?: 'color' | 'size';
   // 是否分块
-  chunked: boolean;
+  chunked?: boolean;
   // 分块连续图例分割点
-  items: number[];
+  ticks?: number[];
   // 是否使用渐变色
-  isGradient: boolean | 'auto';
+  isGradient?: boolean | 'auto';
+  // 色板背景色
+  backgroundColor?: string;
 };
 
 // 滑动手柄
-type HandlerCfg = {
-  show: boolean;
-  size: number;
-  spacing: number;
-  icon: {
-    marker: MarkerCfg;
-    style: ShapeAttrs;
+type HandleCfg = {
+  size?: number;
+  spacing?: number;
+  icon?: {
+    marker?: MarkerCfg;
+    style?: ShapeAttrs;
   };
-  text: {
-    style: ShapeAttrs;
-    formatter: (value: number) => string;
+  text?: {
+    style?: ShapeAttrs;
+    formatter?: (value: number) => string;
+    align?: 'rail' | 'inside' | 'outside';
   };
 };
 
@@ -94,6 +92,8 @@ type pageNavigatorCfg = {
     marker: MarkerCfg | ((type: 'prev' | 'next') => MarkerCfg);
     // 按钮状态样式
     style: MixAttrs;
+    // 尺寸
+    size: number;
   };
   // 页码
   pagination: {
@@ -103,24 +103,32 @@ type pageNavigatorCfg = {
   };
 };
 
-export type LegendBaseCfg = ShapeCfg & {
+export type LegendBaseCfg = ShapeCfg['attrs'] & {
   // 宽度
-  width: number;
+  width?: number;
   // 高度
-  height: number;
+  height?: number;
   // 图例内边距
-  padding: number | number[];
+  padding?: number | number[];
   // 背景
-  background: MixAttrs;
+  backgroundStyle?: MixAttrs;
   // 布局
-  orient: 'horizontal' | 'vertical';
+  orient?: 'horizontal' | 'vertical';
+  // 标题
+  title?: {
+    content: string;
+    spacing?: number;
+    align?: 'left' | 'center' | 'right';
+    style?: ShapeAttrs;
+    formatter?: (text: string) => string;
+  };
   // Legend类型
-  type: 'category' | 'continuous';
+  type?: 'category' | 'continuous';
   // 指示器
-  indicator: false | {};
+  indicator?: false | {};
 };
 
-export type LegendBaseOptions = ShapeCfg & {
+export type LegendBaseOptions = {
   attrs: LegendBaseCfg;
 };
 
@@ -130,29 +138,30 @@ export type ContinuousCfg = LegendBaseCfg & {
   min: number;
   // 最大值
   max: number;
-  // 选择区域
-  value: [number, number];
   // 色板颜色
-  color: string | string[];
+  color?: string | string[];
   // 标签
-  label: {
-    style: ShapeAttrs;
-    spacing: number;
-    formatter: (value: number) => number | string;
-    align: 'rail' | 'top' | 'bottom';
-    offset: [number, number];
-  };
+  label:
+    | false
+    | {
+        style?: ShapeAttrs;
+        spacing?: number;
+        formatter?: (value: number, idx: number) => string;
+        align?: 'rail' | 'inside' | 'outside';
+      };
   // 色板配置
-  rail: RailCfg;
+  rail?: RailCfg;
   // 是否可滑动
-  slidable: boolean;
+  slidable?: boolean;
+  // 选择区域
+  value?: [number, number];
   // 滑动步长
-  step: number;
+  step?: number;
   // 手柄配置
-  handler: HandlerCfg;
+  Handle?: false | HandleCfg;
 };
 
-export type ContinuousOptions = ShapeCfg & {
+export type ContinuousOptions = {
   attrs: ContinuousCfg;
 };
 
@@ -163,6 +172,6 @@ export type CategoryCfg = LegendBaseCfg & {
   pageNavigator: false | pageNavigatorCfg;
 };
 
-export type CategoryOptions = ShapeCfg & {
+export type CategoryOptions = {
   attrs: CategoryCfg;
 };

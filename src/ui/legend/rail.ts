@@ -14,12 +14,12 @@ type RailCfg = defaultCfg & {
   orient: 'horizontal' | 'vertical';
 };
 
-export default class Rail extends CustomElement {
+export class Rail extends CustomElement {
   // 色板的path group
-  private rail: Group;
+  private railPathGroup: Group;
 
   // 背景的path group
-  private background: Group;
+  private backgroundPathGroup: Group;
 
   constructor({ attrs, ...rest }: ShapeCfg & { attrs: RailCfg }) {
     super({ type: 'rail', attrs, ...rest });
@@ -38,16 +38,16 @@ export default class Rail extends CustomElement {
   }
 
   public init() {
-    this.rail = new Group({
-      name: 'pathGroup',
+    this.railPathGroup = new Group({
+      name: 'railPathGroup',
       id: 'railPathGroup',
     });
-    this.appendChild(this.rail);
-    this.background = new Group({
+    this.appendChild(this.railPathGroup);
+    this.backgroundPathGroup = new Group({
       name: 'backgroundGroup',
       id: 'railBackgroundGroup',
     });
-    this.appendChild(this.background);
+    this.appendChild(this.backgroundPathGroup);
     this.render();
   }
 
@@ -59,7 +59,7 @@ export default class Rail extends CustomElement {
 
     // 绘制背景
     railBackgroundPath.forEach((path) => {
-      this.background.appendChild(
+      this.backgroundPathGroup.appendChild(
         new Path({
           name: 'background',
           attrs: {
@@ -72,7 +72,7 @@ export default class Rail extends CustomElement {
 
     railPath.forEach((path, idx) => {
       // chunked的情况下，只显示start到end范围内的梯形
-      this.rail.appendChild(
+      this.railPathGroup.appendChild(
         new Path({
           name: 'railPath',
           attrs: {
@@ -104,7 +104,7 @@ export default class Rail extends CustomElement {
   public updateSelection() {
     // 更新背景
     const backgroundPaths = this.createBackgroundPath();
-    this.background.children.forEach((shape, index) => {
+    this.backgroundPathGroup.children.forEach((shape, index) => {
       shape.attr({
         path: backgroundPaths[index],
       });
@@ -112,8 +112,8 @@ export default class Rail extends CustomElement {
   }
 
   public clear() {
-    this.rail.removeChildren();
-    this.background.removeChildren();
+    this.railPathGroup.removeChildren();
+    this.backgroundPathGroup.removeChildren();
   }
 
   private getOrientVal<T>(val1: T, val2: T) {
