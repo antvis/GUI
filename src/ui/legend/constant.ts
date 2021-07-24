@@ -7,7 +7,6 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
     y: 0,
     padding: 0,
     orient: 'horizontal',
-    indicator: false,
     backgroundStyle: {
       default: {
         fill: '#dcdee2',
@@ -19,7 +18,8 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
       spacing: 10,
       align: 'left',
       style: {
-        fill: 'black',
+        fill: 'gray',
+        fontWeight: 'bold',
         fontSize: 16,
         textBaseline: 'top',
       },
@@ -111,7 +111,19 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
 export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS, {
   attrs: {
     type: 'continuous',
-    color: 'black',
+    color: [
+      '#d0e3fa',
+      '#acc7f6',
+      '#8daaf2',
+      '#6d8eea',
+      '#4d73cd',
+      '#325bb1',
+      '#5a3e75',
+      '#8c3c79',
+      '#e23455',
+      '#e7655b',
+    ],
+    padding: 10,
     label: {
       style: {
         fill: 'black',

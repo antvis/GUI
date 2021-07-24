@@ -104,10 +104,6 @@ type pageNavigatorCfg = {
 };
 
 export type LegendBaseCfg = ShapeCfg['attrs'] & {
-  // 宽度
-  width?: number;
-  // 高度
-  height?: number;
   // 图例内边距
   padding?: number | number[];
   // 背景
