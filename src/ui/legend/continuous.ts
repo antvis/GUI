@@ -110,7 +110,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    */
   public setIndicator(value: false | number, text?: string, useFormatter = true) {
     // 值校验
-    const { min, max, rail, indicator } = this.attributes;
+    const { min, max, rail, handle, indicator } = this.attributes;
     const safeValue = value === false ? false : clamp(value, min, max);
     if (safeValue === false) {
       this.indicatorShape.hide();
@@ -124,7 +124,10 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 设置指示器位置
     // type = color;
     // type=size时，指示器需要贴合轨道上边缘
-    const offsetY = type === 'size' ? (2 - safeValue / (max - min)) * this.getOrientVal([railHeight, railWidth]) : 0;
+    // handle会影响rail高度
+    const _ = handle ? 2 : 1;
+    const offsetY = type === 'size' ? (_ - safeValue / (max - min)) * this.getOrientVal([railHeight, railWidth]) : 0;
+    // const offsetY = 0;
 
     this.indicatorShape?.attr(
       this.getOrientVal([
@@ -797,7 +800,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    */
   private getEventPos(e) {
     // TODO 需要区分touch和mouse事件
-    return [e.x, e.y] as Pair<number>;
+    const { global } = e;
+    return [global.x, global.y] as Pair<number>;
   }
 
   /**
@@ -856,6 +860,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 拖拽
    */
   private onDragging = (e) => {
+    console.log(e);
+
     e.stopPropagation();
     const [start, end] = this.getSelection();
     const currValue = this.getStepValueByValue(this.getEventPosValue(e));
