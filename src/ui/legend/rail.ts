@@ -1,4 +1,4 @@
-import { isString } from '@antv/util';
+import { isString, deepMix } from '@antv/util';
 import { CustomElement, Group, Path } from '@antv/g';
 import type { PathCommand } from '@antv/g-base';
 import type { RailCfg as defaultCfg } from './types';
@@ -95,7 +95,8 @@ export class Rail extends CustomElement {
 
   public update(railCfg: RailCfg) {
     // deepMix railCfg into this.attributes
-    this.render();
+    // this.attr(deepMix({}, this.attributes, railCfg));
+    // this.render();
   }
 
   /**
@@ -133,14 +134,14 @@ export class Rail extends CustomElement {
    * 生成rail path
    */
   private createRailPath() {
-    const { width, height, type, chunked, start, end } = this.attributes;
+    const { width, height, type, chunked, min, max } = this.attributes;
     let railPath: PathCommand[][];
     // 颜色映射
     if (chunked) {
       railPath = this.createChunkPath();
     } else {
-      const startOffset = this.getValueOffset(start);
-      const endOffset = this.getValueOffset(end);
+      const startOffset = this.getValueOffset(min);
+      const endOffset = this.getValueOffset(max);
       switch (type) {
         case 'color':
           railPath = [createRectRailPath(width, height, 0, 0, startOffset, endOffset)];
