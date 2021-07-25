@@ -41,7 +41,7 @@ export type BreadCrumbAttrs = {
   };
 
   /** 如果作为通用组件，给其它用户使用 */
-  readonly onClick?: (evt: any /** 这个我来定义把 */) => void;
+  readonly onclick?: (evt: any /** 这个我来定义把 */) => void;
 };
 
 export type BreadCrumbOptions = ShapeCfg & {
