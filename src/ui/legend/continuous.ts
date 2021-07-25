@@ -97,7 +97,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 更新label内容
     this.labelsShape.attr({ labelsAttrs: this.getLabelsAttrs() });
     // 更新rail
-    this.railShape.attr(this.getRailAttrs());
+    this.railShape.update(this.getRailAttrs());
     // 更新选区
     this.setSelection(...this.getSelection());
     // 更新title内容
@@ -189,7 +189,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
     this.setAttribute('start', start);
     this.setAttribute('end', end);
-    this.railShape.attr({ start, end });
+    this.railShape.update({ start, end });
     this.adjustLayout();
     this.setHandleText();
   }

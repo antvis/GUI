@@ -27,14 +27,14 @@ export class Rail extends CustomElement {
   }
 
   attributeChangedCallback(name: string, value: any) {
-    if (['type', 'chunked'].includes(name)) {
-      this.render();
-    } else {
-      this.update(value);
-    }
-    if (['start', 'end'].includes(name)) {
-      this.updateSelection();
-    }
+    // if (['type', 'chunked'].includes(name)) {
+    //   this.render();
+    // } else {
+    //   this.update(value);
+    // }
+    // if (['start', 'end'].includes(name)) {
+    //   this.updateSelection();
+    // }
   }
 
   public init() {
@@ -95,8 +95,9 @@ export class Rail extends CustomElement {
 
   public update(railAttrs: RailAttrs) {
     // deepMix railAttrs into this.attributes
-    // this.attr(deepMix({}, this.attributes, railAttrs));
-    // this.render();
+    this.attr(railAttrs);
+    this.render();
+    this.updateSelection();
   }
 
   /**
