@@ -60,14 +60,15 @@ import { Category, Continuous } from '@antv/gui';
 
 ### RailCfg
 
-| **属性名** | **类型**                       | **描述**                     | **默认值** |
-| ---------- | ------------------------------ | ---------------------------- | ---------- |
-| width      | <code>number</code>            | 色板宽度                     | `[]`       |
-| height     | <code>number</code>            | 色板高度                     | `[]`       |
-| type       | <code>'color' \| 'size'</code> | 色板类型                     | `color`    |
-| chunked    | <code>boolean</code>           | 是否分块                     | `false`    |
-| ticks      | <code>number[]</code>          | 分块分割点（label 显示的值） | `[]`       |
-| isGradient | <code>boolean \| 'auto'</code> | 是否使用渐变色               | `auto`     |
+| **属性名**      | **类型**                       | **描述**                     | **默认值** |
+| --------------- | ------------------------------ | ---------------------------- | ---------- |
+| width           | <code>number</code>            | 色板宽度                     | `[]`       |
+| height          | <code>number</code>            | 色板高度                     | `[]`       |
+| type            | <code>'color' \| 'size'</code> | 色板类型                     | `color`    |
+| chunked         | <code>boolean</code>           | 是否分块                     | `false`    |
+| ticks           | <code>number[]</code>          | 分块分割点（label 显示的值） | `[]`       |
+| isGradient      | <code>boolean \| 'auto'</code> | 是否使用渐变色               | `auto`     |
+| backgroundColor | <code>string</code>            | 色板背景色                   | `[]`       |
 
 ### HandleCfg
 
