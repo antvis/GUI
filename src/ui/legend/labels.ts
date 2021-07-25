@@ -1,7 +1,7 @@
 import { CustomElement, Text } from '@antv/g';
 import type { ShapeCfg } from '../../types';
 
-type LinesCfg = ShapeCfg[];
+type LabelsCfg = ShapeCfg[];
 
 export class Labels extends CustomElement {
   constructor({ attrs, ...rest }: ShapeCfg) {
@@ -9,7 +9,7 @@ export class Labels extends CustomElement {
     this.render(attrs.labelsAttrs);
   }
 
-  public render(labelsAttrs: LinesCfg): void {
+  public render(labelsAttrs: LabelsCfg): void {
     // 清空label
     this.removeChildren(true);
     // 重新绘制

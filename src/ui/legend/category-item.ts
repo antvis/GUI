@@ -7,7 +7,7 @@ type CategoryItemCfg = ShapeCfg & {
   attrs: CategoryItemsCfg['itemCfg'];
 };
 
-export default class CategoryItem extends CustomElement {
+export class CategoryItem extends CustomElement {
   // marker
   private markerShape: Marker;
 
