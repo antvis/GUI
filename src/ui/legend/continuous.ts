@@ -90,13 +90,24 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.createIndicator();
     // // 监听事件
     this.bindEvents();
-    console.log(this);
   }
 
   public update(attrs: ContinuousCfg) {
     this.attr(deepMix({}, this.attributes, attrs));
-    // 更新label
-    this.labelsShape.attr(this.getLabelsAttrs());
+    // 更新label内容
+    this.labelsShape.attr({ labelsAttrs: this.getLabelsAttrs() });
+    // 更新rail
+    this.railShape.attr(this.getRailAttrs());
+    // 更新选区
+    this.setSelection(...this.getSelection());
+    // 更新title内容
+    this.titleShape.attr(this.getTitleAttrs());
+    // 关闭指示器
+    this.setIndicator(false);
+    // 更新布局
+    this.adjustLayout();
+    // 更新背景
+    this.backgroundShape.attr(this.getBackgroundAttrs());
   }
 
   public clear() {}
@@ -125,9 +136,9 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // type = color;
     // type=size时，指示器需要贴合轨道上边缘
     // handle会影响rail高度
-    const _ = handle ? 2 : 1;
-    const offsetY = type === 'size' ? (_ - safeValue / (max - min)) * this.getOrientVal([railHeight, railWidth]) : 0;
-    // const offsetY = 0;
+
+    const offsetY =
+      type === 'size' ? (1 - (safeValue - min) / (max - min)) * this.getOrientVal([railHeight, railWidth]) : 0;
 
     this.indicatorShape?.attr(
       this.getOrientVal([
@@ -152,7 +163,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
   public getSelection() {
     const { min, max, start, end } = this.attributes;
-    return [start || min, end || max];
+    return [start || min, end || max] as [number, number];
   }
 
   /**
@@ -800,8 +811,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    */
   private getEventPos(e) {
     // TODO 需要区分touch和mouse事件
-    const { global } = e;
-    return [global.x, global.y] as Pair<number>;
+    const pos = e.screen;
+    return [pos.x, pos.y] as Pair<number>;
   }
 
   /**
@@ -860,8 +871,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 拖拽
    */
   private onDragging = (e) => {
-    console.log(e);
-
     e.stopPropagation();
     const [start, end] = this.getSelection();
     const currValue = this.getStepValueByValue(this.getEventPosValue(e));
