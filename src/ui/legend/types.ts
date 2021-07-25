@@ -6,9 +6,9 @@ type MarkerCfg = string | MarkerAttrs['symbol'];
 // 色板
 export type RailCfg = {
   // 色板宽度
-  width: number;
+  width?: number;
   // 色板高度
-  height: number;
+  height?: number;
   // 色板类型
   type?: 'color' | 'size';
   // 是否分块

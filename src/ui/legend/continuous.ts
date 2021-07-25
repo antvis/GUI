@@ -37,7 +37,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private labelsShape: Group;
 
   // 色板
-  private railShape: DisplayObject;
+  private railShape: Rail;
 
   // 开始滑块
   private startHandle: Group;
@@ -53,7 +53,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   /**
    * 当前交互的对象
    */
-  private interTarget: string;
+  private target: string;
 
   /**
    * 上次鼠标事件的位置
@@ -102,6 +102,10 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.setSelection(...this.getSelection());
     // 更新title内容
     this.titleShape.attr(this.getTitleAttrs());
+    // 更新handle
+    this.updateHandles();
+    // 更新手柄文本
+    this.setHandleText();
     // 关闭指示器
     this.setIndicator(false);
     // 更新布局
@@ -121,7 +125,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    */
   public setIndicator(value: false | number, text?: string, useFormatter = true) {
     // 值校验
-    const { min, max, rail, handle, indicator } = this.attributes;
+    const { min, max, rail, indicator } = this.attributes;
     const safeValue = value === false ? false : clamp(value, min, max);
     if (safeValue === false) {
       this.indicatorShape.hide();
@@ -470,6 +474,19 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private createHandles() {
     this.createHandle('start');
     this.createHandle('end');
+  }
+
+  /**
+   * 更新handle
+   */
+  updateHandles() {
+    const { markerAttrs, textAttrs } = this.getHandleAttrs();
+    ['start', 'end'].forEach((handleType) => {
+      const el = this.getElementById(`${handleType}Handle`);
+      const icon = el.getElementsByName('icon')[0] as Marker;
+      icon.update(markerAttrs);
+      el.getElementsByName('text')[0].attr(textAttrs);
+    });
   }
 
   /**
@@ -859,7 +876,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 关闭滑动
     if (!slidable) return;
     this.onHoverEnd();
-    this.interTarget = target;
+    this.target = target;
     this.prevValue = this.getStepValueByValue(this.getEventPosValue(e));
     this.addEventListener('mousemove', this.onDragging);
     this.addEventListener('touchmove', this.onDragging);
@@ -876,7 +893,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     const currValue = this.getStepValueByValue(this.getEventPosValue(e));
     const diffValue = currValue - this.prevValue;
 
-    switch (this.interTarget) {
+    switch (this.target) {
       case 'start':
         start !== currValue && this.setSelection(currValue, end);
         break;
@@ -903,14 +920,14 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     document.removeEventListener('mouseup', this.onDragEnd);
     document.removeEventListener('touchend', this.onDragEnd);
     // 抬起时修正位置
-    this.interTarget = undefined;
+    this.target = undefined;
   };
 
   private onHoverStart = (target: string) => (e) => {
     e.stopPropagation();
     // 如果target不为undefine，表明当前有其他事件被监听
-    if (isUndefined(this.interTarget)) {
-      this.interTarget = target;
+    if (isUndefined(this.target)) {
+      this.target = target;
       this.addEventListener('mousemove', this.onHovering);
       this.addEventListener('touchmove', this.onHovering);
     }
@@ -919,7 +936,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private onHovering = (e) => {
     e.stopPropagation();
     const value = this.getEventPosValue(e);
-
     // chunked为true时
     if (get(this.attributes, ['rail', 'chunked'])) {
       const interval = this.getTickIntervalByValue(value);
@@ -931,6 +947,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     } else {
       const val = this.getStepValueByValue(value);
       this.setIndicator(val);
+      // TODO 节流
       this.emit('onIndicated', val);
     }
   };
@@ -944,6 +961,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 关闭指示器
     this.setIndicator(false);
     // 恢复状态
-    this.interTarget = undefined;
+    this.target = undefined;
   };
 }

@@ -5,13 +5,13 @@ import type { RailCfg as defaultCfg } from './types';
 import type { ShapeCfg } from '../../types';
 import { createTrapezoidRailPath, createRectRailPath, getValueOffset } from './utils';
 
-type RailCfg = defaultCfg & {
-  min: number;
-  max: number;
-  start: number;
-  end: number;
-  color: string | string[];
-  orient: 'horizontal' | 'vertical';
+type RailAttrs = defaultCfg & {
+  min?: number;
+  max?: number;
+  start?: number;
+  end?: number;
+  color?: string | string[];
+  orient?: 'horizontal' | 'vertical';
 };
 
 export class Rail extends CustomElement {
@@ -21,7 +21,7 @@ export class Rail extends CustomElement {
   // 背景的path group
   private backgroundPathGroup: Group;
 
-  constructor({ attrs, ...rest }: ShapeCfg & { attrs: RailCfg }) {
+  constructor({ attrs, ...rest }: ShapeCfg & { attrs: RailAttrs }) {
     super({ type: 'rail', attrs, ...rest });
     this.init();
   }
@@ -93,9 +93,9 @@ export class Rail extends CustomElement {
     }
   }
 
-  public update(railCfg: RailCfg) {
-    // deepMix railCfg into this.attributes
-    // this.attr(deepMix({}, this.attributes, railCfg));
+  public update(railAttrs: RailAttrs) {
+    // deepMix railAttrs into this.attributes
+    // this.attr(deepMix({}, this.attributes, railAttrs));
     // this.render();
   }
 
