@@ -14,7 +14,7 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
   // background
   protected backgroundShape: Rect;
 
-  private titleShape: Text;
+  protected titleShape: Text;
 
   protected static defaultOptions = {
     type: LegendBase.tag,
@@ -28,7 +28,6 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
   attributeChangedCallback(name: string, value: any) {}
 
   public init() {
-    // this.createBackground();
     this.createTitle();
   }
 
@@ -37,10 +36,23 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
    */
   protected abstract getColor(): string;
 
+  /**
+   * 背景属性
+   */
+  protected abstract getBackgroundAttrs();
+
   // 获取对应状态的样式
   protected getStyle(name: string | string[], state?: StyleState) {
     const style = get(this.attributes, name);
     return getStateStyle(style, state);
+  }
+
+  /**
+   * 根据方向取值
+   */
+  protected getOrientVal<T>([x, y]: Pair<T>) {
+    const { orient } = this.attributes;
+    return orient === 'horizontal' ? x : y;
   }
 
   // 获取padding
@@ -52,8 +64,7 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
   protected getAvailableSpace() {
     // 连续图例不固定外部大小
     // 容器大小 - padding - title
-    const { title } = this.attributes;
-    const { spacing } = title;
+    const spacing = get(this.attributes, ['title', 'spacing']);
     const [top, , , left] = this.getPadding();
     const { height: titleHeight } = getShapeSpace(this.titleShape);
 
@@ -63,19 +74,6 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
     };
   }
 
-  /**
-   * 根据方向取值
-   */
-  public getOrientVal<T>([x, y]: Pair<T>) {
-    const { orient } = this.attributes;
-    return orient === 'horizontal' ? x : y;
-  }
-
-  /**
-   * 背景属性
-   */
-  protected abstract getBackgroundAttrs();
-
   // 绘制背景
   protected createBackground() {
     this.backgroundShape = new Rect({
@@ -84,6 +82,19 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
     });
     this.appendChild(this.backgroundShape);
     this.backgroundShape.toBack();
+  }
+
+  /**
+   * 创建图例标题配置
+   */
+  protected getTitleAttrs() {
+    const { title } = this.attributes;
+    const { content, style, formatter } = title;
+
+    return {
+      ...style,
+      text: formatter(content),
+    };
   }
 
   /**
@@ -119,18 +130,5 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
         break;
     }
     this.titleShape.attr(layout);
-  }
-
-  /**
-   * 创建图例标题配置
-   */
-  private getTitleAttrs() {
-    const { title } = this.attributes;
-    const { content, style, formatter } = title;
-
-    return {
-      ...style,
-      text: formatter(content),
-    };
   }
 }
