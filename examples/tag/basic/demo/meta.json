@@ -29,10 +29,18 @@
       "screenshot": ""
     },
     {
-      "filename": "background.ts",
+      "filename": "text-style.ts",
       "title": {
-        "zh": "带背景标签",
-        "en": "Tag contains background"
+        "zh": "设置字体样式",
+        "en": "TextStyle of tag"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "non-background.ts",
+      "title": {
+        "zh": "不带背景标签",
+        "en": "Tag not contains background"
       },
       "screenshot": ""
     }

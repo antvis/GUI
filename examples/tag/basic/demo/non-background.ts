@@ -18,27 +18,10 @@ const canvas = new Canvas({
 
 const tag = new Tag({
   attrs: {
-    text: '测试',
+    text: 'Hello',
     padding: [4, 7],
-    textStyle: {
-      default: {
-        fontSize: 18,
-        fill: 'rgba(0, 0, 0, 0.85)',
-      },
-      active: {
-        fontSize: 24,
-        fill: 'lightgreen',
-      },
-    },
     backgroundStyle: {
-      default: {
-        fill: 'rgb(250, 250, 250)',
-        stroke: 'rgb(217, 217, 217)',
-        lineWidth: 1,
-      },
-      active: {
-        fill: 'rgba(0, 0, 0, 0.85)',
-      },
+      default: null,
     },
   },
 });

@@ -44,7 +44,9 @@ export class Tag extends GUI<TagAttrs> {
       spacing: 4,
       backgroundStyle: {
         default: {
-          fill: 'transparent',
+          fill: '#fafafa',
+          stroke: '#d9d9d9',
+          lineWidth: 1,
         },
       },
     } as TagAttrs,
@@ -191,20 +193,15 @@ export class Tag extends GUI<TagAttrs> {
   private bindEvents() {
     this.on('mouseenter', () => {
       const { backgroundStyle, textStyle } = this.attributes;
-      // fixme 没有处理 fontSize 影响定位的问题
       this.textShape.attr(getStateStyle(textStyle, 'active', true));
       this.backgroundShape.attr(getStateStyle(backgroundStyle, 'active', true));
       this.autoFit();
-      // fixme 不执行这个的话，backgroundShape 的设置不生效
-      this.attr({ cursor: 'pointer' });
     });
 
     this.on('mouseleave', () => {
       this.textShape.attr(this.getTextAttrs());
       this.backgroundShape.attr(this.getBackgroundAttrs());
       this.autoFit();
-      // fixme 不执行这个的话，backgroundShape 的设置不生效
-      this.attr({ cursor: 'default' });
     });
   }
 }

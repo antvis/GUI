@@ -16,41 +16,20 @@ const canvas = new Canvas({
   renderer,
 });
 
-const tag1 = new Tag({
+const tag = new Tag({
   attrs: {
-    x: 0,
-    y: 10,
-    text: 'Tag 1',
+    text: 'Hello',
     padding: [4, 7],
     textStyle: {
       default: {
-        fontSize: 12,
-        fill: 'rgba(0, 0, 0, 0.85)',
-      },
-    },
-  },
-});
-canvas.appendChild(tag1);
-
-const linkTag = new Tag({
-  attrs: {
-    x: 0,
-    y: 40,
-    text: 'Link Tag',
-    padding: [4, 7],
-    textStyle: {
-      default: {
-        fontSize: 12,
+        fontSize: 18,
         fill: 'rgba(0, 0, 0, 0.85)',
       },
       active: {
-        cursor: 'pointer',
+        fontSize: 24,
+        fill: 'lightgreen',
       },
     },
   },
 });
-canvas.appendChild(linkTag);
-// 监听事件
-linkTag.on('click', () => {
-  window.open('httsp://github.com/antvis/gui');
-});
+canvas.appendChild(tag);
