@@ -23,12 +23,55 @@ Marker.registerSymbol(
   )
 );
 
-Marker.registerSymbol(
-  'clock',
-  svg2marker(
-    `<svg height="512" width="512" viewport="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"></path><path d="M686.7 638.6L544.1 535.5V288c0-4.4-3.6-8-8-8H488c-4.4 0-8 3.6-8 8v275.4c0 2.6 1.2 5 3.3 6.5l165.4 120.6c3.6 2.6 8.6 1.8 11.2-1.7l28.6-39c2.6-3.7 1.8-8.7-1.8-11.2z"></path></svg>`
-  )
-);
+Marker.registerSymbol('heart', (x, y, width) => {
+  const r = width / 4;
+  const dx = x - width / 2;
+  const dy = y - width / 2;
+  return [
+    ['M', dx, dy + r * 2],
+    ['A', r, r, 0, 0, 1, x, dy + r],
+    ['A', r, r, 0, 0, 1, dx + width, dy + r * 2],
+    ['L', x, dy + width],
+    ['L', dx, dy + r * 2],
+    ['Z'],
+  ];
+});
+
+Marker.registerSymbol('check', (x, y, r) => {
+  return [
+    ['M', x, y - r],
+    ['A', r, r, 0, 0, 1, x, y + r],
+    ['A', r, r, 0, 0, 1, x, y - r],
+    ['Z'],
+    ['M', x - r / 2, y + r / 8],
+    ['L', x - r / 8, y + r / 2],
+    ['L', x + r / 3, y - r / 2],
+  ];
+});
+
+Marker.registerSymbol('stop', (x, y, r) => {
+  return [
+    ['M', x, y - r],
+    ['A', r, r, 0, 0, 1, x, y + r],
+    ['A', r, r, 0, 0, 1, x, y - r],
+    ['Z'],
+    ['M', x - r / 2, y],
+    ['L', x + r / 2, y],
+  ];
+});
+
+Marker.registerSymbol('error', (x, y, r) => {
+  return [
+    ['M', x, y - r],
+    ['A', r, r, 0, 0, 1, x, y + r],
+    ['A', r, r, 0, 0, 1, x, y - r],
+    ['Z'],
+    ['M', x - r / 3, y - r / 3],
+    ['L', x + r / 3, y + r / 3],
+    ['M', x + r / 3, y - r / 3],
+    ['L', x - r / 3, y + r / 3],
+  ];
+});
 
 canvas.appendChild(
   new Tag({
@@ -66,6 +109,7 @@ canvas.appendChild(
       x: 0,
       y: 40,
       text: 'Hello',
+      spacing: 6,
       textStyle: {
         default: {
           x: 0,
@@ -80,13 +124,143 @@ canvas.appendChild(
         x: 0,
         y: 0,
         fill: '#000',
+        stroke: '#000',
         fillOpacity: 0.85,
-        size: 6,
+        size: 5,
       },
       backgroundStyle: {
         default: {
           stroke: '#d9d9d9',
           fill: '#fafafa',
+        },
+      },
+    },
+  })
+);
+
+canvas.appendChild(
+  new Tag({
+    attrs: {
+      x: 0,
+      y: 70,
+      text: 'Hello',
+      textStyle: {
+        default: {
+          x: 0,
+          y: 30,
+          fontSize: 12,
+          fill: '#52c41a',
+          fillOpacity: 0.85,
+        },
+      },
+      marker: {
+        symbol: 'heart',
+        x: 0,
+        y: 0,
+        fill: '#52c41a',
+        fillOpacity: 0.85,
+        size: 12,
+      },
+      backgroundStyle: {
+        default: {
+          stroke: '#b7eb8f',
+          fill: '#f6ffed',
+        },
+      },
+    },
+  })
+);
+
+canvas.appendChild(
+  new Tag({
+    attrs: {
+      x: 0,
+      y: 100,
+      text: 'success',
+      textStyle: {
+        default: {
+          x: 0,
+          y: 30,
+          fontSize: 12,
+          fill: '#52c41a',
+          fillOpacity: 0.85,
+        },
+      },
+      marker: {
+        symbol: 'check',
+        x: 0,
+        y: 0,
+        stroke: '#52c41a',
+        size: 5,
+      },
+      backgroundStyle: {
+        default: {
+          stroke: '#b7eb8f',
+          fill: '#f6ffed',
+        },
+      },
+    },
+  })
+);
+
+canvas.appendChild(
+  new Tag({
+    attrs: {
+      x: 0,
+      y: 130,
+      text: 'stop',
+      textStyle: {
+        default: {
+          x: 0,
+          y: 30,
+          fontSize: 12,
+          fill: '#000000d9',
+          fillOpacity: 0.85,
+        },
+      },
+      marker: {
+        symbol: 'stop',
+        x: 0,
+        y: 0,
+        stroke: '#000000d9',
+        size: 5,
+      },
+      backgroundStyle: {
+        default: {
+          stroke: '#d9d9d9',
+          fill: '#fafafa',
+        },
+      },
+    },
+  })
+);
+
+canvas.appendChild(
+  new Tag({
+    attrs: {
+      x: 0,
+      y: 160,
+      text: 'error',
+      textStyle: {
+        default: {
+          x: 0,
+          y: 30,
+          fontSize: 12,
+          fill: '#f5222d',
+          fillOpacity: 0.85,
+        },
+      },
+      marker: {
+        symbol: 'error',
+        x: 0,
+        y: 0,
+        stroke: '#f5222d',
+        size: 5,
+      },
+      backgroundStyle: {
+        default: {
+          stroke: '#ffa39e',
+          fill: '#fff1f0',
         },
       },
     },
