@@ -46,9 +46,6 @@ export class Tag extends GUI<TagAttrs> {
         default: {
           fill: 'transparent',
         },
-        active: {
-          fill: '#f5f5f5',
-        },
       },
     } as TagAttrs,
   };

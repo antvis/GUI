@@ -30,16 +30,14 @@ const tag = new Tag({
         fill: 'lightgreen',
       },
     },
-    background: {
-      style: {
-        default: {
-          fill: 'rgb(250, 250, 250)',
-          stroke: 'rgb(217, 217, 217)',
-          lineWidth: 1,
-        },
-        active: {
-          fill: 'rgba(0, 0, 0, 0.85)',
-        },
+    backgroundStyle: {
+      default: {
+        fill: 'rgb(250, 250, 250)',
+        stroke: 'rgb(217, 217, 217)',
+        lineWidth: 1,
+      },
+      active: {
+        fill: 'rgba(0, 0, 0, 0.85)',
       },
     },
   },

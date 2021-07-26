@@ -27,14 +27,16 @@ const tag = new Tag({
         fontSize: 30,
         fill: 'rgba(0, 0, 0, 0.85)',
       },
-      active: {
-        fill: 'lightgreen',
-      },
     },
     marker: {
       symbol: 'circle',
       fill: 'orange',
       size: 12,
+    },
+    backgroundStyle: {
+      active: {
+        fill: '#f5f5f5',
+      },
     },
   },
 });

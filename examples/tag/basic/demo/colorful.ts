@@ -29,18 +29,11 @@ function createTag(x, y, text, fill, backgroundColor, backgroundBorderColor = 't
           fill,
         },
       },
-      background: {
-        style: {
-          default: {
-            fill: backgroundColor,
-            stroke: backgroundBorderColor,
-            lineWidth: 1,
-          },
-          active: {
-            // fixme 如何可以不写 直接使用 defaultStyle
-            fill: backgroundColor,
-            stroke: backgroundBorderColor,
-          },
+      backgroundStyle: {
+        default: {
+          fill: backgroundColor,
+          stroke: backgroundBorderColor,
+          lineWidth: 1,
         },
       },
     },
