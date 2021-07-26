@@ -1,6 +1,6 @@
 import { Rect, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { normalPadding } from '../../util';
+import { getStateStyle, normalPadding } from '../../util';
 import { GUI } from '../core/gui';
 import { Marker } from '../marker';
 import type { DisplayObject } from '../../types';
@@ -29,6 +29,7 @@ export class Tag extends GUI<TagAttrs> {
   private static defaultOptions = {
     type: Tag.tag,
     attrs: {
+      radius: 2,
       padding: 4,
       textStyle: {
         default: {
@@ -41,15 +42,12 @@ export class Tag extends GUI<TagAttrs> {
       },
       marker: {},
       spacing: 4,
-      background: {
-        radius: 2,
-        style: {
-          default: {
-            fill: 'transparent',
-          },
-          active: {
-            fill: '#f5f5f5',
-          },
+      backgroundStyle: {
+        default: {
+          fill: 'transparent',
+        },
+        active: {
+          fill: '#f5f5f5',
         },
       },
     } as TagAttrs,
@@ -106,12 +104,12 @@ export class Tag extends GUI<TagAttrs> {
   }
 
   private getBackgroundAttrs() {
-    const { background } = this.attributes;
+    const { backgroundStyle, radius = 0 } = this.attributes;
     return {
       x: 0,
       y: 0,
-      radius: background?.radius || 0,
-      ...(background.style.default || {}),
+      radius,
+      ...backgroundStyle?.default,
     };
   }
 
@@ -173,9 +171,9 @@ export class Tag extends GUI<TagAttrs> {
       height = Math.max(height, markerRect.height);
     }
     if (this.textShape) {
-      const textRect = this.textShape.getBoundingClientRect();
-      width += textRect.width;
-      height = Math.max(height, textRect.height);
+      const { width: tWidth, height: tHeight } = this.textShape.getBoundingClientRect();
+      width += tWidth;
+      height = Math.max(height, tHeight);
     }
 
     height += p0 + p2;
@@ -195,10 +193,10 @@ export class Tag extends GUI<TagAttrs> {
 
   private bindEvents() {
     this.on('mouseenter', () => {
-      const { background, textStyle } = this.attributes;
+      const { backgroundStyle, textStyle } = this.attributes;
       // fixme 没有处理 fontSize 影响定位的问题
-      this.textShape.attr(textStyle.active || {});
-      this.backgroundShape.attr(background.style.active || {});
+      this.textShape.attr(getStateStyle(textStyle, 'active', true));
+      this.backgroundShape.attr(getStateStyle(backgroundStyle, 'active', true));
       this.autoFit();
       // fixme 不执行这个的话，backgroundShape 的设置不生效
       this.attr({ cursor: 'pointer' });

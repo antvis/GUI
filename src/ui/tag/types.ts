@@ -22,6 +22,8 @@ export type TagAttrs = {
   // 样式相关
   /** 内边距 */
   padding?: number | number[];
+  /** border-radius 圆角 */
+  radius?: number;
   /** 文本的样式 */
   textStyle?: {
     /** 默认样式 */
@@ -29,17 +31,13 @@ export type TagAttrs = {
     /** 激活样式 */
     active?: ShapeAttrs;
   };
-  /** background */
-  background?: {
-    /** border-radius 圆角 */
-    radius?: number;
-    /** 背景样式 */
-    style?: {
-      /** 默认样式 */
-      default?: ShapeAttrs;
-      /** 激活样式 */
-      active?: ShapeAttrs;
-    };
+
+  /** background 背景样式 */
+  backgroundStyle: {
+    /** 默认样式 */
+    default?: ShapeAttrs;
+    /** 激活样式 */
+    active?: ShapeAttrs;
   };
 };
 
