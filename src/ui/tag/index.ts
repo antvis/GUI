@@ -40,7 +40,10 @@ export class Tag extends GUI<TagAttrs> {
         },
         active: {},
       },
-      marker: {},
+      marker: {
+        symbol: 'circle',
+        size: 0,
+      },
       spacing: 4,
       backgroundStyle: {
         default: {
@@ -105,10 +108,10 @@ export class Tag extends GUI<TagAttrs> {
   private getBackgroundAttrs() {
     const { backgroundStyle, radius = 0 } = this.attributes;
     return {
+      ...backgroundStyle?.default,
       x: 0,
       y: 0,
       radius,
-      ...backgroundStyle?.default,
     };
   }
 
@@ -125,14 +128,7 @@ export class Tag extends GUI<TagAttrs> {
 
   private getMarkerAttrs() {
     const { marker } = this.attributes;
-    return deepMix(
-      {},
-      {
-        symbol: 'circle',
-        size: 0,
-      },
-      marker
-    );
+    return marker;
   }
 
   /**
