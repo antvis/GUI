@@ -26,7 +26,7 @@ export class Tag extends GUI<TagAttrs> {
   /**
    * 默认参数
    */
-  private static defaultOptions = {
+  public static defaultOptions = {
     type: Tag.tag,
     attrs: {
       radius: 2,
@@ -71,7 +71,7 @@ export class Tag extends GUI<TagAttrs> {
   /**
    * 组件的更新
    */
-  public update(cfg: TagAttrs) {
+  public update(cfg: Partial<TagAttrs>) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.markerShape.attr(this.getMarkerAttrs());
     this.textShape.attr(this.getTextAttrs());

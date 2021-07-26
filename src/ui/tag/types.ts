@@ -33,7 +33,7 @@ export type TagAttrs = {
   };
 
   /** background 背景样式 */
-  backgroundStyle: {
+  backgroundStyle?: {
     /** 默认样式 */
     default?: ShapeAttrs;
     /** 激活样式 */
