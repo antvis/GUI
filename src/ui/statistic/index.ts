@@ -1,7 +1,6 @@
-import { Text } from '@antv/g';
+import { Text, DisplayObject as GObject } from '@antv/g';
 import { deepMix, get, isNil } from '@antv/util';
 import { GUI } from '../core/gui';
-import { Marker } from '../marker';
 import type { StatisticAttrs, StatisticOptions } from './types';
 import type { DisplayObject } from '../../types';
 
@@ -194,9 +193,12 @@ export class Statistic extends GUI<StatisticAttrs> {
     return formatter ? formatter(text) : text;
   }
 
-  // 添加 addPrefix suffix;
+  // 添加 addPrefix suffix; 如果 底层是 DisplayObject 就 可以加入
   public addFixAdapter(fix: string | number | DisplayObject) {
-    return fix.constructor === Marker && get(fix, '__proto__') === Marker.prototype;
+    const prototype = get(fix, '__proto__');
+    if (!prototype) return false;
+    if (prototype === GObject.prototype && prototype.constructor === GObject) return true;
+    return this.addFixAdapter(prototype);
   }
 
   public getGroupWidth(group) {
@@ -218,5 +220,7 @@ export class Statistic extends GUI<StatisticAttrs> {
   public clear() {
     this.valueShape.destroy();
     this.titleShape.destroy();
+    this.prefixShape?.destroy();
+    this.suffixShape?.destroy();
   }
 }
