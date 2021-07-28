@@ -1,6 +1,6 @@
 {
   "name": "@antv/gui",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0-alpha.1",
   "description": "UI components for AntV G.",
   "license": "MIT",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start": "gatsby clean && npm run site:develop",
-    "site:develop": "PORT=3000 gatsby develop --open -H 0.0.0.0",
+    "site:develop": "cross-env PORT=3000 gatsby develop --open -H 0.0.0.0",
     "site:build": "npm run site:clean && gatsby build --prefix-paths",
     "clean": "rimraf lib esm dist",
     "lint-staged": "lint-staged",
@@ -23,7 +23,7 @@
     "lint": "eslint ./src/**/*.ts ./__tests__/**/*.ts && prettier ./src ./__tests__ --check ",
     "fix": "eslint ./src/**/*.ts ./__tests__/**/*.ts --fix && prettier ./src ./__tests__ --write ",
     "test": "jest",
-    "test-live": "DEBUG_MODE=1 jest --watch ./__tests__",
+    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__",
     "build": "father-build && limit-size",
     "ci": "run-s lint test build",
     "prepublishOnly": "npm run ci",
@@ -36,9 +36,10 @@
     "GUI"
   ],
   "dependencies": {
-    "@antv/g": "^1.0.0-alpha.0",
+    "@antv/g": "^1.0.0-alpha.3",
     "@antv/g-base": "^0.5.9",
-    "@antv/g-canvas": "^1.0.0-alpha.0",
+    "@antv/g-canvas": "^1.0.0-alpha.3",
+    "@antv/g-svg": "^1.0.0-alpha.3",
     "@antv/path-util": "^2.0.9",
     "@antv/scale": "^0.4.3",
     "@antv/util": "^2.0.13",
@@ -47,13 +48,14 @@
     "svg-path-parser": "^1.1.0"
   },
   "devDependencies": {
-    "@antv/gatsby-theme-antv": "^1.1.5",
+    "@antv/gatsby-theme-antv": "1.1.6-beta.6",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^12.0.1",
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.19.0",
     "core-js": "^3.14.0",
+    "cross-env": "^7.0.3",
     "eslint": "^7.22.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.1.0",
@@ -84,7 +86,7 @@
     "testTimeout": 30000,
     "preset": "ts-jest",
     "collectCoverage": true,
-    "testRegex": "(/__tests__/.*\\.(test|spec))\\.ts$",
+    "testRegex": "/__tests__/.*-spec\\.ts?$",
     "setupFilesAfterEnv": [
       "./jest.setup.js"
     ],
