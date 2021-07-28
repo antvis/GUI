@@ -21,6 +21,14 @@
       "screenshot": ""
     },
     {
+      "filename": "fix-statistic.ts",
+      "title": {
+        "zh": "前后缀 fix statistic",
+        "en": "fix statistic"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "now-countdown.ts",
       "title": {
         "zh": "当前时间 now countdown",
