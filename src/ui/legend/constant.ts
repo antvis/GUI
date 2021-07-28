@@ -31,54 +31,51 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
 export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS, {
   attrs: {
     type: 'category',
-    items: {
-      items: [],
-      itemCfg: {
-        height: 16,
-        width: 40,
-        spacing: 10,
-        marker: {
-          symbol: 'circle',
-          size: 16,
-          style: {
-            fill: '#f8be4b',
-            lineWidth: 0,
-            active: {
-              fill: '#f3774a',
-            },
-          },
+    items: [],
+    maxWidthHeight: 40,
+    maxColRow: 10,
+    spacing: 10,
+    icon: {
+      marker: 'circle',
+      size: 16,
+      style: {
+        fill: '#f8be4b',
+        lineWidth: 0,
+        active: {
+          fill: '#f3774a',
         },
-        name: {
-          spacing: 5,
-          style: {
-            stroke: 'gray',
-            fontSize: 16,
-            checked: {
-              stroke: 'black',
-              fontWeight: 'bold',
-            },
-          },
-          formatter: (name: string) => name,
+      },
+    },
+    name: {
+      spacing: 5,
+      style: {
+        stroke: 'gray',
+        fontSize: 16,
+        checked: {
+          stroke: 'black',
+          fontWeight: 'bold',
         },
-        value: {
-          spacing: 5,
-          align: 'right',
-          style: {
-            stroke: 'gray',
-            fontSize: 16,
-            checked: {
-              stroke: 'black',
-              fontWeight: 'bold',
-            },
-          },
+      },
+      formatter: (name: string) => name,
+    },
+    value: {
+      spacing: 5,
+      align: 'right',
+      style: {
+        stroke: 'gray',
+        fontSize: 16,
+        checked: {
+          stroke: 'black',
+          fontWeight: 'bold',
         },
-        backgroundStyle: {
-          fill: 'white',
-          opacity: 0.5,
-          active: {
-            fill: '#2c2c2c',
-          },
-        },
+      },
+      formatter: (name: string) => name,
+    },
+    backgroundStyle: {
+      fill: 'white',
+      opacity: 0.5,
+      active: {
+        fill: '#2c2c2c',
       },
     },
     reverse: false, // 倒序放置图例
@@ -186,5 +183,8 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
   },
 });
 
-// 步长比例
+// 连续图例步长比例
 export const STEP_RATIO = 0.01;
+
+// 分类图例name和value宽度比例
+export const NAME_VALUE_RATIO = 0.8 / 1;
