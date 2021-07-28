@@ -16,22 +16,16 @@ export interface ValueOption extends TitleOption {
   /**
    * 值 前缀
    */
-  prefix?: string | number | Group;
+  prefix?: string & number & Group;
   /**
    * 值 前缀
    */
-  suffix?: string | number | Group;
+  suffix?: string & number & Group;
 }
 
 export type StatisticAttrs = {
-  /**
-   * 省略超长文本
-   */
-  ellipsis?: boolean;
-  /**
-   * 文本与按钮边缘的间距
-   */
-  padding?: number;
+  x?: number;
+  y?: number;
   /**
    * 标题
    */

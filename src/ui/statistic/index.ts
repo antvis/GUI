@@ -4,7 +4,7 @@ import { GUI } from '../core/gui';
 import type { StatisticAttrs, StatisticOptions } from './types';
 import type { DisplayObject } from '../../types';
 
-export { StatisticAttrs, StatisticOptions } from './types';
+export { StatisticAttrs, StatisticOptions };
 
 export class Statistic extends GUI<StatisticAttrs> {
   /**
@@ -83,7 +83,7 @@ export class Statistic extends GUI<StatisticAttrs> {
   public createText() {
     this.createTitleShape();
     this.createValueShape();
-    this.createFix();
+    this.createAffix();
   }
 
   // 创建标题
@@ -130,16 +130,16 @@ export class Statistic extends GUI<StatisticAttrs> {
     const valueHeight = valueStyle.fontSize + 5;
     let newValueText = `${this.getNewText('value')}`;
     let valueX = 0;
-    if (this.addFixAdapter(prefix)) {
-      this.fixAttrs.prefix = prefix.attributes;
+    if (this.addAffixAdapter(prefix)) {
+      this.fixAttrs.prefix = get(prefix, 'attributes');
       this.prefixShape = prefix;
       valueX = this.getGroupWidth(prefix).width;
     } else {
       newValueText = `${prefix}${newValueText}`;
     }
 
-    if (this.addFixAdapter(suffix)) {
-      this.fixAttrs.suffix = suffix.attributes;
+    if (this.addAffixAdapter(suffix)) {
+      this.fixAttrs.suffix = get(suffix, 'attributes');
       this.suffixShape = suffix;
     } else {
       newValueText = `${newValueText}${suffix}`;
@@ -154,7 +154,7 @@ export class Statistic extends GUI<StatisticAttrs> {
     };
   }
 
-  public createFix() {
+  public createAffix() {
     const {
       title: { style },
       spacing,
@@ -194,11 +194,11 @@ export class Statistic extends GUI<StatisticAttrs> {
   }
 
   // 添加 addPrefix suffix; 如果 底层是 DisplayObject 就 可以加入
-  public addFixAdapter(fix: string | number | DisplayObject) {
-    const prototype = get(fix, '__proto__');
+  public addAffixAdapter(affix: string | number | DisplayObject) {
+    const prototype = get(affix, '__proto__');
     if (!prototype) return false;
     if (prototype === GObject.prototype && prototype.constructor === GObject) return true;
-    return this.addFixAdapter(prototype);
+    return this.addAffixAdapter(prototype);
   }
 
   public getGroupWidth(group) {
