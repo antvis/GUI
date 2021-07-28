@@ -187,10 +187,12 @@ export type CategoryCfg = LegendBaseCfg & {
   maxWidth?: number;
   maxHeight?: number;
   // 最大行（横）/列（纵）数
-  maxColRow?: number;
+  maxCol?: number;
   maxRow?: number;
-  // 图例项宽度
+  // 图例项宽度（等分形式）
   itemWidth?: number;
+  // 图例项最大宽度（跟随形式）
+  maxItemWidth?: number;
   // 图例项间的间隔
   spacing?: number;
   marker?: ItemMarkerCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerCfg);
