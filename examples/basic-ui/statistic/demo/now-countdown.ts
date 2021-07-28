@@ -11,7 +11,7 @@ const renderer = new CanvasRenderer({
 // @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 500,
+  width: 400,
   height: 300,
   renderer,
 });
@@ -21,19 +21,10 @@ const countdown = new Countdown({
     x: 0,
     y: 0,
     title: {
-      text: 'timer countdown',
-      style: {
-        fontSize: 14, // 字体大小
-        fill: '#00000073', // 颜色
-      },
+      text: 'now countdown',
     },
     value: {
-      text: 1000 * 60 * 60 * 48,
-      style: {
-        fontSize: 24,
-        fill: '#000000d9',
-      },
-      format: 'D 天 HH 小时 mm 分钟 ss 秒 SSS 毫秒',
+      format: 'YYYY-MM-DD HH:mm:ss',
       dynamicTime: true,
     },
   },

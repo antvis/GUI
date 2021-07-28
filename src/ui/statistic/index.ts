@@ -6,7 +6,7 @@ import type { DisplayObject } from '../../types';
 
 export type { StatisticAttrs, StatisticOptions };
 
-export class Statistic extends GUI<StatisticAttrs> {
+export class Statistic<Attrs = StatisticAttrs> extends GUI<Attrs> {
   /**
    * 标签类型
    */
@@ -61,7 +61,6 @@ export class Statistic extends GUI<StatisticAttrs> {
         suffix: '',
       }, // 值 number | string
       spacing: 5,
-      dynamicTime: false,
     },
   };
 
@@ -163,22 +162,19 @@ export class Statistic extends GUI<StatisticAttrs> {
     const titleHeight = style.fontSize + 5;
     let valueWidth = this.getGroupWidth(this.valueShape).width;
     if (this.prefixShape) {
-      const { x = 0, y = 0 } = this.fixAttrs.prefix;
+      const { y = 0 } = this.fixAttrs.prefix;
       const { width, height } = this.getGroupWidth(this.prefixShape);
       valueWidth += width;
       this.prefixShape.attr({
-        x: width + x,
         y: height + titleHeight + spacing + y + 5,
       });
       this.appendChild(this.prefixShape);
     }
     if (this.suffixShape) {
       const { x = 0, y = 0 } = this.fixAttrs.suffix;
-
-      const { width, height } = this.getGroupWidth(this.suffixShape);
       this.suffixShape.attr({
-        x: valueWidth + width + x,
-        y: height + titleHeight + spacing + y + 5,
+        x: valueWidth + x,
+        y: titleHeight + spacing + y + 5,
       });
       this.appendChild(this.suffixShape);
     }
@@ -211,7 +207,7 @@ export class Statistic extends GUI<StatisticAttrs> {
   /**
    * 组件的更新
    */
-  public update(cfg: StatisticAttrs) {
+  public update(cfg: Attrs) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.titleShape.attr(this.getTitleShapeAttrs());
     this.valueShape.attr(this.getValueShapeAttrs());

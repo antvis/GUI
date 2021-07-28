@@ -1,8 +1,8 @@
-import { Group } from '@antv/g';
+import { DisplayObject } from '@antv/g';
 import type { ShapeAttrs, ShapeCfg } from '../../types';
 
 export interface TitleOption {
-  text?: string;
+  text?: string | number;
   /**
    * 标题 自定义文本样式
    */
@@ -10,17 +10,17 @@ export interface TitleOption {
   /**
    * 文本格式化
    */
-  formatter?: (text: string) => string | Group;
+  formatter?: (text: string) => string | DisplayObject;
 }
 export interface ValueOption extends TitleOption {
   /**
    * 值 前缀
    */
-  prefix?: string & number & Group;
+  prefix?: any;
   /**
    * 值 前缀
    */
-  suffix?: string & number & Group;
+  suffix?: any;
 }
 
 export type StatisticAttrs = {

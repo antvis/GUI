@@ -1,4 +1,4 @@
 ---
 title: Statistic
-order: 4
+order: 6
 ---

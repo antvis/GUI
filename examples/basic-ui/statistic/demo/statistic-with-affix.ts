@@ -1,7 +1,6 @@
 import { Canvas } from '@antv/g';
-import { Statistic } from '@antv/gui';
+import { Statistic, Marker, svg2marker, Tag } from '@antv/gui';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Marker, svg2marker } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -12,7 +11,7 @@ const renderer = new CanvasRenderer({
 // @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 400,
+  width: 500,
   height: 100,
   renderer,
 });
@@ -27,43 +26,40 @@ Marker.registerSymbol(
 const marker = new Marker({
   attrs: {
     symbol: 'star',
-    y: 3,
+    x: 8,
+    y: 4,
     r: 20,
     fill: 'orange',
   },
 });
-
-const marker2 = new Marker({
+const tag1 = new Tag({
   attrs: {
-    symbol: 'star',
-    y: 0,
-    r: 20,
-    fill: 'orange',
+    x: 0,
+    y: 8,
+    text: 'Tag 1',
+    padding: [4, 7],
+    textStyle: {
+      default: {
+        fontSize: 12,
+        fill: 'rgba(0, 0, 0, 0.85)',
+      },
+    },
   },
 });
-
 const statistic = new Statistic({
   attrs: {
     x: 0,
     y: 0,
     title: {
-      text: 'statistic',
-      formatter: (text) => {
-        return `formatter ${text}`;
-      },
+      text: 'Affix statistic',
     },
     value: {
       text: '5123415515.151',
-      formatter: (text) => {
-        return text * 10;
+      style: {
+        fontSize: 40,
       },
       prefix: marker,
-      suffix: marker2,
-      style: {
-        // 默认居中
-        fontSize: 40,
-        fill: '#000000d9',
-      },
+      suffix: tag1,
     },
   },
 });

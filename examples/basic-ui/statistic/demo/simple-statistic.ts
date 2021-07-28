@@ -1,5 +1,5 @@
 import { Canvas } from '@antv/g';
-import { Countdown } from '@antv/gui';
+import { Statistic } from '@antv/gui';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 
 const renderer = new CanvasRenderer({
@@ -11,31 +11,22 @@ const renderer = new CanvasRenderer({
 // @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 400,
-  height: 300,
+  width: 300,
+  height: 100,
   renderer,
 });
 
-const countdown = new Countdown({
+const statistic = new Statistic({
   attrs: {
     x: 0,
     y: 0,
     title: {
-      text: 'now countdown',
-      style: {
-        fontSize: 14, // 字体大小
-        fill: '#00000073', // 颜色
-      },
+      text: 'simple statistic',
     },
     value: {
-      style: {
-        fontSize: 24,
-        fill: '#000000d9',
-      },
-      format: 'YYYY-MM-DD HH:mm:ss',
-      dynamicTime: true,
+      text: '5123415515.151',
     },
   },
 });
 
-canvas.appendChild(countdown);
+canvas.appendChild(statistic);

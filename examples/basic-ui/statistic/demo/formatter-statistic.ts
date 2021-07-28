@@ -55,18 +55,10 @@ const statistic = new Statistic({
     x: 0,
     y: 0,
     title: {
-      text: 'Simple statistic',
-      style: {
-        fontSize: 14, // 字体大小
-        fill: '#00000073', // 颜色
-      },
+      text: 'formatter statistic',
     },
     value: {
       text: '10500505515.151',
-      style: {
-        fontSize: 24,
-        fill: '#000000d9',
-      },
       formatter: (v) => getValueAdapter(v),
     },
   },

@@ -13,7 +13,7 @@ const timeFormatList = {
   S: 1,
 };
 
-export class Countdown extends Statistic {
+export class Countdown extends Statistic<CountdownAttrs> {
   /**
    * 标签类型
    */
@@ -95,17 +95,18 @@ export class Countdown extends Statistic {
         const time = Math.floor(timeStamp / timeFormatList[key]);
         timeStamp -= time * timeFormatList[key];
         format = format.replace(regExp, (v) => {
+          if (!v) return '';
           if (key === 'S') {
             const ms = (time / 1000).toFixed(v.length);
             return ms.replace(/.\./, '');
           }
 
-          if (v.length === 1) {
+          if (v?.length === 1 || time?.toString()?.length !== 1) {
             // 如果是一个 就直接返回
-            return time;
+            return `${time}`;
           }
 
-          return time.toString().length === 1 ? `0${time}` : time;
+          return `0${time}`;
         });
       }
     });
