@@ -1,4 +1,4 @@
 ---
-title: statistic
+title: Statistic
 order: 4
 ---

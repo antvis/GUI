@@ -11,7 +11,7 @@ const renderer = new CanvasRenderer({
 // @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 400,
+  width: 500,
   height: 300,
   renderer,
 });
@@ -28,7 +28,7 @@ const countdown = new Countdown({
       },
     },
     value: {
-      text: 1000 * 60 * 60 * 24 + 1000 * 60 * 40 + 1000 * 40 + 1500,
+      text: 1000 * 60 * 60 * 48,
       style: {
         fontSize: 24,
         fill: '#000000d9',

@@ -13,18 +13,10 @@
       "screenshot": ""
     },
     {
-      "filename": "fix-statistic.ts",
+      "filename": "formatter-statistic.ts",
       "title": {
-        "zh": "前后缀指标卡 fix statistic",
-        "en": "Prefix and suffix statistic"
-      },
-      "screenshot": ""
-    },
-    {
-      "filename": "marker-statistic.ts",
-      "title": {
-        "zh": "添加marker marker statistic",
-        "en": "marker statistic"
+        "zh": "回调 formatter statistic",
+        "en": "formatter statistic"
       },
       "screenshot": ""
     },

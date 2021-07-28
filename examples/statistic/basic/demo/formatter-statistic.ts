@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Statistic } from '@antv/gui';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -12,7 +12,7 @@ const renderer = new CanvasRenderer({
 const canvas = new Canvas({
   container: 'container',
   width: 300,
-  height: 300,
+  height: 100,
   renderer,
 });
 
@@ -20,13 +20,17 @@ const statistic = new Statistic({
   attrs: {
     x: 0,
     y: 0,
-    prefix: '前缀 ',
-    suffix: ' 后缀',
     title: {
-      text: 'fix statistic',
+      text: 'statistic',
+      formatter: (text) => {
+        return `formatter ${text}`;
+      },
     },
     value: {
-      text: '5550015.151',
+      text: '5123415515.151',
+      formatter: (text) => {
+        return text * 10;
+      },
     },
   },
 });

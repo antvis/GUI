@@ -97,7 +97,7 @@ export class Countdown extends Statistic {
         format = format.replace(regExp, (v) => {
           if (key === 'S') {
             const ms = (time / 1000).toFixed(v.length);
-            return ms.replace('0.', '');
+            return ms.replace(/.\./, '');
           }
 
           if (v.length === 1) {
@@ -116,12 +116,14 @@ export class Countdown extends Statistic {
   // 动态时间（计时器 | 当前时间）
   public timeDynamicTime() {
     if (this.getAttribute('value')?.dynamicTime) {
+      requestAnimationFrame(() => this.timeDynamicTime());
+      const text = this.getNewText('value');
+      if (this.attributes?.value?.text === text) return;
       this.updateText({
         value: {
-          text: this.getNewText('value'),
+          text,
         },
       });
-      requestAnimationFrame(() => this.timeDynamicTime());
     }
   }
 

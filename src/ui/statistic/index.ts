@@ -1,7 +1,6 @@
 import { Text } from '@antv/g';
-import { deepMix, get, isNil } from '@antv/util';
+import { deepMix, isNil } from '@antv/util';
 import { GUI } from '../core/gui';
-import { Marker } from '../marker';
 import type { StatisticAttrs, StatisticOptions } from './types';
 import type { DisplayObject } from '../../types';
 
@@ -22,11 +21,6 @@ export class Statistic extends GUI<StatisticAttrs> {
    * 内容
    */
   protected valueShape: DisplayObject;
-
-  /**
-   * 内容
-   */
-  protected fixShape: DisplayObject[] = [];
 
   /**
    * 默认参数
@@ -50,8 +44,6 @@ export class Statistic extends GUI<StatisticAttrs> {
           fill: '#000000d9',
         },
       }, // 值 number | string
-      prefix: '',
-      suffix: '',
       spacing: 5,
       dynamicTime: false,
     },
@@ -75,12 +67,6 @@ export class Statistic extends GUI<StatisticAttrs> {
   public createText() {
     this.createTitleShape();
     this.createValueShape();
-
-    if (this.fixShape.length) {
-      this.fixShape.forEach((shape) => {
-        this.valueShape.appendChild(shape);
-      });
-    }
   }
 
   // 创建标题
@@ -105,20 +91,19 @@ export class Statistic extends GUI<StatisticAttrs> {
       title: { style },
     } = this.attributes;
     const titleHeight = style.fontSize + 5;
-    const newTitleText = this.getNewText('title');
 
     return {
       x: 0,
       y: titleHeight,
       lineHeight: titleHeight,
       ...style,
-      text: newTitleText,
+      text: this.getNewText('title'),
     };
   }
 
   // 获取内容配置
   public getValueShapeAttrs() {
-    const { title, value, prefix, suffix, spacing } = this.attributes;
+    const { title, value, spacing } = this.attributes;
 
     const { style: titleStyle } = title;
     const { style: valueStyle } = value;
@@ -126,27 +111,14 @@ export class Statistic extends GUI<StatisticAttrs> {
     const titleHeight = titleStyle.fontSize + 5;
     const valueHeight = valueStyle.fontSize + 5;
 
-    let newValueText = this.getNewText('value');
-    let valueX = 0;
-
-    ['prefix', 'suffix'].forEach((fix, index) => {
-      const fixGui = this.addFixAdapter(fix);
-      if (fixGui) {
-        this.fixShape.push(fixGui);
-        if (!index) {
-          valueX = get(fixGui, 'attributes.r');
-        }
-      } else {
-        newValueText = index ? `${newValueText}${suffix}` : `${prefix}${newValueText}`;
-      }
-    });
+    const valueX = 0;
 
     return {
       x: valueX,
       y: spacing + titleHeight + Math.max(valueX, valueHeight), // title 文本高度 + spacing 上下间距
       lineHeight: valueHeight,
       ...valueStyle,
-      text: newValueText,
+      text: this.getNewText('value'),
     };
   }
 
@@ -156,16 +128,7 @@ export class Statistic extends GUI<StatisticAttrs> {
     if (isNil(text)) {
       return '';
     }
-    return formatter ? formatter(text) : text;
-  }
-
-  // 添加 addPrefix suffix;
-  public addFixAdapter(location: string) {
-    const fix = this.attributes[location];
-    if (fix.constructor === Marker && get(fix, '__proto__') === Marker.prototype) {
-      return fix;
-    }
-    return false;
+    return `${formatter ? formatter(text) : text}`;
   }
 
   /**
