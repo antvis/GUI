@@ -4,7 +4,7 @@ import { GUI } from '../core/gui';
 import type { StatisticAttrs, StatisticOptions } from './types';
 import type { DisplayObject } from '../../types';
 
-export { StatisticAttrs, StatisticOptions };
+export type { StatisticAttrs, StatisticOptions };
 
 export class Statistic extends GUI<StatisticAttrs> {
   /**

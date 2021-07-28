@@ -3,7 +3,7 @@ import { deepMix, isNil } from '@antv/util';
 import { Statistic } from '../statistic';
 import type { CountdownAttrs, CountdownOptions } from './types';
 
-export { CountdownAttrs, CountdownOptions } from './types';
+export type { CountdownAttrs, CountdownOptions };
 
 const timeFormatList = {
   D: 1000 * 60 * 60 * 24,
