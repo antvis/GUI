@@ -1,7 +1,8 @@
-import type { ShapeCfg, ShapeAttrs, StyleState as State, MixAttrs } from '../../types';
+import type { ShapeCfg, ShapeAttrs, StyleState, MixAttrs } from '../../types';
 import type { MarkerAttrs } from '../marker/types';
 // marker配置
 type MarkerCfg = string | MarkerAttrs['symbol'];
+export type State = StyleState | 'default-active' | 'selected-active';
 
 // 色板
 export type RailCfg = {
@@ -80,16 +81,17 @@ export type ItemValueCfg = {
 
 // 单个图例的配置
 export type CategoryItemCfg = {
-  id?: string;
+  identify?: string;
   itemWidth?: number;
+  maxItemWidth?: number;
   state?: State;
-  icon: ItemMarkerCfg;
-  name: {
+  itemMarker: ItemMarkerCfg;
+  itemName: {
     content?: string;
     spacing?: number;
     style?: MixAttrs;
   };
-  value: {
+  itemValue: {
     content?: string;
     spacing?: number;
     style: MixAttrs;
@@ -181,8 +183,6 @@ export type ContinuousOptions = {
 // 分类图例配置
 export type CategoryCfg = LegendBaseCfg & {
   items: CategoryItem[];
-  // 横向、纵向模式
-  layout?: 'horizontal' | 'vertical';
   // 图例最大宽(横)/高（纵）
   maxWidth?: number;
   maxHeight?: number;
@@ -194,10 +194,10 @@ export type CategoryCfg = LegendBaseCfg & {
   // 图例项最大宽度（跟随形式）
   maxItemWidth?: number;
   // 图例项间的间隔
-  spacing?: number;
-  marker?: ItemMarkerCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerCfg);
-  name?: ItemNameCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemNameCfg);
-  value?: ItemValueCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemValueCfg);
+  spacing?: [number, number];
+  itemMarker?: Partial<ItemMarkerCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerCfg);
+  itemName?: Partial<ItemNameCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemNameCfg);
+  itemValue?: Partial<ItemValueCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemValueCfg);
   backgroundStyle?: MixAttrs | ((item: CategoryItem, index: number, items: CategoryItem[]) => MixAttrs);
   // 自动换行、列
   autoWrap?: boolean;
@@ -207,6 +207,6 @@ export type CategoryCfg = LegendBaseCfg & {
   pageNavigator?: false | pageNavigatorCfg;
 };
 
-export type CategoryOptions = {
+export type CategoryOptions = LegendBaseCfg & {
   attrs: CategoryCfg;
 };
