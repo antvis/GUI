@@ -6,7 +6,7 @@ import type { DisplayObject } from '../../types';
 
 export type { StatisticAttrs, StatisticOptions };
 
-export class Statistic<Attrs = StatisticAttrs> extends GUI<Attrs> {
+export class Statistic<Attrs extends StatisticAttrs> extends GUI<Attrs> {
   /**
    * 标签类型
    */
