@@ -1,4 +1,5 @@
 /** Basic UI */
+
 // author by [visiky](https://github.com/visiky)
 export { Tag } from './tag';
 export type { TagOptions } from './tag';
@@ -36,3 +37,8 @@ export type { TimelineOptions } from './timeline';
 // author by [Aarebecca](https://github.com/Aarebecca)
 export { Continuous, Category } from './legend';
 export type { ContinuousOptions, CategoryOptions } from './legend';
+export { Statistic } from './statistic';
+export type { StatisticOptions } from './statistic';
+export { Countdown } from './countdown';
+export type { CountdownOptions } from './countdown';
+// to be continued...
