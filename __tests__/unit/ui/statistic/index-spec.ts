@@ -113,9 +113,9 @@ describe('statistic', () => {
     expect(statistic.addAffixAdapter(tag2)).toBe(true);
     const { height: prefixHeight, width: prefixWidth } = statistic.getGroupWidth(prefix);
     expect(prefixHeight).toBeCloseTo(25);
-    expect(prefixWidth).toBeCloseTo(42, 3);
+    expect(prefixWidth).toBeLessThan(42);
     const { height: suffixHeight, width: suffixWidth } = statistic.getGroupWidth(suffix);
     expect(suffixHeight).toBeCloseTo(25);
-    expect(suffixWidth).toBeCloseTo(42, 3);
+    expect(suffixWidth).toBeLessThan(42);
   });
 });

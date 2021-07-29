@@ -45,11 +45,11 @@ describe('countdown', () => {
     countdown.update({
       value: {
         text: 1000 * 60 * 60 * 24 + 1000 * 60 * 60 + 1000 * 60 + 1000 + 599,
-        format: 'D 天 HH 小时 mm 分钟 ss 秒 S 毫秒',
+        format: 'D 天 HH 小时 mm 分钟 ss 秒',
       },
     });
 
-    expect(countdown.timeAdapter()).toBe('1 天 01 小时 01 分钟 01 秒 5 毫秒');
+    expect(countdown.timeAdapter()).toBe('1 天 01 小时 01 分钟 01 秒');
   });
 
   test('dynamicTime countdown', async () => {
