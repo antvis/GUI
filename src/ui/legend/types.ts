@@ -100,7 +100,7 @@ export type CategoryItemCfg = {
 };
 
 // 分页器
-type pageNavigatorCfg = {
+type PageNavigatorCfg = {
   // 按钮
   button: {
     // 按钮图标
@@ -166,8 +166,6 @@ export type ContinuousCfg = LegendBaseCfg & {
   rail?: RailCfg;
   // 是否可滑动
   slidable?: boolean;
-  // 选择区域
-  value?: [number, number];
   // 滑动步长
   step?: number;
   // 手柄配置
@@ -187,8 +185,8 @@ export type CategoryCfg = LegendBaseCfg & {
   maxWidth?: number;
   maxHeight?: number;
   // 最大行（横）/列（纵）数
-  maxCol?: number;
-  maxRow?: number;
+  maxCols?: number;
+  maxRows?: number;
   // 图例项宽度（等分形式）
   itemWidth?: number;
   // 图例项最大宽度（跟随形式）
@@ -198,13 +196,13 @@ export type CategoryCfg = LegendBaseCfg & {
   itemMarker?: Partial<ItemMarkerCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerCfg);
   itemName?: Partial<ItemNameCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemNameCfg);
   itemValue?: Partial<ItemValueCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemValueCfg);
-  backgroundStyle?: MixAttrs | ((item: CategoryItem, index: number, items: CategoryItem[]) => MixAttrs);
+  itemBackgroundStyle?: MixAttrs | ((item: CategoryItem, index: number, items: CategoryItem[]) => MixAttrs);
   // 自动换行、列
   autoWrap?: boolean;
   // 图例项倒序
   reverse?: boolean;
   // 分页
-  pageNavigator?: false | pageNavigatorCfg;
+  pageNavigator?: false | PageNavigatorCfg;
 };
 
 export type CategoryOptions = LegendBaseCfg & {
