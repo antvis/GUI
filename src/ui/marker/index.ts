@@ -54,13 +54,15 @@ export class Marker extends GUI<MarkerAttrs> {
    */
   public init(): void {
     this.createMarker();
+    const { x, y } = this.attributes;
+    this.translate(-x, -y);
   }
 
   /**
    * 组件的更新
    */
-  public update(cfg: MarkerAttrs): void {
-    this.attr(deepMix({}, this.attributes, cfg));
+  public update(attrs: MarkerAttrs): void {
+    this.attr(deepMix({}, this.attributes, attrs));
     this.clear();
     this.createMarker();
   }
@@ -82,15 +84,12 @@ export class Marker extends GUI<MarkerAttrs> {
         name: 'markerImage',
         attrs: this.getMarkerImageAttrs(),
       });
-      const { r } = this.attributes;
-      // this.translate(-r, -r);
     } else if (markerType === 'symbol') {
       this.markerShape = new Path({
         name: 'markerSymbol',
         attrs: this.getMarkerSymbolAttrs(),
       });
     }
-
     this.appendChild(this.markerShape);
   }
 
