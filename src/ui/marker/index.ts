@@ -54,8 +54,6 @@ export class Marker extends GUI<MarkerAttrs> {
    */
   public init(): void {
     this.createMarker();
-    const { x, y } = this.attributes;
-    this.translate(-x, -y);
   }
 
   /**
@@ -95,10 +93,10 @@ export class Marker extends GUI<MarkerAttrs> {
 
   // symbol marker
   private getMarkerSymbolAttrs() {
-    const { x, y, size, symbol, ...args } = this.attributes;
+    const { size, symbol, ...args } = this.attributes;
     const halfR = size / 2;
     const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
-    const path = symbolFn(x, y, size);
+    const path = symbolFn(0, 0, size / 2);
     return {
       path,
       r: halfR,
@@ -111,8 +109,8 @@ export class Marker extends GUI<MarkerAttrs> {
     const { size, symbol } = this.attributes;
     const r2 = size * 2;
     return {
-      x: r2,
-      y: r2,
+      x: 0,
+      y: 0,
       width: r2,
       height: r2,
       img: symbol,
