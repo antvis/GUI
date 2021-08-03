@@ -57,8 +57,8 @@ export class Marker extends GUI<MarkerAttrs> {
   /**
    * 组件的更新
    */
-  public update(cfg: MarkerAttrs): void {
-    this.attr(deepMix({}, this.attributes, cfg));
+  public update(attrs: MarkerAttrs): void {
+    this.attr(deepMix({}, this.attributes, attrs));
     this.clear();
     this.createMarker();
   }
@@ -88,7 +88,6 @@ export class Marker extends GUI<MarkerAttrs> {
         style: this.getMarkerSymbolAttrs(),
       });
     }
-
     if (this.markerShape) {
       this.appendChild(this.markerShape);
     }
@@ -100,6 +99,7 @@ export class Marker extends GUI<MarkerAttrs> {
     const halfR = size / 2;
     const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
     const path = symbolFn?.(x, y, size) as PathCommand;
+
     return {
       path,
       r: halfR,
@@ -112,8 +112,8 @@ export class Marker extends GUI<MarkerAttrs> {
     const { size = 0, symbol } = this.attributes;
     const r2 = size * 2;
     return {
-      x: r2,
-      y: r2,
+      x: 0,
+      y: 0,
       width: r2,
       height: r2,
       img: symbol as unknown as HTMLImageElement,
