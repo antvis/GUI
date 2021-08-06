@@ -1,19 +1,18 @@
-import { CustomElement, Path } from '@antv/g';
-import type { ShapeCfg } from '../../types';
+import { CustomElement, DisplayObjectConfig, Path } from '@antv/g';
+import type { PathStyleProps } from '@antv/g';
 
-type AttrsType = { [key: string]: any };
-type LinesCfg = { linesAttrs: AttrsType[]; areasAttrs?: AttrsType[] };
+type LinesCfg = { linesAttrs?: PathStyleProps[]; areasAttrs?: PathStyleProps[] };
 
-export class Lines extends CustomElement {
-  constructor({ attrs, ...rest }: ShapeCfg) {
-    super({ type: 'lines', attrs, ...rest });
-    this.render(attrs.linesCfg);
+export class Lines extends CustomElement<{ linesCfg: LinesCfg }> {
+  constructor(config: DisplayObjectConfig<{ linesCfg: LinesCfg }>) {
+    super(config);
+    this.render(config.style?.linesCfg);
   }
 
-  public render(linesCfg: LinesCfg): void {
+  public render(linesCfg?: LinesCfg): void {
     this.removeChildren(true);
-    const { linesAttrs, areasAttrs } = linesCfg;
-    linesAttrs.forEach((cfg) => {
+    const { linesAttrs, areasAttrs } = linesCfg || {};
+    linesAttrs?.forEach((cfg) => {
       this.appendChild(
         new Path({
           name: 'line',

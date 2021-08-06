@@ -1,6 +1,6 @@
-import type { ShapeAttrs, ShapeCfg } from '../../types';
+import type { BaseStyleProps } from '../../types';
 
-export type ButtonAttrs = {
+export interface ButtonAttrs extends BaseStyleProps {
   x?: number;
   y?: number;
   /**
@@ -38,20 +38,20 @@ export type ButtonAttrs = {
   /**
    * 自定义文本样式
    */
-  textStyle?: ShapeAttrs;
+  textStyle?: BaseStyleProps;
   /**
    * 自定义按钮样式
    */
-  buttonStyle?: ShapeAttrs;
+  buttonStyle?: BaseStyleProps;
   /**
    * 自定义激活状态
    */
   hoverStyle?: {
-    textStyle: ShapeAttrs;
-    buttonStyle: ShapeAttrs;
+    textStyle: BaseStyleProps;
+    buttonStyle: BaseStyleProps;
   };
-};
+}
 
-export type ButtonOptions = ShapeCfg & {
+export type ButtonOptions = {
   attrs: ButtonAttrs;
 };

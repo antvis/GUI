@@ -1,6 +1,5 @@
-import { CustomElement, Rect, Line } from '@antv/g';
+import { CustomElement, Rect, Line, DisplayObjectConfig } from '@antv/g';
 import { Marker } from '../marker';
-import type { ShapeCfg } from '../../types';
 
 type AttrsType = { [key: string]: any };
 type HandleCfg = AttrsType & {
@@ -8,15 +7,14 @@ type HandleCfg = AttrsType & {
   orient: string;
 };
 
-export class Handle extends CustomElement {
-  constructor({ attrs, ...rest }: ShapeCfg) {
-    super({ type: 'handle', attrs, ...rest });
-    const { type, orient, ...handleAttrs } = attrs;
+export class Handle extends CustomElement<HandleCfg> {
+  constructor(config: DisplayObjectConfig<HandleCfg>) {
+    super(config);
+    const { type, orient, ...handleAttrs } = config.style || {};
     this.render({ type, orient, handleAttrs });
   }
 
   public render(handleCfg: HandleCfg) {
-    this.removeChildren(true);
     const { type, orient, handleAttrs: attrs } = handleCfg;
 
     if (type === 'hide') {
@@ -81,7 +79,7 @@ export class Handle extends CustomElement {
     }
   }
 
-  attributeChangedCallback(name: string, value: any) {
+  attributeChangedCallback<Key extends keyof HandleCfg>(name: Key, value: any) {
     if (name === 'handleCfg') {
       this.render(value);
     }

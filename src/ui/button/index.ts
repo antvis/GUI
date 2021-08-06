@@ -1,9 +1,9 @@
-import { Rect, Text } from '@antv/g';
+import { Rect, Text, BaseStyleProps } from '@antv/g';
 import { deepMix, pick } from '@antv/util';
 import { GUI } from '../core/gui';
 import { getEllipsisText } from '../../util';
 import { SIZE_STYLE, TYPE_STYLE, DISABLED_STYLE } from './constant';
-import type { ShapeAttrs, DisplayObject } from '../../types';
+import type { DisplayObject } from '../../types';
 import type { ButtonAttrs, ButtonOptions } from './types';
 
 export type { ButtonAttrs, ButtonOptions };
@@ -144,9 +144,6 @@ export class Button extends GUI<ButtonAttrs> {
     this.appendChild(this.background);
     this.appendChild(this.textShape);
 
-    // 设置位置
-    this.translate(x, y);
-
     this.bindEvents(onClick);
   }
 
@@ -165,7 +162,7 @@ export class Button extends GUI<ButtonAttrs> {
   /**
    * 应用多个属性
    */
-  private applyAttrs(shape: 'textShape' | 'background', attrs: ShapeAttrs) {
+  private applyAttrs(shape: 'textShape' | 'background', attrs: BaseStyleProps) {
     Object.entries(attrs).forEach((attr) => {
       this[shape].attr(attr[0], attr[1]);
     });

@@ -1,4 +1,5 @@
 import { Group, Rect, Text } from '@antv/g';
+import type { TextStyleProps } from '@antv/g';
 import { clamp, deepMix, get, isUndefined } from '@antv/util';
 import { Rail } from './rail';
 import { Labels } from './labels';
@@ -10,7 +11,7 @@ import { toPrecision } from '../../util';
 import type { Pair } from '../slider/types';
 import type { MarkerAttrs } from '../marker';
 import type { ContinuousCfg, ContinuousOptions, IndicatorCfg } from './types';
-import type { DisplayObject, ShapeAttrs } from '../../types';
+import type { DisplayObject } from '../../types';
 
 export type { ContinuousOptions };
 
@@ -329,7 +330,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   }
 
   // 获取Label属性
-  private getLabelsAttrs(): ShapeAttrs[] {
+  private getLabelsAttrs(): TextStyleProps[] {
     const { label } = this.attributes;
     // 不绘制label
     if (!label) {
@@ -337,7 +338,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     }
     const { min, max, rail } = this.attributes;
     const { style, formatter, align } = label;
-    const attrs = [];
+    const attrs: TextStyleProps[] = [];
     // align为rail时仅显示min、max的label
     if (align === 'rail') {
       [min, max].forEach((value, idx) => {
@@ -503,12 +504,12 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
   private getRail(item?: string) {
     if (item === 'rail') {
-      return this.getElementById('railPathGroup');
+      return this.railShape.getRailPathGroup();
     }
     if (item === 'background') {
-      return this.getElementById('railBackgroundGroup');
+      return this.railShape.getBackgroundPathGroup();
     }
-    return this.getElementById('rail');
+    return this.railShape;
   }
 
   /**

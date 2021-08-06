@@ -1,8 +1,6 @@
 import { isString, deepMix } from '@antv/util';
-import { CustomElement, Group, Path } from '@antv/g';
-import type { PathCommand } from '@antv/g-base';
+import { CustomElement, DisplayObjectConfig, Group, Path, PathCommand } from '@antv/g';
 import type { RailCfg as defaultCfg } from './types';
-import type { ShapeCfg } from '../../types';
 import { createTrapezoidRailPath, createRectRailPath, getValueOffset } from './utils';
 
 type RailAttrs = defaultCfg & {
@@ -14,14 +12,14 @@ type RailAttrs = defaultCfg & {
   orient?: 'horizontal' | 'vertical';
 };
 
-export class Rail extends CustomElement {
+export class Rail extends CustomElement<RailAttrs> {
   // 色板的path group
   private railPathGroup: Group;
 
   // 背景的path group
   private backgroundPathGroup: Group;
 
-  constructor({ attrs, ...rest }: ShapeCfg & { attrs: RailAttrs }) {
+  constructor({ attrs, ...rest }: DisplayObjectConfig<RailAttrs>) {
     super({ type: 'rail', attrs, ...rest });
     this.init();
   }
@@ -35,6 +33,14 @@ export class Rail extends CustomElement {
     // if (['start', 'end'].includes(name)) {
     //   this.updateSelection();
     // }
+  }
+
+  getRailPathGroup() {
+    return this.railPathGroup;
+  }
+
+  getBackgroundPathGroup() {
+    return this.backgroundPathGroup;
   }
 
   public init() {
