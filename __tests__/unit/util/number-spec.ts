@@ -24,15 +24,14 @@ describe('number', () => {
   });
 
   test('toKNotation', async () => {
-    expect(toKNotation(0.0001)).toBe('0K');
-    expect(toKNotation(123)).toBe('0K');
-    expect(toKNotation(123, 1)).toBe('0.1K');
+    expect(toKNotation(0.0001)).toBe('0.0001');
+    expect(toKNotation(123)).toBe('123');
     expect(toKNotation(123456)).toBe('123K');
     expect(toKNotation(123456, 1)).toBe('123.4K');
     expect(toKNotation(1234567, 1)).toBe('1,234.5K');
     expect(toKNotation(100000000)).toBe('100,000K');
 
-    expect(toKNotation(-123)).toBe('0K');
+    expect(toKNotation(-123)).toBe('-123');
     expect(toKNotation(-123456)).toBe('-123K');
     expect(toKNotation(-123456, 1)).toBe('-123.4K');
     expect(toKNotation(-1234567, 1)).toBe('-1,234.5K');

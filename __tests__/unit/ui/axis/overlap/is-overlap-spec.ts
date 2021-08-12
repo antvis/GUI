@@ -33,8 +33,6 @@ describe('isOverlap', () => {
     const { width, height } = text.getBoundingClientRect();
     let [top, right, bottom, left] = [10, 10, 10, 10];
 
-    // expect(getBoundsCenter(rect)).toStrictEqual(getCollisionText(text, [top, right, bottom, left]).getBounds().center);
-
     rect.attr({
       x: x - width / 2 - left,
       y: y - height / 2 - top,
