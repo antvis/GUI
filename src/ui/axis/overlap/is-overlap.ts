@@ -20,9 +20,9 @@ type CollisionRectOptions = {
  * TODO 目前只能应用于中心旋转
  */
 class CollisionRect {
-  public axisX: Vector;
+  public axisX!: Vector;
 
-  public axisY: Vector;
+  public axisY!: Vector;
 
   private halfWidth: number;
 

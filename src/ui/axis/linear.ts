@@ -1,7 +1,6 @@
 import { deepMix } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import type { PathCommand } from '@antv/g';
-import type { vec2 as Vector } from '@antv/matrix-util';
 import type { LinearCfg, LinearOptions, Point, Position } from './types';
 import { AxisBase } from './base';
 import { getVerticalVector } from './utils';
@@ -19,8 +18,6 @@ export class Linear extends AxisBase<LinearCfg> {
     super(deepMix({}, Linear.defaultOptions, options));
     super.init();
   }
-
-  attributeChangedCallback(name: string, value: any) {}
 
   protected getAxisLinePath() {
     const {

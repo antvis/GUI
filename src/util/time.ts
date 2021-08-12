@@ -1,7 +1,6 @@
 export const scale = ['year', 'month', 'day', 'hour', 'minute', 'second'] as const;
 const masks = ['YYYY', 'MM', 'DD', 'hh', 'mm', 'ss'];
 export type TimeScale = typeof scale[number];
-
 export function parseDate(date: Date | string) {
   return date instanceof Date ? date : new Date(date);
 }
@@ -31,7 +30,10 @@ export function getMask([maxUnit, minUnit]: [TimeScale, TimeScale]) {
  * 格式化时间
  */
 export function formatTime(date: Date, mask: string) {
-  const timeMap = {
+  type TimeMapKeys = 'YYYY' | 'MM' | 'DD' | 'hh' | 'mm' | 'ss';
+  const timeMap: {
+    [keys in TimeMapKeys]: number;
+  } = {
     YYYY: date.getFullYear(),
     MM: date.getMonth() + 1,
     DD: date.getDate(),
@@ -40,9 +42,9 @@ export function formatTime(date: Date, mask: string) {
     ss: date.getSeconds(),
   };
   let strftime = mask;
-  Object.keys(timeMap).forEach((key) => {
+  (Object.keys(timeMap) as TimeMapKeys[]).forEach((key) => {
     const val = timeMap[key];
-    strftime = strftime.replace(key, key === 'YYYY' ? val : `0${val}`.slice(-2));
+    strftime = strftime.replace(key, key === 'YYYY' ? `${val}` : `0${val}`.slice(-2));
   });
   return strftime;
 }

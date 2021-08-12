@@ -1,7 +1,6 @@
 import { deepMix } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
-import type { PathCommand, ShapeAttrs } from '@antv/g';
-import type { vec2 as Vector } from '@antv/matrix-util';
+import type { PathCommand } from '@antv/g';
 import type { ArcCfg, ArcOptions, AxisLabelCfg, Point, Position } from './types';
 import { AxisBase } from './base';
 import { getVerticalVector, getVectorsAngle } from './utils';
@@ -23,8 +22,6 @@ export class Arc extends AxisBase<ArcCfg> {
     super(deepMix({}, Arc.defaultOptions, options));
     super.init();
   }
-
-  attributeChangedCallback(name: string, value: any) {}
 
   protected getAxisLinePath() {
     const {
@@ -94,26 +91,28 @@ export class Arc extends AxisBase<ArcCfg> {
   protected getLabelLayout(labelVal: number, tickAngle: number, angle: number) {
     // 精度
     const approxTickAngle = toPrecision(tickAngle, 0);
-    const absAngle = Math.abs(approxTickAngle);
     const { label } = this.attributes;
     const { align } = label as AxisLabelCfg;
     let rotate = angle;
     let textAlign = 'center' as Position;
-    if (align === 'radialVertical') {
+    if (align === 'tangential') {
       rotate = getVectorsAngle([1, 0], this.getTangentVector(labelVal));
     } else {
       // 非径向垂直于刻度的情况下（水平、径向），调整锚点
-      /**
-       * 令 absAngle = abs(labelAngle), 不同absAngle对应文本锚点：
-       *  < 90  start
-       * = 90 center
-       * > 90 end
-       */
+
+      const absAngle = Math.abs(approxTickAngle);
       if (absAngle < 90) textAlign = 'start';
       else if (absAngle > 90) textAlign = 'end';
 
-      // 旋转角不为 0 时： 水平文本
-      // 刻度角度 = -90 或 90: 对于顶部和底部的两个刻度
+      // 暂时有点问题
+      // const alpha = approxTickAngle;
+      // const flag = alpha > 270 || alpha < 90;
+      // if (angle > alpha - 90 && angle < alpha + 90) {
+      //   if (flag) textAlign = 'start';
+      //   else textAlign = 'end';
+      // } else if (flag) textAlign = 'end';
+      // else textAlign = 'start';
+
       if (angle !== 0 || [-90, 90].includes(approxTickAngle)) {
         const sign = angle > 0 ? 0 : 1;
         if (absAngle <= 90) {
@@ -123,13 +122,12 @@ export class Arc extends AxisBase<ArcCfg> {
         }
       }
 
-      //  超过旋转超过 90 度时，文本会倒置，这里将其正置
+      // 超过旋转超过 90 度时，文本会倒置，这里将其正置
       if (align === 'radial') {
         rotate = approxTickAngle;
         if (Math.abs(rotate) > 90) rotate -= 180;
       }
     }
-
     return {
       rotate,
       textAlign,

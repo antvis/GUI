@@ -1,7 +1,8 @@
 import { deepMix } from '@antv/util';
+import type { TickDatum } from './types';
 
 export const AXIS_BASE_DEFAULT_OPTIONS = {
-  attrs: {
+  style: {
     title: {
       content: '',
       style: {
@@ -53,7 +54,7 @@ export const AXIS_BASE_DEFAULT_OPTIONS = {
         },
       },
       alignTick: true,
-      formatter: (tick) => tick?.text || String(tick?.value || ''),
+      formatter: (tick: Required<TickDatum>) => tick?.text || String(tick?.value || ''),
       offset: [0, 0],
       overlapOrder: ['autoRotate', 'autoEllipsis', 'autoHide'],
       margin: [1, 1, 1, 1],
@@ -73,7 +74,7 @@ export const AXIS_BASE_DEFAULT_OPTIONS = {
       count: 9,
       style: {
         default: {
-          stroke: 'red',
+          stroke: 'black',
           lineWidth: 2,
         },
       },
@@ -84,20 +85,70 @@ export const AXIS_BASE_DEFAULT_OPTIONS = {
 };
 
 export const LINEAR_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
-  attrs: {
+  style: {
     type: 'linear',
   },
 });
 
 export const ARC_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
-  attrs: {
+  style: {
     type: 'arc',
     startAngle: 0,
-    endAngle: Math.PI * 2,
+    endAngle: 360,
     center: [0, 0],
     label: {
-      ...LINEAR_DEFAULT_OPTIONS.attrs.label,
+      ...LINEAR_DEFAULT_OPTIONS.style.label,
       align: 'normal',
     },
   },
 });
+
+export const HELIX_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
+  style: {},
+});
+
+/**
+ * 空箭头配置
+ */
+export const NULL_ARROW = {
+  symbol: 'circle',
+  size: 0,
+};
+
+/**
+ * 空文本配置
+ */
+export const NULL_TEXT = {
+  text: '',
+  fillOpacity: 0,
+};
+
+/**
+ * 非关键节点规则
+ */
+export const COMMON_TIME_MAP = {
+  year: [
+    ['year', 'second'], // YYYY-MM-DD hh:mm:ss
+    ['year', 'day'], // YYYY-MM-DD
+    ['month', 'day'], // MM-DD
+    ['month', 'month'], // MM
+  ],
+  month: [
+    ['month', 'day'], // MM-DD
+    ['day', 'day'], // MM
+  ],
+  day: [
+    ['month', 'day'], // MM-DD
+    ['day', 'day'], // DD
+  ],
+  hour: [
+    ['hour', 'second'], // hh:mm:ss
+    ['hour', 'minute'], // hh:mm
+    ['hour', 'hour'], // hh
+  ],
+  minute: [
+    ['minute', 'second'], // mm:ss
+    ['second', 'second'], // ss
+  ],
+  second: [['second', 'second']],
+} as const;

@@ -1,5 +1,5 @@
-import type { MixAttrs, ShapeCfg, ShapeAttrs, StyleState as State } from '../../types';
-import type { MarkerAttrs } from '../marker';
+import type { MarkerCfg } from '../marker';
+import type { MixAttrs, DisplayObjectConfig, LineProps, ShapeAttrs, StyleState as State, TextProps } from '../../types';
 
 export type LabelType = 'text' | 'number' | 'time';
 export type Position = 'start' | 'center' | 'end';
@@ -27,15 +27,15 @@ export type AxisTitleCfg = {
 export type AxisLineCfg = {
   style?: ShapeAttrs;
   arrow?: {
-    start?: false | MarkerAttrs;
-    end?: false | MarkerAttrs;
+    start?: false | MarkerCfg;
+    end?: false | MarkerCfg;
   };
 };
 
 export type AxisTickLineCfg = {
   // 刻度线长度
   length?: number;
-  style?: MixAttrs;
+  style?: MixAttrs<Partial<LineProps>>;
   // 刻度线在其方向上的偏移量
   offset?: number;
   // 末尾追加tick，一般用于label alignTick 为 false 的情况
@@ -47,23 +47,23 @@ export type AxisSubTickLineCfg = {
   length?: number;
   // 两个刻度之间的子刻度数
   count?: number;
-  style?: MixAttrs;
+  style?: MixAttrs<Partial<LineProps>>;
   // 偏移量
   offset?: number;
 };
 
 export type AxisLabelCfg = {
   type?: LabelType;
-  style?: MixAttrs;
+  style?: MixAttrs<Partial<TextProps>>;
   // label是否与Tick对齐
   alignTick?: boolean;
-  // 标签文本与轴线的对齐方式，normal-水平，vertical-垂直于轴线 parallel-与轴线平行
-  align?: 'normal' | 'radialVertical' | 'radial';
+  // 标签文本与轴线的对齐方式，normal-水平，tangential-切向 radial-径向
+  align?: 'normal' | 'tangential' | 'radial';
   formatter?: (tick: TickDatum) => string;
   offset?: [number, number];
   // 处理label重叠的优先级
   overlapOrder?: OverlapType[];
-  // label 外边距
+  // 标签外边距，在进行自动避免重叠时的额外间隔
   margin?: [number, number, number, number];
   // 自动旋转
   autoRotate?: boolean;
@@ -90,7 +90,7 @@ export type AxisLabelCfg = {
   maxLength?: string | number;
 };
 
-export type AxisBaseCfg = ShapeCfg['attrs'] & {
+export type AxisBaseCfg = {
   type?: AxisType;
   // 标题
   title?: false | AxisTitleCfg;
@@ -99,7 +99,7 @@ export type AxisBaseCfg = ShapeCfg['attrs'] & {
   // 刻度数据
   ticks?: TickDatum[];
   // 刻度数量阈值，超过则进行重新采样
-  ticksThreshold?: number;
+  ticksThreshold?: false | number;
   // 刻度线
   tickLine?: false | AxisTickLineCfg;
   // 刻度文本
@@ -109,9 +109,8 @@ export type AxisBaseCfg = ShapeCfg['attrs'] & {
   // label 和 tick 在轴线向量的位置，-1: 向量右侧， 1: 向量左侧
   verticalFactor?: -1 | 1;
 };
-export type AxisBaseOptions = {
-  attrs: AxisBaseCfg;
-};
+
+export type AxisBaseOptions = DisplayObjectConfig<AxisBaseCfg>;
 
 export type Point = [number, number];
 
@@ -119,9 +118,7 @@ export type LinearCfg = AxisBaseCfg & {
   startPos: Point;
   endPos: Point;
 };
-export type LinearOptions = {
-  attrs: LinearCfg;
-};
+export type LinearOptions = DisplayObjectConfig<LinearCfg>;
 
 export type ArcCfg = AxisBaseCfg & {
   startAngle?: number;
@@ -129,11 +126,13 @@ export type ArcCfg = AxisBaseCfg & {
   radius: number;
   center: Point;
 };
-export type ArcOptions = {
-  attrs: ArcCfg;
-};
+export type ArcOptions = DisplayObjectConfig<ArcCfg>;
 
-export type HelixCfg = AxisBaseCfg & {};
-export type HelixOptions = {
-  attrs: HelixCfg;
+export type HelixCfg = AxisBaseCfg & {
+  a?: number;
+  b?: number;
+  startAngle?: number;
+  endAngle?: number;
+  precision?: number;
 };
+export type HelixOptions = DisplayObjectConfig<HelixCfg>;
