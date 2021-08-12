@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Arc } from '../../../../src';
+import { Helix } from '../../../../src';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({

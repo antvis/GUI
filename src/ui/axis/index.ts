@@ -13,3 +13,4 @@ export type { AxisBaseCfg, AxisBaseOptions, LinearCfg, LinearOptions, ArcCfg, Ar
 
 export { Linear } from './linear';
 export { Arc } from './arc';
+export { Helix } from './helix';
