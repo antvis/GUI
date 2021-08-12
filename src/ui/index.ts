@@ -28,7 +28,7 @@ export type { SliderOptions } from './slider';
 export { Scrollbar } from './scrollbar';
 export type { ScrollbarOptions, ScrollbarCfg } from './scrollbar';
 // author by [Aarebecca](https://github.com/Aarebecca)
-export { Arc, Linear } from './axis';
+export { Arc, Linear, Helix } from './axis';
 export type {
   AxisBaseCfg,
   AxisBaseOptions,
