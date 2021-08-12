@@ -258,7 +258,7 @@ describe('linear', () => {
             fontSize: 20,
           },
         },
-        formatter: ({ text }: TickDatum) => text,
+        formatter: (tick) => tick.text!,
       },
     });
 
