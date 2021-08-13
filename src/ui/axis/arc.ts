@@ -115,7 +115,7 @@ export class Arc extends AxisBase<ArcCfg> {
 
       if (angle !== 0 || [-90, 90].includes(approxTickAngle)) {
         const sign = angle > 0 ? 0 : 1;
-        if (absAngle <= 90) {
+        if (absAngle < 90) {
           textAlign = ['end', 'start'][sign] as Position;
         } else if (absAngle > 90) {
           textAlign = ['start', 'end'][sign] as Position;
