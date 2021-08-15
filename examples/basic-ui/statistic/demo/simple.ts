@@ -8,7 +8,6 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
-// @ts-ignore
 const canvas = new Canvas({
   container: 'container',
   width: 300,
@@ -18,8 +17,6 @@ const canvas = new Canvas({
 
 const statistic = new Statistic({
   style: {
-    x: 0,
-    y: 0,
     title: {
       text: 'simple statistic',
     },

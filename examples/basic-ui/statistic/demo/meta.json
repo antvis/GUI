@@ -5,26 +5,18 @@
   },
   "demos": [
     {
-      "filename": "simple-statistic.ts",
+      "filename": "simple.ts",
       "title": {
-        "zh": "简单指标卡 statistic",
+        "zh": "简单指标卡",
         "en": "Simple statistic"
       },
       "screenshot": ""
     },
     {
-      "filename": "formatter-statistic.ts",
+      "filename": "with-marker",
       "title": {
-        "zh": "回调 statistic",
-        "en": "formatter statistic"
-      },
-      "screenshot": ""
-    },
-    {
-      "filename": "statistic-with-affix ",
-      "title": {
-        "zh": "带前后缀的指标卡",
-        "en": "Statistic with affix"
+        "zh": "带 marker 指标卡",
+        "en": "Statistic with marker"
       },
       "screenshot": ""
     },
