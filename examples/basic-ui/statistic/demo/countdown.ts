@@ -24,8 +24,11 @@ const countdown = new Countdown({
       text: 'now countdown',
     },
     value: {
-      format: 'YYYY-MM-DD HH:mm:ss',
-      dynamicTime: true,
+      timestamp: Date.now() + 1000 * 10,
+      format: 'HH:mm:ss',
+    },
+    onFinish: () => {
+      console.log('计时结束');
     },
   },
 });

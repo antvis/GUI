@@ -9,7 +9,7 @@ import type { StatisticCfg, StatisticOptions } from './types';
 
 export type { StatisticCfg, StatisticOptions };
 
-export class Statistic extends GUI<Required<StatisticCfg>> {
+export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Required<T>> {
   /**
    * 组件 tag
    */
@@ -27,7 +27,7 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
   /**
    * 默认配置项
    */
-  private static defaultOptions: GUIOption<StatisticCfg> = {
+  public static defaultOptions: GUIOption<StatisticCfg> = {
     type: Statistic.tag,
     style: {
       x: 0,
@@ -86,7 +86,7 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
   /**
    * 组件的更新
    */
-  public update(cfg: Partial<StatisticCfg>) {
+  public update(cfg: Partial<T>) {
     this.attr(deepMix({}, this.attributes, cfg));
 
     // 更新背景
@@ -129,6 +129,7 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
     const { title } = this.attributes;
 
     return {
+      text: '',
       ...title,
       x: 0,
       y: 0,
@@ -147,11 +148,13 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
       titleHeight = bounds.getMax()[1] - bounds.getMin()[1];
     }
     const valueX = 0;
+    const valueY = ((spacing as number) + titleHeight) as number;
 
     return {
+      text: '',
       ...value,
       x: valueX,
-      y: spacing + titleHeight, // title 文本高度 + spacing 上下间距
+      y: valueY, // title 文本高度 + spacing 上下间距
     };
   }
 

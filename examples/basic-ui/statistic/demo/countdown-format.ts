@@ -21,12 +21,11 @@ const countdown = new Countdown({
     x: 0,
     y: 0,
     title: {
-      text: 'timer countdown',
+      text: '距离双十一还有:',
     },
     value: {
-      text: 1000 * 60 * 60 * 48,
+      timestamp: new Date(`${new Date().getFullYear()}-11-11 00:00:00`),
       format: 'D 天 HH 小时 mm 分钟 ss 秒 SSS 毫秒',
-      dynamicTime: true,
     },
   },
 });

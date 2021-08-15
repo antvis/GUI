@@ -21,18 +21,18 @@
       "screenshot": ""
     },
     {
-      "filename": "now-countdown.ts",
+      "filename": "countdown.ts",
       "title": {
-        "zh": "当前时间 countdown",
-        "en": "now countdown"
+        "zh": "倒计时",
+        "en": "Countdown"
       },
       "screenshot": ""
     },
     {
-      "filename": "timer-countdown.ts",
+      "filename": "countdown-format.ts",
       "title": {
-        "zh": "计时器 countdown",
-        "en": "timer countdown"
+        "zh": "倒计时格式化",
+        "en": "Countdown format"
       },
       "screenshot": ""
     }
