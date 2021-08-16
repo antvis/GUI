@@ -15,15 +15,15 @@ import { Statistic } from '@antv/gui';
 
 ## StatisticOptions
 
-| **Property** | **Description**              | **Type**                | **Default** |
-| ------------ | ---------------------------- | ----------------------- | ----------- |
-| x            | Starting point x             | <code>number</code>     | `-`         |
-| y            | Starting point y             | <code>number</code>     | `-`         |
-| title        | title                        | <code>TextOption</code> | `{}`        |
-| value        | value                        | <code>TextOption</code> | `{}`        |
-| spacing      | Distance between up and down | <code>number<code>      | `5`         |
+| **Property** | **Description**              | **Type**             | **Default** |
+| ------------ | ---------------------------- | -------------------- | ----------- |
+| x            | Starting point x             | <code>number</code>  | `-`         |
+| y            | Starting point y             | <code>number</code>  | `-`         |
+| title        | title                        | <code>TextCfg</code> | `{}`        |
+| value        | value                        | <code>TextCfg</code> | `{}`        |
+| spacing      | Distance between up and down | <code>number<code>   | `5`         |
 
-## TextOption
+## TextCfg
 
 | **Property** | **Description**  | **Type**                                             | **Default** |
 | ------------ | ---------------- | ---------------------------------------------------- | ----------- |
@@ -46,12 +46,12 @@ import { Countdown } from '@antv/gui';
 
 ## Timer configuration item (the configuration is inherited from the indicator card)
 
-| **Property** | **Description**                     | **Type**                | **Default** |
-| ------------ | ----------------------------------- | ----------------------- | ----------- |
-| value        | The countdown option                | <code>timeOption</code> | `{}`        |
-| onFinish     | The reverse meter ends the callback | <code>callBack</code>   | `() => {}`  |
+| **Property** | **Description**                     | **Type**              | **Default** |
+| ------------ | ----------------------------------- | --------------------- | ----------- |
+| value        | The countdown option                | <code>TextCfg</code>  | `{}`        |
+| onFinish     | The reverse meter ends the callback | <code>callBack</code> | `() => {}`  |
 
-## timeOption
+## TextCfg
 
 | **Property** | **Description**     | **Type**             | **Default** |
 | ------------ | ------------------- | -------------------- | ----------- |
