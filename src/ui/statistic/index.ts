@@ -1,8 +1,7 @@
-import type { Group } from '@antv/g';
+import type { Group, DisplayObject } from '@antv/g';
 import { deepMix, get, isNil } from '@antv/util';
 import { Text, DisplayObject as GObject } from '@antv/g';
 import { GUI } from '../core/gui';
-import type { DisplayObject } from '../../types';
 import type { StatisticCfg, StatisticOptions, TitleOption, ValueOption } from './types';
 
 export type { StatisticCfg, StatisticOptions };
@@ -16,19 +15,19 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
   /**
    * 标题
    */
-  protected titleShape!: DisplayObject;
+  protected titleShape!: Text;
 
   /**
    * 内容
    */
-  protected valueShape!: DisplayObject;
+  protected valueShape!: Text;
 
   /**
    * 前缀 | 后缀
    */
-  protected prefixShape!: DisplayObject;
+  protected prefixShape!: Text;
 
-  protected suffixShape!: DisplayObject;
+  protected suffixShape!: Text;
 
   /**
    * 初始化 fix的 x y
@@ -102,7 +101,7 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
     const { title } = this.attributes;
     const { style } = title as Required<TitleOption>;
     const { fontSize } = style;
-    const titleHeight = fontSize + 5;
+    const titleHeight = fontSize! + 5;
     const newTitleText = this.getNewText('title');
 
     return {
@@ -121,8 +120,8 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
     const { style: titleStyle } = title as Required<TitleOption>;
     const { style: valueStyle, prefix, suffix } = value as Required<ValueOption>;
 
-    const titleHeight = titleStyle.fontSize + 5;
-    const valueHeight = valueStyle.fontSize + 5;
+    const titleHeight = titleStyle.fontSize! + 5;
+    const valueHeight = valueStyle.fontSize! + 5;
     let newValueText = `${this.getNewText('value')}`;
     let valueX = 0;
     if (this.addAffixAdapter(prefix)) {
@@ -153,7 +152,7 @@ export class Statistic extends GUI<Required<StatisticCfg>> {
     const { title, spacing } = this.attributes;
     const { style } = title as Required<TitleOption>;
 
-    const titleHeight = style.fontSize + 5;
+    const titleHeight = style.fontSize! + 5;
     let valueWidth = this.getGroupWidth(this.valueShape).width;
     if (this.prefixShape) {
       const { y = 0 } = this.fixCfg.prefix;

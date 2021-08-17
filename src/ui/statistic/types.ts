@@ -1,11 +1,11 @@
-import type { ShapeAttrs, DisplayObjectConfig } from '../../types';
+import type { TextProps, DisplayObjectConfig } from '../../types';
 
 export interface TitleOption {
   text?: string | number;
   /**
    * 标题 自定义文本样式
    */
-  style?: ShapeAttrs;
+  style?: Partial<TextProps>;
   /**
    * 文本格式化
    */
