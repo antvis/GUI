@@ -27,6 +27,69 @@ export class Button extends GUI<ButtonCfg> {
    */
   private backgroundShape!: Rect;
 
+  private get markerWidth(): number {
+    if (this.markerShape.isVisible()) {
+      const { size } = this.getStyle('markerStyle') as IMarkerCfg;
+      return size!;
+    }
+    return 0;
+  }
+
+  /**
+   * 获得 button 文本
+   */
+  private get text(): string {
+    const { text } = this.attributes;
+    if (text === '') {
+      return text;
+    }
+    /* 可用宽度 */
+    const width = this.textAvailableWidth;
+    return getEllipsisText(text, width);
+  }
+
+  private get textWidth(): number {
+    if (this.textShape.attr('text') === '') {
+      return 0;
+    }
+    return measureTextWidth(this.text, getFont(this.textShape));
+  }
+
+  /* 获得文本可用宽度 */
+  private get textAvailableWidth(): number {
+    const { marker, padding, ellipsis, width: bWidth, markerSpacing: spacing } = this.attributes;
+    if (!ellipsis) return Infinity;
+    /* 按钮总宽度 */
+    const width = isUndefined(bWidth) ? (this.getStyle('buttonStyle') as RectProps).width : bWidth;
+    if (marker) return width - padding! * 2 - spacing! - this.markerWidth;
+    return width - padding! * 2;
+  }
+
+  /**
+   * 根据文本和marker来计算按钮宽度
+   */
+  private get buttonWidth() {
+    const { marker, padding, width: bWidth, ellipsis, markerSpacing: spacing } = this.attributes;
+    if (!isUndefined(bWidth)) return bWidth;
+    if (ellipsis) return (this.getStyle('buttonStyle') as RectProps).width;
+    const text = this.textShape.attr('text');
+    const { markerWidth } = this;
+    const { textWidth } = this;
+    let width = padding! * 2;
+
+    if (marker) {
+      if (text !== '') width += markerWidth + textWidth + spacing!;
+      else width += markerWidth;
+    } else if (text !== '') width += textWidth;
+    return width;
+  }
+
+  private get buttonHeight() {
+    const { height } = this.attributes;
+    if (height) return height;
+    return (this.getStyle('buttonStyle') as RectProps).height;
+  }
+
   constructor(options: ButtonOptions) {
     super(deepMix({}, Button.defaultOptions, options));
     this.initShape();
@@ -81,7 +144,7 @@ export class Button extends GUI<ButtonCfg> {
       getStateStyle(get(this.attributes, name), state, true)
     );
 
-    if (disabled && state !== 'active') {
+    if (disabled) {
       // 从DISABLED_STYLE中pick中pick mixedStyle里已有的style
       Object.keys(mixedStyle).forEach((key) => {
         if (key in DISABLED_STYLE[name]) {
@@ -146,78 +209,12 @@ export class Button extends GUI<ButtonCfg> {
     }
   }
 
-  private getMarkerWidth(): number {
-    if (this.markerShape.isVisible()) {
-      const { size } = this.getStyle('markerStyle') as IMarkerCfg;
-      return size!;
-    }
-    return 0;
-  }
-
-  /* 获得文本可用宽度 */
-  private getTextAvailableWidth(): number {
-    const { marker, padding, ellipsis, width: bWidth, markerSpacing: spacing } = this.attributes;
-    if (!ellipsis) return Infinity;
-    /* 按钮总宽度 */
-    const width = isUndefined(bWidth) ? (this.getStyle('buttonStyle') as RectProps).width : bWidth;
-    if (marker) return width - padding! * 2 - spacing! - this.getMarkerWidth();
-    return width - padding! * 2;
-  }
-
-  /**
-   * 获得文本宽度
-   */
-  private getTextWidth(): number {
-    if (this.textShape.attr('text') === '') {
-      return 0;
-    }
-    return measureTextWidth(this.getText(), getFont(this.textShape));
-  }
-
-  /**
-   * 获得 button 文本
-   */
-  private getText(): string {
-    const { text } = this.attributes;
-    if (text === '') {
-      return text;
-    }
-    /* 可用宽度 */
-    const width = this.getTextAvailableWidth();
-    return getEllipsisText(text, width);
-  }
-
-  /**
-   * 根据文本和marker来计算按钮宽度
-   */
-  private getButtonWidth() {
-    const { marker, padding, width: bWidth, ellipsis, markerSpacing: spacing } = this.attributes;
-    if (!isUndefined(bWidth)) return bWidth;
-    if (ellipsis) return (this.getStyle('buttonStyle') as RectProps).width;
-    const text = this.textShape.attr('text');
-    const markerWidth = this.getMarkerWidth();
-    const textWidth = this.getTextWidth();
-    let width = padding! * 2;
-
-    if (marker) {
-      if (text !== '') width += markerWidth + textWidth + spacing!;
-      else width += markerWidth;
-    } else if (text !== '') width += textWidth;
-    return width;
-  }
-
-  private getButtonHeight() {
-    const { height } = this.attributes;
-    if (height) return height;
-    return (this.getStyle('buttonStyle') as RectProps).height;
-  }
-
   /**
    * 更新文本内容和样式
    */
   private updateText() {
     const { disabled } = this.attributes;
-    const text = this.getText();
+    const { text } = this;
     if (text === '') this.textShape.hide();
     else {
       this.textShape.attr({ text, cursor: disabled ? 'not-allowed' : 'default', ...this.getStyle('textStyle') });
@@ -226,7 +223,7 @@ export class Button extends GUI<ButtonCfg> {
   }
 
   private updateButton() {
-    const height = this.getButtonHeight();
+    const height = this.buttonHeight;
     const buttonStyle = this.getStyle('buttonStyle') as RectProps;
     this.backgroundShape.attr({ ...buttonStyle, height });
   }
@@ -246,8 +243,8 @@ export class Button extends GUI<ButtonCfg> {
         this.textShape.attr(this.getStyle('textStyle', 'active'));
         this.backgroundShape.attr({
           ...this.getStyle('buttonStyle', 'active'),
-          width: this.getButtonWidth(),
-          height: this.getButtonHeight(),
+          width: this.buttonWidth,
+          height: this.buttonHeight,
         });
       }
     });
@@ -257,19 +254,18 @@ export class Button extends GUI<ButtonCfg> {
       this.textShape.attr(this.getStyle('textStyle'));
       this.backgroundShape.attr({
         ...this.getStyle('buttonStyle'),
-        width: this.getButtonWidth(),
-        height: this.getButtonHeight(),
+        width: this.buttonWidth,
+        height: this.buttonHeight,
       });
     });
   }
 
   private adjustLayout() {
     const { padding, marker, markerAlign: align, markerSpacing: spacing } = this.attributes;
-    const width = this.getButtonWidth();
-    const height = this.getButtonHeight();
+    const width = this.buttonWidth;
+    const height = this.buttonHeight;
     const halfButtonWidth = width / 2;
-    const textWidth = this.getTextWidth();
-    const halfTextWidth = textWidth / 2;
+    const halfTextWidth = this.textWidth / 2;
     const text = this.textShape.attr('text');
     let textX = 0;
     let markerX = 0;
@@ -277,14 +273,14 @@ export class Button extends GUI<ButtonCfg> {
     const textY = height / 2;
 
     if (marker) {
-      const markerWidth = this.getMarkerWidth();
+      const { markerWidth } = this;
       const halfMarkerWidth = markerWidth / 2;
       if (text === '') markerX = halfButtonWidth;
       else if (align === 'left') {
         markerX = halfMarkerWidth + padding!;
         textX = padding! + markerWidth + spacing! + halfTextWidth;
       } else {
-        markerX = this.getButtonWidth() - padding! - halfMarkerWidth;
+        markerX = this.buttonWidth - padding! - halfMarkerWidth;
         textX = padding! + halfTextWidth;
       }
     } else if (text !== '') textX = halfButtonWidth;
@@ -293,6 +289,6 @@ export class Button extends GUI<ButtonCfg> {
     this.textShape.attr({ x: textX, y: textY });
 
     // 设置button宽度
-    this.backgroundShape.attr({ width: this.getButtonWidth() });
+    this.backgroundShape.attr({ width: this.buttonWidth });
   }
 }
