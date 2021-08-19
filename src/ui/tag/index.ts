@@ -6,7 +6,7 @@ import { getStateStyle as getStyle, normalPadding, getShapeSpace } from '../../u
 import type { RectProps, TextProps } from '../../types';
 import type { TagCfg, TagOptions } from './types';
 
-export type { TagOptions };
+export type { TagCfg, TagOptions };
 
 /**
  * 带文本的 图标组件，支持 iconfont 组件
@@ -193,14 +193,14 @@ export class Tag extends GUI<Required<TagCfg>> {
   }
 
   private bindEvents() {
-    this.on('mouseenter', () => {
+    this.addEventListener('mouseenter', () => {
       const { backgroundStyle, textStyle } = this.attributes;
       this.textShape.attr(getStyle(textStyle, 'active', true));
       this.backgroundShape.attr(getStyle(backgroundStyle, 'active', true));
       this.autoFit();
     });
 
-    this.on('mouseleave', () => {
+    this.addEventListener('mouseleave', () => {
       this.textShape.attr(this.getTextShapeCfg());
       this.backgroundShape.attr(this.getBackgroundShapeCfg());
       this.autoFit();

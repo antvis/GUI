@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
+import { Countdown } from '@antv/gui';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Continuous } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -8,31 +8,29 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
+// @ts-ignore
 const canvas = new Canvas({
   container: 'container',
-  width: 600,
+  width: 400,
   height: 300,
   renderer,
 });
 
-const continuous = new Continuous({
+const countdown = new Countdown({
   style: {
+    x: 0,
+    y: 0,
     title: {
-      content: '尺寸类型',
+      text: 'now countdown',
     },
-    label: {
-      align: 'outside',
+    value: {
+      timestamp: Date.now() + 1000 * 10,
+      format: 'HH:mm:ss',
     },
-    rail: {
-      type: 'size',
-      width: 300,
-      height: 30,
+    onFinish: () => {
+      console.log('计时结束');
     },
-    handle: false,
-    min: 0,
-    max: 100,
-    color: ['#fff', '#d0e3fa', '#8daaf2', '#4d73cd'],
   },
 });
 
-canvas.appendChild(continuous);
+canvas.appendChild(countdown);
