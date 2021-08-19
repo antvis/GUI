@@ -27,6 +27,10 @@ export class Button extends GUI<ButtonCfg> {
    */
   private backgroundShape!: Rect;
 
+  private get disabled() {
+    return this.attributes.disabled;
+  }
+
   private get markerWidth(): number {
     if (this.markerShape.isVisible()) {
       const { size } = this.getStyle('markerStyle') as IMarkerCfg;
@@ -230,12 +234,12 @@ export class Button extends GUI<ButtonCfg> {
 
   private bindEvents(): void {
     const { disabled, onClick } = this.attributes;
-    if (!disabled && onClick) {
-      this.addEventListener('click', () => {
-        // 点击事件
-        onClick.call(this, this);
-      });
-    }
+
+    this.addEventListener('click', () => {
+      // 点击事件
+      !this.disabled && onClick?.call(this, this);
+    });
+
     this.addEventListener('mouseenter', () => {
       if (!disabled) {
         // 鼠标悬浮事件
