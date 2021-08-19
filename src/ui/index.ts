@@ -41,4 +41,6 @@ export { Statistic } from './statistic';
 export type { StatisticOptions } from './statistic';
 export { Countdown } from './countdown';
 export type { CountdownOptions } from './countdown';
+export { Switch } from './switch';
+export type { SwitchOptions } from './switch';
 // to be continued...

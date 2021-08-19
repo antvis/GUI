@@ -46,7 +46,7 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
         /** 默认不要背景 */
         backgroundStyle: {
           default: {
-            fill: 'transparent',
+            fill: '#fff',
             lineWidth: 0,
           },
         },
@@ -64,7 +64,7 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
         /** 默认不要背景 */
         backgroundStyle: {
           default: {
-            fill: 'transparent',
+            fill: '#fff',
             lineWidth: 0,
           },
         },

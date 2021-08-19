@@ -28,7 +28,7 @@ export type TagCfg = {
   textStyle?: MixAttrs<Partial<TextProps>>;
 
   /** background 背景样式 */
-  backgroundStyle?: MixAttrs<Partial<TextProps>>;
+  backgroundStyle?: MixAttrs<Partial<TextProps>> | boolean;
 };
 
 export type TagOptions = DisplayObjectConfig<TagCfg>;
