@@ -46,20 +46,16 @@ const childrenSwitch = new Switch({
       text: '开启 √',
       marker: {
         symbol: 'check',
-        x: 0,
-        y: 0,
         stroke: '#fff',
-        size: 10,
+        size: 12,
       },
     },
     unCheckedChildren: {
       text: '关闭 ×',
       marker: {
         symbol: 'stop',
-        x: 0,
-        y: 0,
         stroke: '#fff',
-        size: 10,
+        size: 12,
       },
     },
   },

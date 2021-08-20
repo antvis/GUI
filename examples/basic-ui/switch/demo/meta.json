@@ -13,6 +13,14 @@
       "screenshot": ""
     },
     {
+      "filename": "size-switch.ts",
+      "title": {
+        "zh": "控制大小 开关",
+        "en": "Size switch"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "checked-switch.ts",
       "title": {
         "zh": "外部控制 开关",

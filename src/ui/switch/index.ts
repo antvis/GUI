@@ -17,14 +17,15 @@ const CLOSE_COLOR = '#00000040';
 const PADDING = 2;
 // 背景和childrenShape 的间距
 const PADDING2 = 8;
+
 // 默认样式
-const rectDefaultStyle: RectStyleProps = {
+const rectDefaultStyle = (size: 'small' | 'default' = 'default'): RectStyleProps => ({
   stroke: OPTION_COLOR,
   fill: OPTION_COLOR,
-  width: 44,
-  height: 22,
-  radius: 11,
-};
+  width: size === 'small' ? 28 : 44,
+  height: size === 'small' ? 16 : 22,
+  radius: size === 'small' ? 8 : 11,
+});
 // 默认tag 样式
 const checkedChildrenStyle = {
   backgroundStyle: false,
@@ -69,6 +70,7 @@ export class Switch extends GUI<SwitchCfg> {
       x: 0,
       y: 0,
       defaultChecked: true,
+      size: 'default',
     },
   };
 
@@ -109,7 +111,7 @@ export class Switch extends GUI<SwitchCfg> {
       name: 'background',
       style: {
         ...Switch.defaultOptions.style,
-        ...rectDefaultStyle,
+        ...rectDefaultStyle(this.attributes.size),
       },
     });
   }
@@ -120,7 +122,7 @@ export class Switch extends GUI<SwitchCfg> {
       name: 'rectStroke',
       style: {
         ...Switch.defaultOptions.style,
-        ...rectDefaultStyle,
+        ...rectDefaultStyle(this.attributes.size),
         strokeOpacity: 0.4,
         lineWidth: 0,
         fill: '#efefef',
@@ -178,7 +180,7 @@ export class Switch extends GUI<SwitchCfg> {
       }
       const childrenShape = this.childrenShape[index];
       if (isPlainObject(children)) {
-        childrenShape.update({ ...omit(children, ['backgroundStyle', 'textStyle', 'x']), x: 0 });
+        childrenShape.update({ ...omit(children, ['backgroundStyle', 'x']), x: 0 });
         // checked 控制这个有无
         (index === 0 ? this.checked : !this.checked)
           ? this.backgroundShape.appendChild(childrenShape)
@@ -213,7 +215,7 @@ export class Switch extends GUI<SwitchCfg> {
 
   // 更新控件
   public updateHandleShape() {
-    const { height, radius } = rectDefaultStyle;
+    const { height, radius } = rectDefaultStyle(this.attributes.size);
     const width = this.getShapeWidth();
     const r = (radius as number) - PADDING;
     this.handleShape.attr({
@@ -235,7 +237,7 @@ export class Switch extends GUI<SwitchCfg> {
 
   // 获取背景Shape宽度
   public getShapeWidth() {
-    const { width } = rectDefaultStyle;
+    const { width } = rectDefaultStyle(this.attributes.size);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
     const childrenWidth = childrenShape ? getShapeSpace(childrenShape).width - PADDING2 : 0;
 

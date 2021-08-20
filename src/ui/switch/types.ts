@@ -4,6 +4,7 @@ import type { DisplayObjectConfig } from '../../types';
 export type SwitchCfg = {
   x?: number;
   y?: number;
+  size?: 'small' | 'default';
   checked?: boolean;
   disabled?: boolean;
   defaultChecked?: boolean;
