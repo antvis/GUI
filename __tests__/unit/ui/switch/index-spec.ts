@@ -37,12 +37,20 @@ describe('switch', () => {
     expect(y).toBe(50);
     expect(defaultChecked).toBe(false);
     expect(switchShape.getChecked()).toBe(false);
-    expect(get(switchShape.children[1], 'attributes.fill')).toBe('#00000040');
+    expect(get(switchShape, 'backgroundShape.attributes.fill')).toBe('#00000040');
+    expect(get(switchShape, 'rectStrokeShape.attributes.stroke')).toBe('#00000040');
 
     switchShape.addClick();
     expect(defaultChecked).toBe(false);
     expect(switchShape.getChecked()).toBe(true);
-    expect(get(switchShape.children[1], 'attributes.fill')).toBe('#1890FF');
+    expect(get(switchShape, 'backgroundShape.attributes.fill')).toBe('#1890FF');
+    expect(get(switchShape, 'rectStrokeShape.attributes.stroke')).toBe('#1890FF');
+
+    expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(undefined);
+    switchShape.addBackgroundLine();
+    expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(5);
+    switchShape.clearBackgroundLine();
+    expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(0);
   });
 
   test('checked switch', () => {
@@ -71,7 +79,7 @@ describe('switch', () => {
         },
       },
       unCheckedChildren: {
-        text: '关闭 ×~~',
+        text: '关闭 ×',
         marker: {
           symbol: 'stop',
           x: 0,
@@ -82,12 +90,12 @@ describe('switch', () => {
       },
     });
 
-    expect(switchShape.getShapeWidth()).toBeCloseTo(86, -1);
-    expect(get(switchShape.children[1].children[1], 'config.name')).toBe('checkedChildren');
+    const width = switchShape.getShapeWidth();
+    expect(get(switchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('checkedChildren');
     switchShape.update({
       checked: false,
     });
-    expect(switchShape.getShapeWidth()).toBeCloseTo(104, -1);
-    expect(get(switchShape.children[1].children[1], 'config.name')).toBe('unCheckedChildren');
+    expect(switchShape.getShapeWidth()).toBeCloseTo(width, -1);
+    expect(get(switchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('unCheckedChildren');
   });
 });

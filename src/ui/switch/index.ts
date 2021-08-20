@@ -26,14 +26,14 @@ const rectDefaultStyle: RectStyleProps = {
   radius: 11,
 };
 // 默认tag 样式
-const checkedChildrenStyle: TagCfg = {
+const checkedChildrenStyle = {
   backgroundStyle: false,
   textStyle: {
     default: {
       fill: '#fff',
     },
   },
-};
+} as TagCfg;
 
 export class Switch extends GUI<SwitchCfg> {
   /**
