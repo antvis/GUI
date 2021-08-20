@@ -54,8 +54,10 @@ export class Switch extends GUI<SwitchCfg> {
   /** 选中时内容 组件 */
   private childrenShape: Tag[] = [];
 
-  /** 值 */
+  /** 轨迹 */
+  private pathLineShape!: Line;
 
+  /** 值 */
   private checked!: boolean;
 
   /** 默认值 */
@@ -98,6 +100,8 @@ export class Switch extends GUI<SwitchCfg> {
     this.rectStrokeShape = this.createRectStrokeShape();
 
     this.handleShape = this.createHandleShape();
+
+    this.pathLineShape = new Line({ name: 'pathLine' });
 
     this.backgroundShape.appendChild(this.handleShape);
 
@@ -221,20 +225,28 @@ export class Switch extends GUI<SwitchCfg> {
     const { height, radius } = rectDefaultStyle(this.attributes.size);
     const width = this.getShapeWidth();
     const r = (radius as number) - PADDING;
-    this.handleShape.attr({
-      x: this.defaultChecked ? width - height + PADDING : PADDING,
+
+    let updateAttr: RectStyleProps = {
       width: r * 2,
       height: r * 2,
       radius: r,
-      offsetPath: new Line({
-        // 创建运动轨迹
-        style: {
-          x1: width - height + PADDING,
-          y1: PADDING,
-          x2: PADDING,
-          y2: PADDING,
-        },
-      }),
+    };
+    // 只有第一次的时候 才通过 width 改变 x 的位置
+    if (!this.handleShape.attributes.offsetPath) {
+      updateAttr = {
+        ...updateAttr,
+        x: this.defaultChecked ? width - height + PADDING : PADDING,
+        offsetPath: this.pathLineShape,
+      };
+    }
+
+    this.handleShape.attr(updateAttr);
+
+    this.pathLineShape.attr({
+      x1: width - height + PADDING,
+      y1: PADDING,
+      x2: PADDING,
+      y2: PADDING,
     });
   }
 
