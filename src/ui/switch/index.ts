@@ -1,11 +1,12 @@
+import { Rect, Line } from '@antv/g';
 import { deepMix, isNil, omit, get, isPlainObject } from '@antv/util';
-import { Rect, Line, RectStyleProps } from '@antv/g';
-import type { SwitchCfg, SwitchOptions } from './types';
+import type { RectStyleProps } from '@antv/g';
+import { Tag } from '../tag';
 import { GUI } from '../core/gui';
 import { getShapeSpace } from '../../util';
-import { Tag } from '../tag';
 import type { TagCfg } from '../tag/types';
 import type { GUIOption } from '../../types';
+import type { SwitchCfg, SwitchOptions } from './types';
 
 export type { SwitchCfg, SwitchOptions };
 
@@ -18,14 +19,6 @@ const PADDING = 2;
 // 背景和childrenShape 的间距
 const PADDING2 = 8;
 
-// 默认样式
-const rectDefaultStyle = (size: 'small' | 'default' = 'default'): RectStyleProps => ({
-  stroke: OPTION_COLOR,
-  fill: OPTION_COLOR,
-  width: size === 'small' ? 28 : 44,
-  height: size === 'small' ? 16 : 22,
-  radius: size === 'small' ? 8 : 11,
-});
 // 默认tag 样式
 const checkedChildrenStyle = {
   backgroundStyle: false,
@@ -63,6 +56,12 @@ export class Switch extends GUI<SwitchCfg> {
   /** 默认值 */
   private defaultChecked!: boolean;
 
+  /** 动画开启关闭 */
+  private animateFlag!: boolean;
+
+  /** SizeStyle */
+  private sizeStyle!: RectStyleProps;
+
   /**
    * 默认配置项
    */
@@ -71,8 +70,18 @@ export class Switch extends GUI<SwitchCfg> {
     style: {
       x: 0,
       y: 0,
+      size: 22,
       defaultChecked: true,
-      size: 'default',
+      style: {
+        default: {
+          stroke: CLOSE_COLOR,
+          fill: CLOSE_COLOR,
+        },
+        selected: {
+          stroke: OPTION_COLOR,
+          fill: OPTION_COLOR,
+        },
+      },
     },
   };
 
@@ -82,9 +91,30 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   public init(): void {
+    this.getSizeStyle();
     this.initShape();
     this.update({});
     this.bindEvents();
+  }
+
+  public getChecked() {
+    return this.checked;
+  }
+
+  /**
+   * 组件的更新
+   */
+  public update(cfg: SwitchCfg) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.getSizeStyle();
+    // 更新开关
+    this.updateChecked();
+    // 更新 shape attr
+    this.updateShape();
+    // 如果 修改了 checked 开启动画
+    if (this.animateFlag) {
+      this.animateSiwtch();
+    }
   }
 
   /**
@@ -101,32 +131,39 @@ export class Switch extends GUI<SwitchCfg> {
 
     this.handleShape = this.createHandleShape();
 
-    this.pathLineShape = new Line({ name: 'pathLine' });
-
     this.backgroundShape.appendChild(this.handleShape);
 
     this.appendChild(this.rectStrokeShape);
     this.appendChild(this.backgroundShape);
   }
 
+  private getSizeStyle() {
+    const size = Number(this.attributes.size) || (Switch.defaultOptions.style.size as number);
+    this.sizeStyle = {
+      width: size * 2,
+      height: size,
+      radius: size / 2,
+    };
+  }
+
   // 创建 背景Shape
-  public createBackgroundShape() {
+  private createBackgroundShape() {
     return new Rect({
       name: 'background',
       style: {
         ...Switch.defaultOptions.style,
-        ...rectDefaultStyle(this.attributes.size),
+        ...this.sizeStyle,
       },
     });
   }
 
   // 创建 动效Shape
-  public createRectStrokeShape() {
+  private createRectStrokeShape() {
     return new Rect({
       name: 'rectStroke',
       style: {
         ...Switch.defaultOptions.style,
-        ...rectDefaultStyle(this.attributes.size),
+        ...this.sizeStyle,
         strokeOpacity: 0.4,
         lineWidth: 0,
         fill: '#efefef',
@@ -135,7 +172,8 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // 创建 控件Shape
-  public createHandleShape() {
+  private createHandleShape() {
+    this.pathLineShape = new Line({ name: 'pathLine' });
     // 暂时使用 Rect 为之后的变形动画做准备
     return new Rect({
       name: 'handle',
@@ -144,26 +182,12 @@ export class Switch extends GUI<SwitchCfg> {
         height: 0,
         y: PADDING,
         fill: '#fff',
+        offsetPath: this.pathLineShape,
       },
     });
   }
 
-  /**
-   * 组件的更新
-   */
-  public update(cfg: SwitchCfg) {
-    this.attr(deepMix({}, this.attributes, cfg));
-    // 更新开关
-    const animateFlag = this.updateChecked();
-    // 更新 shape attr
-    this.updateShape();
-    // 如果 修改了 checked 开启动画
-    if (animateFlag) {
-      this.animateSiwtch();
-    }
-  }
-
-  public updateShape() {
+  private updateShape() {
     // 创建/更新/销毁 开关显示标签 Shape
     this.updateCheckedChildrenShape();
     // 更新背景 + 动效
@@ -173,7 +197,7 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // 创建/更新/销毁 开关显示标签 Shape
-  public updateCheckedChildrenShape() {
+  private updateCheckedChildrenShape() {
     ['checkedChildren', 'unCheckedChildren'].forEach((key, index) => {
       const children = get(this.attributes, key) as TagCfg;
       if (!this.childrenShape[index]) {
@@ -199,30 +223,27 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // 更新背景 + 动效
-  public updateBackgroundShape() {
-    const color = this.checked ? OPTION_COLOR : CLOSE_COLOR;
-    const { height, radius } = rectDefaultStyle(this.attributes.size);
+  private updateBackgroundShape() {
+    const { style } = this.attributes;
     const { disabled } = this.attributes;
     const width = this.getShapeWidth();
     const newAttr = {
+      ...this.sizeStyle,
       width,
-      height,
-      radius,
-      stroke: color,
+      ...get(style, this.checked ? 'selected' : 'default'),
     };
     this.backgroundShape.attr({
       ...newAttr,
-      fill: color,
       cursor: disabled ? 'no-drop' : 'pointer',
       fillOpacity: disabled ? 0.4 : 1,
     });
 
-    this.rectStrokeShape.attr(newAttr);
+    this.rectStrokeShape.attr(omit(newAttr, ['fill']));
   }
 
   // 更新控件
-  public updateHandleShape() {
-    const { height, radius } = rectDefaultStyle(this.attributes.size);
+  private updateHandleShape() {
+    const { height, radius } = this.sizeStyle;
     const width = this.getShapeWidth();
     const r = (radius as number) - PADDING;
 
@@ -232,11 +253,10 @@ export class Switch extends GUI<SwitchCfg> {
       radius: r,
     };
     // 只有第一次的时候 才通过 width 改变 x 的位置
-    if (!this.handleShape.attributes.offsetPath) {
+    if (!this.animateFlag) {
       updateAttr = {
         ...updateAttr,
         x: this.defaultChecked ? width - height + PADDING : PADDING,
-        offsetPath: this.pathLineShape,
       };
     }
 
@@ -251,8 +271,8 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // 获取背景Shape宽度
-  public getShapeWidth() {
-    const { width } = rectDefaultStyle(this.attributes.size);
+  private getShapeWidth() {
+    const { width } = this.sizeStyle;
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
     const childrenWidth = childrenShape ? getShapeSpace(childrenShape).width - PADDING2 : 0;
 
@@ -260,12 +280,11 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // 更新 checked 如果 没有传入 checked 并且 checked 没有改变则不更新
-  public updateChecked() {
+  private updateChecked() {
     const { checked } = this.attributes;
+    this.animateFlag = !(isNil(checked) || this.checked === !!checked);
     // 当不存在 checked 或 checked 没有改变 则不需要更改 checked 和 发生动效
-    if (isNil(checked) || this.checked === !!checked) return false;
-    this.checked = !!checked;
-    return true;
+    if (this.animateFlag) this.checked = !!checked;
   }
 
   /**
@@ -280,10 +299,10 @@ export class Switch extends GUI<SwitchCfg> {
       this.banEvent(this.addBackgroundLine);
     });
 
-    this.addEventListener('click', () => {
+    this.addEventListener('click', (e) => {
       this.banEvent(this.addClick);
       const { onClick } = this.attributes;
-      onClick && onClick(this.checked);
+      onClick && onClick(e, this.checked);
     });
 
     window.addEventListener('click', () => {
@@ -292,21 +311,21 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // disabled 时 禁止交互
-  public banEvent(fn: Function) {
+  private banEvent(fn: Function) {
     const { disabled, checked } = this.attributes;
     if (disabled || !isNil(checked)) return;
     fn.apply(this);
   }
 
   // 去除聚焦效果
-  public clearBackgroundLine() {
+  private clearBackgroundLine() {
     this.backgroundShape.attr({
       lineWidth: 0,
     });
   }
 
   // 添加聚焦效果
-  public addBackgroundLine() {
+  private addBackgroundLine() {
     this.backgroundShape.attr({
       lineWidth: 5,
       strokeOpacity: 0.2,
@@ -314,9 +333,10 @@ export class Switch extends GUI<SwitchCfg> {
   }
 
   // siwtch 点击添加
-  public addClick() {
+  private addClick() {
     const { onChange, checked } = this.attributes;
     this.checked = checked || !this.checked;
+    this.animateFlag = isNil(checked);
     onChange && onChange(this.checked);
     this.updateShape();
     this.animateSiwtch();
@@ -329,7 +349,7 @@ export class Switch extends GUI<SwitchCfg> {
    * 2、点击的时候
    * 3、update 改变 checked 的时候 外部控制 开关
    */
-  public animateSiwtch() {
+  private animateSiwtch() {
     // 点击动效
     this.rectStrokeShape.animate(
       [
@@ -353,10 +373,6 @@ export class Switch extends GUI<SwitchCfg> {
         fill: 'forwards',
       }
     );
-  }
-
-  public getChecked() {
-    return this.checked;
   }
 
   /**

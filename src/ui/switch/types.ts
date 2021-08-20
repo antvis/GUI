@@ -1,17 +1,18 @@
 import type { TagCfg } from '../tag/types';
-import type { DisplayObjectConfig } from '../../types';
+import type { DisplayObjectConfig, MixAttrs, RectProps } from '../../types';
 
 export type SwitchCfg = {
   x?: number;
   y?: number;
-  size?: 'small' | 'default';
+  size?: number;
+  style?: MixAttrs<Partial<RectProps>>;
   checked?: boolean;
   disabled?: boolean;
   defaultChecked?: boolean;
   checkedChildren?: TagCfg;
   unCheckedChildren?: TagCfg;
   onChange?: (checked: boolean) => void;
-  onClick?: (checked: boolean) => void;
+  onClick?: (e: Event, checked: boolean) => void;
 };
 
 export type SwitchOptions = DisplayObjectConfig<SwitchCfg>;

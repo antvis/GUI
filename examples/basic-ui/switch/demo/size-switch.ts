@@ -15,20 +15,29 @@ const canvas = new Canvas({
   renderer,
 });
 
-const defaultSwitch = new Switch({
+const bigSwitch = new Switch({
   style: {
     x: 50,
     y: 50,
+    size: 28,
   },
 });
 
-const smallSwitch2 = new Switch({
+const defaultSwitch = new Switch({
   style: {
     x: 50,
-    y: 80,
-    size: 'small',
+    y: 90,
+  },
+});
+
+const smallSwitch = new Switch({
+  style: {
+    x: 50,
+    y: 120,
+    size: 14,
   },
 });
 
 canvas.appendChild(defaultSwitch);
-canvas.appendChild(smallSwitch2);
+canvas.appendChild(smallSwitch);
+canvas.appendChild(bigSwitch);
