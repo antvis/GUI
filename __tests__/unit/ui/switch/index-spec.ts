@@ -53,6 +53,21 @@ describe('switch', () => {
     expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(0);
   });
 
+  test('size switch', () => {
+    expect(get(switchShape, 'backgroundShape.attributes.width')).toBe(44);
+    expect(get(switchShape, 'backgroundShape.attributes.height')).toBe(22);
+    expect(get(switchShape, 'backgroundShape.attributes.radius')).toBe(11);
+    expect(get(switchShape, 'handleShape.attributes.width')).toBe(18);
+    switchShape.update({
+      defaultChecked: false,
+      size: 'small',
+    });
+    expect(get(switchShape, 'backgroundShape.attributes.width')).toBe(28);
+    expect(get(switchShape, 'backgroundShape.attributes.height')).toBe(16);
+    expect(get(switchShape, 'backgroundShape.attributes.radius')).toBe(8);
+    expect(get(switchShape, 'handleShape.attributes.width')).toBe(12);
+  });
+
   test('checked switch', () => {
     switchShape.update({
       defaultChecked: false,

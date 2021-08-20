@@ -197,20 +197,23 @@ export class Switch extends GUI<SwitchCfg> {
   // 更新背景 + 动效
   public updateBackgroundShape() {
     const color = this.checked ? OPTION_COLOR : CLOSE_COLOR;
+    const { height, radius } = rectDefaultStyle(this.attributes.size);
     const { disabled } = this.attributes;
     const width = this.getShapeWidth();
-    this.backgroundShape.attr({
+    const newAttr = {
       width,
-      fill: color,
+      height,
+      radius,
       stroke: color,
+    };
+    this.backgroundShape.attr({
+      ...newAttr,
+      fill: color,
       cursor: disabled ? 'no-drop' : 'pointer',
       fillOpacity: disabled ? 0.4 : 1,
     });
 
-    this.rectStrokeShape.attr({
-      width,
-      stroke: color,
-    });
+    this.rectStrokeShape.attr(newAttr);
   }
 
   // 更新控件
