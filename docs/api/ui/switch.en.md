@@ -20,6 +20,8 @@ import { Switch } from '@antv/gui';
 | x                 | The x coordinate of the starting point     | <code>number</code>                             | `-`         |
 | y                 | The y coordinate of the starting point     | <code>number</code>                             | `-`         |
 | size              | Switch the size                            | <code>number</code>                             | `22`        |
+| spacing           | Switch background spacing                  | <code>number</code>                             | `2`         |
+| textSpacing       | Left-right spacing of text background      | <code>number</code>                             | `8`         |
 | style             | Custom button styles                       | <code>StyleAttr<code>                           | `-`         |
 | disabled          | Do not choose                              | <code>boolean</code>                            | `false`     |
 | checked           | Specifies whether it is currently selected | <code>boolean<code>                             | `-`         |

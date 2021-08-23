@@ -280,8 +280,9 @@ export class Switch extends GUI<SwitchCfg> {
   private getShapeWidth() {
     const textSpacing = Number(this.attributes.textSpacing) || 0;
     const { width } = this.sizeStyle;
+    const childrenStyle = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
-    const childrenWidth = childrenShape ? getShapeSpace(childrenShape).width + textSpacing : 0;
+    const childrenWidth = childrenStyle ? getShapeSpace(childrenShape).width + textSpacing : 0;
 
     return childrenWidth + width;
   }
