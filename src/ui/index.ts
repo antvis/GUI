@@ -43,4 +43,7 @@ export { Countdown } from './countdown';
 export type { CountdownOptions } from './countdown';
 export { Switch } from './switch';
 export type { SwitchOptions } from './switch';
+// author by [Aarebecca](https://github.com/Aarebecca)
+export { PageNavigator } from './page-navigator';
+export type { PageNavigatorOptions } from './page-navigator';
 // to be continued...
