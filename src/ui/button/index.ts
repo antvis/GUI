@@ -11,7 +11,7 @@ export type { ButtonCfg, ButtonOptions };
 
 export class Button extends GUI<ButtonCfg> {
   /**
-   * 标签类型
+   * 组件类型
    */
   public static tag = 'button';
 
