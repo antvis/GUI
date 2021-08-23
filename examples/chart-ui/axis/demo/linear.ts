@@ -67,7 +67,15 @@ const linear = new Linear({
       autoHide: false,
     },
     tickLine: {
-      appendTick: true,
+      appendTick: false,
+    },
+    line: {
+      arrow: {
+        end: {
+          symbol: 'axis-arrow',
+          size: 10,
+        },
+      },
     },
     subTickLine: false,
   },

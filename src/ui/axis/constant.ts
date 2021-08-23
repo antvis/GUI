@@ -121,6 +121,7 @@ export const NULL_ARROW = {
 export const NULL_TEXT = {
   text: '',
   fillOpacity: 0,
+  rotate: 0,
 };
 
 /**
