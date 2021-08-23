@@ -1,6 +1,6 @@
 import { Path, Image, PathCommand, ImageStyleProps, PathStyleProps } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
-import { GUI } from '../core/gui';
+import { GUI } from '../../core/gui';
 import { parseMarker } from './utils';
 import { circle, square, diamond, triangleDown, triangle, line, dot, dash, smooth, hv, vh, hvh, vhv } from './symbol';
 import type { MarkerCfg, MarkerOptions, FunctionalSymbol } from './types';

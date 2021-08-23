@@ -1,6 +1,6 @@
 import { Rect, RectStyleProps, Text, TextStyleProps } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { GUI } from '../core/gui';
+import { GUI } from '../../core/gui';
 import { getStateStyle as getStyle, normalPadding, getShapeSpace } from '../../util';
 import { Marker, MarkerCfg } from '../marker';
 import type { TagCfg, TagOptions } from './types';
