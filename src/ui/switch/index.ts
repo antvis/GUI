@@ -2,7 +2,7 @@ import { Rect, Line } from '@antv/g';
 import { deepMix, isNil, omit, get, isPlainObject } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Tag } from '../tag';
-import { GUI } from '../core/gui';
+import { GUI } from '../../core/gui';
 import { getShapeSpace } from '../../util';
 import type { TagCfg } from '../tag/types';
 import type { GUIOption } from '../../types';
@@ -25,7 +25,7 @@ const checkedChildrenStyle = {
   },
 } as TagCfg;
 
-export class Switch extends GUI<SwitchCfg> {
+export class Switch extends GUI<Required<SwitchCfg>> {
   /**
    * 组件 tag
    */
@@ -108,7 +108,7 @@ export class Switch extends GUI<SwitchCfg> {
   /**
    * 组件的更新
    */
-  public update(cfg: SwitchCfg) {
+  public update(cfg?: Partial<SwitchCfg>) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.getSizeStyle();
     // 更新开关
