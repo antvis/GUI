@@ -1,5 +1,5 @@
 import { Group, Path, Text } from '@antv/g';
-import { clone, deepMix, minBy, maxBy, get, pick, sortBy, isString, isNumber } from '@antv/util';
+import { clone, deepMix, minBy, maxBy, get, sortBy, isString, isNumber, isUndefined } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import type { vec2 as Vector } from '@antv/matrix-util';
 import type { PathCommand } from '@antv/g';
@@ -91,7 +91,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   }
 
   private get ticksData(): Required<TickDatum>[] {
-    const { ticks, ticksThreshold } = this.attributes;
+    const { ticks, ticksThreshold, label } = this.attributes;
     let ticksCopy = clone(ticks) as TickDatum[];
     const len = ticksCopy.length;
     sortBy(ticksCopy, (tick: TickDatum) => {
@@ -104,15 +104,19 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       ticksCopy = ticksCopy.filter((tick: TickDatum, idx: number) => idx % page === 0);
     }
 
+    let formatter = (val: Required<TickDatum>) => val.text;
+    if (label && label.formatter) formatter = label.formatter;
+
     // 完善字段
     return ticksCopy.map((datum, idx) => {
       const { value, text = undefined, state = 'default', id = String(idx) } = datum;
-      return {
+      const temp = {
         id,
         value,
         state,
-        text: text === undefined ? String(value) : text,
-      } as Required<TickDatum>;
+        text: isUndefined(text) ? String(value) : text,
+      };
+      return { ...temp, text: formatter(temp) };
     });
   }
 
@@ -169,8 +173,8 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 获得轴线属性
    */
   private get axisLineCfg(): IAxisLineCfg {
-    const { type, line } = this.attributes;
-    if (!line) {
+    const { type, axisLine } = this.attributes;
+    if (!axisLine) {
       // 返回空line
       return {
         style: {},
@@ -183,7 +187,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
         },
       };
     }
-    const { style, arrow } = line as Required<AxisLineCfg>;
+    const { style, arrow } = axisLine as Required<AxisLineCfg>;
     const { start, end } = arrow!;
     const {
       startPos: [x1, y1],
@@ -222,6 +226,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    */
   private get ticksCfg(): ITicksCfg {
     const { tickLine, subTickLine, label } = this.attributes;
+
     const style = {
       tickLines: [],
       subTickLines: [],
@@ -251,7 +256,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
     ticks.forEach((tick: TickDatum, idx: number) => {
       const nextTickValue = idx === ticks.length - 1 ? 1 : ticks[idx + 1].value;
-      const { value: currTickValue } = tick;
+      const { value: currTickValue, text } = tick;
       const [st, end] = this.calcTick(currTickValue, length, offset);
       style.tickLines.push({
         path: [
@@ -262,20 +267,17 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       });
       if (label) {
         const {
-          formatter,
           alignTick,
           // TODO 暂时只支持平行于刻度方向的偏移量
           offset: [, o2],
         } = label as Required<AxisLabelCfg>;
         const labelVal = alignTick ? currTickValue : (currTickValue + nextTickValue) / 2;
         const [st] = this.calcTick(labelVal, length, o2);
-        const formattedText = formatter(tick);
         this.labelsValues.push(labelVal);
         style.labels.push({
           x: st[0],
           y: st[1],
-          text: formattedText,
-          // rawText: formattedText, // 缩略时保留原始文本
+          text: text!,
           ...this.getStyle(['label', 'style']),
         });
       }
@@ -312,7 +314,9 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 取在label属性
    */
   private get labelFont() {
-    return getFont(this.labels[0]);
+    const { labels } = this;
+    if (labels.length > 0) return getFont(this.labels[0]);
+    return {};
   }
 
   /**
@@ -550,6 +554,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     this.labelsGroup.removeChildren(true);
 
     const { tickLines, labels, subTickLines } = this.ticksCfg;
+
     // 刻度
     tickLines.forEach((style) => {
       this.tickLinesGroup.appendChild(
@@ -825,10 +830,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   private labelsEllipsis(width: number) {
     const strategy = this.getLabelEllipsisStrategy(width);
     this.labels.forEach((label, idx) => {
-      // const rawText = label.attr('rawText');
-      // label.attr('text', strategy.call(this, rawText, idx));
-      const text = label.attr('text');
-      label.attr('text', strategy.call(this, text, idx));
+      label.attr('text', strategy.call(this, this.ticksData[idx].text, idx));
     });
   }
 
