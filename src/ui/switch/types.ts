@@ -8,6 +8,8 @@ export type SwitchCfg = {
   style?: MixAttrs<Partial<RectProps>>;
   checked?: boolean;
   disabled?: boolean;
+  spacing?: number;
+  textSpacing?: number;
   defaultChecked?: boolean;
   checkedChildren?: TagCfg;
   unCheckedChildren?: TagCfg;

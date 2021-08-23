@@ -14,10 +14,6 @@ export type { SwitchCfg, SwitchOptions };
 const OPTION_COLOR = '#1890FF';
 // 关闭颜色
 const CLOSE_COLOR = '#00000040';
-// 背景和控件间距
-const PADDING = 2;
-// 背景和childrenShape 的间距
-const PADDING2 = 8;
 
 // 默认tag 样式
 const checkedChildrenStyle = {
@@ -63,7 +59,7 @@ export class Switch extends GUI<SwitchCfg> {
   private sizeStyle!: RectStyleProps;
 
   /** 焦点 */
-  private focus: boolean = false;
+  private nowFocus: boolean = false;
 
   /** 其他交互开关 */
   private otherOnClick: boolean = true;
@@ -77,6 +73,8 @@ export class Switch extends GUI<SwitchCfg> {
       x: 0,
       y: 0,
       size: 22,
+      spacing: 2,
+      textSpacing: 8,
       defaultChecked: true,
       style: {
         default: {
@@ -186,7 +184,6 @@ export class Switch extends GUI<SwitchCfg> {
       style: {
         width: 0,
         height: 0,
-        y: PADDING,
         fill: '#fff',
         offsetPath: this.pathLineShape,
       },
@@ -213,6 +210,7 @@ export class Switch extends GUI<SwitchCfg> {
         });
       }
       const childrenShape = this.childrenShape[index];
+      const textSpacing = Number(this.attributes.textSpacing) || 0;
       if (isPlainObject(children)) {
         childrenShape.update({ ...omit(children, ['backgroundStyle', 'x']), x: 0 });
         // checked 控制这个有无
@@ -220,7 +218,7 @@ export class Switch extends GUI<SwitchCfg> {
           ? this.backgroundShape.appendChild(childrenShape)
           : this.backgroundShape.removeChild(childrenShape);
         childrenShape.update({
-          x: index ? this.getShapeWidth() - getShapeSpace(childrenShape).width - PADDING2 : PADDING2,
+          x: index ? this.getShapeWidth() - getShapeSpace(childrenShape).width - textSpacing : textSpacing,
         });
       } else {
         childrenShape?.destroy();
@@ -249,38 +247,41 @@ export class Switch extends GUI<SwitchCfg> {
 
   // 更新控件
   private updateHandleShape() {
+    const spacing = Number(this.attributes.spacing) || 0;
     const { height, radius } = this.sizeStyle;
     const width = this.getShapeWidth();
-    const r = (radius as number) - PADDING;
+    const r = Number(radius) - spacing;
 
     let updateAttr: RectStyleProps = {
       width: r * 2,
       height: r * 2,
+      y: spacing,
       radius: r,
     };
     // 只有第一次的时候 才通过 width 改变 x 的位置
     if (!this.animateFlag) {
       updateAttr = {
         ...updateAttr,
-        x: this.defaultChecked ? width - height + PADDING : PADDING,
+        x: this.defaultChecked ? width - height + spacing : spacing,
       };
     }
 
     this.handleShape.attr(updateAttr);
 
     this.pathLineShape.attr({
-      x1: width - height + PADDING,
-      y1: PADDING,
-      x2: PADDING,
-      y2: PADDING,
+      x1: width - height + spacing,
+      y1: spacing,
+      x2: spacing,
+      y2: spacing,
     });
   }
 
   // 获取背景Shape宽度
   private getShapeWidth() {
+    const textSpacing = Number(this.attributes.textSpacing) || 0;
     const { width } = this.sizeStyle;
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
-    const childrenWidth = childrenShape ? getShapeSpace(childrenShape).width - PADDING2 : 0;
+    const childrenWidth = childrenShape ? getShapeSpace(childrenShape).width + textSpacing : 0;
 
     return childrenWidth + width;
   }
@@ -315,9 +316,7 @@ export class Switch extends GUI<SwitchCfg> {
     this.addEventListener('mouseenter', () => {
       this.otherOnClick = false;
       this.banEvent(() => {
-        this.backgroundShape.attr({
-          lineWidth: 0,
-        });
+        this.clearBackgroundLineWidth();
       });
     });
   }
@@ -327,11 +326,8 @@ export class Switch extends GUI<SwitchCfg> {
     this.addEventListener('mouseleave', () => {
       this.otherOnClick = true;
       this.banEvent(() => {
-        if (this.focus) {
-          this.backgroundShape.attr({
-            lineWidth: 5,
-            strokeOpacity: 0.2,
-          });
+        if (this.nowFocus) {
+          this.addBackgroundLineWidth();
         }
       });
     });
@@ -344,7 +340,7 @@ export class Switch extends GUI<SwitchCfg> {
         const { onChange, checked } = this.attributes;
         this.checked = checked || !this.checked;
         this.animateFlag = isNil(checked);
-        this.focus = true;
+        this.nowFocus = true;
         onChange && onChange(this.checked);
         this.updateShape();
         this.animateSiwtch();
@@ -358,13 +354,24 @@ export class Switch extends GUI<SwitchCfg> {
   private addWindowClick() {
     window.addEventListener('click', () => {
       if (this.otherOnClick) {
-        this.focus = false;
+        this.nowFocus = false;
       }
       this.banEvent(() => {
-        this.backgroundShape.attr({
-          lineWidth: 0,
-        });
+        this.clearBackgroundLineWidth();
       });
+    });
+  }
+
+  private clearBackgroundLineWidth() {
+    this.backgroundShape.attr({
+      lineWidth: 0,
+    });
+  }
+
+  private addBackgroundLineWidth() {
+    this.backgroundShape.attr({
+      lineWidth: 5,
+      strokeOpacity: 0.2,
     });
   }
 
@@ -399,6 +406,16 @@ export class Switch extends GUI<SwitchCfg> {
         fill: 'forwards',
       }
     );
+  }
+
+  public blur() {
+    this.nowFocus = false;
+    this.clearBackgroundLineWidth();
+  }
+
+  public focus() {
+    this.nowFocus = true;
+    this.addBackgroundLineWidth();
   }
 
   /**
