@@ -62,6 +62,12 @@ export class Switch extends GUI<SwitchCfg> {
   /** SizeStyle */
   private sizeStyle!: RectStyleProps;
 
+  /** 焦点 */
+  private focus: boolean = false;
+
+  /** 其他交互开关 */
+  private otherOnClick: boolean = true;
+
   /**
    * 默认配置项
    */
@@ -291,55 +297,75 @@ export class Switch extends GUI<SwitchCfg> {
    * 添加交互
    */
   private bindEvents() {
-    this.addEventListener('mouseenter', () => {
-      this.banEvent(this.clearBackgroundLine);
-    });
-
-    this.addEventListener('mouseleave', () => {
-      this.banEvent(this.addBackgroundLine);
-    });
-
-    this.addEventListener('click', (e) => {
-      this.banEvent(this.addClick);
-      const { onClick } = this.attributes;
-      onClick && onClick(e, this.checked);
-    });
-
-    window.addEventListener('click', () => {
-      this.banEvent(this.clearBackgroundLine);
-    });
+    this.addSwitchMouseenter();
+    this.addSwitchMouseleave();
+    this.addSwitchClick();
+    this.addWindowClick();
   }
 
   // disabled 时 禁止交互
   private banEvent(fn: Function) {
     const { disabled, checked } = this.attributes;
     if (disabled || !isNil(checked)) return;
-    fn.apply(this);
+    fn();
   }
 
-  // 去除聚焦效果
-  private clearBackgroundLine() {
-    this.backgroundShape.attr({
-      lineWidth: 0,
+  // 移入 switch 交互(去除焦点)
+  private addSwitchMouseenter() {
+    this.addEventListener('mouseenter', () => {
+      this.otherOnClick = false;
+      this.banEvent(() => {
+        this.backgroundShape.attr({
+          lineWidth: 0,
+        });
+      });
     });
   }
 
-  // 添加聚焦效果
-  private addBackgroundLine() {
-    this.backgroundShape.attr({
-      lineWidth: 5,
-      strokeOpacity: 0.2,
+  // 移出 switch 交互(显示焦点)
+  private addSwitchMouseleave() {
+    this.addEventListener('mouseleave', () => {
+      this.otherOnClick = true;
+      this.banEvent(() => {
+        if (this.focus) {
+          this.backgroundShape.attr({
+            lineWidth: 5,
+            strokeOpacity: 0.2,
+          });
+        }
+      });
     });
   }
 
-  // siwtch 点击添加
-  private addClick() {
-    const { onChange, checked } = this.attributes;
-    this.checked = checked || !this.checked;
-    this.animateFlag = isNil(checked);
-    onChange && onChange(this.checked);
-    this.updateShape();
-    this.animateSiwtch();
+  // 点击 switch 交互
+  private addSwitchClick() {
+    this.addEventListener('click', (e) => {
+      this.banEvent(() => {
+        const { onChange, checked } = this.attributes;
+        this.checked = checked || !this.checked;
+        this.animateFlag = isNil(checked);
+        this.focus = true;
+        onChange && onChange(this.checked);
+        this.updateShape();
+        this.animateSiwtch();
+      });
+      const { onClick } = this.attributes;
+      onClick && onClick(e, this.checked);
+    });
+  }
+
+  // 移除焦点 交互
+  private addWindowClick() {
+    window.addEventListener('click', () => {
+      if (this.otherOnClick) {
+        this.focus = false;
+      }
+      this.banEvent(() => {
+        this.backgroundShape.attr({
+          lineWidth: 0,
+        });
+      });
+    });
   }
 
   /**
