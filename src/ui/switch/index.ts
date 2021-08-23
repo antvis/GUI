@@ -121,6 +121,27 @@ export class Switch extends GUI<SwitchCfg> {
     }
   }
 
+  // 失焦
+  public blur() {
+    this.nowFocus = false;
+    this.clearBackgroundLineWidth();
+  }
+
+  // 聚焦
+  public focus() {
+    this.nowFocus = true;
+    this.addBackgroundLineWidth();
+  }
+
+  /**
+   * 组件的清除
+   */
+  public clear() {
+    this.handleShape.destroy();
+    this.backgroundShape.destroy();
+    this.rectStrokeShape.destroy();
+  }
+
   /**
    * 初始化创建
    */
@@ -157,6 +178,7 @@ export class Switch extends GUI<SwitchCfg> {
       style: {
         ...Switch.defaultOptions.style,
         ...this.sizeStyle,
+        strokeOpacity: 0.2,
       },
     });
   }
@@ -282,7 +304,7 @@ export class Switch extends GUI<SwitchCfg> {
     const { width } = this.sizeStyle;
     const childrenStyle = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
-    const childrenWidth = childrenStyle ? getShapeSpace(childrenShape).width + textSpacing : 0;
+    const childrenWidth = childrenStyle ? getShapeSpace(childrenShape).width + textSpacing - this.sizeStyle.height : 0;
 
     return childrenWidth + width;
   }
@@ -372,7 +394,6 @@ export class Switch extends GUI<SwitchCfg> {
   private addBackgroundLineWidth() {
     this.backgroundShape.attr({
       lineWidth: 5,
-      strokeOpacity: 0.2,
     });
   }
 
@@ -407,24 +428,5 @@ export class Switch extends GUI<SwitchCfg> {
         fill: 'forwards',
       }
     );
-  }
-
-  public blur() {
-    this.nowFocus = false;
-    this.clearBackgroundLineWidth();
-  }
-
-  public focus() {
-    this.nowFocus = true;
-    this.addBackgroundLineWidth();
-  }
-
-  /**
-   * 组件的清除
-   */
-  public clear() {
-    this.handleShape.destroy();
-    this.backgroundShape.destroy();
-    this.rectStrokeShape.destroy();
   }
 }

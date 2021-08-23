@@ -31,11 +31,13 @@ describe('switch', () => {
   canvas.appendChild(switchShape);
 
   test('basic', () => {
-    const { x, y, defaultChecked } = switchShape.attributes;
+    const { x, y, defaultChecked, spacing, textSpacing } = switchShape.attributes;
 
     expect(x).toBe(40);
     expect(y).toBe(50);
     expect(defaultChecked).toBe(false);
+    expect(spacing).toBe(2);
+    expect(textSpacing).toBe(8);
     expect(switchShape.getChecked()).toBe(false);
     expect(get(switchShape, 'backgroundShape.attributes.fill')).toBe('#00000040');
     expect(get(switchShape, 'rectStrokeShape.attributes.stroke')).toBe('#00000040');
@@ -64,6 +66,11 @@ describe('switch', () => {
     expect(get(switchShape, 'backgroundShape.attributes.height')).toBe(16);
     expect(get(switchShape, 'backgroundShape.attributes.radius')).toBe(8);
     expect(get(switchShape, 'handleShape.attributes.width')).toBe(12);
+    expect(get(switchShape, 'sizeStyle')).toEqual({
+      width: 32,
+      height: 16,
+      radius: 8,
+    });
     switchShape.update({
       defaultChecked: false,
       size: 0,
@@ -72,6 +79,11 @@ describe('switch', () => {
     expect(get(switchShape, 'backgroundShape.attributes.height')).toBe(22);
     expect(get(switchShape, 'backgroundShape.attributes.radius')).toBe(11);
     expect(get(switchShape, 'handleShape.attributes.width')).toBe(18);
+    expect(get(switchShape, 'sizeStyle')).toEqual({
+      width: 44,
+      height: 22,
+      radius: 11,
+    });
   });
 
   test('checked switch', () => {
@@ -81,6 +93,15 @@ describe('switch', () => {
     });
 
     expect(switchShape.getChecked()).toBe(false);
+  });
+
+  test('blur focus switch', () => {
+    switchShape.focus();
+    expect(get(switchShape, 'nowFocus')).toBe(true);
+    expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(5);
+    switchShape.blur();
+    expect(get(switchShape, 'nowFocus')).toBe(false);
+    expect(get(switchShape, 'backgroundShape.attributes.lineWidth')).toBe(0);
   });
 
   test('children switch', () => {
@@ -108,10 +129,32 @@ describe('switch', () => {
       },
     });
 
+    expect(get(switchShape, ['handleShape', 'attributes', 'x'])).toBe(2);
+    expect(get(switchShape, ['handleShape', 'attributes', 'y'])).toBe(2);
+    expect(get(switchShape, ['handleShape', 'attributes', 'width'])).toBe(18);
+    expect(get(switchShape, ['handleShape', 'attributes', 'height'])).toBe(18);
+    expect(get(switchShape, ['handleShape', 'attributes', 'radius'])).toBe(9);
+    expect(get(switchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(8);
+
+    switchShape.update({
+      checked: true,
+      spacing: 4,
+      textSpacing: 20,
+    });
+
+    expect(get(switchShape, ['handleShape', 'attributes', 'x'])).toBe(4);
+    expect(get(switchShape, ['handleShape', 'attributes', 'y'])).toBe(4);
+    expect(get(switchShape, ['handleShape', 'attributes', 'width'])).toBe(14);
+    expect(get(switchShape, ['handleShape', 'attributes', 'height'])).toBe(14);
+    expect(get(switchShape, ['handleShape', 'attributes', 'radius'])).toBe(7);
+    expect(get(switchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(20);
+
     expect(get(switchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('checkedChildren');
+
     switchShape.update({
       checked: false,
     });
+
     expect(get(switchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('unCheckedChildren');
   });
 });
