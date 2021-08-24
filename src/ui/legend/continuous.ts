@@ -80,9 +80,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 获得指示器配置
    */
   private get indicatorShapeCfg() {
-    const { indicator, rail } = this.attributes;
+    const { indicator } = this.attributes;
     if (!indicator) return {};
-    const { height } = rail;
     const { size, text, backgroundStyle } = indicator as Required<IndicatorCfg>;
     const { style: textStyle } = text;
     return {
@@ -98,7 +97,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       tagCfg: {
         text: '',
         align: this.getOrientVal(['center', 'start']) as 'center' | 'start',
-        verticalAlign: 'middle',
+        verticalAlign: 'middle' as const,
         ...this.getOrientVal([
           { x: 0, y: -size / 2 },
           { x: -size / 2, y: 0 },
@@ -110,6 +109,110 @@ export class Continuous extends LegendBase<ContinuousCfg> {
           default: backgroundStyle,
         },
       },
+    };
+  }
+
+  /**
+   * 获取颜色
+   */
+  protected get color() {
+    const { color } = this.attributes;
+    return color;
+  }
+
+  // 获取色板属性
+  private get railShapeCfg(): IRailCfg {
+    // 直接绘制色板，布局在adjustLayout方法中进行
+    const { min, max, rail, orient } = this.attributes;
+    const [start, end] = this.selection;
+    const { color } = this;
+    return {
+      x: 0,
+      y: 0,
+      min,
+      max,
+      start,
+      end,
+      orient,
+      color,
+      cursor: 'pointer' as 'pointer',
+      ...(rail as Required<RailCfg>),
+    };
+  }
+
+  /**
+   * 获取手柄属性
+   */
+  private get handleShapeCfg(): IHandleCfg {
+    const { handle } = this.attributes;
+    if (!handle)
+      return {
+        markerCfg: {
+          size: 8,
+          symbol: 'hiddenHandle',
+          opacity: 0,
+        },
+        textCfg: {
+          text: '',
+          opacity: 0,
+        },
+      };
+
+    const { size, icon, text } = handle as Required<Pick<HandleCfg, 'size' | 'icon' | 'text'>>;
+    const { style: textStyle } = text;
+    const { marker, style: markerStyle } = icon;
+    // 替换默认手柄
+    const symbol =
+      marker === 'default' ? this.getOrientVal(['horizontalHandle', 'verticalHandle']) : (marker as SymbolCfg);
+    return {
+      markerCfg: {
+        symbol,
+        size,
+        cursor: this.getOrientVal(['ew-resize', 'ns-resize']),
+        ...markerStyle,
+      },
+      textCfg: {
+        text: '',
+        ...textStyle,
+      },
+    };
+  }
+
+  // 获取Label属性
+  private get labelsShapeCfg(): ILabelsCfg {
+    const { label } = this.attributes;
+    // 不绘制label
+    if (!label) {
+      return {
+        labels: [],
+      };
+    }
+    const { min, max, rail } = this.attributes;
+    const { style, formatter, align } = label;
+    const cfg: TextProps[] = [];
+    // align为rail时仅显示min、max的label
+    if (align === 'rail') {
+      [min, max].forEach((value, idx) => {
+        cfg.push({
+          x: 0,
+          y: 0,
+          text: formatter!(value, idx),
+          ...style,
+        });
+      });
+    } else {
+      const ticks = [min, ...rail.ticks!, max];
+      ticks.forEach((value, idx) => {
+        cfg.push({
+          x: 0,
+          y: 0,
+          text: formatter!(value, idx),
+          ...style,
+        });
+      });
+    }
+    return {
+      labels: cfg,
     };
   }
 
@@ -174,9 +277,9 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   public update(cfg: Partial<ContinuousCfg>) {
     this.attr(deepMix({}, this.attributes, cfg));
     // 更新label内容
-    this.labelsShape.attr(this.getLabelsShapeCfg());
+    this.labelsShape.attr(this.labelsShapeCfg);
     // 更新rail
-    this.railShape.update(this.getRailShapeCfg());
+    this.railShape.update(this.railShapeCfg);
     // 更新选区
     this.setSelection(...this.selection);
     // 更新title内容
@@ -280,14 +383,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   }
 
   /**
-   * 获取颜色
-   */
-  protected getColor() {
-    const { color } = this.attributes;
-    return color;
-  }
-
-  /**
    * 取值附近的步长刻度上的值
    */
   private getStepValueByValue(value: number): number {
@@ -354,73 +449,15 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     return [toPrecision(startVal, precision), toPrecision(endVal, precision)];
   }
 
-  // 获取Label属性
-  private getLabelsShapeCfg(): ILabelsCfg {
-    const { label } = this.attributes;
-    // 不绘制label
-    if (!label) {
-      return {
-        labels: [],
-      };
-    }
-    const { min, max, rail } = this.attributes;
-    const { style, formatter, align } = label;
-    const cfg: TextProps[] = [];
-    // align为rail时仅显示min、max的label
-    if (align === 'rail') {
-      [min, max].forEach((value, idx) => {
-        cfg.push({
-          x: 0,
-          y: 0,
-          text: formatter!(value, idx),
-          ...style,
-        });
-      });
-    } else {
-      const ticks = [min, ...rail.ticks!, max];
-      ticks.forEach((value, idx) => {
-        cfg.push({
-          x: 0,
-          y: 0,
-          text: formatter!(value, idx),
-          ...style,
-        });
-      });
-    }
-    return {
-      labels: cfg,
-    };
-  }
-
   // 创建Label
   private createLabels() {
     // 创建label容器
     this.labelsShape = new Labels({
       name: 'labels',
       id: 'labels',
-      style: this.getLabelsShapeCfg(),
+      style: this.labelsShapeCfg,
     });
     this.appendChild(this.labelsShape);
-  }
-
-  // 获取色板属性
-  private getRailShapeCfg(): IRailCfg {
-    // 直接绘制色板，布局在adjustLayout方法中进行
-    const { min, max, rail, orient } = this.attributes;
-    const [start, end] = this.selection;
-    const color = this.getColor();
-    return {
-      x: 0,
-      y: 0,
-      min,
-      max,
-      start,
-      end,
-      orient,
-      color,
-      cursor: 'pointer' as 'pointer',
-      ...(rail as Required<RailCfg>),
-    };
   }
 
   // 创建色板
@@ -429,54 +466,16 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.railShape = new Rail({
       name: 'rail',
       id: 'rail',
-      style: this.getRailShapeCfg(),
+      style: this.railShapeCfg,
     });
     this.appendChild(this.railShape);
-  }
-
-  /**
-   * 获取手柄属性
-   */
-  private getHandleShapeCfg(): IHandleCfg {
-    const { handle } = this.attributes;
-    if (!handle)
-      return {
-        markerCfg: {
-          size: 8,
-          symbol: 'hiddenHandle',
-          opacity: 0,
-        },
-        textCfg: {
-          text: '',
-          opacity: 0,
-        },
-      };
-
-    const { size, icon, text } = handle as Required<Pick<HandleCfg, 'size' | 'icon' | 'text'>>;
-    const { style: textStyle } = text;
-    const { marker, style: markerStyle } = icon;
-    // 替换默认手柄
-    const symbol =
-      marker === 'default' ? this.getOrientVal(['horizontalHandle', 'verticalHandle']) : (marker as SymbolCfg);
-    return {
-      markerCfg: {
-        symbol,
-        size,
-        cursor: this.getOrientVal(['ew-resize', 'ns-resize']),
-        ...markerStyle,
-      },
-      textCfg: {
-        text: '',
-        ...textStyle,
-      },
-    };
   }
 
   /**
    *  创建手柄
    */
   private createHandle(handleType: HandleType) {
-    const { markerCfg, textCfg } = this.getHandleShapeCfg();
+    const { markerCfg, textCfg } = this.handleShapeCfg;
     const groupName = `${handleType}Handle`;
     const el = new Group({
       name: groupName,
@@ -511,7 +510,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 更新handle
    */
   public updateHandles() {
-    const { markerCfg, textCfg } = this.getHandleShapeCfg();
+    const { markerCfg, textCfg } = this.handleShapeCfg;
     (['start', 'end'] as HandleType[]).forEach((handleType) => {
       (this.getHandle(handleType, 'icon') as Marker).update(markerCfg);
       (this.getHandle(handleType, 'text') as Text).attr(textCfg);
