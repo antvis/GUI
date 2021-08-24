@@ -146,6 +146,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     this.childrenShape[0]?.clear();
     this.childrenShape[1]?.clear();
     this.pathLineShape.destroy();
+    this.destroy();
   }
 
   /**
