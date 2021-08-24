@@ -69,7 +69,7 @@ const linear = new Linear({
     tickLine: {
       appendTick: false,
     },
-    line: {
+    axisLine: {
       arrow: {
         end: {
           symbol: 'axis-arrow',
