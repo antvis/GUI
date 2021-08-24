@@ -76,6 +76,43 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     return this.indicatorShape.getElementsByName('tag')[0] as Tag;
   }
 
+  /**
+   * 获得指示器配置
+   */
+  private get indicatorShapeCfg() {
+    const { indicator, rail } = this.attributes;
+    if (!indicator) return {};
+    const { height } = rail;
+    const { size, text, backgroundStyle } = indicator as Required<IndicatorCfg>;
+    const { style: textStyle } = text;
+    return {
+      markerCfg: {
+        size,
+        ...this.getOrientVal([
+          { x: 0, y: size },
+          { x: -size, y: 0 },
+        ]),
+        symbol: this.getOrientVal(['downArrow', 'leftArrow']),
+        fill: backgroundStyle.fill,
+      },
+      tagCfg: {
+        text: '',
+        align: this.getOrientVal(['center', 'start']) as 'center' | 'start',
+        verticalAlign: 'middle',
+        ...this.getOrientVal([
+          { x: 0, y: -size / 2 },
+          { x: -size / 2, y: 0 },
+        ]),
+        textStyle: {
+          default: textStyle,
+        },
+        backgroundStyle: {
+          default: backgroundStyle,
+        },
+      },
+    };
+  }
+
   private labelsShape!: Labels;
 
   // 色板
@@ -495,47 +532,10 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     return handle.getElementsByName('icon')[0] as Marker;
   }
 
-  /**
-   * 获得指示器配置
-   */
-  private getIndicatorShapeCfg() {
-    const { indicator, rail } = this.attributes;
-    if (!indicator) return {};
-    const { height } = rail;
-    const { size, text, backgroundStyle } = indicator as Required<IndicatorCfg>;
-    const { style: textStyle } = text;
-    return {
-      markerCfg: {
-        size,
-        ...this.getOrientVal([
-          { x: 0, y: size },
-          { x: -size, y: 0 },
-        ]),
-        symbol: this.getOrientVal(['downArrow', 'leftArrow']),
-        fill: backgroundStyle.fill,
-      },
-      tagCfg: {
-        text: '',
-        align: this.getOrientVal(['center', 'start']) as 'center' | 'start',
-        verticalAlign: this.getOrientVal(['top', 'middle']) as 'top' | 'middle',
-        ...this.getOrientVal([
-          { x: 0, y: 2 - (height! + size) / 2 },
-          { x: -size / 2, y: 0 },
-        ]),
-        textStyle: {
-          default: textStyle,
-        },
-        backgroundStyle: {
-          default: backgroundStyle,
-        },
-      },
-    };
-  }
-
   private createIndicator() {
     const { indicator } = this.attributes;
     if (!indicator) return;
-    const { markerCfg, tagCfg } = this.getIndicatorShapeCfg();
+    const { markerCfg, tagCfg } = this.indicatorShapeCfg;
     const el = new Group({
       name: 'indicator',
       id: 'indicator',
