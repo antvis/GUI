@@ -53,11 +53,12 @@ export class Tag extends GUI<Required<TagCfg>> {
     style: {
       text: '',
       padding: 4,
-      align: 'left',
+      align: 'start',
+      verticalAlign: 'top',
       textStyle: {
         default: {
           fontSize: 12,
-          textAlign: 'left',
+          textAlign: 'start',
           textBaseline: 'middle',
           fill: '#000',
         },
@@ -152,7 +153,7 @@ export class Tag extends GUI<Required<TagCfg>> {
   }
 
   private autoFit() {
-    const { padding, spacing, marker, text, align } = this.attributes;
+    const { padding, spacing, marker, text, align, verticalAlign } = this.attributes;
     const [top, right, bottom, left] = normalPadding(padding);
     const { size = 0 } = marker;
 
@@ -171,15 +172,15 @@ export class Tag extends GUI<Required<TagCfg>> {
 
     height += top + bottom;
 
-    let alignOffset = 0;
-    if (align === 'center') {
-      alignOffset = -width / 2;
-    } else if (align === 'right') {
-      alignOffset = -width;
-    }
+    let horizontalAlignOffset = 0;
+    let verticalAlignOffset = 0;
+    if (align === 'center') horizontalAlignOffset = -width / 2;
+    else if (align === 'end') horizontalAlignOffset = -width;
+    if (verticalAlign === 'middle') verticalAlignOffset = -height / 2;
+    else if (verticalAlign === 'bottom') verticalAlignOffset = -height;
 
     // background
-    this.backgroundShape.attr({ x: alignOffset, width, height });
+    this.backgroundShape.attr({ x: horizontalAlignOffset, y: verticalAlignOffset, width, height });
 
     // marker
     this.markerShape.attr({
