@@ -15,7 +15,7 @@ export type TagCfg = {
   /** 水平对齐方式 */
   align?: 'start' | 'center' | 'end';
   /** 垂直对齐方式 */
-  verticalAlign: 'top' | 'middle' | 'bottom';
+  verticalAlign?: 'top' | 'middle' | 'bottom';
   // 样式相关
   /** 内边距 */
   padding?: number | number[];
