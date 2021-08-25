@@ -33,7 +33,7 @@ const style = {
 };
 
 const items = [
-  { name: 'Chrome', value: '7.08%', id: 'chrome', state: 'selected' as 'selected' },
+  { name: 'Chrome', value: '7.08%', id: 'chrome', state: 'selected' },
   { name: 'IE', value: '5.41%', id: 'IE' },
   { name: 'QQ', value: '5.35%', id: 'QQ' },
   { name: 'Firefox', value: '1.23%', id: 'Firefox' },
