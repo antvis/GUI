@@ -61,14 +61,6 @@
       "screenshot": ""
     },
     {
-      "filename": "wrap-category.ts",
-      "title": {
-        "zh": "分行",
-        "en": "Wrap"
-      },
-      "screenshot": ""
-    },
-    {
       "filename": "page-category.ts",
       "title": {
         "zh": "横向分页",
@@ -79,7 +71,7 @@
     {
       "filename": "multirow-page-category.ts",
       "title": {
-        "zh": "多行分页",
+        "zh": "多行横向分页",
         "en": "Multi rows Pagination"
       },
       "screenshot": ""
@@ -95,7 +87,7 @@
     {
       "filename": "multicol-page-category.ts",
       "title": {
-        "zh": "多列分页",
+        "zh": "多列纵向分页",
         "en": "Multi cols Pagination"
       },
       "screenshot": ""

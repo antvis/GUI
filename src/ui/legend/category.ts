@@ -6,11 +6,21 @@ import { CategoryItem } from './category-item';
 import { getShapeSpace } from '../../util';
 import { PageNavigator } from '../page-navigator';
 import { CATEGORY_DEFAULT_OPTIONS } from './constant';
-import type { StyleState } from '../../types';
+import type { StyleState as State } from '../../types';
 import type { CategoryCfg, CategoryOptions } from './types';
 import type { ICategoryItemCfg, IItemText } from './category-item';
 
 export type { CategoryOptions };
+
+// 找到node节点所在的CategoryItem节点
+function getParentItem(node: DisplayObject) {
+  let item = node;
+  while (item.getConfig().type !== 'categoryItem') {
+    item = item.parentNode!;
+    if (!item) break;
+  }
+  return item as CategoryItem;
+}
 
 export class Category extends LegendBase<CategoryCfg> {
   public static tag = 'Category';
@@ -104,8 +114,7 @@ export class Category extends LegendBase<CategoryCfg> {
   }
 
   public init() {
-    this.resetPageCfg();
-    this.createItemsGroup();
+    this.initShape();
     this.createItems();
     this.adjustLayout();
     this.createBackground();
@@ -115,76 +124,65 @@ export class Category extends LegendBase<CategoryCfg> {
   public update(cfg: Partial<CategoryCfg>) {
     this.attr(deepMix({}, this.attributes, cfg));
     super.update();
-    // 对于items的变化目前进行重绘操作，后期可参考React Diff方法进行性能优化
-    this.clearItems();
+    // TODO 对于items的变化目前进行重绘操作，后期可参考React Diff方法进行性能优化
     this.createItems();
     this.adjustLayout();
     this.backgroundShape.attr(this.backgroundShapeCfg);
   }
 
+  public clear() {}
+
+  public destroy(): void {
+    this.unBindEvents();
+  }
+
   /**
    * 根据id获取item
    */
-  public getItem(id: string): CategoryItem {
+  public getItem(id: string): CategoryItem | undefined {
     const { items } = this;
-    let item!: CategoryItem;
-    items.forEach((i) => {
-      if (i.getID() === id) {
-        item = i;
-      }
-    });
-    return item;
+    return items.filter((item: CategoryItem) => {
+      return item.getID() === id;
+    })[0];
   }
 
   /**
    * 设置某个item的状态
    * 会改变其样式
    */
-  public setItemState(name: string, state: StyleState) {
-    this.getItem(name).setState(state);
+  public setItemState(name: string, state: State) {
+    this.getItem(name)?.setState(state);
   }
 
   /**
    * 获得items状态列表
    */
-  public getItemsStates(): { id: string; state: StyleState }[] {
+  public getItemsStates(): { id: string; state: State }[] {
     const { items } = this;
     return items.map((item) => {
       return { id: item.getID(), state: item.getState() };
     });
   }
 
-  public clear() {}
-
-  private createItemsGroup() {
+  private initShape() {
     this.itemsGroup = new Group({
       name: 'itemsGroup',
     });
-    // 在默认不需要分页时，itemsGroup 直接插入this子节点
-    // 当需要分页时，itemsGroup 需要放入分页器，并将分页器插入this子节点
   }
 
   /**
    * 创建图例项
    */
   private createItems() {
-    const itemsCfg = this.itemsShapeCfg;
-    itemsCfg.forEach((cfg) => {
-      const item = new CategoryItem({
-        style: cfg,
-        name: 'item',
-      });
-      this.itemsGroup.appendChild(item);
+    this.clearItems();
+    this.itemsShapeCfg.forEach((cfg) => {
+      this.itemsGroup.appendChild(new CategoryItem({ style: cfg, name: 'item' }));
     });
   }
 
   private clearItems() {
-    this.items.forEach((child) => child.destroy());
-    this.itemsGroup.removeChildren();
+    this.itemsGroup.removeChildren(true);
   }
-
-  // 设置图例项状态
-  private setItemStatus() {}
 
   /**
    * 创建分页的items
@@ -192,12 +190,9 @@ export class Category extends LegendBase<CategoryCfg> {
   private createPageItems() {
     const { orient, pageNavigator } = this.attributes;
     const { pageWidth, pageHeight, pageNum } = this;
-    const { x: left, y: top } = this.getAvailableSpace();
+    const { x: left, y: top } = this.availableSpace;
     const flag = pageNum > 1 && isNumber(pageWidth) && isNumber(pageHeight);
-    // 1. 存在分页器实例且flag为true，则更新分页器
-    // 2. 不存在分页器实例且flag为true，则创建分页器
-    // 3. 存在分页器实例且flag为false，则删除分页器
-    // 4. 不存在分页器实例且flag为false，则不做任何操作
+
     const cfg = {
       orient,
       pageWidth: pageWidth!,
@@ -205,89 +200,91 @@ export class Category extends LegendBase<CategoryCfg> {
       view: this.itemsGroup,
       ...pageNavigator,
     };
+    // 1. 存在分页器实例且flag为true，则更新分页器
     if (this.pageNavigator && flag) {
       this.pageNavigator.update(cfg);
-    } else if (!this.pageNavigator && flag) {
+    }
+    // 2. 不存在分页器实例且flag为true，则创建分页器
+    else if (!this.pageNavigator && flag) {
       this.pageNavigator = new PageNavigator({
         name: 'page-navigator',
         style: cfg,
       });
       this.appendChild(this.pageNavigator);
-      this.itemsGroup.setLocalPosition(0, 0, 0);
-      this.pageNavigator.setPosition(left, top, 0);
+      this.itemsGroup.attr({ x: 0, y: 0 });
+      this.pageNavigator.attr({ x: left, y: top });
     } else {
       // this.pageNavigator && !flag
       // remove and destroy
       // append itemsGroup to this children list
+      // 3. 存在分页器实例且flag为false，则删除分页器
       if (this.pageNavigator) {
         this.pageNavigator.clear();
         this.removeChild(this.pageNavigator, true);
       }
       this.appendChild(this.itemsGroup);
-      this.itemsGroup.setLocalPosition(0, 0, 0);
+      this.itemsGroup.attr({ x: left, y: top });
     }
+    // 4. 不存在分页器实例且flag为false，则不做任何操作
   }
 
   private bindEvents() {
     // 图例项hover事件
     // 图例项点击事件
     // 翻页按钮点击事件
-    // 找到node节点所在的CategoryItem节点
-    const getParentItem = (node: DisplayObject) => {
-      let item = node;
-      while (item.getConfig().type !== 'categoryItem') {
-        item = item.parentNode!;
-        if (!item) break;
-      }
-      return item as CategoryItem;
-    };
-
-    this.itemsGroup.addEventListener('click', (e) => {
-      const { target } = e;
-      if (target) {
-        const item = getParentItem(target as DisplayObject); // (target as DisplayObject).parentNode.parentNode as CategoryItem;
-        if (!item) return;
-        const state = item.getState();
-        if (!['selected', 'selected-active'].includes(state)) {
-          item.setState('selected-active');
-        } else {
-          item.setState('default-active');
-        }
-        const evt = new CustomEvent('valuechange', {
-          detail: {
-            value: this.getItemsStates(),
-          },
-        });
-        this.dispatchEvent(evt);
-      }
-    });
-
-    this.itemsGroup.addEventListener('mousemove', (e) => {
-      const { target } = e;
-      if (target) {
-        const item = getParentItem(target as DisplayObject);
-        if (!item) {
-          this.items.forEach((item) => {
-            item.onUnHover();
-          });
-          return;
-        }
-        const state = item.getState();
-        if (state !== 'active') {
-          this.items.forEach((item) => {
-            item.onUnHover();
-          });
-          item.onHover();
-        }
-      }
-    });
-
-    this.itemsGroup.addEventListener('mouseleave', (e) => {
-      this.items.forEach((item) => {
-        item.onUnHover();
-      });
-    });
+    this.itemsGroup.addEventListener('click', this.ItemsGroupClickEvent);
+    this.itemsGroup.addEventListener('mousemove', this.mousemoveEvent);
+    this.itemsGroup.addEventListener('mouseleave', this.mouseleaveEvent);
   }
+
+  private unBindEvents() {
+    this.itemsGroup.removeEventListener('click', this.ItemsGroupClickEvent);
+    this.itemsGroup.removeEventListener('mousemove', this.mousemoveEvent);
+    this.itemsGroup.removeEventListener('mouseleave', this.mouseleaveEvent);
+  }
+
+  private ItemsGroupClickEvent = (e: any) => {
+    const { target } = e;
+    if (target) {
+      const item = getParentItem(target as DisplayObject); // (target as DisplayObject).parentNode.parentNode as CategoryItem;
+      if (!item) return;
+      const state = item.getState();
+      if (!['selected', 'selected-active'].includes(state)) item.setState('selected-active');
+      else item.setState('default-active');
+      const evt = new CustomEvent('valuechange', {
+        detail: {
+          value: this.getItemsStates(),
+        },
+      });
+      this.dispatchEvent(evt);
+    }
+  };
+
+  private mousemoveEvent = (e: any) => {
+    const { target } = e;
+    if (target) {
+      const item = getParentItem(target as DisplayObject);
+      if (!item) {
+        this.items.forEach((item) => {
+          item.onUnHover();
+        });
+        return;
+      }
+      const state = item.getState();
+      if (state !== 'active') {
+        this.items.forEach((item) => {
+          item.onUnHover();
+        });
+        item.onHover();
+      }
+    }
+  };
+
+  private mouseleaveEvent = () => {
+    this.items.forEach((item) => {
+      item.onUnHover();
+    });
+  };
 
   /**
    * 重置分页配置
@@ -414,17 +411,14 @@ export class Category extends LegendBase<CategoryCfg> {
         const nexPageStart = pageHeight * pageNum;
         if (currY + itemHeight > nexPageStart) {
           if (oneColWrapFlag) {
-            console.log('单行');
             currY = nexPageStart;
             pageNum += 1;
           } else if (currCols === maxCols) {
-            console.log('多行分页');
             currCols = 1;
             currX = 0;
             currY = nexPageStart;
             pageNum += 1;
           } else {
-            console.log('多行分行');
             // 分列
             currCols += 1;
             currX += itemWidth + rowSpacing;
