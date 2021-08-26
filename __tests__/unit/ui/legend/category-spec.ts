@@ -75,8 +75,6 @@ canvas.appendChild(category);
 
 describe('category', () => {
   test('horizontal', async () => {
-    // shape
-    console.log(category.getItem('chrome'));
     // @ts-ignore
     expect(category.getItem('chrome')!.markerShape.attr('symbol')).toBe('diamond');
     // @ts-ignore
