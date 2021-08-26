@@ -1,6 +1,6 @@
 import { deepMix, get } from '@antv/util';
 import { Rect, Text } from '@antv/g';
-import { GUI } from '../core/gui';
+import { GUI } from '../../core/gui';
 import { getStateStyle, normalPadding, getShapeSpace } from '../../util';
 import { LEGEND_BASE_DEFAULT_OPTIONS } from './constant';
 import type { Pair } from '../slider/types';
@@ -9,6 +9,11 @@ import type { LegendBaseCfg, LegendBaseOptions } from './types';
 
 export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<Required<T>> {
   public static tag = 'legendBase';
+
+  /**
+   * 背景属性
+   */
+  protected abstract get backgroundShapeCfg(): RectProps;
 
   // background
   protected backgroundShape!: Rect;
@@ -32,11 +37,6 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<Required<T
     this.titleShape.attr(this.getTitleShapeCfg());
     this.adjustTitle();
   }
-
-  /**
-   * 背景属性
-   */
-  protected abstract getBackgroundShapeCfg(): RectProps;
 
   // 获取对应状态的样式
   protected getStyle(name: string | string[], state?: StyleState) {
@@ -75,7 +75,7 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<Required<T
   protected createBackground() {
     this.backgroundShape = new Rect({
       name: 'background',
-      style: this.getBackgroundShapeCfg(),
+      style: this.backgroundShapeCfg,
     });
     this.appendChild(this.backgroundShape);
     this.backgroundShape.toBack();

@@ -6,3 +6,5 @@ export * from './style';
 export * from './event';
 export * from './shape';
 export * from './HTML';
+export * from './time';
+

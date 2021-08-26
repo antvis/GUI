@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Button } from '@antv/gui';
+import { Button, Marker } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -21,23 +21,52 @@ const button = new Button({
     y: 50,
     text: 'Custom Button',
     type: 'primary',
-    size: 'large',
-    ellipsis: true,
+    marker: (x, y, r) => {
+      const path = [];
+      for (let i = 0; i < 5; i++) {
+        path.push([
+          i === 0 ? 'M' : 'L',
+          (Math.cos(((18 + i * 72) * Math.PI) / 180) * r) / 2 + x,
+          (-Math.sin(((18 + i * 72) * Math.PI) / 180) * r) / 2 + y,
+        ]);
+        path.push([
+          'L',
+          (Math.cos(((54 + i * 72) * Math.PI) / 180) * r) / 4 + x,
+          (-Math.sin(((54 + i * 72) * Math.PI) / 180) * r) / 4 + y,
+        ]);
+      }
+      path.push(['Z']);
+      return path;
+    },
+    padding: 5,
+    markerSpacing: 0,
+    // ellipsis: true,
     buttonStyle: {
       default: {
-        width: 130,
-        lineDash: [10, 5],
-        lineWidth: 2,
-        radius: 10,
+        radius: 5,
         stroke: '#000',
       },
       active: {
-        fill: 'red',
+        stroke: '#eb913a',
+        fill: '#fff',
       },
     },
     textStyle: {
+      default: {
+        fill: '#fff',
+      },
       active: {
-        fill: '#000',
+        fill: '#eb913a',
+      },
+    },
+    markerStyle: {
+      default: {
+        fill: '#fff',
+        size: 30,
+      },
+      active: {
+        fill: '#eb913a',
+        size: 30,
       },
     },
   },
