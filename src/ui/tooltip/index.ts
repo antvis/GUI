@@ -1,6 +1,6 @@
 import { deepMix, substitute, isString, isElement, isFunction } from '@antv/util';
 import { createDom } from '@antv/dom-util';
-import { GUI } from '../core/gui';
+import { GUI } from '../../core/gui';
 import { applyStyleSheet, parseHTML } from '../../util';
 import { CLASS_NAME, TOOLTIP_STYLE } from './constant';
 import type { TooltipCfg, TooltipOptions, TooltipItem, TooltipPosition } from './types';

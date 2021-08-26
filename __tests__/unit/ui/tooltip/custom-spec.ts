@@ -141,7 +141,7 @@ describe('tooltip', () => {
       tooltip.hide();
     });
 
-    const tooltipElement = document.getElementById('custom-tooltip');
+    const tooltipElement = document.getElementById('custom-tooltip')!;
     const tooltipCanvas = tooltipElement.getElementsByTagName('canvas')[0]!;
     expect(tooltipCanvas.style.width).toBe('100px');
     expect(tooltipCanvas.style.height).toBe('50px');

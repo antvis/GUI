@@ -5,6 +5,5 @@ export * from './padding';
 export * from './style';
 export * from './event';
 export * from './shape';
-export * from './HTML';
+export * from './html';
 export * from './time';
-
