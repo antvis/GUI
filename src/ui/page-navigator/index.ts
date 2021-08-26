@@ -92,10 +92,7 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
 
   private set view(view: DisplayObject) {
     const { width, height } = this.attributes;
-    view.setLocalPosition(0, 0, 0);
-    // view.toBack();
-    console.log(view);
-
+    view.setLocalPosition(0, 0);
     this.fullView = view;
     if (!width || !height) {
       const { width: w, height: h } = getShapeSpace(view);
@@ -181,9 +178,9 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   public init() {
     this.initShape();
     // 更新窗口
-    this.updatePageView();
+    this.updateClipView();
     // 更新背景
-    this.updateFullView();
+    this.updateView();
     // 更新按钮
     this.updateButton();
     this.updateButtonState();
@@ -192,18 +189,20 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   }
 
   public update(cfg: Partial<PageNavigatorCfg>) {
-    if ('view' in cfg) {
-      const { view } = cfg;
-      this.view.style.clipPath = null;
-      this.removeChild(this.view);
+    const { view } = cfg;
+    if (view) {
+      if (this.view) {
+        this.view.style.clipPath = null;
+        this.removeChild(this.view, false);
+      }
       // 更新full view
       this.currPage = this.attributes.initPageNum!;
-      this.view = view!;
+      this.view = view;
       this.view.style.clipPath = this.clipView;
       this.appendChild(this.view);
     }
     this.attr(deepMix({}, this.attributes, cfg));
-    this.updatePageView();
+    this.updateClipView();
     this.updateButton();
     this.updateButtonState();
     this.adjustLayout();
@@ -222,11 +221,11 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   public goTo(to: number, from?: number) {
     if (this.playState === 'idle') {
       const { effect, duration } = this.attributes;
-      const { x: fromX, y: fromY } = this.getPageViewSpace(isUndefined(from) ? this.currPage : from);
-      const { x: toX, y: toY } = this.getPageViewSpace(to);
+      const { x: fromX, y: fromY } = this.getClipViewSpace(isUndefined(from) ? this.currPage : from);
+      const { x: toX, y: toY } = this.getClipViewSpace(to);
       const currX = this.view.attr('x') || 0;
       const currY = this.view.attr('y') || 0;
-      const [targetX, targetY] = [currX + fromX - toX, currY + fromY - toY];
+      const { x: targetX, y: targetY } = this.calcViewPosition(to);
       this.playState = 'running';
       // 播放动画
       this.clipView.animate(
@@ -318,14 +317,17 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   /**
    * 更新窗口位置
    */
-  private updatePageView() {
-    this.clipView.attr(this.getPageViewSpace(this.currPage));
+  private updateClipView() {
+    this.clipView.attr(this.getClipViewSpace(this.currPage));
   }
 
-  private updateFullView() {
-    this.view.attr(this.calcFullViewPosition(this.currPage));
+  private updateView() {
+    this.view.attr(this.calcViewPosition(this.currPage));
   }
 
+  /**
+   * 更新 button
+   */
   private updateButton() {
     const { button } = this.attributes;
     const { prev, next } = button!;
@@ -358,7 +360,7 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   /**
    * 根据页码获得该页的位置
    */
-  private getPageViewSpace(num: number): Page {
+  private getClipViewSpace(num: number): Page {
     const { orient, pageWidth, pageHeight, pageCallback } = this.attributes;
     const pageSpace = { x: 0, y: 0, width: pageWidth, height: pageHeight };
     const { totalPages } = this;
@@ -375,10 +377,10 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   /**
    * 计算切换到第num页时，fullView应当放置的位置
    */
-  private calcFullViewPosition(num: number): { x: number; y: number } {
+  private calcViewPosition(num: number): { x: number; y: number } {
     // 第1页的pageView位置 应当对应fullView 的位置
-    const { x: p1X, y: p1Y } = this.getPageViewSpace(1);
-    const { x: pnX, y: pnY } = this.getPageViewSpace(num);
+    const { x: p1X, y: p1Y } = this.getClipViewSpace(1);
+    const { x: pnX, y: pnY } = this.getClipViewSpace(num);
     const [diffX, diffY] = [-pnX + p1X, -pnY + p1Y];
     return { x: diffX, y: diffY };
   }
