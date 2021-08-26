@@ -48,7 +48,7 @@ export function getStateStyle<T>(style?: MixAttrs<T>, state?: StyleState, isMerg
  * 样式表参考结构
  * {
  *  '.selector': {
- *   'styleString': 'styleString',
+ *   'attrName': 'attr',
  *   'padding': '0 0 0 0',
  *   'background-color': 'red'
  *  }

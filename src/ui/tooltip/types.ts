@@ -1,5 +1,4 @@
-// import type { MarkerCfg } from '../marker';
-import type { DisplayObjectConfig, TextProps } from '../../types';
+import type { DisplayObjectConfig } from '../../types';
 
 export type TooltipPosition =
   | 'top'
@@ -12,48 +11,30 @@ export type TooltipPosition =
   | 'bottom-right';
 
 export type TooltipItem = {
-  name: string;
-  value: string;
+  name?: string;
+  value?: number | string;
+  index?: number;
+  color?: string;
+  [key: string]: any;
 };
-
-export type ItemNameCfg = {
-  formatter: (text: string, item: TooltipItem, index: number) => string;
-  spacing: number;
-  style: TextProps;
-};
-
-export type ItemValueCfg = {
-  formatter: (text: string, item: TooltipItem, index: number) => string;
-  spacing: number;
-  style: TextProps;
-};
-
-export type TooltipHTMLElement = string | HTMLElement;
 
 export interface TooltipCfg {
   x?: number;
   y?: number;
-  width?: number;
-  height?: number;
-  /** 内边距 */
-  padding?: number | number[];
   /** 标题 */
-  title: {
-    content: string;
-    style: TextProps;
-  };
+  title?: string;
   /* tooltip 位置 */
-  position: TooltipPosition;
+  position?: TooltipPosition;
   /* 在位置方向上的偏移量 */
-  offset: [number, number];
-  /* 是否跟随鼠标 */
-  follow: boolean;
-  /* 鼠标是否可进入 */
-  enterable: boolean;
+  offset?: [number, number];
   /* 自动调整位置，需要设置容器属性 */
-  autoLayout: boolean;
-  /* 外部容器属性 */
-  containerBounds: {
+  autoPosition?: boolean;
+  /* tooltip所在的父容器 */
+  parent: HTMLCanvasElement;
+  /**
+   * tooltip 在画布中的边界
+   */
+  bounding: {
     x: number;
     y: number;
     width: number;
@@ -61,20 +42,24 @@ export interface TooltipCfg {
   };
   /* 项目 */
   items: TooltipItem[];
-  // itemMarker: MarkerCfg | ((item: TooltipItem, index: number, items: TooltipItem[]) => MarkerCfg);
-  /* name */
-  itemName: ItemNameCfg | ((item: TooltipItem, index: number, items: TooltipItem[]) => ItemNameCfg);
-  /* value */
-  itemValue: ItemValueCfg | ((item: TooltipItem, index: number, items: TooltipItem[]) => ItemValueCfg);
   /* 模版 */
-  template: {
+  template?: {
     /* 容器模版 */
-    container: TooltipHTMLElement;
-    /* 项目模版 */
-    item: (item: TooltipItem, index: number, items: TooltipItem[]) => TooltipHTMLElement;
+    container?: string;
+    title?: string;
+    /* item模版 */
+    item?: string;
   };
   /* 自定义内容 */
-  customContent: TooltipHTMLElement | ((item: TooltipItem, index: number, items: TooltipItem[]) => TooltipHTMLElement);
+  customContent?: string | HTMLElement | ((items: TooltipItem[]) => string | HTMLElement);
+  /**
+   * 样式
+   */
+  style?: {
+    [key: string]: {
+      [key: string]: any;
+    };
+  };
 }
 
 export type TooltipOptions = DisplayObjectConfig<TooltipCfg>;
