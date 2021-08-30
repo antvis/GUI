@@ -3,3 +3,4 @@ window.gCanvas = require('@antv/g-canvas');
 window.gSvg = require('@antv/g-svg');
 window.g = require('@antv/g');
 window.reactDom = require('react-dom');
+window.dat = require('dat.gui');
