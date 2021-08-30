@@ -54,7 +54,7 @@ export type ScrollbarCfg = ShapeAttrs & {
   /**
    * 滚动条内边距，影响滑轨的实际可用空间 [top, right, bottom, left]
    */
-  padding?: [number, number, number, number];
+  padding?: number | number[];
 
   /**
    * 滑轨样式
