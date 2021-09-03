@@ -73,10 +73,10 @@ const x = arcFolder.add(arcCfg, 'x', 0, 300).onChange((x) => {
 const y = arcFolder.add(arcCfg, 'y', 0, 300).onChange((y) => {
   arc.update({ center: [x.getValue(), y] });
 });
-arcFolder.add(arcCfg, '起始角', -360, 360).onChange((startAngle) => {
+arcFolder.add(arcCfg, '起始角', -90, 180).onChange((startAngle) => {
   arc.update({ startAngle });
 });
-arcFolder.add(arcCfg, '终止角', -360, 360).onChange((endAngle) => {
+arcFolder.add(arcCfg, '终止角', -0, 270).onChange((endAngle) => {
   arc.update({ endAngle });
 });
 arcFolder.add(arcCfg, '半径', 50, 200).onChange((radius) => {
