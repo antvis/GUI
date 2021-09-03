@@ -109,11 +109,11 @@ const tooltip = new Tooltip({
   },
 });
 
-document.getElementsByTagName('body')[0].appendChild(tooltip.HTMLTooltipElement);
+document.getElementsByTagName('body')[0]!.appendChild(tooltip.HTMLTooltipElement);
 
 describe('tooltip', () => {
   test('basic', async () => {
-    const sparklineCanvasElement = document.getElementById('custom-tooltip').getElementsByTagName('canvas')[0];
+    const sparklineCanvasElement = document.getElementById('custom-tooltip')!.getElementsByTagName('canvas')[0];
     expect(sparklineCanvasElement.style.width).toBe('100px');
     expect(sparklineCanvasElement.style.height).toBe('50px');
   });
