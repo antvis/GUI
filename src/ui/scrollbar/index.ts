@@ -13,6 +13,49 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
    */
   public static tag = 'scrollbar';
 
+  private static defaultOptions = {
+    type: Scrollbar.tag,
+    style: {
+      // 滑条朝向
+      orient: 'vertical',
+
+      // 轨道宽高
+      width: 10,
+      height: 200,
+      value: 0,
+
+      // 滑块范围控制
+      min: 0,
+      max: 1,
+      // 滑块是否为圆角
+      isRound: true,
+
+      // 滑块长度
+      thumbLen: 20,
+
+      // 滚动条内边距，影响滑轨的实际可用空间
+      padding: [2, 2, 2, 2],
+
+      trackStyle: {
+        default: {
+          fill: '#fafafa',
+          lineWidth: 1,
+          stroke: '#e8e8e8',
+        },
+        active: {},
+      },
+
+      thumbStyle: {
+        default: {
+          fill: '#c1c1c1',
+        },
+        active: {
+          opacity: 0.8,
+        },
+      },
+    },
+  };
+
   /**
    * 计算滑块重心在轨道的比例位置
    * @param offset 额外的偏移量
@@ -28,7 +71,7 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
   public set value(value: number) {
     const { value: oldValue, min, max } = this.attributes;
     this.setAttribute('value', clamp(value, min, max));
-    // 通知触发valueChange
+    // 通知触发valueChanged
     this.onValueChanged(oldValue);
   }
 
@@ -70,11 +113,15 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
     return this.getOrientVal([width, height]);
   }
 
-  private get radius() {
+  /**
+   * 滑块的圆角半径
+   */
+  private get thumbRadius() {
     const { isRound } = this.attributes;
     const { width, height } = this.availableSpace;
+    const radius = get(this.attributes, ['thumbStyle', 'default', 'radius']);
     if (!isRound) return 0;
-    return this.getOrientVal([height, width]) / 2;
+    return radius || this.getOrientVal([height, width]) / 2;
   }
 
   private get trackShapeCfg() {
@@ -86,7 +133,7 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
     const { value, thumbLen } = this.attributes;
     const trackInner = this.availableSpace;
     const { x, y } = trackInner;
-    const { radius } = this;
+    const { thumbRadius } = this;
     const valueOffset = this.valueOffset(value);
     return {
       ...trackInner,
@@ -95,52 +142,9 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
         { x: x + valueOffset, width: thumbLen },
         { y: y + valueOffset, height: thumbLen },
       ]),
-      radius,
+      radius: thumbRadius,
     };
   }
-
-  private static defaultOptions = {
-    type: Scrollbar.tag,
-    style: {
-      // 滑条朝向
-      orient: 'vertical',
-
-      // 轨道宽高
-      width: 10,
-      height: 200,
-      value: 0,
-
-      // 滑块范围控制
-      min: 0,
-      max: 1,
-      // 滑块是否为圆角
-      isRound: true,
-
-      // 滑块长度
-      thumbLen: 20,
-
-      // 滚动条内边距，影响滑轨的实际可用空间
-      padding: [2, 2, 2, 2],
-
-      trackStyle: {
-        default: {
-          fill: '#fafafa',
-          lineWidth: 1,
-          stroke: '#e8e8e8',
-        },
-        active: {},
-      },
-
-      thumbStyle: {
-        default: {
-          fill: '#c1c1c1',
-        },
-        active: {
-          fill: '#7d7d7d',
-        },
-      },
-    },
-  };
 
   constructor(options: ScrollbarOptions) {
     super(deepMix({}, Scrollbar.defaultOptions, options));
@@ -207,8 +211,6 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
   public clear() {}
 
   public destroy() {
-    this.unbindEvents();
-    this.offHover();
     this.removeChildren(true);
   }
 
@@ -233,8 +235,8 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
     };
     const scrollEvt = new CustomEvent('scroll', evtVal);
     this.dispatchEvent(scrollEvt);
-    const valuechangeEvt = new CustomEvent('valueChange', evtVal);
-    this.dispatchEvent(valuechangeEvt);
+    const valueChangedEvt = new CustomEvent('valueChanged', evtVal);
+    this.dispatchEvent(valueChangedEvt);
   };
 
   /**
@@ -277,12 +279,6 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
     this.onHover();
   }
 
-  private unbindEvents() {
-    this.trackShape.removeEventListener('click', this.onTrackClick);
-    this.thumbShape.removeEventListener('mousedown', this.onDragStart);
-    this.thumbShape.removeEventListener('touchstart', this.onDragStart);
-  }
-
   /**
    * 根据orient取出对应轴向上的值
    * 主要用于取鼠标坐标在orient方向上的位置
@@ -312,13 +308,6 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
     this.trackShape.addEventListener('mouseenter', this.onTrackMouseenter);
     this.thumbShape.addEventListener('mouseleave', this.onThumbMouseleave);
     this.trackShape.addEventListener('mouseleave', this.onTrackMouseleave);
-  }
-
-  private offHover() {
-    this.thumbShape.removeEventListener('mouseenter', this.onThumbMouseenter);
-    this.trackShape.removeEventListener('mouseenter', this.onTrackMouseenter);
-    this.thumbShape.removeEventListener('mouseleave', this.onThumbMouseleave);
-    this.trackShape.removeEventListener('mouseleave', this.onTrackMouseleave);
   }
 
   private onThumbMouseenter = () => {

@@ -1,9 +1,4 @@
-import type { DisplayObjectConfig, ShapeAttrs } from '../../types';
-
-export interface ScrollStyle {
-  default: ShapeAttrs;
-  active: ShapeAttrs;
-}
+import type { DisplayObjectConfig, ShapeAttrs, MixAttrs } from '../../types';
 
 export type Orient = 'horizontal' | 'vertical';
 
@@ -59,12 +54,12 @@ export type ScrollbarCfg = ShapeAttrs & {
   /**
    * 滑轨样式
    */
-  trackStyle?: ScrollStyle;
+  trackStyle?: MixAttrs<Partial<ShapeAttrs>>;
 
   /**
    * 滑块样式
    */
-  thumbStyle?: ScrollStyle;
+  thumbStyle?: MixAttrs<Partial<ShapeAttrs>>;
 };
 
 /**
