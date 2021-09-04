@@ -1,7 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { head, last } from '@antv/util';
-import { BreadCrumb } from '../../../../src';
+import { Breadcrumb } from '../../../../src';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -21,7 +21,7 @@ describe('breadcrumb', () => {
       renderer,
     });
 
-    const breadcrumb = new BreadCrumb({
+    const breadcrumb = new Breadcrumb({
       style: {
         x: 50,
         y: 40,
@@ -77,7 +77,7 @@ describe('breadcrumb', () => {
       renderer,
     });
 
-    const breadcrumb = new BreadCrumb({
+    const breadcrumb = new Breadcrumb({
       style: {
         x: 50,
         y: 40,
@@ -131,7 +131,7 @@ describe('breadcrumb', () => {
       renderer,
     });
 
-    const breadcrumb = new BreadCrumb({
+    const breadcrumb = new Breadcrumb({
       style: {
         x: 50,
         y: 40,
@@ -182,7 +182,7 @@ describe('breadcrumb', () => {
       renderer,
     });
 
-    const breadcrumb = new BreadCrumb({
+    const breadcrumb = new Breadcrumb({
       style: {
         x: 0,
         y: 0,
