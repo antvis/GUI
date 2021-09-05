@@ -66,6 +66,8 @@ export class Breadcrumb extends GUI<Required<BreadcrumbCfg>> {
   }
 
   public init(): void {
+    this.cursorX = 0;
+    this.cursorY = 0;
     const { x, y, items, textStyle, padding } = this.attributes;
     const [top, , left] = normalPadding(padding);
 
@@ -75,8 +77,6 @@ export class Breadcrumb extends GUI<Required<BreadcrumbCfg>> {
     this.container.translate(x + left, y + top);
 
     items.forEach((item, idx) => {
-      console.log('x', this.cursorX);
-
       const breadcrumbItemShape = new Tag({
         name: `${Breadcrumb.tag}-item`,
         id: item.id,
@@ -115,13 +115,15 @@ export class Breadcrumb extends GUI<Required<BreadcrumbCfg>> {
    */
   public update(cfg: Partial<BreadcrumbCfg>): void {
     this.attr(deepMix({}, this.attributes, cfg));
+    this.clear();
+    this.init();
   }
 
   /**
    * 组件清除
    */
   public clear(): void {
-    this.destroy();
+    this.container.destroy();
   }
 
   /**
