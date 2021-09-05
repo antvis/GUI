@@ -44,7 +44,7 @@ export class Breadcrumb extends GUI<Required<BreadcrumbCfg>> {
   /**
    * 面包屑容器
    */
-  private container!: Group;
+  public container!: Group;
 
   /**
    * 光标 X 位置
