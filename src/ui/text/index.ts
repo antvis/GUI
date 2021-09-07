@@ -234,9 +234,6 @@ export class Text extends GUI<Required<TextCfg>> {
       this.clipRect = new Rect({ name: 'clip-rect', style: this.clipRectCfg });
       this.backgroundShape.style.clipPath = this.clipRect;
     }
-    //  else {
-    //   this.textShape.attr({ text: this.ellipsisText });
-    // }
   }
 
   private adjustTextAlign() {
