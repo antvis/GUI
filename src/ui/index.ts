@@ -57,4 +57,8 @@ export type { SwitchOptions } from './switch';
 // author by [Aarebecca](https://github.com/Aarebecca)
 export { PageNavigator } from './page-navigator';
 export type { PageNavigatorOptions } from './page-navigator';
+export { Text } from './text';
+export type { TextCfg, TextOptions } from './text';
+// export { Paragraph } from './paragraph';
+// export type { ParagraphCfg, ParagraphOptions } from './paragraph';
 // to be continued...
