@@ -1,18 +1,20 @@
 /**
  * 节流修饰器
- * @param limit 节流时间
+ * @param delay 节流时间
  */
-export function throttle(limit: number = 0) {
-  let prev = new Date().getTime();
+export function throttle(delay: number = 0) {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-    let func = descriptor.value;
+    const func = descriptor.value;
+    let timeout: number | null;
     if (typeof func === 'function') {
-      func = (...args: any[]) => {
-        const now = new Date().getTime();
-        if (now - prev > limit) {
-          func.apply(target, args);
-          prev = new Date().getTime();
-        }
+      // eslint-disable-next-line
+      descriptor.value = function (...args: any[]) {
+        if (timeout) return;
+        const context = this;
+        timeout = window.setTimeout(() => {
+          func.apply(context, args);
+          timeout = null;
+        }, delay);
       };
     }
   };
