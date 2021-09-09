@@ -29,16 +29,16 @@ import { LineCrosshair, CircleCrosshair, PolygonCrosshair } from '@antv/gui';
 
 ## CircleCrosshair
 
-| Key        | Description                          | Type                          | Default |
-| ---------- | ------------------------------------ | ----------------------------- | ------- |
-| center     | center of crosshair circle           | <code>[number, number]</code> | ``      |
-| initRadius | the radius of first crosshair circle | <code>number</code>           | `0`     |
+| Key           | Description                          | Type                          | Default |
+| ------------- | ------------------------------------ | ----------------------------- | ------- |
+| center        | center of crosshair circle           | <code>[number, number]</code> | ``      |
+| defaultRadius | the radius of first crosshair circle | <code>number</code>           | `0`     |
 
 ## PolygonCrosshair
 
-| Key        | Description                           | Type                          | Default |
-| ---------- | ------------------------------------- | ----------------------------- | ------- |
-| center     | center of crosshair polygon           | <code>[number, number]</code> | ``      |
-| initRadius | the radius of first crosshair polygon | <code>number</code>           | `0`     |
-| startAngle | start angle of polygon                | <code>number</code>           | `0`     |
-| sides      | sides of polygon                      | <code>number</code>           | ``      |
+| Key           | Description                           | Type                          | Default |
+| ------------- | ------------------------------------- | ----------------------------- | ------- |
+| center        | center of crosshair polygon           | <code>[number, number]</code> | ``      |
+| defaultRadius | the radius of first crosshair polygon | <code>number</code>           | `0`     |
+| startAngle    | start angle of polygon                | <code>number</code>           | `0`     |
+| sides         | sides of polygon                      | <code>number</code>           | ``      |

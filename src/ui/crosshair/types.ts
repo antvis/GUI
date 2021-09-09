@@ -19,14 +19,14 @@ export interface CircleCrosshairCfg extends CrosshairBaseCfg {
   type?: 'circle';
   center: Point;
   // 初始化半径
-  initRadius?: number;
+  defaultRadius?: number;
 }
 
 export interface PolygonCrosshairCfg extends CrosshairBaseCfg {
   type?: 'polygon';
   center: Point;
   // 初始化半径
-  initRadius?: number;
+  defaultRadius?: number;
   // 边数
   sides: number;
   // 初始角度

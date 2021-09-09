@@ -18,7 +18,7 @@ const canvas = new Canvas({
 const circle = new CircleCrosshair({
   style: {
     center: [250, 250],
-    initRadius: 50,
+    defaultRadius: 50,
     lineStyle: {
       lineWidth: 2,
     },

@@ -20,12 +20,12 @@ const canvas = new Canvas({
 });
 
 let [cx, cy] = [250, 250];
-const initRadius = 50;
+const defaultRadius = 50;
 const t1 = Math.cos(Math.PI / 6) * 50;
 
 const polygon = new PolygonCrosshair({
   style: {
-    initRadius,
+    defaultRadius,
     center: [cx, cy],
     sides: 6,
     lineStyle: {
@@ -43,8 +43,8 @@ describe('polygon-crosshair', () => {
     polygon.points.forEach(([x, y], index) => {
       expect(x ** 2 + y ** 2).toBeCloseTo(1);
       const [px, py] = path[index].slice(1) as [number, number];
-      expect(cx + x * initRadius).toBeCloseTo(px);
-      expect(cx + y * initRadius).toBeCloseTo(py);
+      expect(cx + x * defaultRadius).toBeCloseTo(px);
+      expect(cx + y * defaultRadius).toBeCloseTo(py);
     });
   });
 

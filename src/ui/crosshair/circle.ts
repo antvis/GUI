@@ -43,8 +43,8 @@ export class CircleCrosshair extends CrosshairBase<CircleCrosshairCfg> {
   private createCirclePath(radius?: number) {
     const {
       center: [x, y],
-      initRadius,
+      defaultRadius,
     } = this.attributes;
-    return circle(x, y, radius || initRadius) as PathCommand[];
+    return circle(x, y, radius || defaultRadius) as PathCommand[];
   }
 }

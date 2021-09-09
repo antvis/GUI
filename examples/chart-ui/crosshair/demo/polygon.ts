@@ -20,7 +20,7 @@ const t1 = Math.cos(Math.PI / 6) * 50;
 
 const polygon = new PolygonCrosshair({
   style: {
-    initRadius: 50,
+    defaultRadius: 50,
     center: [cx, cy],
     sides: 8,
     lineStyle: {

@@ -20,11 +20,11 @@ export const LINE_CROSSHAIR_DEFAULT_STYLE = deepAssign({}, CROSSHAIR_BASE_DEFAUL
 
 export const CIRCLE_CROSSHAIR_DEFAULT_STYLE = deepAssign({}, CROSSHAIR_BASE_DEFAULT_STYLE, {
   type: 'circle',
-  initRadius: 0,
+  defaultRadius: 0,
 });
 
 export const POLYGON_CROSSHAIR_DEFAULT_STYLE = deepAssign({}, CROSSHAIR_BASE_DEFAULT_STYLE, {
   type: 'polygon',
-  initRadius: 0,
+  defaultRadius: 0,
   startAngle: 0,
 });

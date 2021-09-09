@@ -64,11 +64,11 @@ export class PolygonCrosshair extends CrosshairBase<PolygonCrosshairCfg> {
 
   private createPolygonPath(radius?: number) {
     const {
-      initRadius,
+      defaultRadius,
       center: [cx, cy],
     } = this.attributes;
     const path = this.points.map(([x, y], index) => {
-      const [tx, ty] = vec2.scale([0, 0], [x, y], radius || initRadius);
+      const [tx, ty] = vec2.scale([0, 0], [x, y], radius || defaultRadius);
       return [index === 0 ? 'M' : 'L', cx + tx, cy + ty];
     });
     path.push(['Z']);
