@@ -27,7 +27,7 @@ export class CircleCrosshair extends CrosshairBase<CircleCrosshairCfg> {
     super.update(cfg);
   }
 
-  @throttle(100)
+  @throttle(20)
   public setPointer([x, y]: Point) {
     const {
       center: [cx, cy],

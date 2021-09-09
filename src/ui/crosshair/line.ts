@@ -52,7 +52,7 @@ export class LineCrosshair extends CrosshairBase<LineCrosshairCfg> {
   /**
    * 将线移动至对应位置
    */
-  @throttle(100)
+  @throttle(20)
   public setPointer(pointer: Point) {
     super.setPointer(pointer);
     const [x, y] = pointer;

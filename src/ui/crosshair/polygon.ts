@@ -47,7 +47,7 @@ export class PolygonCrosshair extends CrosshairBase<PolygonCrosshairCfg> {
    * 2. 计算中心到point的线段与所在扇区的边的交点
    * 3. 计算等效半径
    */
-  @throttle(100)
+  @throttle(20)
   public setPointer([x, y]: Point) {
     const { center } = this.attributes;
     // 求交点
