@@ -57,4 +57,6 @@ export type { SwitchOptions } from './switch';
 // author by [Aarebecca](https://github.com/Aarebecca)
 export { PageNavigator } from './page-navigator';
 export type { PageNavigatorOptions } from './page-navigator';
+export { LineCrosshair, CircleCrosshair, PolygonCrosshair } from './crosshair';
+export type { LineCrosshairOptions, CircleCrosshairOptions, PolygonCrosshairOptions } from './crosshair';
 // to be continued...
