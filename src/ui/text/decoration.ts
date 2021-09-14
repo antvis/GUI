@@ -2,7 +2,6 @@ import type { PathCommand } from '@antv/g';
 import { DisplayObject, Path } from '@antv/g';
 import { isArray } from '@antv/util';
 import { deepAssign } from '../../util';
-import { decorationType, decorationShape } from './types';
 import type { DecorationCfg, DecorationOptions, DecorationLine, DecorationShape } from './types';
 import type { PathProps } from '../../types';
 
@@ -16,6 +15,7 @@ export class Decoration extends DisplayObject<Required<DecorationCfg>> {
       width: 0,
       height: 0,
       type: 'none',
+      hangingRate: [0.5, 0.55, 0.5],
       // 线条默认颜色使用文字颜色
       style: {
         lineWidth: 1,
@@ -46,9 +46,10 @@ export class Decoration extends DisplayObject<Required<DecorationCfg>> {
     return (lineWidth as number) * 2;
   }
 
-  /** 悬挂比例  */
+  /** 上中下悬挂比例  */
   private get hangingRate() {
-    return 0.1;
+    const { hangingRate } = this.attributes;
+    return hangingRate;
   }
 
   private get dashedCfg() {
@@ -96,7 +97,8 @@ export class Decoration extends DisplayObject<Required<DecorationCfg>> {
   }
 
   public update(cfg: Partial<DecorationCfg>) {
-    this.attr(deepAssign({}, this.attr(), cfg));
+    this.attr(deepAssign({}, this.attributes, cfg));
+    this.clear();
     this.decorationCfg.forEach((cfg) => {
       this.appendChild(new Path({ style: cfg }));
     });
@@ -110,12 +112,14 @@ export class Decoration extends DisplayObject<Required<DecorationCfg>> {
    * 根据位置计算线条起始坐标
    */
   private getLinePos(type: Omit<DecorationLine, 'none'>) {
-    const { hangingRate: rate } = this;
-    const { height } = this.attributes;
+    const {
+      hangingRate: [top, middle, bottom],
+    } = this;
+    const { height, fontSize } = this.attributes;
     let [x, y]: [number, number] = [0, 0];
-    if (type === 'overline') [x, y] = [0, rate * height];
-    else if (type === 'line-through') [x, y] = [0, height / 2];
-    else [x, y] = [0, height * (1 - rate)];
+    if (type === 'overline') [x, y] = [0, height * top - fontSize / 2];
+    else if (type === 'line-through') [x, y] = [0, height * middle];
+    else [x, y] = [0, height * bottom + fontSize / 2];
     return [x, y];
   }
 

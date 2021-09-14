@@ -1,6 +1,6 @@
 import type { PathCommand } from '@antv/g';
-import { Text as GText, Rect } from '@antv/g';
-import { pick, isNumber } from '@antv/util';
+import { Text as GText, Rect, Group } from '@antv/g';
+import { pick, max, isNumber } from '@antv/util';
 import { Decoration } from './decoration';
 import { Marker } from '../marker';
 import { deepAssign, transform, getEllipsisText, getShapeSpace, measureTextWidth } from '../../util';
@@ -29,6 +29,7 @@ export class Text extends GUI<Required<TextCfg>> {
     style: {
       text: '',
 
+      fontColor: '#000',
       fontFamily: 'sans-serif',
       fontSize: 12,
       fontWeight: 'normal',
@@ -39,9 +40,7 @@ export class Text extends GUI<Required<TextCfg>> {
 
       decoration: {
         type: 'none',
-        style: {
-          stroke: '#000',
-        },
+        style: {},
       },
 
       overflow: 'none',
@@ -52,27 +51,61 @@ export class Text extends GUI<Required<TextCfg>> {
     },
   };
 
+  /**
+   * 文字行宽
+   * 如果多行则取最长宽度
+   * 在文字渲染之前也可获得
+   */
   public get textWidth(): number {
-    return measureTextWidth(this.renderText, this.font);
+    return max(this.renderText.split('\n').map((text) => measureTextWidth(text, this.font))) || 0;
   }
 
   public get textHeight(): number {
     return getShapeSpace(this.textShape).height;
   }
 
+  /**
+   * 文本包围盒宽度
+   */
   public get width(): number {
     const { width } = this.attributes;
     // 度量文字长度
-    if (width === 'auto' || width === undefined) return this.textWidth;
+    if (width === 'auto' || width === undefined || width === 0) return this.textWidth;
     return width;
   }
 
+  /**
+   * 文本包围盒高度
+   */
   public get height(): number {
-    const { lineHeight } = this.attributes;
-    // 此时width一定存在
-    // 若height不存在，则对文本进行测量
-    if (isNumber(lineHeight)) return lineHeight;
+    const { height } = this.attributes;
+    if (isNumber(height) && height !== 0) return height;
     return getShapeSpace(this.textShape).height;
+  }
+
+  private get lineHeight(): number {
+    const { lineHeight, fontSize } = this.attributes;
+    if (!lineHeight || lineHeight === 0) return fontSize as number;
+    return lineHeight;
+  }
+
+  /**
+   * 单词字母首大写
+   */
+  private get capitalizeWord() {
+    const { text } = this.attributes;
+    // 对每个词、每行进行 transform
+    return text
+      .split('\n')
+      .map((line) => {
+        return line
+          .split(' ')
+          .map((word) => {
+            return transform(word, 'capitalize');
+          })
+          .join(' ');
+      })
+      .join('\n');
   }
 
   /**
@@ -80,8 +113,8 @@ export class Text extends GUI<Required<TextCfg>> {
    */
   private get text() {
     const { transform: tf, text } = this.attributes;
-    // text 移除换行符 并进行转换
-    return transform(text.replace(/\r\n/g, '').replace(/\n/g, ''), tf || 'none');
+    if (tf === 'capitalize') return this.capitalizeWord;
+    return transform(text, tf);
   }
 
   private get ellipsisText() {
@@ -102,15 +135,8 @@ export class Text extends GUI<Required<TextCfg>> {
   private get renderText() {
     const { width } = this.attributes;
     const { overflow } = this.attributes;
-    if (overflow && !['none', 'clip'].includes(overflow) && isNumber(width)) return this.ellipsisText;
+    if (overflow && !['none', 'clip', 'wrap'].includes(overflow) && isNumber(width)) return this.ellipsisText;
     return this.text;
-  }
-
-  private get textAlign(): TextProps['textAlign'] {
-    const { width, textAlign } = this.attributes;
-    // 未指定width，由使用
-    if (!width) return 'start';
-    return textAlign;
   }
 
   private get verticalAlign() {
@@ -118,23 +144,45 @@ export class Text extends GUI<Required<TextCfg>> {
     return verticalAlign;
   }
 
-  private get textBaseline() {
-    return this.verticalAlign as TextProps['textBaseline'];
+  private get font() {
+    return pick(this.attributes, [
+      'fontSize',
+      'fontFamily',
+      'fontWeight',
+      'fontStyle',
+      'fontVariant',
+      'letterSpacing',
+      'leading',
+    ]);
   }
 
-  private get font() {
-    return pick(this.attributes, ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'fontVariant', 'letterSpacing']);
+  private get fontColor() {
+    const { fontColor } = this.attributes;
+    return fontColor;
+  }
+
+  private get wordWrap(): boolean {
+    const { overflow } = this.attributes;
+    return overflow === 'wrap';
+  }
+
+  private get wordWrapWidth(): number {
+    const { width, wordWrap } = this;
+    if (!wordWrap) return Infinity;
+    return width;
   }
 
   private get textCfg(): TextProps {
-    const { renderText, textAlign, textBaseline } = this;
+    const { renderText, lineHeight, wordWrap, wordWrapWidth, fontColor: fill } = this;
     return {
       ...this.font,
+      fill,
+      wordWrap,
+      lineHeight,
+      wordWrapWidth,
       text: renderText,
       textAlign: 'start',
       textBaseline: 'middle',
-      // textAlign,
-      // textBaseline,
     };
   }
 
@@ -155,23 +203,12 @@ export class Text extends GUI<Required<TextCfg>> {
     return Math.floor(Math.log10(fontSize) * 2);
   }
 
-  private get decorationCfg(): DecorationCfg {
-    const { textWidth, textHeight, decorationLineWidth } = this;
-    const { decoration } = this.attributes;
-    return deepAssign(
-      {},
-      {
-        y: -textHeight / 2,
-        width: textWidth,
-        height: textHeight,
-        ...decoration,
-      },
-      {
-        style: {
-          lineWidth: decorationLineWidth,
-        },
-      }
-    );
+  private get decorationCfg(): DecorationCfg[] {
+    const { decoration, fontSize } = this.attributes;
+    const { decorationLineWidth: lineWidth, fontColor: stroke } = this;
+    return this.textShape.getLineBoundingRects().map((bbox) => {
+      return deepAssign({}, { fontSize, style: { stroke, lineWidth } }, decoration, bbox);
+    });
   }
 
   private get clipRectCfg() {
@@ -182,6 +219,8 @@ export class Text extends GUI<Required<TextCfg>> {
   }
 
   private textShape!: GText;
+
+  private decorationGroup!: Group;
 
   /** 装饰线条 */
   private decorationShape!: Decoration;
@@ -202,12 +241,15 @@ export class Text extends GUI<Required<TextCfg>> {
   }
 
   public update(cfg: Partial<TextCfg>) {
-    this.attr(deepAssign({}, this.attr(), cfg));
+    this.attr(deepAssign({}, this.attributes, cfg));
     this.clear();
     this.backgroundShape.attr(this.backgroundCfg);
     this.textShape.attr(this.textCfg);
     this.layout();
-    this.decorationShape.update(this.decorationCfg);
+    this.decorationGroup.removeChildren(true);
+    this.decorationCfg.forEach((cfg) => {
+      this.decorationGroup.appendChild(new Decoration({ style: cfg }));
+    });
   }
 
   public clear() {
@@ -218,17 +260,19 @@ export class Text extends GUI<Required<TextCfg>> {
 
   private initShape() {
     this.backgroundShape = new Rect({ name: 'background', style: { width: 0, height: 0 } });
-    this.decorationShape = new Decoration({ name: 'decoration' });
+    // this.decorationShape = new Decoration({ name: 'decoration' });
+    this.decorationGroup = new Group({ name: 'decoration-group' });
     this.textShape = new GText({ name: 'text', style: this.textCfg });
-    this.textShape.appendChild(this.decorationShape);
+    this.textShape.appendChild(this.decorationGroup);
     this.backgroundShape.appendChild(this.textShape);
     this.appendChild(this.backgroundShape);
   }
 
   private overflow() {
+    const { wordWrap } = this;
     const { width, overflow } = this.attributes;
     // 为false\开启换行\未width数值, 则不进行操作
-    if (!overflow || overflow === 'none' || !isNumber(width)) return;
+    if (!overflow || overflow === 'none' || wordWrap || !isNumber(width)) return;
     if (overflow === 'clip') {
       // 裁切
       this.clipRect = new Rect({ name: 'clip-rect', style: this.clipRectCfg });
