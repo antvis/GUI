@@ -65,7 +65,7 @@ Marker.registerSymbol('axis-arrow', (x: number, y: number, r: number) => {
 });
 
 export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
-  public static tag = 'axisBase';
+  public static tag = 'axis-base';
 
   protected static defaultOptions = {
     type: AxisBase.tag,
@@ -121,8 +121,8 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     });
   }
 
-  private get labels(): Text[] {
-    return this.labelsGroup.children;
+  private get labels() {
+    return this.labelsGroup.children as Text[];
   }
 
   /**
@@ -389,10 +389,14 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 设置label旋转角度
    */
   public setLabelEulerAngles(angle: number): void {
+    let accAngle = angle;
+    while (accAngle < 0) {
+      accAngle += 180;
+    }
     this.labels.forEach((label, idx) => {
       const labelVal = this.labelsValues[idx];
       const tickAngle = getVectorsAngle([1, 0], this.getVerticalVector(labelVal));
-      const { rotate, textAlign } = this.getLabelLayout(labelVal, tickAngle, formatAngle(angle));
+      const { rotate, textAlign } = this.getLabelLayout(labelVal, tickAngle, formatAngle(accAngle));
       label.attr({ textAlign });
       label.setEulerAngles(rotate);
     });

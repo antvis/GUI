@@ -14,6 +14,7 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
     style: {
       x: 0,
       y: 0,
+      visibility: 'visible',
       title: '',
       position: 'bottom-right',
       offset: [5, 5],
@@ -21,7 +22,7 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
       enterable: false,
       autoPosition: true,
       items: [],
-      throttleFrequency: 100,
+      throttleFrequency: 50,
       container: {
         x: 0,
         y: 0,
@@ -112,6 +113,7 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
 
   constructor(options: TooltipOptions) {
     super(deepMix({}, Tooltip.defaultOptions, options));
+    this.visibility = this.attributes.visibility;
     this.initShape();
     this.init();
   }
@@ -194,7 +196,6 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
     // 应用样式表
     const { style } = this.attributes;
     applyStyleSheet(container, style);
-
     this.element.style.visibility = this.visibility;
   }
 
