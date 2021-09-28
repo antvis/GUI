@@ -2,6 +2,7 @@ import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { LineCrosshair } from '../../../../src';
 import { createDiv } from '../../../utils';
+import { delay } from '../../../utils/delay';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -50,14 +51,15 @@ describe('line-crosshair', () => {
     expect(line.tagShape.attr('text')).toBe('new Text');
   });
 
-  test('setPointer', () => {
+  test('setPointer', async () => {
     line.setPointer([200, 200]);
+    await delay(100);
     // 水平移动只改变x坐标
     expect(line.attr('x')).toBe(200);
     expect(line.attr('y')).toBe(50);
   });
 
-  test('vertical', () => {
+  test('vertical', async () => {
     line.update({
       startPos: [50, 100],
       endPos: [400, 100],
@@ -69,8 +71,13 @@ describe('line-crosshair', () => {
     expect(line.crosshairShape.attr('path')).toStrictEqual([['M', 0, 0], ['L', 350, 0], ['Z']]);
 
     line.setPointer([200, 200]);
+    await delay(200);
     // 水平移动只改变x坐标
     expect(line.attr('x')).toBe(50);
     expect(line.attr('y')).toBe(200);
+  });
+
+  afterAll(() => {
+    line.destroy();
   });
 });

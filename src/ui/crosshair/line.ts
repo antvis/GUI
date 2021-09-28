@@ -57,11 +57,12 @@ export class LineCrosshair extends CrosshairBase<LineCrosshairCfg> {
     super.setPointer(pointer);
     const [x, y] = pointer;
     const [bx, by] = this.basePos;
-    this.setLocalPosition(this.getOrientVal([bx, y], [x, by]));
+    this.setPosition(this.getOrientVal([bx, y], [x, by]));
   }
 
   public setText(text: string) {
     this.tagShape.update({ text });
+    this.adjustLayout();
   }
 
   /**
