@@ -55,7 +55,7 @@ describe('line-crosshair', () => {
 
   test('setPointer', async () => {
     line.setPointer([200, 200]);
-    await delay(100);
+    await delay(20);
     // 水平移动只改变 x 坐标
     // @ts-ignore
     expect(line.shapesGroup.attr('x')).toBe(200);
@@ -78,7 +78,7 @@ describe('line-crosshair', () => {
     expect(line.crosshairShape.attr('path')).toStrictEqual([['M', 0, 0], ['L', 350, 0], ['Z']]);
 
     line.setPointer([240, 250]);
-    await delay(200);
+    await delay(20);
     // 水平移动只改变 y 坐标
     // @ts-ignore
     expect(line.shapesGroup.attr('x')).toBe(50);

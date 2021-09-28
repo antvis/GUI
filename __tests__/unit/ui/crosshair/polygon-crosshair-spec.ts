@@ -63,7 +63,7 @@ describe('polygon-crosshair', () => {
   test('setPointer', async () => {
     // 等效半径 100
     polygon.setPointer([200, 100]);
-    await delay(100);
+    await delay(20);
     // @ts-ignore
     const path = polygon.crosshairShape.attr('path');
     // @ts-ignore

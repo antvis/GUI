@@ -56,7 +56,7 @@ describe('circle-crosshair', () => {
   test('setPointer', async () => {
     // r = 100
     circle.setPointer([50, 150]);
-    await delay(100);
+    await delay(20);
     // @ts-ignore
     expect(circle.crosshairShape.attr('path')).toStrictEqual([
       ['M', -50, 50],
