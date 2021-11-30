@@ -43,7 +43,7 @@ describe('text', () => {
     const testText = 'test text test text';
     const han = '汉字测试文本';
 
-    expect(getEllipsisText(testText, 20, NEW_FONT_STYLE)).toBe('...');
+    expect(getEllipsisText(testText, 20, NEW_FONT_STYLE)).toBe('t...');
     expect(getEllipsisText(testText, 40, NEW_FONT_STYLE)).toBe('tes...');
     expect(getEllipsisText(testText, 60, NEW_FONT_STYLE)).toBe('test t...');
     expect(getEllipsisText(testText, 120, NEW_FONT_STYLE)).toBe('test text test t...');

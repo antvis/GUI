@@ -69,6 +69,7 @@ temp
 demos/assets/screenshots
 lib
 es
+esm
 
 *.sw*
 *.un~
