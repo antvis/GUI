@@ -68,7 +68,7 @@ temp
 .idea
 demos/assets/screenshots
 lib
-esm
+es
 
 *.sw*
 *.un~
