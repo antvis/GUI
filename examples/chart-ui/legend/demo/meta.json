@@ -93,6 +93,14 @@
       "screenshot": ""
     },
     {
+      "filename": "category-pageNavigator.ts",
+      "title": {
+        "zh": "分页器自定义",
+        "en": " PageNavigator custom"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "category-event.ts",
       "title": {
         "zh": "事件监听",
