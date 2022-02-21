@@ -61,4 +61,5 @@ export { LineCrosshair, CircleCrosshair, PolygonCrosshair } from './crosshair';
 export type { LineCrosshairOptions, CircleCrosshairOptions, PolygonCrosshairOptions } from './crosshair';
 export { Text } from './text';
 export type { TextCfg, TextOptions } from './text';
+
 // to be continued...
