@@ -92,6 +92,14 @@ module.exports = {
           en: 'Other UI',
         },
       },
+      {
+        slug: 'wip',
+        icon: 'other',
+        title: {
+          zh: '建设中',
+          en: 'Working in progress',
+        },
+      },
     ],
     docsearchOptions: {
       // apiKey: '0d19588d7661a81faa8b75f6ade80321',
