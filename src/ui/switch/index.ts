@@ -1,12 +1,12 @@
 import { Rect, Line } from '@antv/g';
 import { deepMix, isNil, omit, get, isPlainObject, assign, isFunction } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
-import { Tag } from '../tag';
+import { Tag, TagCfg } from '../tag';
 import { GUI } from '../../core/gui';
 import { getShapeSpace } from '../../util';
-import type { TagCfg } from '../tag/types';
-import type { GUIOption } from '../../types';
+import type { GUIOption, LabelProps } from '../../types';
 import type { SwitchCfg, SwitchOptions } from './types';
+import { SIZE_STYLE } from './constant';
 
 export type { SwitchCfg, SwitchOptions };
 
@@ -72,9 +72,8 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     style: {
       x: 0,
       y: 0,
-      size: 22,
+      size: 'default',
       spacing: 2,
-      textSpacing: 8,
       defaultChecked: true,
       style: {
         default: {
@@ -224,12 +223,13 @@ export class Switch extends GUI<Required<SwitchCfg>> {
 
   // size 转化为 style
   private updateSizeStyle() {
-    const size = Number(this.attributes.size) || (Switch.defaultOptions.style.size as number);
+    const { size } = this.attributes;
     const { width, height } = get(this.attributes, ['style', this.checked ? 'selected' : 'default']);
+    const defaultSizeStyle = get(SIZE_STYLE, [size, 'sizeStyle']);
     this.sizeStyle = {
-      width: width || size * 2,
-      height: height || size,
-      radius: height ? height / 2 : size / 2,
+      width: width || defaultSizeStyle.width,
+      height: height || defaultSizeStyle.height,
+      radius: height ? height / 2 : defaultSizeStyle.height / 2,
     };
   }
 
@@ -248,7 +248,18 @@ export class Switch extends GUI<Required<SwitchCfg>> {
   // 创建/更新/销毁 开关显示标签 Shape
   private updateCheckedChildrenShape() {
     ['checkedChildren', 'unCheckedChildren'].forEach((key, index) => {
-      const children = get(this.attributes, key) as TagCfg;
+      const childTag = get(this.attributes, key) as LabelProps;
+      if (!childTag) return;
+      const dftTextStyle = get(SIZE_STYLE, [this.attributes.size, 'textStyle']);
+      const dftMarkerStyle = get(SIZE_STYLE, [this.attributes.size, 'markerStyle']);
+      // 转换为 Tag 组件的配置
+      const children: TagCfg = {
+        ...childTag,
+        marker: assign({}, dftMarkerStyle, childTag.marker),
+        textStyle: {
+          default: assign({}, dftTextStyle, childTag.textStyle),
+        },
+      };
 
       if (!this.childrenShape[index]) {
         this.childrenShape[index] = new Tag({
@@ -258,7 +269,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       }
 
       const childrenShape = this.childrenShape[index];
-      const textSpacing = Number(this.attributes.textSpacing) || (Switch.defaultOptions.style.textSpacing as number);
+      const textSpacing = this.getTextSpacing();
 
       // children 为正常 对象 则更新
       if (isPlainObject(children)) {
@@ -328,6 +339,13 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     });
   }
 
+  /**
+   * 获取文本和边界的距离，默认取: 1/3 高度
+   */
+  private getTextSpacing(): number {
+    return Math.floor(this.sizeStyle.height / 3);
+  }
+
   // 获取背景Shape宽度  在有tag 和 无tag 的情况下是不同的
   private getShapeWidth() {
     const width = Number(get(this.attributes.style, [this.checked ? 'selected' : 'default', 'width']));
@@ -335,10 +353,10 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       return width;
     }
 
-    const textSpacing = Number(this.attributes.textSpacing) || (Switch.defaultOptions.style.textSpacing as number);
-    const childrenStyle = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
+    const textSpacing = this.getTextSpacing();
+    const hasChildTag = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
-    const childrenWidth = childrenStyle ? getShapeSpace(childrenShape)?.width + textSpacing - this.sizeStyle.height : 0;
+    const childrenWidth = hasChildTag ? getShapeSpace(childrenShape)?.width + textSpacing - this.sizeStyle.height : 0;
 
     return childrenWidth + this.sizeStyle.width;
   }
@@ -400,11 +418,11 @@ export class Switch extends GUI<Required<SwitchCfg>> {
         this.checked = checked || !this.checked;
         this.animateFlag = isNil(checked);
         this.nowFocus = true;
-        isFunction(onChange) && onChange(this.checked);
+        isFunction(onChange) && onChange(this.checked, e);
         this.updateShape();
         this.animateSiwtch();
       });
-      isFunction(onClick) && onClick(e, this.checked);
+      isFunction(onClick) && onClick(this.checked, e);
     });
   }
 

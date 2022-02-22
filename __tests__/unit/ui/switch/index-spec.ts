@@ -31,13 +31,12 @@ describe('switch', () => {
   canvas.appendChild(switchShape);
 
   test('basic switch', () => {
-    const { x, y, defaultChecked, spacing, textSpacing } = switchShape.attributes;
+    const { x, y, defaultChecked, spacing } = switchShape.attributes;
 
     expect(x).toBe(40);
     expect(y).toBe(50);
     expect(defaultChecked).toBe(false);
     expect(spacing).toBe(2);
-    expect(textSpacing).toBe(8);
     expect(switchShape.getChecked()).toBe(false);
     expect(get(switchShape, 'backgroundShape.attributes.fill')).toBe('#00000040');
     expect(get(switchShape, 'rectStrokeShape.attributes.stroke')).toBe('#00000040');
@@ -208,21 +207,23 @@ describe('switch', () => {
       height: 18,
       radius: 9,
     });
-    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(8);
+    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(7);
 
+    const size = 44;
+    const spacing = 4;
     childrenSwitchShape.update({
       checked: true,
-      spacing: 4,
-      textSpacing: 20,
+      spacing,
+      size,
     });
     expect(get(childrenSwitchShape, 'handleShape.attributes')).toMatchObject({
       x: 4,
       y: 4,
-      width: 14,
-      height: 14,
-      radius: 7,
+      width: size - spacing * 2,
+      height: size - spacing * 2,
+      radius: (size - spacing * 2) / 2,
     });
-    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(20);
+    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(Math.floor(size / 3));
 
     expect(get(childrenSwitchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('checkedChildren');
 
