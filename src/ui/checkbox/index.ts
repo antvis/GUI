@@ -1,9 +1,9 @@
-import { Rect, Path, PathCommand, PathStyleProps } from '@antv/g';
+import { Rect, Path, PathCommand, PathStyleProps, TextStyleProps } from '@antv/g';
 import { deepMix, get, isFunction, isNil } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Text, TextCfg } from '../text';
 import { GUI } from '../../core/gui';
-import type { GUIOption } from '../../types';
+import type { GUIOption, LabelProps } from '../../types';
 import type { CheckboxCfg, CheckboxOptions } from './types';
 
 export type { CheckboxCfg, CheckboxOptions };
@@ -16,6 +16,10 @@ const CHECKED_STROKE_COLOR = '#3471F9';
 const UNCHECKED_FILL_COLOR = '#ffffff';
 // unchecked边框颜色 默认
 const UNCHECKED_STROKE_COLOR = '#dadada';
+// hover填充颜色 默认
+const ACTIVE_FILL_COLOR = '#ffffff';
+// hover边框颜色 默认
+const ACTIVE_STROKE_COLOR = '#3471F9';
 
 // 默认文本样式
 const LABEL_TEXT_STYLE = {
@@ -24,7 +28,7 @@ const LABEL_TEXT_STYLE = {
   lineHeight: 16,
   textAlign: 'start',
   overflow: 'clip',
-} as TextCfg;
+} as LabelProps['textStyle'];
 
 const CHECKED_SHAPE_PATH = [
   ['M', 3, 6],
@@ -37,10 +41,34 @@ const CHECKED_SHAPE_STYLE = {
   stroke: '#ffffff',
 } as PathStyleProps;
 
-const CHECKBOX_RECT_STYLE = {
+const CHECKBOX_RECT_DEFAULT_STYLE = {
   width: 12,
   height: 12,
   radius: 2,
+  stroke: UNCHECKED_STROKE_COLOR,
+  lineWidth: 1,
+  fill: UNCHECKED_FILL_COLOR,
+  cursor: 'pointer',
+} as RectStyleProps;
+
+const CHECKBOX_RECT_ACTIVE_STYLE = {
+  width: 12,
+  height: 12,
+  radius: 2,
+  stroke: ACTIVE_STROKE_COLOR,
+  lineWidth: 1,
+  fill: ACTIVE_FILL_COLOR,
+  cursor: 'pointer',
+} as RectStyleProps;
+
+const CHECKBOX_RECT_SELECTED_STYLE = {
+  width: 12,
+  height: 12,
+  radius: 2,
+  stroke: CHECKED_STROKE_COLOR,
+  lineWidth: 1,
+  fill: CHECKED_FILL_COLOR,
+  cursor: 'pointer',
 } as RectStyleProps;
 
 export class Checkbox extends GUI<Required<CheckboxCfg>> {
@@ -69,22 +97,16 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     style: {
       x: 0,
       y: 0,
-      labelTextSpacing: 6,
+      label: {
+        text: '',
+        textStyle: LABEL_TEXT_STYLE,
+        spacing: 4,
+      },
       defaultChecked: false,
-      labelText: '',
       style: {
-        default: {
-          stroke: UNCHECKED_STROKE_COLOR,
-          lineWidth: 1,
-          fill: UNCHECKED_FILL_COLOR,
-          cursor: 'pointer',
-        },
-        selected: {
-          stroke: CHECKED_STROKE_COLOR,
-          lineWidth: 1,
-          fill: CHECKED_FILL_COLOR,
-          cursor: 'pointer',
-        },
+        default: CHECKBOX_RECT_DEFAULT_STYLE,
+        selected: CHECKBOX_RECT_SELECTED_STYLE,
+        active: CHECKBOX_RECT_ACTIVE_STYLE,
       },
     },
   };
@@ -131,7 +153,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
    * 初始化创建
    */
   private initShape() {
-    // 初始化创建checkbox 背景
+    // 初始化创建checkbox背景小方块
     this.checkboxBackgroundShape = this.createCheckboxBackgroundShape();
 
     this.checkedShape = this.createCheckedShape();
@@ -144,20 +166,18 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
 
   private createCheckboxBackgroundShape(): Rect {
     const { x, y, style, checked } = this.attributes;
-    let rectStyle: RectStyleProps = { x, y, ...CHECKBOX_RECT_STYLE };
-
-    if (checked) rectStyle = { ...rectStyle, ...style.selected };
-    else rectStyle = { ...rectStyle, ...style.default };
-
-    return new Rect({ style: rectStyle });
+    if (checked) return new Rect({ style: { ...(style.selected as RectStyleProps), x, y } });
+    return new Rect({ style: { ...(style.default as RectStyleProps), x, y } });
   }
 
   private createLabelShape(): Text {
-    const { labelTextSpacing, labelText } = this.attributes;
+    const {
+      label: { text, spacing, textStyle },
+    } = this.attributes;
     const { width } = this.checkboxBackgroundShape.attributes;
     return new Text({
       name: 'label',
-      style: { ...LABEL_TEXT_STYLE, text: labelText, x: width + labelTextSpacing },
+      style: { ...(textStyle as TextCfg), text, x: width + (spacing as number) },
     });
   }
 
@@ -181,10 +201,12 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   }
 
   private updateLabelShape() {
-    const { labelTextSpacing, labelText } = this.attributes;
+    const {
+      label: { text, spacing, textStyle },
+    } = this.attributes;
     const { width } = this.checkboxBackgroundShape.attributes;
-    this.labelShape.setAttribute('text', labelText);
-    this.labelShape.setAttribute('x', width + labelTextSpacing);
+    this.labelShape.setAttribute('text', text as string);
+    this.labelShape.setAttribute('x', width + (spacing as number));
   }
 
   private updateCheckboxShape() {
@@ -208,6 +230,30 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
 
   private bindEvents(): void {
     this.addClick();
+    this.addHover();
+  }
+
+  private addHover() {
+    this.checkboxBackgroundShape.addEventListener('mouseenter', () => {
+      if (this.checked) return;
+      const {
+        style: { active: activeStyle },
+      } = this.attributes;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key of Object.keys(activeStyle as object)) {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(activeStyle, key));
+      }
+    });
+    this.checkboxBackgroundShape.addEventListener('mouseleave', () => {
+      if (this.checked) return;
+      const {
+        style: { default: defaultStyle },
+      } = this.attributes;
+      // eslint-disable-next-line no-restricted-syntax
+      for (const key of Object.keys(defaultStyle as object)) {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(defaultStyle, key));
+      }
+    });
   }
 
   private addClick() {

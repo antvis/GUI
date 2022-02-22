@@ -1,13 +1,52 @@
-import type { DisplayObjectConfig, MixAttrs, RectProps } from '../../types';
+import type { DisplayObjectConfig, MixAttrs, RectProps, LabelProps } from '../../types';
 
 export type CheckboxCfg = {
+  /**
+   * @title x 坐标
+   * @description 局部坐标系下 x 轴坐标
+   */
   x?: number;
+  /**
+   * @title y 坐标
+   * @description 局部坐标系下 y 轴坐标
+   */
   y?: number;
-  labelTextSpacing?: number; // label文本与checkbox的间距
-  style?: MixAttrs<Partial<RectProps>>; // selected的样式与unselected样式
+  /**
+   * @title 是否选中
+   * @description 指定当前是否选中
+   */
   checked?: boolean;
-  labelText?: string; // label
+  /**
+   * @title 是否禁用
+   * @description 指定当前是否禁用
+   */
+  disabled?: boolean;
+  /**
+   * @title label chebox间距
+   * @description label与chebox的方块的间距
+   * @default 2
+   */
+  spacing?: number;
+  /**
+   * @title 初始是否选中
+   * @description 指定组件的初始状态，是否选中
+   * @default true
+   */
   defaultChecked?: boolean;
+  /**
+   * @title 样式
+   * @description 可设置组件的默认样式（default），选中样式（selected）以及禁用样式（disabled)
+   */
+  label?: LabelProps;
+  /**
+   * @title checkbox的方块样式
+   * @description checkbox的方块样式
+   */
+  style?: MixAttrs<Partial<RectProps>>;
+  /**
+   * @title 变化时回调函数
+   * @description 变化时回调函数
+   */
   onChange?: (checked: boolean) => void;
 };
 

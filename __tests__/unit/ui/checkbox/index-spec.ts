@@ -22,22 +22,26 @@ describe('checkbox', () => {
       style: {
         x: 50,
         y: 10,
-        labelText: 'label text',
-        labelTextSpacing: 6,
+        label: { text: 'label text' },
       },
     });
     canvas.appendChild(checkbox);
-    const { x, y, labelText, labelTextSpacing, checked } = checkbox.attributes;
+    const {
+      x,
+      y,
+      label: { text, spacing },
+      checked,
+    } = checkbox.attributes;
     expect(checkbox.getPosition()[0]).toBe(50);
     expect(checkbox.getPosition()[1]).toBe(10);
     expect(x).toBe(50);
     expect(y).toBe(10);
-    expect(labelText).toBe('label text');
-    expect(labelTextSpacing).toBe(6);
+    expect(text).toBe('label text');
+    expect(spacing).toBe(4);
     expect(checked).toBe(false);
     const { label } = checkbox;
     const labelX = label.getAttribute('x');
-    expect(labelX).toBe(18);
+    expect(labelX).toBe(16);
   });
 
   test('check', async () => {
@@ -45,7 +49,7 @@ describe('checkbox', () => {
       style: {
         x: 10,
         y: 20,
-        labelText: 'label text',
+        label: { text: 'label text' },
         style: {
           default: {
             fill: '#ffefff',
