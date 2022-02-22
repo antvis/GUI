@@ -74,7 +74,6 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       y: 0,
       size: 22,
       spacing: 2,
-      textSpacing: 8,
       defaultChecked: true,
       style: {
         default: {
@@ -258,7 +257,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       }
 
       const childrenShape = this.childrenShape[index];
-      const textSpacing = Number(this.attributes.textSpacing) || (Switch.defaultOptions.style.textSpacing as number);
+      const textSpacing = this.getTextSpacing();
 
       // children 为正常 对象 则更新
       if (isPlainObject(children)) {
@@ -328,6 +327,13 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     });
   }
 
+  /**
+   * 获取文本和边界的距离，默认取: 1/3 高度
+   */
+  private getTextSpacing(): number {
+    return Math.floor(this.sizeStyle.height / 3);
+  }
+
   // 获取背景Shape宽度  在有tag 和 无tag 的情况下是不同的
   private getShapeWidth() {
     const width = Number(get(this.attributes.style, [this.checked ? 'selected' : 'default', 'width']));
@@ -335,7 +341,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       return width;
     }
 
-    const textSpacing = Number(this.attributes.textSpacing) || (Switch.defaultOptions.style.textSpacing as number);
+    const textSpacing = this.getTextSpacing();
     const childrenStyle = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
     const childrenWidth = childrenStyle ? getShapeSpace(childrenShape)?.width + textSpacing - this.sizeStyle.height : 0;
@@ -400,11 +406,11 @@ export class Switch extends GUI<Required<SwitchCfg>> {
         this.checked = checked || !this.checked;
         this.animateFlag = isNil(checked);
         this.nowFocus = true;
-        isFunction(onChange) && onChange(this.checked);
+        isFunction(onChange) && onChange(this.checked, e);
         this.updateShape();
         this.animateSiwtch();
       });
-      isFunction(onClick) && onClick(e, this.checked);
+      isFunction(onClick) && onClick(this.checked, e);
     });
   }
 
