@@ -55,7 +55,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   }
 
   public init(): void {
-    this.initChecked(); // 初始化checked
+    this.initChecked(); // 初始化 checked
     this.initShape(); // 初始化组件
     this.bindEvents(); // 添加交互
   }
