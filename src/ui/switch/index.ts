@@ -1,19 +1,11 @@
 import { Rect, Line } from '@antv/g';
 import { deepMix, isNil, omit, get, isPlainObject, assign, isFunction } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
-<<<<<<< HEAD
 import { Tag, TagStyleProps } from '../tag';
 import { GUI } from '../../core/gui';
 import { getShapeSpace } from '../../util';
 import type { GUIOption } from '../../types';
 import type { SwitchStyleProps, SwitchOptions } from './types';
-=======
-import { Tag, TagCfg } from '../tag';
-import { GUI } from '../../core/gui';
-import { getShapeSpace } from '../../util';
-import type { GUIOption, LabelProps } from '../../types';
-import type { SwitchCfg, SwitchOptions } from './types';
->>>>>>> 42449bc (refactor(switch): 改造 switch 组件，添加类型注释 & 移除不需要的配置属性 (#109))
 import { SIZE_STYLE } from './constant';
 
 export type { SwitchStyleProps, SwitchOptions };
