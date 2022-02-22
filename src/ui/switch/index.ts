@@ -255,7 +255,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
       // 转换为 Tag 组件的配置
       const children: TagCfg = {
         ...childTag,
-        marker: assign({}, dftMarkerStyle, childTag.marker),
+        marker: childTag.marker && assign({}, dftMarkerStyle, childTag.marker),
         textStyle: {
           default: assign({}, dftTextStyle, childTag.textStyle),
         },
