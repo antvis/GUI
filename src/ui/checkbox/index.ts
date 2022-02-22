@@ -3,73 +3,11 @@ import { deepMix, get, isFunction, isNil } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Text, TextCfg } from '../text';
 import { GUI } from '../../core/gui';
-import type { GUIOption, LabelProps } from '../../types';
+import type { GUIOption } from '../../types';
 import type { CheckboxCfg, CheckboxOptions } from './types';
+import { LABEL_TEXT_STYLE, CHECKBOX_RECT_STYLE } from './constant';
 
 export type { CheckboxCfg, CheckboxOptions };
-
-// checked 填充颜色 默认
-const CHECKED_FILL_COLOR = '#3471F9';
-// checked 边框颜色 默认
-const CHECKED_STROKE_COLOR = '#3471F9';
-// unchecked 填充颜色 默认
-const UNCHECKED_FILL_COLOR = '#ffffff';
-// unchecked 边框颜色 默认
-const UNCHECKED_STROKE_COLOR = '#dadada';
-// hover 填充颜色 默认
-const ACTIVE_FILL_COLOR = '#ffffff';
-// hover 边框颜色 默认
-const ACTIVE_STROKE_COLOR = '#3471F9';
-
-// 默认文本样式
-const LABEL_TEXT_STYLE = {
-  fontColor: 'rgba(0,0,0,0.45)',
-  fontSize: 10,
-  lineHeight: 16,
-  textAlign: 'start',
-  overflow: 'clip',
-} as LabelProps['textStyle'];
-
-const CHECKED_SHAPE_PATH = [
-  ['M', 3, 6],
-  ['L', '5', '8.5'],
-  ['L', '8.5', '4'],
-] as PathCommand[];
-
-const CHECKED_SHAPE_STYLE = {
-  path: CHECKED_SHAPE_PATH,
-  stroke: '#ffffff',
-} as PathStyleProps;
-
-const CHECKBOX_RECT_DEFAULT_STYLE = {
-  width: 12,
-  height: 12,
-  radius: 2,
-  stroke: UNCHECKED_STROKE_COLOR,
-  lineWidth: 1,
-  fill: UNCHECKED_FILL_COLOR,
-  cursor: 'pointer',
-} as RectStyleProps;
-
-const CHECKBOX_RECT_ACTIVE_STYLE = {
-  width: 12,
-  height: 12,
-  radius: 2,
-  stroke: ACTIVE_STROKE_COLOR,
-  lineWidth: 1,
-  fill: ACTIVE_FILL_COLOR,
-  cursor: 'pointer',
-} as RectStyleProps;
-
-const CHECKBOX_RECT_SELECTED_STYLE = {
-  width: 12,
-  height: 12,
-  radius: 2,
-  stroke: CHECKED_STROKE_COLOR,
-  lineWidth: 1,
-  fill: CHECKED_FILL_COLOR,
-  cursor: 'pointer',
-} as RectStyleProps;
 
 export class Checkbox extends GUI<Required<CheckboxCfg>> {
   /**
@@ -104,9 +42,9 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       },
       defaultChecked: false,
       style: {
-        default: CHECKBOX_RECT_DEFAULT_STYLE,
-        selected: CHECKBOX_RECT_SELECTED_STYLE,
-        active: CHECKBOX_RECT_ACTIVE_STYLE,
+        default: CHECKBOX_RECT_STYLE.default,
+        selected: CHECKBOX_RECT_STYLE.selected,
+        active: CHECKBOX_RECT_STYLE.active,
       },
     },
   };
@@ -182,6 +120,17 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   }
 
   private createCheckedShape(): Path {
+    const CHECKED_SHAPE_PATH = [
+      ['M', 3, 6],
+      ['L', '5', '8.5'],
+      ['L', '8.5', '4'],
+    ] as PathCommand[];
+
+    const CHECKED_SHAPE_STYLE = {
+      path: CHECKED_SHAPE_PATH,
+      stroke: '#ffffff',
+    } as PathStyleProps;
+
     const checkedShape = new Path({ style: CHECKED_SHAPE_STYLE });
     checkedShape.setAttribute('visibility', 'hidden');
     return checkedShape;
@@ -214,16 +163,14 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.checked = checked;
     const { selected: selectedStyle, default: defaultStyle } = style;
     if (checked) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of Object.keys(selectedStyle as object)) {
+      Object.keys(selectedStyle as object).forEach((key) => {
         this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(selectedStyle, key));
-      }
+      });
       this.checkedShape.setAttribute('visibility', 'visible');
     } else {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of Object.keys(defaultStyle as object)) {
+      Object.keys(selectedStyle as object).forEach((key) => {
         this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(defaultStyle, key));
-      }
+      });
       this.checkedShape.setAttribute('visibility', 'hidden');
     }
   }
@@ -239,20 +186,18 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       const {
         style: { active: activeStyle },
       } = this.attributes;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of Object.keys(activeStyle as object)) {
+      Object.keys(activeStyle as object).forEach((key) => {
         this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(activeStyle, key));
-      }
+      });
     });
     this.checkboxBackgroundShape.addEventListener('mouseleave', () => {
       if (this.checked) return;
       const {
         style: { default: defaultStyle },
       } = this.attributes;
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of Object.keys(defaultStyle as object)) {
+      Object.keys(defaultStyle as object).forEach((key) => {
         this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(defaultStyle, key));
-      }
+      });
     });
   }
 
