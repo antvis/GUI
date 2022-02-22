@@ -1,5 +1,5 @@
-import type { TagCfg } from '../tag/types';
 import type { DisplayObjectConfig, MixAttrs, RectProps } from '../../types';
+import type { LabelProps } from '../../types/compose';
 
 export type SwitchCfg = {
   /**
@@ -14,10 +14,10 @@ export type SwitchCfg = {
   y?: number;
   /**
    * @title 大小
-   * @description switch 开关组件大小。组件的高度等于 size，宽度默认等于 size * 2，会随着内部的子元素大小自动调整。
-   * @default 22
+   * @description switch 开关组件大小。默认为: default, 高度大小等于 22px，宽度默认等于高度的两倍，会随着内部的子元素大小自动调整。
+   * @default 'default'
    */
-  size?: number;
+  size?: 'default' | 'small' | 'mini';
   /**
    * @title 是否选中
    * @description 指定当前是否选中
@@ -42,14 +42,14 @@ export type SwitchCfg = {
   defaultChecked?: boolean;
   /**
    * @title 选中时的内容
-   * @description 选中时的内容。可以设置一个 Tag 组件类型，自定义文本和图标
+   * @description 选中时的内容。可以自定义文本和图标
    */
-  checkedChildren?: TagCfg;
+  checkedChildren?: LabelProps;
   /**
    * @title 非选中时的内容
-   * @description 选中时的内容。可以设置一个 Tag 组件类型，自定义文本和图标
+   * @description 选中时的内容。可以自定义文本和图标
    */
-  unCheckedChildren?: TagCfg;
+  unCheckedChildren?: LabelProps;
   /**
    * @title 样式
    * @description 可设置组件的默认样式（default）和选中样式（selected）

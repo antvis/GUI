@@ -1,4 +1,5 @@
 export * from './dependency';
+export * from './compose';
 export type { MixAttrs, StyleState } from './styles';
 
 export type GUIOption<C> = {

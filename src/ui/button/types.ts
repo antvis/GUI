@@ -5,14 +5,24 @@ import type { DisplayObjectConfig, MixAttrs, TextProps, RectProps } from '../../
 export type IMarkerCfg = Omit<MarkerCfg, 'symbol'>;
 
 export type ButtonCfg = {
+  /**
+   * @title x 坐标
+   * @description 局部坐标系下 x 轴坐标
+   */
   x?: number;
+  /**
+   * @title y 坐标
+   * @description 局部坐标系下 y 轴坐标
+   */
   y?: number;
   /**
-   * 按钮类型
+   * @title 类型
+   * @description 按钮类型
    */
   type?: 'primary' | 'dashed' | 'link' | 'text' | 'default';
   /**
-   * 按钮尺寸
+   * @title 大小
+   * @description 按钮大小尺寸
    */
   size?: 'small' | 'middle' | 'large';
   /**
