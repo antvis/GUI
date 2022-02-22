@@ -4,7 +4,7 @@ import type { RectStyleProps } from '@antv/g';
 import { Tag, TagCfg } from '../tag';
 import { GUI } from '../../core/gui';
 import { getShapeSpace } from '../../util';
-import type { GUIOption, LabelProps } from '../../types';
+import type { GUIOption } from '../../types';
 import type { SwitchCfg, SwitchOptions } from './types';
 import { SIZE_STYLE } from './constant';
 
@@ -248,7 +248,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
   // 创建/更新/销毁 开关显示标签 Shape
   private updateCheckedChildrenShape() {
     ['checkedChildren', 'unCheckedChildren'].forEach((key, index) => {
-      const childTag = get(this.attributes, key) as LabelProps;
+      const childTag = get(this.attributes, key) as SwitchCfg['checkedChildren'];
       if (!childTag) return;
       const dftTextStyle = get(SIZE_STYLE, [this.attributes.size, 'textStyle']);
       const dftMarkerStyle = get(SIZE_STYLE, [this.attributes.size, 'markerStyle']);

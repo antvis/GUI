@@ -1,5 +1,5 @@
-import type { DisplayObjectConfig, MixAttrs, RectProps } from '../../types';
-import type { LabelProps } from '../../types/compose';
+import type { DisplayObjectConfig, MixAttrs, RectProps, LabelProps } from '../../types';
+import type { MarkerCfg } from '../marker/types';
 
 export type SwitchCfg = {
   /**
@@ -44,12 +44,24 @@ export type SwitchCfg = {
    * @title 选中时的内容
    * @description 选中时的内容。可以自定义文本和图标
    */
-  checkedChildren?: LabelProps;
+  checkedChildren?: LabelProps & {
+    /**
+     * @title 图标
+     * @description 标签文本前缀的图标
+     */
+    marker?: MarkerCfg;
+  };
   /**
    * @title 非选中时的内容
    * @description 选中时的内容。可以自定义文本和图标
    */
-  unCheckedChildren?: LabelProps;
+  unCheckedChildren?: LabelProps & {
+    /**
+     * @title 图标
+     * @description 标签文本前缀的图标
+     */
+    marker?: MarkerCfg;
+  };
   /**
    * @title 样式
    * @description 可设置组件的默认样式（default）和选中样式（selected）

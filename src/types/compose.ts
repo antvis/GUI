@@ -1,8 +1,6 @@
 /**
  * @file 有原子、或分子组件 组合的分子组件 相关类型定义
  */
-
-import { TagCfg } from '../ui/tag/types';
 import { TextProps } from './dependency';
 
 /**
@@ -16,15 +14,15 @@ export type LabelProps = {
    * @title 文本内容
    * @description 展示的标签文本
    */
-  text?: TagCfg['text'];
+  text?: string;
   /**
    * @title 文本样式
    * @description 文本样式设置，可以调整文本 fontSize、lineHeight 等，详细见: G5.0 Text 文本额外属性配置
    */
   textStyle?: Omit<TextProps, 'text'>;
   /**
-   * @title 图标
-   * @description 标签文本前缀的图标
+   * @title 间距
+   * @description text 和相邻元素之间的间距，默认为: 4px（根据实际应用，决定在什么场景下生效）
    */
-  marker?: TagCfg['marker'];
+  spacing?: number;
 };
