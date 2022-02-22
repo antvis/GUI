@@ -22,8 +22,8 @@ export type CheckboxCfg = {
    */
   disabled?: boolean;
   /**
-   * @title label chebox间距
-   * @description label与chebox的方块的间距
+   * @title label chebox 间距
+   * @description label 与 chebox 的方块的间距
    * @default 2
    */
   spacing?: number;
@@ -39,8 +39,8 @@ export type CheckboxCfg = {
    */
   label?: LabelProps;
   /**
-   * @title checkbox的方块样式
-   * @description checkbox的方块样式
+   * @title checkbox 的方块样式
+   * @description checkbox 的方块样式
    */
   style?: MixAttrs<Partial<RectProps>>;
   /**

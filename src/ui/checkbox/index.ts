@@ -8,17 +8,17 @@ import type { CheckboxCfg, CheckboxOptions } from './types';
 
 export type { CheckboxCfg, CheckboxOptions };
 
-// checked填充颜色 默认
+// checked 填充颜色 默认
 const CHECKED_FILL_COLOR = '#3471F9';
-// checked边框颜色 默认
+// checked 边框颜色 默认
 const CHECKED_STROKE_COLOR = '#3471F9';
-// unchecked填充颜色 默认
+// unchecked 填充颜色 默认
 const UNCHECKED_FILL_COLOR = '#ffffff';
-// unchecked边框颜色 默认
+// unchecked 边框颜色 默认
 const UNCHECKED_STROKE_COLOR = '#dadada';
-// hover填充颜色 默认
+// hover 填充颜色 默认
 const ACTIVE_FILL_COLOR = '#ffffff';
-// hover边框颜色 默认
+// hover 边框颜色 默认
 const ACTIVE_STROKE_COLOR = '#3471F9';
 
 // 默认文本样式
@@ -77,10 +77,10 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
    */
   public static tag = 'checkbox';
 
-  /**  checkbox的背景方框组件 */
+  /**  checkbox 的背景方框组件 */
   private checkboxBackgroundShape!: Rect;
 
-  /** checkbox checked时的✅ */
+  /** checkbox checked 时的✅ */
   private checkedShape!: Path;
 
   /** label 组件 */
@@ -153,7 +153,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
    * 初始化创建
    */
   private initShape() {
-    // 初始化创建checkbox背景小方块
+    // 初始化创建 checkbox 背景小方块
     this.checkboxBackgroundShape = this.createCheckboxBackgroundShape();
 
     this.checkedShape = this.createCheckedShape();
@@ -187,7 +187,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     return checkedShape;
   }
 
-  // 初始化checked 和 defaultChecked
+  // 初始化 checked 和 defaultChecked
   private initChecked() {
     const { defaultChecked, checked } = this.attributes;
     this.checked = !!(isNil(checked) ? defaultChecked : checked);
