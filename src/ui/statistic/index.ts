@@ -1,5 +1,6 @@
 import { deepMix } from '@antv/util';
 import { Rect } from '@antv/g';
+import { assign } from 'fecha';
 import { GUI } from '../../core/gui';
 import { Tag } from '../tag';
 import { getStateStyle as getStyle } from '../../util';
@@ -35,38 +36,16 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
       title: {
         // 标题
         text: '',
-        /** 内边距 置 0 */
-        padding: 0,
         textStyle: {
-          default: {
-            fontSize: 14,
-            fill: 'rgba(0, 0, 0, 0.45)',
-          },
-        },
-        /** 默认不要背景 */
-        backgroundStyle: {
-          default: {
-            fill: 'transparent',
-            lineWidth: 0,
-          },
+          fontSize: 14,
+          fill: 'rgba(0, 0, 0, 0.45)',
         },
       },
       value: {
         text: '',
-        /** 内边距 置 0 */
-        padding: 0,
         textStyle: {
-          default: {
-            fontSize: 24,
-            fill: 'rgba(0, 0, 0, 0.85)',
-          },
-        },
-        /** 默认不要背景 */
-        backgroundStyle: {
-          default: {
-            fill: 'transparent',
-            lineWidth: 0,
-          },
+          fontSize: 24,
+          fill: 'rgba(0, 0, 0, 0.85)',
         },
       },
       spacing: 5,
@@ -101,11 +80,11 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
   private initShape() {
     this.titleShape = new Tag({
       name: 'title',
-      style: Statistic.defaultOptions.style.title,
+      style: this.getTitleShapeCfg(),
     });
     this.valueShape = new Tag({
       name: 'value',
-      style: Statistic.defaultOptions.style.value,
+      style: this.getValueShapeCfg(),
     });
     this.backgroundShape = new Rect({ name: 'background' });
     this.backgroundShape.appendChild(this.titleShape);
@@ -131,6 +110,15 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
     return {
       text: '',
       ...title,
+      textStyle: assign({}, { default: title?.textStyle }),
+      /** 默认不要背景 */
+      backgroundStyle: {
+        default: {
+          fill: 'transparent',
+          lineWidth: 0,
+        },
+      },
+      padding: 0,
       x: 0,
       y: 0,
     };
@@ -153,6 +141,15 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
     return {
       text: '',
       ...value,
+      textStyle: assign({}, { default: value?.textStyle }),
+      /** 默认不要背景 */
+      backgroundStyle: {
+        default: {
+          fill: 'transparent',
+          lineWidth: 0,
+        },
+      },
+      padding: 0,
       x: valueX,
       y: valueY, // title 文本高度 + spacing 上下间距
     };
