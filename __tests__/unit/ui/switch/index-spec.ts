@@ -2,6 +2,7 @@ import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { get } from '@antv/util';
 import { Switch } from '../../../../src';
+import { SIZE_STYLE } from '../../../../src/ui/switch/constant';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -54,42 +55,37 @@ describe('switch', () => {
 
   test('size switch', () => {
     expect(get(switchShape, 'backgroundShape.attributes')).toMatchObject({
-      width: 44,
-      height: 22,
+      ...SIZE_STYLE.default.sizeStyle,
       radius: 11,
     });
     expect(get(switchShape, 'handleShape.attributes.width')).toBe(18);
 
     switchShape.update({
       defaultChecked: false,
-      size: 16,
+      size: 'small',
     });
 
     expect(get(switchShape, 'backgroundShape.attributes')).toMatchObject({
-      width: 32,
-      height: 16,
+      ...SIZE_STYLE.small.sizeStyle,
       radius: 8,
     });
     expect(get(switchShape, 'sizeStyle')).toEqual({
-      width: 32,
-      height: 16,
+      ...SIZE_STYLE.small.sizeStyle,
       radius: 8,
     });
 
     switchShape.update({
       defaultChecked: false,
-      size: 0,
+      size: 'mini',
     });
 
     expect(get(switchShape, 'backgroundShape.attributes')).toMatchObject({
-      width: 44,
-      height: 22,
-      radius: 11,
+      ...SIZE_STYLE.mini.sizeStyle,
+      radius: 7,
     });
     expect(get(switchShape, 'sizeStyle')).toEqual({
-      width: 44,
-      height: 22,
-      radius: 11,
+      ...SIZE_STYLE.mini.sizeStyle,
+      radius: 7,
     });
   });
 
@@ -209,21 +205,19 @@ describe('switch', () => {
     });
     expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(7);
 
-    const size = 44;
     const spacing = 4;
     childrenSwitchShape.update({
       checked: true,
       spacing,
-      size,
     });
     expect(get(childrenSwitchShape, 'handleShape.attributes')).toMatchObject({
       x: 4,
       y: 4,
-      width: size - spacing * 2,
-      height: size - spacing * 2,
-      radius: (size - spacing * 2) / 2,
+      width: 22 - spacing * 2,
+      height: 22 - spacing * 2,
+      radius: (22 - spacing * 2) / 2,
     });
-    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(Math.floor(size / 3));
+    expect(get(childrenSwitchShape, ['childrenShape', '0', 'attributes', 'x'])).toBe(Math.floor(22 / 3));
 
     expect(get(childrenSwitchShape, ['backgroundShape', 'children', '1', 'config', 'name'])).toBe('checkedChildren');
 
