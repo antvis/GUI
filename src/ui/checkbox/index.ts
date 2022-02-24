@@ -1,4 +1,4 @@
-import { Rect, Path, PathCommand, PathStyleProps, TextStyleProps } from '@antv/g';
+import { Rect, Path, PathCommand, PathStyleProps, TextStyleProps, AABB } from '@antv/g';
 import { deepMix, get, isFunction, isNil } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Text, TextCfg } from '../text';
@@ -58,6 +58,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.initChecked(); // 初始化 checked
     this.initShape(); // 初始化组件
     this.bindEvents(); // 添加交互
+    this.verticalCenter(); // 垂直居中
   }
 
   /**
@@ -66,6 +67,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   public update(cfg?: Partial<CheckboxCfg>) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.updateShape();
+    this.verticalCenter(); // 垂直居中
   }
 
   /**
@@ -209,5 +211,19 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       this.updateShape();
       isFunction(onChange) && onChange(this.checked);
     });
+  }
+
+  private verticalCenter() {
+    const { height } = this.checkboxBackgroundShape.attributes;
+    const { lineHeight: labelHeight } = this.labelShape.attributes;
+    this.labelShape.setAttribute('y', (height - (labelHeight as number)) / 2);
+  }
+
+  public get labelBounds() {
+    return this.labelShape.getBounds() as AABB;
+  }
+
+  public get checkboxBounds() {
+    return this.checkboxBackgroundShape.getBounds() as AABB;
   }
 }

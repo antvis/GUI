@@ -75,4 +75,25 @@ describe('checkbox', () => {
     checked = checkbox.attributes.checked;
     expect(checked).toBe(true);
   });
+  test('vertical center', () => {
+    const checkbox = new Checkbox({
+      style: {
+        x: 50,
+        y: 10,
+        label: { text: 'label text' },
+      },
+    });
+    canvas.appendChild(checkbox);
+
+    const {
+      center: [, checkboxY],
+      halfExtents: [, checkboxHeight],
+    } = checkbox.checkboxBounds;
+    const {
+      center: [, labelY],
+      halfExtents: [, labelHeight],
+    } = checkbox.labelBounds;
+
+    expect((checkboxY - labelY) * 2).toBeCloseTo(checkboxHeight - labelHeight, 4);
+  });
 });
