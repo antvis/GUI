@@ -106,7 +106,7 @@
     "testEnvironment": "jest-electron/environment",
     "testTimeout": 30000,
     "preset": "ts-jest",
-    "collectCoverage": true,
+    "collectCoverage": false,
     "testRegex": "/__tests__/.*-spec\\.ts?$",
     "setupFilesAfterEnv": [
       "./jest.setup.js"
