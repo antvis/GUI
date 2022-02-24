@@ -64,5 +64,8 @@ export type { TextCfg, TextOptions } from './text';
 export { Checkbox } from './checkbox';
 export type { CheckboxOptions } from './checkbox';
 export { Poptip, getPositionXY } from './poptip';
-export type { PoptipCfg, PoptipOptions } from './poptip';
+export type { PoptipCfg, PoptipOptions } from './poptip/types';
+// author by [visiky](https://github.com/visiky)
+export { Toolbox } from './toolbox';
+export type { ToolboxCfg, ToolboxOptions } from './toolbox/types';
 // to be continued...
