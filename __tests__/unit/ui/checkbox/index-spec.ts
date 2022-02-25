@@ -20,7 +20,7 @@ describe('checkbox', () => {
   test('basic', async () => {
     const checkbox = new Checkbox({
       style: {
-        x: 50,
+        x: 20,
         y: 10,
         label: { text: 'label text' },
       },
@@ -32,9 +32,9 @@ describe('checkbox', () => {
       label: { text, spacing },
       checked,
     } = checkbox.attributes;
-    expect(checkbox.getPosition()[0]).toBe(50);
+    expect(checkbox.getPosition()[0]).toBe(20);
     expect(checkbox.getPosition()[1]).toBe(10);
-    expect(x).toBe(50);
+    expect(x).toBe(20);
     expect(y).toBe(10);
     expect(text).toBe('label text');
     expect(spacing).toBe(4);
@@ -47,8 +47,8 @@ describe('checkbox', () => {
   test('check', async () => {
     const checkbox = new Checkbox({
       style: {
-        x: 10,
-        y: 20,
+        x: 20,
+        y: 30,
         label: { text: 'label text' },
         style: {
           default: {
@@ -78,13 +78,12 @@ describe('checkbox', () => {
   test('vertical center', () => {
     const checkbox = new Checkbox({
       style: {
-        x: 50,
-        y: 10,
+        x: 20,
+        y: 50,
         label: { text: 'label text' },
       },
     });
     canvas.appendChild(checkbox);
-
     const {
       center: [, checkboxY],
       halfExtents: [, checkboxHeight],
@@ -95,5 +94,17 @@ describe('checkbox', () => {
     } = checkbox.labelBounds;
 
     expect((checkboxY - labelY) * 2).toBeCloseTo(checkboxHeight - labelHeight, 4);
+  });
+  test('disabled', () => {
+    const checkbox = new Checkbox({
+      style: {
+        x: 20,
+        y: 70,
+        label: { text: 'label text' },
+        disabled: true,
+      },
+    });
+    canvas.appendChild(checkbox);
+    expect(checkbox.getAttribute('disabled')).toBe(true);
   });
 });

@@ -38,4 +38,13 @@ export const CHECKBOX_RECT_STYLE = {
     fill: '#3471F9',
     cursor: 'pointer',
   } as RectStyleProps,
+  disabled: {
+    width: 12,
+    height: 12,
+    radius: 2,
+    stroke: '#d9d9d9',
+    lineWidth: 1,
+    fill: '#f5f5f5',
+    cursor: 'no-drop',
+  } as RectStyleProps,
 };
