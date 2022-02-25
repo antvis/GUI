@@ -105,6 +105,15 @@ describe('checkbox', () => {
       },
     });
     canvas.appendChild(checkbox);
+    const {
+      style: { fill, stroke },
+    } = checkbox.checkbox;
+    const {
+      style: { fontColor },
+    } = checkbox.label;
     expect(checkbox.getAttribute('disabled')).toBe(true);
+    expect(fill).toBe('#f5f5f5');
+    expect(stroke).toBe('#d9d9d9');
+    expect(fontColor).toBe('rgba(0,0,0,0.25)');
   });
 });

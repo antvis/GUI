@@ -1,5 +1,5 @@
-import { Rect, Path, PathCommand, PathStyleProps, TextStyleProps, AABB } from '@antv/g';
-import { deepMix, get, isFunction, isNil } from '@antv/util';
+import { Rect, Path, PathCommand, PathStyleProps, AABB } from '@antv/g';
+import { deepMix, isFunction, isNil } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Text, TextCfg } from '../text';
 import { GUI } from '../../core/gui';
@@ -91,6 +91,10 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     return this.labelShape;
   }
 
+  public get checkbox() {
+    return this.checkboxBackgroundShape;
+  }
+
   /**
    * 初始化创建
    */
@@ -107,16 +111,16 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
 
   private createCheckboxBackgroundShape(): Rect {
     const { x, y, style, checked, disabled } = this.attributes;
-    if (disabled)
-      return new Rect({
-        style: { ...(style.disabled as RectStyleProps), x, y },
-      });
-    if (checked)
-      return new Rect({
-        style: { ...(style.selected as RectStyleProps), x, y },
-      });
+    let styles = style.default;
+
+    if (disabled) {
+      styles = style.disabled;
+    } else if (checked) {
+      styles = style.selected;
+    }
+
     return new Rect({
-      style: { ...(style.default as RectStyleProps), x, y },
+      style: { ...(styles as RectStyleProps), x, y },
     });
   }
 
@@ -186,9 +190,9 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     const { width } = this.checkboxBackgroundShape.attributes;
     this.labelShape.setAttribute('text', text as string);
     this.labelShape.setAttribute('x', width + (spacing as number));
-    Object.keys(textStyle as object).forEach((key) => {
-      this.labelShape.setAttribute(key as keyof TextCfg, get(textStyle, key));
-    });
+    Object.entries(textStyle || {}).forEach(([key, value]) =>
+      this.labelShape.setAttribute(key as keyof TextCfg, value as any)
+    );
     if (disabled) {
       this.labelShape.update({ fontColor: 'rgba(0,0,0,0.25)' });
     }
@@ -199,29 +203,28 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.checked = checked;
     const { selected: selectedStyle, default: defaultStyle, disabled: disabledStyle } = style;
     if (disabled) {
-      Object.keys(disabledStyle as object).forEach((key) => {
-        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(disabledStyle, key));
+      Object.entries(disabledStyle || {}).forEach(([key, value]) => {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, value as any);
       });
       return;
     }
     if (checked) {
-      Object.keys(selectedStyle as object).forEach((key) => {
-        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(selectedStyle, key));
+      Object.entries(selectedStyle || {}).forEach(([key, value]) => {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, value as any);
       });
       this.checkedShape.setAttribute('visibility', 'visible');
     } else {
-      Object.keys(selectedStyle as object).forEach((key) => {
-        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(defaultStyle, key));
+      Object.entries(defaultStyle || {}).forEach(([key, value]) => {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, value as any);
       });
       this.checkedShape.setAttribute('visibility', 'hidden');
     }
   }
 
   private bindEvents(): void {
-    if (!this.attributes.disabled) {
-      this.addClick();
-      this.addHover();
-    }
+    if (this.attributes.disabled) return;
+    this.addClick();
+    this.addHover();
   }
 
   private removeEvents() {
@@ -234,8 +237,8 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       const {
         style: { active: activeStyle },
       } = this.attributes;
-      Object.keys(activeStyle as object).forEach((key) => {
-        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(activeStyle, key));
+      Object.entries(activeStyle || {}).forEach(([key, value]) => {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, value as any);
       });
     });
     this.checkboxBackgroundShape.addEventListener('mouseleave', () => {
@@ -243,8 +246,8 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       const {
         style: { default: defaultStyle },
       } = this.attributes;
-      Object.keys(defaultStyle as object).forEach((key) => {
-        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, get(defaultStyle, key));
+      Object.entries(defaultStyle || {}).forEach(([key, value]) => {
+        this.checkboxBackgroundShape.setAttribute(key as keyof RectStyleProps, value as any);
       });
     });
   }
