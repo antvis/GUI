@@ -61,4 +61,6 @@ export { LineCrosshair, CircleCrosshair, PolygonCrosshair } from './crosshair';
 export type { LineCrosshairOptions, CircleCrosshairOptions, PolygonCrosshairOptions } from './crosshair';
 export { Text } from './text';
 export type { TextCfg, TextOptions } from './text';
+export { Poptip, getContainerOption, getPositionXY } from './poptip';
+export type { PoptipCfg, PoptipOptions } from './poptip';
 // to be continued...
