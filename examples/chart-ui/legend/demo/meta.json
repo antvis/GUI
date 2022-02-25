@@ -95,8 +95,8 @@
     {
       "filename": "category-pageNavigator.ts",
       "title": {
-        "zh": "分页器自定义",
-        "en": " PageNavigator custom"
+        "zh": "自定义分页器",
+        "en": "Custom pageNavigator"
       },
       "screenshot": ""
     },
