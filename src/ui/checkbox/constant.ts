@@ -3,7 +3,7 @@ import { LabelProps } from '../../types';
 
 // 默认文本样式
 export const LABEL_TEXT_STYLE = {
-  fontColor: 'rgba(0,0,0,0.45)',
+  stroke: 'rgba(0,0,0,0.45)',
   fontSize: 10,
   lineHeight: 16,
   textAlign: 'start',

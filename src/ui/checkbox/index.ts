@@ -132,7 +132,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
         ...(textStyle as TextCfg),
         text,
         x: width + (spacing as number),
-        stroke: disabled ? 'rgba(0,0,0,0.25)' : textStyle?.stroke,
+        fontColor: disabled ? 'rgba(0,0,0,0.25)' : (textStyle?.stroke as string),
       },
     });
   }
