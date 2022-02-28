@@ -109,9 +109,7 @@ describe('checkbox', () => {
     const {
       style: { fill, stroke },
     } = checkbox.checkbox;
-    const {
-      style: { fontColor },
-    } = checkbox!.label;
+    const { fontColor } = checkbox!.label!.style;
     expect(checkbox.getAttribute('disabled')).toBe(true);
     expect(fill).toBe('#f5f5f5');
     expect(stroke).toBe('#d9d9d9');
@@ -126,7 +124,7 @@ describe('checkbox', () => {
         disabled: true,
       },
     });
-    checkbox.update({ label: null });
+    checkbox.update({ label: undefined });
     canvas.appendChild(checkbox);
     expect(checkbox.label).toBe(undefined);
   });
