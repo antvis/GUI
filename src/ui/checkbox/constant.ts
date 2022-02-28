@@ -3,7 +3,7 @@ import { LabelProps } from '../../types';
 
 // 默认文本样式
 export const LABEL_TEXT_STYLE = {
-  fontColor: 'rgba(0,0,0,0.45)',
+  stroke: 'rgba(0,0,0,0.45)',
   fontSize: 10,
   lineHeight: 16,
   textAlign: 'start',
@@ -37,5 +37,14 @@ export const CHECKBOX_RECT_STYLE = {
     lineWidth: 1,
     fill: '#3471F9',
     cursor: 'pointer',
+  } as RectStyleProps,
+  disabled: {
+    width: 12,
+    height: 12,
+    radius: 2,
+    stroke: '#d9d9d9',
+    lineWidth: 1,
+    fill: '#f5f5f5',
+    cursor: 'no-drop',
   } as RectStyleProps,
 };

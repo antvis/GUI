@@ -1,6 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Checkbox } from '../../../../src/ui/checkbox';
+import { Text } from '../../../../src/ui/text';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -20,7 +21,7 @@ describe('checkbox', () => {
   test('basic', async () => {
     const checkbox = new Checkbox({
       style: {
-        x: 50,
+        x: 20,
         y: 10,
         label: { text: 'label text' },
       },
@@ -32,23 +33,23 @@ describe('checkbox', () => {
       label: { text, spacing },
       checked,
     } = checkbox.attributes;
-    expect(checkbox.getPosition()[0]).toBe(50);
+    expect(checkbox.getPosition()[0]).toBe(20);
     expect(checkbox.getPosition()[1]).toBe(10);
-    expect(x).toBe(50);
+    expect(x).toBe(20);
     expect(y).toBe(10);
     expect(text).toBe('label text');
     expect(spacing).toBe(4);
     expect(checked).toBe(false);
     const { label } = checkbox;
-    const labelX = label.getAttribute('x');
+    const labelX = (label as Text).getAttribute('x');
     expect(labelX).toBe(16);
   });
 
   test('check', async () => {
     const checkbox = new Checkbox({
       style: {
-        x: 10,
-        y: 20,
+        x: 20,
+        y: 30,
         label: { text: 'label text' },
         style: {
           default: {
@@ -78,13 +79,12 @@ describe('checkbox', () => {
   test('vertical center', () => {
     const checkbox = new Checkbox({
       style: {
-        x: 50,
-        y: 10,
+        x: 20,
+        y: 50,
         label: { text: 'label text' },
       },
     });
     canvas.appendChild(checkbox);
-
     const {
       center: [, checkboxY],
       halfExtents: [, checkboxHeight],
@@ -92,8 +92,41 @@ describe('checkbox', () => {
     const {
       center: [, labelY],
       halfExtents: [, labelHeight],
-    } = checkbox.labelBounds;
+    } = checkbox!.labelBounds;
 
     expect((checkboxY - labelY) * 2).toBeCloseTo(checkboxHeight - labelHeight, 4);
   });
+  test('disabled', () => {
+    const checkbox = new Checkbox({
+      style: {
+        x: 20,
+        y: 70,
+        label: { text: 'label text' },
+        disabled: true,
+      },
+    });
+    canvas.appendChild(checkbox);
+    const {
+      style: { fill, stroke },
+    } = checkbox.checkbox;
+    const { fontColor } = checkbox!.label!.style;
+    expect(checkbox.getAttribute('disabled')).toBe(true);
+    expect(fill).toBe('#f5f5f5');
+    expect(stroke).toBe('#d9d9d9');
+    expect(fontColor).toBe('rgba(0,0,0,0.25)');
+  });
+  // github actions ci 会ts报错，但是这段测试代码本地ok，可以用来测试label：null的情况
+  // test('label:null', () => {
+  //   const checkbox = new Checkbox({
+  //     style: {
+  //       x: 20,
+  //       y: 90,
+  //       label: { text: 'label text' },
+  //       disabled: true,
+  //     },
+  //   });
+  //   checkbox.update({ label: null });
+  //   canvas.appendChild(checkbox);
+  //   expect(checkbox.label).toBe(undefined);
+  // });
 });
