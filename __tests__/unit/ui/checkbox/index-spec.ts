@@ -1,6 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Checkbox } from '../../../../src/ui/checkbox';
+import { Text } from '../../../../src/ui/text';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -40,7 +41,7 @@ describe('checkbox', () => {
     expect(spacing).toBe(4);
     expect(checked).toBe(false);
     const { label } = checkbox;
-    const labelX = label.getAttribute('x');
+    const labelX = (label as Text).getAttribute('x');
     expect(labelX).toBe(16);
   });
 
@@ -91,7 +92,7 @@ describe('checkbox', () => {
     const {
       center: [, labelY],
       halfExtents: [, labelHeight],
-    } = checkbox.labelBounds;
+    } = checkbox!.labelBounds;
 
     expect((checkboxY - labelY) * 2).toBeCloseTo(checkboxHeight - labelHeight, 4);
   });
@@ -110,10 +111,23 @@ describe('checkbox', () => {
     } = checkbox.checkbox;
     const {
       style: { fontColor },
-    } = checkbox.label;
+    } = checkbox!.label;
     expect(checkbox.getAttribute('disabled')).toBe(true);
     expect(fill).toBe('#f5f5f5');
     expect(stroke).toBe('#d9d9d9');
     expect(fontColor).toBe('rgba(0,0,0,0.25)');
+  });
+  test('label:null', () => {
+    const checkbox = new Checkbox({
+      style: {
+        x: 20,
+        y: 90,
+        label: { text: 'label text' },
+        disabled: true,
+      },
+    });
+    checkbox.update({ label: null });
+    canvas.appendChild(checkbox);
+    expect(checkbox.label).toBe(undefined);
   });
 });

@@ -1,5 +1,5 @@
 import { Rect, Path, PathCommand, PathStyleProps, AABB } from '@antv/g';
-import { deepMix, isFunction, isNil } from '@antv/util';
+import { deepMix, isFunction, isNil, isUndefined } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
 import { Text, TextCfg } from '../text';
 import { GUI } from '../../core/gui';
@@ -22,7 +22,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   private checkedShape!: Path;
 
   /** label 组件 */
-  private labelShape!: Text;
+  private labelShape!: Text | undefined;
 
   /** 值 */
   private checked!: boolean;
@@ -60,7 +60,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.initChecked(); // 初始化 checked
     this.initShape(); // 初始化组件
     this.bindEvents(); // 添加交互
-    this.verticalCenter(); // 垂直居中
+    this.labelShape && this.verticalCenter(); // 垂直居中
   }
 
   /**
@@ -69,7 +69,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   public update(cfg?: Partial<CheckboxCfg>) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.updateShape();
-    this.verticalCenter(); // 垂直居中
+    this.labelShape && this.verticalCenter(); // 垂直居中
   }
 
   /**
@@ -83,7 +83,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   public destroy() {
     this.checkedShape.destroy();
     this.checkboxBackgroundShape.destroy();
-    this.labelShape.destroy();
+    this.labelShape && this.labelShape.destroy();
     super.destroy();
   }
 
@@ -102,10 +102,11 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     // 初始化创建 checkbox 背景小方块
     this.checkboxBackgroundShape = this.createCheckboxBackgroundShape();
     this.checkedShape = this.createCheckedShape();
-    this.labelShape = this.createLabelShape();
+    if (!isNil(this.getAttribute('label')) && !isUndefined(this.getAttribute('label')))
+      this.labelShape = this.createLabelShape();
 
     this.checkboxBackgroundShape.appendChild(this.checkedShape);
-    this.checkboxBackgroundShape.appendChild(this.labelShape);
+    this.labelShape && this.checkboxBackgroundShape.appendChild(this.labelShape);
     this.appendChild(this.checkboxBackgroundShape);
   }
 
@@ -170,7 +171,16 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   private updateShape() {
     this.updateCheckboxShape();
     this.updateCheckedShape();
-    this.updateLabelShape();
+    // 当label传入不存在时,销毁labelShape
+    if (isUndefined(this.getAttribute('label')) || isNil(this.getAttribute('label'))) {
+      this.labelShape && this.labelShape.destroy();
+      this.labelShape = undefined;
+    } else if (this.labelShape) {
+      // 当label存在时，根据labelshape存在与否决定创建或更新
+      this.updateLabelShape();
+    } else {
+      this.createLabelShape();
+    }
     if (this.getAttribute('disabled')) {
       this.removeEvents();
     }
@@ -188,13 +198,13 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       label: { text, spacing, textStyle },
     } = this.attributes;
     const { width } = this.checkboxBackgroundShape.attributes;
-    this.labelShape.setAttribute('text', text as string);
-    this.labelShape.setAttribute('x', width + (spacing as number));
+    this.labelShape!.setAttribute('text', text as string);
+    this.labelShape!.setAttribute('x', width + (spacing as number));
     Object.entries(textStyle || {}).forEach(([key, value]) =>
-      this.labelShape.setAttribute(key as keyof TextCfg, value as any)
+      this.labelShape!.setAttribute(key as keyof TextCfg, value as any)
     );
     if (disabled) {
-      this.labelShape.update({ fontColor: 'rgba(0,0,0,0.25)' });
+      this.labelShape!.update({ fontColor: 'rgba(0,0,0,0.25)' });
     }
   }
 
@@ -264,12 +274,12 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
 
   private verticalCenter() {
     const { height } = this.checkboxBackgroundShape.attributes;
-    const { lineHeight: labelHeight } = this.labelShape.attributes;
-    this.labelShape.setAttribute('y', (height - (labelHeight as number)) / 2);
+    const { lineHeight: labelHeight } = this.labelShape!.attributes;
+    this.labelShape!.setAttribute('y', (height - (labelHeight as number)) / 2);
   }
 
   public get labelBounds() {
-    return this.labelShape.getBounds() as AABB;
+    return this.labelShape ? (this.labelShape.getBounds() as AABB) : undefined;
   }
 
   public get checkboxBounds() {
