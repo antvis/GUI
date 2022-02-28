@@ -38,7 +38,6 @@ export const CHECKBOX_RECT_STYLE = {
     fill: '#3471F9',
     cursor: 'pointer',
   } as RectStyleProps,
-<<<<<<< HEAD
   disabled: {
     width: 12,
     height: 12,
@@ -48,6 +47,4 @@ export const CHECKBOX_RECT_STYLE = {
     fill: '#f5f5f5',
     cursor: 'no-drop',
   } as RectStyleProps,
-=======
->>>>>>> 1673e38 (feat: add checkbox (#107))
 };
