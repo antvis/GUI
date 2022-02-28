@@ -68,9 +68,7 @@ category1.itemsGroup.childNodes.forEach((item) => {
   item.addEventListener('mouseenter', () => {
     poptip1.update({
       target: item,
-      template: {
-        text: `<div class="poptip-text">${item.attributes.identify}</div>`,
-      },
+      text: item.attributes.identify,
     });
   });
 });
@@ -126,9 +124,7 @@ category2.itemsGroup.childNodes.forEach((item) => {
         x: poptipX,
         y: poptipY,
       },
-      template: {
-        text: `<div class="poptip-text">${item.attributes.identify}</div>`,
-      },
+      text: item.attributes.identify,
     });
     poptip2.show();
   });

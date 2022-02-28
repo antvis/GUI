@@ -1,4 +1,4 @@
-import { Canvas, Rect, Circle } from '@antv/g';
+import { Canvas, Rect, Circle, Text } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Poptip } from '@antv/gui';
 
@@ -11,7 +11,7 @@ const renderer = new CanvasRenderer({
 const canvas = new Canvas({
   container: 'container',
   width: 600,
-  height: 200,
+  height: 140,
   renderer,
 });
 
@@ -32,14 +32,29 @@ canvas.appendChild(rect);
 
 const circle = new Circle({
   style: {
-    x: 20,
-    y: 125,
+    x: 180,
+    y: 50,
     r: 30,
     fill: 'red',
   },
 });
 
 canvas.appendChild(circle);
+
+const text = new Text({
+  style: {
+    x: 300,
+    y: 50,
+    fontFamily: 'PingFang SC',
+    text: 'G.Text...',
+    fontSize: 20,
+    textBaseline: 'top',
+    stroke: '#F04864',
+    lineWidth: 5,
+  },
+});
+
+canvas.appendChild(text);
 
 const targetDom = document.createElement('div');
 
@@ -60,9 +75,7 @@ new Poptip({
         height: '30px',
       },
     },
-    template: {
-      text: `<div class="poptip-text">G.Rect 创建元素</div>`,
-    },
+    text: 'G.Rect 创建元素',
   },
 });
 
@@ -78,9 +91,21 @@ new Poptip({
         height: '30px',
       },
     },
-    template: {
-      text: `<div class="poptip-text">G.Circle 创建元素</div>`,
+    text: 'G.Circle 创建元素',
+  },
+});
+
+// G.Text
+new Poptip({
+  style: {
+    position: 'top',
+    target: text,
+    style: {
+      '.poptip': {
+        height: '30px',
+      },
     },
+    text: 'G.Text 创建元素',
   },
 });
 
@@ -94,8 +119,6 @@ new Poptip({
         height: '30px',
       },
     },
-    template: {
-      text: `<div class="poptip-text">Dom 元素</div>`,
-    },
+    text: 'Dom 元素',
   },
 });

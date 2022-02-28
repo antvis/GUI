@@ -50,9 +50,7 @@ const poptip = new Poptip({
         height: '30px',
       },
     },
-    template: {
-      text: `<div class="poptip-text">测试1</div>`,
-    },
+    text: '测试1',
   },
 });
 
@@ -78,9 +76,7 @@ describe('poptip', () => {
           height: '130px',
         },
       },
-      template: {
-        text: `<div class="poptip-text">测试2</div>`,
-      },
+      text: '测试2',
     });
 
     const options = getContainerOption(tooltipArea);

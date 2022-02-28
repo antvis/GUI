@@ -199,7 +199,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
 
     this.clear();
     const {
-      template: { text },
+      text,
+      template: { text: templateText },
       style,
     } = this.attributes;
     let containerStyle = style;
@@ -213,11 +214,16 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       container.className = `${this.containerClassName} ${CLASS_NAME.CONTAINER}-${this.position}`;
     }
 
-    // 置入title
-    if (isString(text)) {
-      container.innerHTML += text;
-    } else if (text && isElement(text)) {
-      container.appendChild(text);
+    // 置入 text 模版
+    if (isString(templateText)) {
+      container.innerHTML += templateText;
+    } else if (templateText && isElement(templateText)) {
+      container.appendChild(templateText);
+    }
+
+    // 置入 text
+    if (text) {
+      container.getElementsByClassName(CLASS_NAME.TEXT)[0]!.innerHTML = text;
     }
 
     // 应用样式表
@@ -230,15 +236,15 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    * 将相对于指针的偏移量生效到dom元素上
    */
   private setOffsetPosition() {
-    const { container } = this.attributes;
-
+    const { container, offset } = this.attributes;
+    const [offsetX = 0, offsetY = 0] = offset;
     const option = getContainerOption(this.target);
     const { x: positionX, y: positionY } = getPositionXY(option, this.position);
 
     const x = container.x || positionX || 0;
     const y = container.y || positionY || 0;
 
-    this.element.style.left = `${x}px`;
-    this.element.style.top = `${y}px`;
+    this.element.style.left = `${x + offsetX}px`;
+    this.element.style.top = `${y + offsetY}px`;
   }
 }

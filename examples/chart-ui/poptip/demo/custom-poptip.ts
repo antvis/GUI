@@ -43,9 +43,7 @@ const createPoptip = (position) => {
           height: '30px',
         },
       },
-      template: {
-        text: `<div class="poptip-text">${position}</div>`,
-      },
+      text: position,
     },
   });
 };

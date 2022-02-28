@@ -29,6 +29,16 @@ export interface PoptipCfg {
    */
   target?: any;
   /**
+   * @title 文本内容
+   * @description 默认配置下的文本内容
+   */
+  text?: string;
+  /**
+   * @title 偏移量
+   * @description 在位置方向上的偏移量
+   */
+  offset?: [number, number];
+  /**
    * @title 显影
    * @description 控制弹框显影
    */
