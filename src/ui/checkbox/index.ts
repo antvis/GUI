@@ -279,7 +279,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   }
 
   public get labelBounds() {
-    return this.labelShape ? (this.labelShape.getBounds() as AABB) : undefined;
+    return this.labelShape?.getBounds() as AABB;
   }
 
   public get checkboxBounds() {
