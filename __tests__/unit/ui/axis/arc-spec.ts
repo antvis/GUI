@@ -1,5 +1,5 @@
 import { Canvas } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-canvas';
+import { Renderer as CanvasRenderer } from '@antv/g-svg';
 import { Arc } from '../../../../src';
 import { createDiv } from '../../../utils';
 import type { StyleState as State } from '../../../../src/types';
