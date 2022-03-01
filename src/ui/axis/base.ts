@@ -107,7 +107,6 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
     let formatter = (val: Required<TickDatum>, idx: number) => val.text;
     if (label && label.formatter) formatter = label.formatter;
-
     // 完善字段
     return ticksCopy.map((datum, idx) => {
       const { value, text = undefined, state = 'default', id = String(idx) } = datum;
