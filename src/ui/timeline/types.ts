@@ -4,7 +4,7 @@ import { CheckboxOptions, LinearOptions } from 'ui';
 import { ButtonCfg } from 'ui/button';
 import { TooltipOptions } from 'ui/tooltip';
 
-type TimeData = {
+export type TimeData = {
   date: string;
   [k: string]: any;
 };
@@ -28,7 +28,12 @@ export type PlayAxisBaseCfg = {
    * @title 刻度配置
    * @description 调整刻度配置,实际上刻度是一条width为0的linear型axis组件
    */
-  tickOptions: LinearOptions;
+  tickOptions?: Partial<LinearOptions>;
+  /**
+   * @title 刻度配置
+   * @description 调整刻度配置,实际上刻度是一条width为0的linear型axis组件
+   */
+  tickInterval?: number;
   /**
    * @title  时间数据
    * @description 时间数据，必须是均匀等间距的，在方格形的时间轴中每个数据点代表一个小方格
@@ -56,17 +61,17 @@ export type CellAxisCfg = PlayAxisBaseCfg & {
    * @title  背景样式
    * @description 背景样式
    */
-  background: RectProps;
+  background?: Partial<RectProps>;
   /**
    * @title   padding
    * @description background 的 padding
    */
-  padding: [number, number, number, number];
+  padding?: [number, number, number, number];
   /**
    * @title   格子间距
    * @description 格子间的间距
    */
-  cellGap: number;
+  cellGap?: number;
 };
 
 export type SliderAxisCfg = PlayAxisBaseCfg & {
@@ -187,6 +192,16 @@ export type TimelineCfg = {
    */
   type: 'slider' | 'cell';
   /**
+   * @title 播放轴cell类型配置
+   * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
+   */
+  cellOptions?: CellAxisCfg;
+  /**
+   * @title 播放轴slider类型配置
+   * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
+   */
+  sliderOptions?: SliderAxisCfg;
+  /**
    * @title 播放控制
    * @description 配置播放器、单一时间checkbox
    * @default 'slider'
@@ -201,7 +216,7 @@ export type TimelineCfg = {
    * @title   刻度尺
    * @description 自定义刻度尺
    */
-  ticks?: false | TicksOptions;
+  ticks?: false | Partial<TicksOptions>;
   /**
    * @title  变化时回调函数
    * @description 监听时间范围（或单一时间）变化的回调函数
