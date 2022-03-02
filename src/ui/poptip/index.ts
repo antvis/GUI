@@ -1,16 +1,16 @@
 import { deepMix, isString, isElement, assign } from '@antv/util';
 import { createDom } from '@antv/dom-util';
+import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
-import { applyStyleSheet } from '../../util';
 import { CLASS_NAME, POPTIP_STYLE, TOOLTIP_STYLE } from './constant';
-import { getPosition, getContainerOption, getPositionXY } from './helpers';
+import { getPositionXY } from './helpers';
 
-import type { PoptipCfg, PoptipOptions, PoptipPosition } from './types';
+import type { PoptipCfg, PoptipOptions } from './types';
 
 export type { PoptipCfg, PoptipOptions };
 
 // 到处方法，可以外部使用
-export { getContainerOption, getPositionXY } from './helpers';
+export { getPositionXY } from './helpers';
 
 /**
  * shape 直接加 html 定位问题很好解决， 但是 问题是 多个 shape 不能重复利用 html 了。
@@ -32,9 +32,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       visibility: 'hidden',
       text: '',
       position: 'top',
-      backgroundShape: 'tooltip',
+      follow: false,
       offset: [0, 0],
-      container: {},
       style: POPTIP_STYLE,
       template: {
         container: `<div class="${CLASS_NAME.CONTAINER}"></div>`,
@@ -43,176 +42,175 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     },
   };
 
-  // 容器 element
-  private element!: HTMLElement;
+  /** 容器 HTML 元素节点 */
+  private container!: HTMLElement;
 
   // 暂时需要 container 的类名 之后 element 可以更新后 去除
   private containerClassName!: string;
 
-  // 目标定位元素
-  private target!: any;
-
-  // 显影控制
+  /** 显影控制 */
   private visibility: 'visible' | 'hidden' = 'visible';
 
-  // 内部储存方向
-  private position: PoptipPosition = 'top';
-
-  // 鼠标移动方法， 方便添加和删除交互
-  private mousemove!: () => void;
-
-  // 鼠标移出方法， 方便添加和删除交互
-  private mouseleave!: () => void;
+  /** 所有绑定的目标对象 */
+  private map: Map<HTMLElement | DisplayObject, any[]> = new Map();
 
   constructor(options: PoptipOptions) {
     super(deepMix({}, Poptip.defaultOptions, options));
-    this.visibility = this.attributes.visibility;
-    this.position = getPosition(this.attributes.position);
-    this.initShape();
-    this.initEvent();
     this.init();
   }
 
+  /**
+   * poptip 组件初始化
+   */
   public init() {
-    this.updateEvent();
-    this.updateHTMLTooltipElement();
-    this.setOffsetPosition();
+    this.initShape();
+    this.update();
   }
 
-  public update(cfg: Partial<PoptipCfg>) {
-    this.attr(deepMix({}, this.attributes, cfg));
-    this.visibility = this.attributes.visibility;
-    this.position = getPosition(this.attributes.position);
-    this.init();
+  /**
+   * poptip 组件更新
+   */
+  public update(cfg?: Partial<PoptipCfg>) {
+    this.attr(deepMix({}, this.style, cfg));
+
+    this.visibility = this.style.visibility;
+    this.updatePoptipElement();
+  }
+
+  /**
+   * 绑定元素
+   */
+  public bind(
+    element: HTMLElement | DisplayObject,
+    options: {
+      html: (e: any) => string;
+      condition: (e: any) => HTMLElement | DisplayObject | false;
+    } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow'>
+  ): void {
+    if (!element) return;
+
+    const { text: defaultText } = this.style;
+    const { html, condition = () => element, ...restOptions } = options || {};
+    const { position, arrowPointAtCenter, follow } = assign({} as any, this.style, restOptions);
+
+    const onmousemove = (e: any) => {
+      const target = condition.call(null, e);
+      if (target) {
+        const { clientX, clientY } = e as MouseEvent;
+        const [x, y] = getPositionXY(clientX, clientY, target, position, arrowPointAtCenter, follow);
+        const text = html ? html.call(null, e) : defaultText;
+        this.container.setAttribute('data-position', position);
+        this.showTip(x, y, text);
+      }
+    };
+    const onmouseleave = (e: any) => {
+      if (condition.call(null, e)) this.hideTip();
+    };
+    element.addEventListener('mousemove', onmousemove);
+    element.addEventListener('mouseleave', onmouseleave);
+    // 存储监听
+    this.map.set(element, [onmousemove, onmouseleave]);
+  }
+
+  public unbind(element: HTMLElement | DisplayObject): void {
+    if (this.map.has(element)) {
+      const [listener1, listener2] = this.map.get(element) || [];
+      listener1 && element.removeEventListener('mousemove', listener1);
+      listener2 && element.removeEventListener('mouseleave', listener2);
+      this.map.delete(element);
+    }
   }
 
   /**
    * 清空容器内容
    */
   public clear() {
-    this.element.innerHTML = '';
+    this.container.innerHTML = '';
   }
 
   /**
    * 清除
    */
   public destroy() {
-    this.element?.remove();
+    [...this.map.keys()].forEach((ele) => this.unbind(ele));
+
+    this.container?.remove();
   }
 
   /**
    * 显示
    */
-  public show() {
+  public showTip(x: number, y: number, text?: string) {
+    this.setOffsetPosition(x, y);
+
     this.visibility = 'visible';
-    this.element.style.visibility = 'visible';
+    this.container.style.visibility = 'visible';
+    if (typeof text === 'string') {
+      // do something
+      const textElement = this.container.querySelector(`.${CLASS_NAME.TEXT}`);
+      if (textElement) {
+        (textElement as HTMLDivElement).innerHTML = text;
+      }
+    }
   }
 
   /**
    * 隐藏
    */
-  public hide() {
+  public hideTip() {
     this.visibility = 'hidden';
-    // 延迟关闭 默认延迟 100ms，确保鼠标可以移动到 poptip 上不会关闭 poptip
-    setTimeout(() => {
-      if (this.visibility === 'hidden') {
-        this.element.style.visibility = 'hidden';
-      }
-    }, 100);
+    this.container.style.visibility = 'hidden';
   }
 
   /**
    * 获取内部容器 HTMLElement
    * @returns this.element:HTMLElement;
    */
-  public getHTMLTooltipElement() {
-    return this.element;
-  }
-
-  /**
-   * 获取保存的目标元素
-   * @returns this.target
-   */
-  public getTarget() {
-    return this.target;
+  public getContainer(): HTMLElement {
+    return this.container;
   }
 
   /**
    * 初始化容器
    */
   private initShape() {
-    const { template } = this.attributes;
+    const { template } = this.style;
     const { container } = template;
     if (!container) return;
 
     if (isString(container)) {
-      this.element = createDom(container!) as HTMLElement;
+      this.container = createDom(container!) as HTMLElement;
     } else if (isElement(container)) {
-      this.element = container;
+      this.container = container;
     }
 
-    document.body.appendChild(this.element);
+    document.body.appendChild(this.container);
 
-    this.containerClassName = this.element.className;
+    this.containerClassName = this.container.className;
 
     if (this.id || this.id !== '') {
-      this.element.setAttribute('id', this.id);
-    }
-  }
-
-  /**
-   * 初始化容器事件，后续需要对交互进行优化
-   */
-  private initEvent() {
-    this.mousemove = () => {
-      this.show();
-    };
-    this.mouseleave = () => {
-      this.hide();
-    };
-
-    this.element.addEventListener('mousemove', this.mousemove);
-    this.element.addEventListener('mouseleave', this.mouseleave);
-  }
-
-  /**
-   * 更新目标交互 目前 容器 element 不做更新处理, 对 target 的更新 做处理，删除原来元素的交互
-   */
-  private updateEvent() {
-    if (this.attributes?.target && this.attributes?.target !== this.target) {
-      // 删除旧 target 交互
-      this.target?.removeEventListener?.('mousemove', this.mousemove);
-      this.target?.removeEventListener?.('mouseleave', this.mouseleave);
-
-      // 添加新 target 交互
-      this.target = this.attributes?.target;
-      this.target.addEventListener?.('mousemove', this.mousemove);
-      this.target.addEventListener?.('mouseleave', this.mouseleave);
+      this.container.setAttribute('id', this.id);
     }
   }
 
   /**
    * 更新 HTML 上的内容
    */
-  private updateHTMLTooltipElement() {
-    const container = this.element;
+  private updatePoptipElement() {
+    const { container } = this;
 
     this.clear();
     const {
       text,
       template: { text: templateText },
       style,
-    } = this.attributes;
-    let containerStyle = style;
+    } = this.style;
+    const containerStyle = style;
 
-    if (this.attributes.backgroundShape === 'tooltip') {
-      container.className = `${this.containerClassName} ${CLASS_NAME.CONTAINER}-${this.position}-tooltip`;
-      container.innerHTML = `<span class="${CLASS_NAME.CONTAINER}-span ${CLASS_NAME.CONTAINER}-${this.position}-span"></span>`;
-      // 添加 tooltip 样式
-      containerStyle = assign({}, TOOLTIP_STYLE, containerStyle);
-    } else {
-      container.className = `${this.containerClassName} ${CLASS_NAME.CONTAINER}-${this.position}`;
-    }
+    container.className = this.containerClassName;
+    // 增加 arrow 元素
+    const arrowNode = `<span class="${CLASS_NAME.ARROW}"></span>`;
+    container.innerHTML = arrowNode;
 
     // 置入 text 模版
     if (isString(templateText)) {
@@ -227,24 +225,41 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     }
 
     // 应用样式表
-    applyStyleSheet(container, containerStyle as any);
+    const styles = assign({}, TOOLTIP_STYLE, containerStyle);
+    const styleStr = Object.entries(styles).reduce((r, [key, value]) => {
+      const styleStr = Object.entries(value).reduce((r, [k, v]) => `${r}${k}: ${v};`, '');
+      return `${r}${key} { ${styleStr} }`;
+    }, '');
+    let styleDOM = this.container.querySelector('style') as HTMLStyleElement;
+    if (styleDOM) this.container.removeChild(styleDOM);
+    styleDOM = document.createElement('style');
+    styleDOM.innerHTML = styleStr;
+    this.container.appendChild(styleDOM);
 
-    this.element.style.visibility = this.visibility;
+    this.container.style.visibility = this.visibility;
   }
 
   /**
    * 将相对于指针的偏移量生效到dom元素上
    */
-  private setOffsetPosition() {
-    const { container, offset } = this.attributes;
-    const [offsetX = 0, offsetY = 0] = offset;
-    const option = getContainerOption(this.target);
-    const { x: positionX, y: positionY } = getPositionXY(option, this.position);
+  private setOffsetPosition(x: number, y: number): void {
+    let [offsetX = 0, offsetY = 0] = this.style.offset;
+    // 设置 arrow 的 offset
+    const arrow = this.container.querySelector(`.${CLASS_NAME.ARROW}`);
+    if (arrow) {
+      const position = this.container.getAttribute('data-position');
+      if (position?.startsWith('top')) {
+        offsetY -= 8;
+      } else if (position?.startsWith('bottom')) {
+        offsetY += 8;
+      } else if (position?.startsWith('left')) {
+        offsetX -= 8;
+      } else if (position?.startsWith('right')) {
+        offsetX += 8;
+      }
+    }
 
-    const x = container.x || positionX || 0;
-    const y = container.y || positionY || 0;
-
-    this.element.style.left = `${x + offsetX}px`;
-    this.element.style.top = `${y + offsetY}px`;
+    this.container.style.left = `${x + offsetX}px`;
+    this.container.style.top = `${y + offsetY}px`;
   }
 }

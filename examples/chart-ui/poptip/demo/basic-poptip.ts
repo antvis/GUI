@@ -15,9 +15,6 @@ const canvas = new Canvas({
   renderer,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
-
 const rect = new Rect({
   style: {
     x: 0,
@@ -28,18 +25,14 @@ const rect = new Rect({
   },
 });
 
-canvas.appendChild(rect);
-
 const circle = new Circle({
   style: {
     x: 180,
     y: 50,
-    r: 30,
+    r: 25,
     fill: 'red',
   },
 });
-
-canvas.appendChild(circle);
 
 const text = new Text({
   style: {
@@ -54,71 +47,49 @@ const text = new Text({
   },
 });
 
+canvas.appendChild(rect);
+canvas.appendChild(circle);
 canvas.appendChild(text);
 
-const targetDom = document.createElement('div');
+function createDom(text = 'DOM 元素') {
+  const targetDom = document.createElement('div');
+  targetDom.innerHTML = text;
 
-Object.assign(targetDom.style, {
-  width: '100px',
-  height: '50px',
-  background: 'red',
-});
+  Object.assign(targetDom.style, {
+    width: '100px',
+    height: '50px',
+    border: '1px solid red',
+    margin: '8px 100px',
+  });
 
-document.getElementById('container').appendChild(targetDom);
+  document.getElementById('container').appendChild(targetDom);
+
+  return targetDom;
+}
 
 // G.Rect
-new Poptip({
+const poptip = new Poptip({
   style: {
-    target: rect,
     style: {
       '.poptip': {
         height: '30px',
       },
     },
-    text: 'G.Rect 创建元素',
+    text: 'Tooltip 信息',
   },
 });
-
+poptip.bind(rect);
 // G.Circle
-// 和占用空间对齐
-circle.style.anchor = [0, 0];
-new Poptip({
-  style: {
-    position: 'right',
-    target: circle,
-    style: {
-      '.poptip': {
-        height: '30px',
-      },
-    },
-    text: 'G.Circle 创建元素',
-  },
-});
-
+poptip.bind(circle, { follow: true });
+// circle.style.anchor = [0, 0];
 // G.Text
-new Poptip({
-  style: {
-    position: 'top',
-    target: text,
-    style: {
-      '.poptip': {
-        height: '30px',
-      },
-    },
-    text: 'G.Text 创建元素',
-  },
+poptip.bind(text, {
+  html: () => '超长省略信息，超长省略信息',
+  arrowPointAtCenter: true,
 });
-
 // dom 目标
-new Poptip({
-  style: {
-    target: targetDom,
-    position: 'bottom',
-    style: {
-      '.poptip': {
-        height: '30px',
-      },
-    },
-    text: 'Dom 元素',
-  },
-});
+poptip.bind(createDom('top-left'), { position: 'top-left' });
+poptip.bind(createDom('left-top'), { position: 'left-top' });
+poptip.bind(createDom('right-bottom'), { position: 'right-bottom' });
+poptip.bind(createDom('right-center'), { position: 'right', arrowPointAtCenter: true });
+poptip.bind(createDom('bottom-right'), { position: 'bottom-right' });

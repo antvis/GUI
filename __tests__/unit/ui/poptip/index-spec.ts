@@ -1,6 +1,7 @@
 import { Canvas, Rect } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Poptip, getContainerOption } from '../../../../src';
+import { getContainerOption } from '../../../../src/ui/poptip/helpers';
+import { Poptip } from '../../../../src';
 import { createDiv } from '../../../utils';
 
 Array.from(document.getElementsByClassName(Poptip.tag)).forEach((poptip) => {

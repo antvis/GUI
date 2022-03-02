@@ -3,26 +3,9 @@
  */
 export const CLASS_NAME = {
   CONTAINER: 'poptip',
+  ARROW: 'poptip-arrow',
   TEXT: 'poptip-text',
 };
-
-/**
- * 12 个 poptip 显示方向
- */
-export const POSITIONS = [
-  'top',
-  'bottom',
-  'left',
-  'right',
-  'top-left',
-  'top-right',
-  'bottom-left',
-  'bottom-right',
-  'left-top',
-  'left-bottom',
-  'right-top',
-  'right-bottom',
-];
 
 /**
  * 默认 style
@@ -44,45 +27,47 @@ export const POPTIP_STYLE = {
     'justify-content': 'center',
     'align-items': 'center',
     'z-index': 8,
+    transition: 'visibility 50ms',
+    'pointer-events': 'none',
   },
   // 文本内容 默认 style
   [`.${CLASS_NAME.TEXT}`]: {
     'text-align': 'center',
   },
-  [`.${CLASS_NAME.CONTAINER}-top`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top']`]: {
     transform: `translate(-50%, -100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left']`]: {
     transform: `translate(-100%, -50%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right']`]: {
     transform: `translate(0, -50%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom']`]: {
     transform: `translate(-50%, 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-top-left`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top-left']`]: {
     transform: `translate(0,-100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-top-right`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top-right']`]: {
     transform: `translate(-100%,-100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left-top`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left-top']`]: {
     transform: `translate(-100%, 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left-bottom`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left-bottom']`]: {
     transform: `translate(-100%, -100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right-top`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right-top']`]: {
     transform: `translate(0, 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right-bottom`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right-bottom']`]: {
     transform: `translate(0, -100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-left`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom-left']`]: {
     transform: `translate(0, 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-right`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom-right']`]: {
     transform: `translate(-100%, 0)`,
   },
 };
@@ -92,90 +77,90 @@ export const POPTIP_STYLE = {
  * -span 为 tooltip 指向小尖头 的 配置
  */
 export const TOOLTIP_STYLE = {
-  [`.${CLASS_NAME.CONTAINER}-span`]: {
+  [`.${CLASS_NAME.ARROW}`]: {
     width: '6px',
     height: '6px',
     transform: 'rotate(45deg)',
     'background-color': 'rgba(0, 0, 0)',
     position: 'absolute',
   },
-  [`.${CLASS_NAME.CONTAINER}-top-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top']`]: {
     transform: `translate(-50%, calc(-100% - 5px))`,
   },
-  [`.${CLASS_NAME.CONTAINER}-top-span`]: {
+  [`[data-position='top'] .${CLASS_NAME.ARROW}`]: {
     bottom: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-left-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left']`]: {
     transform: `translate(calc(-100% - 5px), -50%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left-span`]: {
+  [`[data-position='left'] .${CLASS_NAME.ARROW}`]: {
     right: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-right-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right']`]: {
     transform: `translate(5px, -50%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right-span`]: {
+  [`[data-position='right'] .${CLASS_NAME.ARROW}`]: {
     left: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom']`]: {
     transform: `translate(-50%, 5px)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-span`]: {
+  [`[data-position='bottom'] .${CLASS_NAME.ARROW}`]: {
     top: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-top-left-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top-left']`]: {
     transform: `translate(0, calc(-100% - 5px))`,
   },
-  [`.${CLASS_NAME.CONTAINER}-top-left-span`]: {
+  [`[data-position='top-left'] .${CLASS_NAME.ARROW}`]: {
     left: '10px',
     bottom: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-top-right-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='top-right']`]: {
     transform: `translate(-100%, calc(-100% - 5px))`,
   },
-  [`.${CLASS_NAME.CONTAINER}-top-right-span`]: {
+  [`[data-position='top-right'] .${CLASS_NAME.ARROW}`]: {
     right: '10px',
     bottom: '-3px',
   },
-  [`.${CLASS_NAME.CONTAINER}-left-top-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left-top']`]: {
     transform: `translate(calc(-100% - 5px), 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left-top-span`]: {
+  [`[data-position='left-top'] .${CLASS_NAME.ARROW}`]: {
     right: '-3px',
     top: '8px',
   },
-  [`.${CLASS_NAME.CONTAINER}-left-bottom-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='left-bottom']`]: {
     transform: `translate(calc(-100% - 5px), -100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-left-bottom-span`]: {
+  [`[data-position='left-bottom'] .${CLASS_NAME.ARROW}`]: {
     right: '-3px',
     bottom: '8px',
   },
-  [`.${CLASS_NAME.CONTAINER}-right-top-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right-top']`]: {
     transform: `translate(5px, 0)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right-top-span`]: {
+  [`[data-position='right-top'] .${CLASS_NAME.ARROW}`]: {
     left: '-3px',
     top: '8px',
   },
-  [`.${CLASS_NAME.CONTAINER}-right-bottom-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='right-bottom']`]: {
     transform: `translate(5px, -100%)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-right-bottom-span`]: {
+  [`[data-position='right-bottom'] .${CLASS_NAME.ARROW}`]: {
     left: '-3px',
     bottom: '8px',
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-left-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom-left']`]: {
     transform: `translate(0, 5px)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-left-span`]: {
+  [`[data-position='bottom-left'] .${CLASS_NAME.ARROW}`]: {
     top: '-3px',
     left: '8px',
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-right-tooltip`]: {
+  [`.${CLASS_NAME.CONTAINER}[data-position='bottom-right']`]: {
     transform: `translate(-100%, 5px)`,
   },
-  [`.${CLASS_NAME.CONTAINER}-bottom-right-span`]: {
+  [`[data-position='bottom-right'] .${CLASS_NAME.ARROW}`]: {
     top: '-3px',
     right: '8px',
   },
