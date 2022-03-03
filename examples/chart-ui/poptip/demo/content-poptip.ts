@@ -1,4 +1,4 @@
-import { Canvas, Rect, Circle } from '@antv/g';
+import { Canvas, Rect } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Poptip } from '@antv/gui';
 
@@ -16,7 +16,7 @@ const canvas = new Canvas({
 });
 
 // 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
+Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
 
 const rect = new Rect({
   style: {
@@ -30,12 +30,10 @@ const rect = new Rect({
 
 canvas.appendChild(rect);
 
-// G.Rect
-new Poptip({
+// 自定义内容
+const poptip = new Poptip({
   style: {
     position: 'right',
-    target: rect,
-    backgroundShape: false,
     domStyles: {
       '.custom': {
         height: '80px',
@@ -61,12 +59,23 @@ new Poptip({
         'border-radius': '50%',
         display: 'inline-block',
       },
+      // 内置小箭头样式自定义
+      '.gui-poptip-arrow': {
+        width: '6px',
+        height: '6px',
+        transform: 'rotate(45deg)',
+        'background-color': '#fff',
+        position: 'absolute',
+      },
     },
     template: {
-      container: `<div class="poptip custom" ></div>`,
-      text: `<div class="poptip-text custom-text">
-      <div class='text-marker'></div> 
-      <div class='text'>文本内容</div></div>`,
+      container: `<div class="gui-poptip custom"></div>`,
+      text: `<div class="custom-text">
+        <div class='text-marker'></div>
+        <div class='text'>文本内容</div>
+      </div>`,
     },
   },
 });
+
+poptip.bind(rect);

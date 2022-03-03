@@ -1,6 +1,6 @@
-import { Canvas, Rect } from '@antv/g';
+import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Poptip } from '@antv/gui';
+import { Poptip, Linear } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -15,172 +15,74 @@ const canvas = new Canvas({
   renderer,
 });
 
+// 移出之前创建的 poptip
+Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
+
 // todo 坐标轴 label 的 poptip
+const data = [
+  '蚂蚁技术研究院',
+  '智能资金',
+  '蚂蚁消金',
+  '合规线',
+  '战略线',
+  '商业智能线',
+  '社会公益及绿色发展事业群',
+  'CFO线',
+  'CTO线',
+  '投资线',
+  'GR线',
+];
 
-// function getOffset(dom) {
-//   let parent = dom;
-//   let left = 0;
-//   let top = 0;
-//   while (parent) {
-//     left += parent.offsetLeft;
-//     top += parent.offsetTop;
-//     parent = parent.offsetParent;
-//   }
-//   return {
-//     left,
-//     top,
-//   };
-// }
+const tickData = data.map((d, idx) => {
+  const step = 1 / data.length;
+  return {
+    value: step * idx,
+    text: d,
+    state: 'default',
+    id: String(idx),
+  };
+});
 
-// // 移出之前创建的 poptip
-// Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
+const linear = new Linear({
+  style: {
+    startPos: [10, 50],
+    endPos: [400, 50],
+    ticks: tickData,
+    title: {},
+    label: {
+      offset: [0, 15],
+      minLength: 20,
+      maxLength: 80,
+      autoEllipsis: false,
+      optionalAngles: [20, 30, 45],
+      padding: [0, 0, 0, 0],
+      autoHide: false,
+    },
+    axisLine: {
+      arrow: {
+        end: {
+          symbol: 'axis-arrow',
+          size: 10,
+        },
+      },
+    },
+  },
+});
 
-// const createPoptip = (position) => {
-//   return new Poptip({
-//     style: {
-//       position,
-//       text: position,
-//     },
-//   });
-// };
+canvas.appendChild(linear);
 
-// const positions = [
-//   'top',
-//   'top-left',
-//   'top-right',
-//   'right',
-//   'right-top',
-//   'right-bottom',
-//   'bottom',
-//   'bottom-left',
-//   'bottom-right',
-//   'left',
-//   'left-top',
-//   'left-bottom',
-// ];
+const poptip = new Poptip();
 
-// const poptips = {};
-
-// positions.forEach((position) => {
-//   poptips[position] = createPoptip(position);
-// });
-
-// const rect = new Rect({
-//   style: {
-//     x: 100,
-//     y: 50,
-//     width: 280,
-//     height: 120,
-//     fill: 'red',
-//   },
-// });
-// canvas.appendChild(rect);
-
-// // canvas 在屏幕中的位置
-// const canvasPosition = getOffset(document.getElementById('container'));
-// // rect 相对 canvas 的 xy
-// const rectPosition = rect.getPosition();
-
-// const positionX = canvasPosition.left + rectPosition[0];
-// const positionY = canvasPosition.top + rectPosition[1];
-// const { width, height } = rect.attributes;
-
-// positions.forEach((position) => {
-//   if (position === 'top') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width / 2,
-//         y: positionY,
-//       },
-//     });
-//   } else if (position === 'left') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX,
-//         y: positionY + height / 2,
-//       },
-//     });
-//   } else if (position === 'right') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width,
-//         y: positionY + height / 2,
-//       },
-//     });
-//   } else if (position === 'bottom') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width / 2,
-//         y: positionY + height,
-//       },
-//     });
-//   } else if (position === 'top-left') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX,
-//         y: positionY,
-//       },
-//     });
-//   } else if (position === 'top-right') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width,
-//         y: positionY,
-//       },
-//     });
-//   } else if (position === 'left-top') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX,
-//         y: positionY,
-//       },
-//     });
-//   } else if (position === 'left-bottom') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX,
-//         y: positionY + height,
-//       },
-//     });
-//   } else if (position === 'right-top') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width,
-//         y: positionY,
-//       },
-//     });
-//   } else if (position === 'right-bottom') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width,
-//         y: positionY + height,
-//       },
-//     });
-//   } else if (position === 'bottom-left') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX,
-//         y: positionY + height,
-//       },
-//     });
-//   } else if (position === 'bottom-right') {
-//     poptips[position].update({
-//       container: {
-//         x: positionX + width,
-//         y: positionY + height,
-//       },
-//     });
-//   }
-// });
-
-// rect.addEventListener('mousemove', () => {
-//   positions.forEach((position) => {
-//     poptips[position].show();
-//   });
-// });
-
-// rect.addEventListener('mouseleave', () => {
-//   positions.forEach((position) => {
-//     poptips[position].hide();
-//   });
-// });
+poptip.bind(linear, {
+  position: 'top',
+  html: (e) => {
+    return e.target?.attributes?.text;
+  },
+  condition: (e) => {
+    // 筛选为 label 以及 label text 大于 5 的显示
+    if (e.target?.name === 'label' && e.target?.attributes?.text.length > 5) {
+      return e.target;
+    }
+    return false;
+  },
+});

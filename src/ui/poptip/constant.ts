@@ -28,7 +28,6 @@ export const POPTIP_STYLE = {
     'align-items': 'center',
     'z-index': 8,
     transition: 'visibility 50ms',
-    'pointer-events': 'none',
   },
   // 文本内容 默认 style
   [`.${CLASS_NAME.TEXT}`]: {

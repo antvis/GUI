@@ -1,6 +1,6 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Category, Poptip, getContainerOption, getPositionXY } from '@antv/gui';
+import { Category, Continuous, Poptip } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -11,9 +11,12 @@ const renderer = new CanvasRenderer({
 const canvas = new Canvas({
   container: 'container',
   width: 600,
-  height: 200,
+  height: 500,
   renderer,
 });
+
+// 移出之前创建的 poptip
+Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
 
 const items = [
   { id: '事例一', color: '#4982f8' },
@@ -25,10 +28,10 @@ const items = [
   return { name: id, id, state: 'selected', color };
 });
 
-const category1 = new Category({
+const category = new Category({
   style: {
     x: 10,
-    y: 10,
+    y: 30,
     items,
     itemMarker: ({ color }) => {
       return {
@@ -46,91 +49,65 @@ const category1 = new Category({
   },
 });
 
-canvas.appendChild(category1);
+canvas.appendChild(category);
 
 const poptip = new Poptip({
   style: {
-    position: 'top',
+    offset: [0, -5],
   },
 });
-const category2 = new Category({
+
+poptip.bind(category, {
+  // 内容改变
+  html: (e) => {
+    return e.target.attributes.text;
+  },
+  // 筛选需要的部分
+  condition: (e) => {
+    if (e.target.nodeName === 'text') {
+      return e.target;
+    }
+    return false;
+  },
+  arrowPointAtCenter: true,
+});
+
+const continuous = new Continuous({
   style: {
-    x: 10,
-    y: 50,
-    items,
-    itemMarker: ({ color }) => {
-      return {
-        size: 10,
-        marker: 'circle',
-        style: {
-          selected: {
-            fill: color,
-          },
-        },
-      };
+    y: 100,
+    rail: {
+      width: 300,
+      height: 30,
     },
-    spacing: [0, 0],
-    maxItemWidth: 160,
+    handle: false,
+    min: 0,
+    max: 100,
+    indicator: false,
+    color: [
+      '#d0e3fa',
+      '#acc7f6',
+      '#8daaf2',
+      '#6d8eea',
+      '#4d73cd',
+      '#325bb1',
+      '#5a3e75',
+      '#8c3c79',
+      '#e23455',
+      '#e7655b',
+    ],
   },
 });
-canvas.appendChild(category2);
 
-poptip.bind(category1, {
+canvas.appendChild(continuous);
+
+poptip.bind(continuous, {
+  html: (e) => {
+    return `${Math.round(continuous.getEventPosValue(e))}`;
+  },
   condition: (e) => {
-    // console.log('e:', e.composedPath());
+    if (e.target?.name === 'railPath') {
+      return e.target;
+    }
     return false;
   },
 });
-poptip.bind(category2, {
-  condition: (e) => {
-    console.log('e:', e);
-    return false;
-  },
-});
-// // 可以通过 更新 target 方式
-// category1.itemsGroup.childNodes.forEach((item) => {
-//   item.addEventListener('mouseenter', () => {
-//     poptip1.update({
-//       target: item,
-//       text: item.attributes.identify,
-//     });
-//   });
-// });
-
-// const poptip2 = new Poptip({
-//   style: {
-//     position: 'bottom',
-//     domStyles: {
-//       '.gui-poptip': {
-//         height: '20px',
-//       },
-//       '.gui-poptip-text': {
-//         padding: 0,
-//         margin: 0,
-//       },
-//     },
-//   },
-// });
-
-// // 可以通过 更新 x,y 的方式
-// category2.itemsGroup.childNodes.forEach((item) => {
-//   // poptip 内部获取 元素位置相对body方法。
-//   const { x, y, width, height } = getContainerOption(item);
-//   // 通过 方向确定 位置
-//   const { x: poptipX, y: poptipY } = getPositionXY({ x, y, width, height }, poptip2.position);
-
-//   item.addEventListener('mouseenter', () => {
-//     poptip2.update({
-//       container: {
-//         x: poptipX,
-//         y: poptipY,
-//       },
-//       text: item.attributes.identify,
-//     });
-//     poptip2.show();
-//   });
-
-//   item.addEventListener('mouseleave', () => {
-//     poptip2.hide();
-//   });
-// });
