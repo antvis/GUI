@@ -13,26 +13,18 @@
       "screenshot": ""
     },
     {
-      "filename": "poptip-domStyles.ts",
+      "filename": "legend-poptip.ts",
       "title": {
-        "zh": "气泡提示框样式",
-        "en": "Poptip domStyles"
+        "zh": "图例气泡提示框",
+        "en": "Legend Poptip"
       },
       "screenshot": ""
     },
     {
-      "filename": "update-poptip.ts",
+      "filename": "more-direction-poptip.ts",
       "title": {
-        "zh": "更新位置气泡提示框",
-        "en": "Update Poptip"
-      },
-      "screenshot": ""
-    },
-    {
-      "filename": "custom-poptip.ts",
-      "title": {
-        "zh": "自定义位置气泡提示框",
-        "en": "Custom Poptip"
+        "zh": "多方向气泡提示框",
+        "en": "More Direction Poptip"
       },
       "screenshot": ""
     },
