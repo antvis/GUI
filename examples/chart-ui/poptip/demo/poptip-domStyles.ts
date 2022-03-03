@@ -44,18 +44,15 @@ canvas.appendChild(text);
 const poptip = new Poptip({
   style: {
     domStyles: {
-      '.gui-poptip.custom-poptip': {
-        'border-radius': '4px',
+      '.gui-poptip': {
+        'border-radius': '8px',
       },
-    },
-    template: {
-      container: `<div class="gui-poptip custom-poptip" ></div>`,
     },
     text: '隐藏信息',
   },
 });
 
-poptip.bind(circle, { follow: true });
+poptip.bind(circle, { follow: true, offset: [0, -8] });
 poptip.bind(text, {
   arrowPointAtCenter: true,
 });

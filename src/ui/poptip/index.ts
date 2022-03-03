@@ -86,13 +86,13 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     options: {
       html: (e: any) => string;
       condition: (e: any) => HTMLElement | DisplayObject | false;
-    } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow'>
+    } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow' | 'offset'>
   ): void {
     if (!element) return;
 
     const { text: defaultText } = this.style;
     const { html, condition = () => element, ...restOptions } = options || {};
-    const { position, arrowPointAtCenter, follow } = assign({} as any, this.style, restOptions);
+    const { position, arrowPointAtCenter, follow, offset } = assign({} as any, this.style, restOptions);
 
     const onmousemove = (e: any) => {
       const target = condition.call(null, e);
@@ -100,8 +100,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
         const { clientX, clientY } = e as MouseEvent;
         const [x, y] = getPositionXY(clientX, clientY, target, position, arrowPointAtCenter, follow);
         const text = html ? html.call(null, e) : defaultText;
-        this.container.setAttribute('data-position', position);
-        this.showTip(x, y, text);
+        this.showTip(x, y, { text, position, offset });
       }
     };
     const onmouseleave = (e: any) => {
@@ -141,8 +140,10 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
   /**
    * 显示
    */
-  public showTip(x: number, y: number, text?: string) {
-    this.setOffsetPosition(x, y);
+  public showTip(x: number, y: number, options: Pick<PoptipCfg, 'text' | 'position' | 'offset'>) {
+    const { offset, position, text } = options;
+    position && this.container.setAttribute('data-position', position);
+    this.setOffsetPosition(x, y, offset);
 
     this.visibility = 'visible';
     this.container.style.visibility = 'visible';
@@ -242,22 +243,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
   /**
    * 将相对于指针的偏移量生效到dom元素上
    */
-  private setOffsetPosition(x: number, y: number): void {
-    let [offsetX = 0, offsetY = 0] = this.style.offset;
-    // 设置 arrow 的 offset
-    const arrow = this.container.querySelector(`.${CLASS_NAME.ARROW}`);
-    if (arrow) {
-      const position = this.container.getAttribute('data-position');
-      if (position?.startsWith('top')) {
-        offsetY -= 8;
-      } else if (position?.startsWith('bottom')) {
-        offsetY += 8;
-      } else if (position?.startsWith('left')) {
-        offsetX -= 8;
-      } else if (position?.startsWith('right')) {
-        offsetX += 8;
-      }
-    }
+  private setOffsetPosition(x: number, y: number, offset: number[] = this.style.offset): void {
+    const [offsetX = 0, offsetY = 0] = offset;
 
     this.container.style.left = `${x + offsetX}px`;
     this.container.style.top = `${y + offsetY}px`;
