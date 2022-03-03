@@ -8,17 +8,20 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
+// 移出之前创建的 poptip
+Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
+
 const canvas = new Canvas({
   container: 'container',
   width: 600,
-  height: 140,
+  height: 270,
   renderer,
 });
 
 const rect = new Rect({
   style: {
     x: 0,
-    y: 50,
+    y: 20,
     width: 100,
     height: 50,
     fill: 'red',
@@ -27,8 +30,8 @@ const rect = new Rect({
 
 const circle = new Circle({
   style: {
-    x: 180,
-    y: 50,
+    x: 60,
+    y: 120,
     r: 25,
     fill: 'red',
   },
@@ -36,8 +39,8 @@ const circle = new Circle({
 
 const text = new Text({
   style: {
-    x: 300,
-    y: 50,
+    x: 20,
+    y: 200,
     fontFamily: 'PingFang SC',
     text: 'G.Text...',
     fontSize: 20,
@@ -59,7 +62,7 @@ function createDom(text = 'DOM 元素') {
     width: '100px',
     height: '50px',
     border: '1px solid red',
-    margin: '8px 100px',
+    margin: '8px 10px',
   });
 
   document.getElementById('container').appendChild(targetDom);
@@ -78,18 +81,18 @@ const poptip = new Poptip({
     text: 'Tooltip 信息',
   },
 });
+
+// G.Rect
 poptip.bind(rect);
+
 // G.Circle
 poptip.bind(circle, { follow: true });
-// circle.style.anchor = [0, 0];
+
 // G.Text
 poptip.bind(text, {
   html: () => '超长省略信息，超长省略信息',
   arrowPointAtCenter: true,
 });
+
 // dom 目标
 poptip.bind(createDom('top-left'), { position: 'top-left' });
-poptip.bind(createDom('left-top'), { position: 'left-top' });
-poptip.bind(createDom('right-bottom'), { position: 'right-bottom' });
-poptip.bind(createDom('right-center'), { position: 'right', arrowPointAtCenter: true });
-poptip.bind(createDom('bottom-right'), { position: 'bottom-right' });

@@ -12,15 +12,6 @@ export type { PoptipCfg, PoptipOptions };
 // 到处方法，可以外部使用
 export { getPositionXY } from './helpers';
 
-/**
- * shape 直接加 html 定位问题很好解决， 但是 问题是 多个 shape 不能重复利用 html 了。
- * legend、tooltip 是创建一个然后 操纵 x,y 来实现的， 外部传导 x,y。
- * legend 挂在 色板上， 通过交互计算 x,y 定位位置 使用 Group 创建 并添加 Marker 小箭头。
- * tooltip 在 body 上，没有使用 G ， 通过 creatDom 方法创建 dom ，然后通过交互事件，来操控 x,y -> left top 来搞定位置。
- * antd   通过创建 在 body 或者其他 dom 上， 并 fiexd 固定定位 或 绝对定位的方式， 给 children 传递信息，并创建交互。 通过 offset 获取 盒子在页面中的位置来 显示。
- * poptip 现在 要正对 多个 G.text 省略 做 显示，不能创建多个 poptip ，  方法和tooltip antd 类似，  比较重要的就是 获取需要定位的目标的 相对屏幕的 xy,和自身的width,height。
- * 比较 tooltip 多处的 是 可以传入 target 目标，以及
- */
 export class Poptip extends GUI<Required<PoptipCfg>> {
   public static tag = 'poptip';
 
@@ -82,7 +73,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    */
   public bind(
     element: HTMLElement | DisplayObject,
-    options: {
+    options?: {
       html: (e: any) => string;
       condition: (e: any) => HTMLElement | DisplayObject | false;
     } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow'>
@@ -102,11 +93,16 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
         const text = html ? html.call(null, e) : defaultText;
         this.container.setAttribute('data-position', position);
         this.showTip(x, y, text);
+      } else {
+        // 没有移动到指定的目标 关闭弹框
+        this.hideTip();
       }
     };
-    const onmouseleave = (e: any) => {
-      if (condition.call(null, e)) this.hideTip();
+
+    const onmouseleave = () => {
+      this.hideTip();
     };
+
     element.addEventListener('mousemove', onmousemove);
     element.addEventListener('mouseleave', onmouseleave);
     // 存储监听
@@ -139,13 +135,17 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
   }
 
   /**
-   * 显示
+   * 显示 + 改变位置
+   * @param x 可选 改变位置 x 方向
+   * @param y 可选 改变位置 y 方向
+   * @param text 文本变化
    */
-  public showTip(x: number, y: number, text?: string) {
-    this.setOffsetPosition(x, y);
+  public showTip(x?: number, y?: number, text?: string) {
+    // 不传入 不希望改变 x y
+    if (x && y) {
+      this.setOffsetPosition(x, y);
+    }
 
-    this.visibility = 'visible';
-    this.container.style.visibility = 'visible';
     if (typeof text === 'string') {
       // do something
       const textElement = this.container.querySelector(`.${CLASS_NAME.TEXT}`);
@@ -153,10 +153,13 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
         (textElement as HTMLDivElement).innerHTML = text;
       }
     }
+
+    this.visibility = 'visible';
+    this.container.style.visibility = 'visible';
   }
 
   /**
-   * 隐藏
+   * 隐藏 延迟 200ms
    */
   public hideTip() {
     this.visibility = 'hidden';
@@ -165,7 +168,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       if (this.visibility === 'hidden') {
         this.container.style.visibility = 'hidden';
       }
-    }, 100);
+    }, 200);
   }
 
   /**
@@ -193,6 +196,10 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     document.body.appendChild(this.container);
 
     this.containerClassName = this.container.className;
+
+    // 盒子添加交互
+    this.container.addEventListener('mousemove', () => this.showTip());
+    this.container.addEventListener('mouseleave', () => this.hideTip());
 
     if (this.id || this.id !== '') {
       this.container.setAttribute('id', this.id);
@@ -227,7 +234,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
 
     // 置入 text
     if (text) {
-      container.getElementsByClassName(CLASS_NAME.TEXT)[0]!.innerHTML = text;
+      container.getElementsByClassName(CLASS_NAME.TEXT)[0]!.textContent = text;
     }
 
     // 应用样式表
@@ -247,8 +254,10 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
 
   /**
    * 将相对于指针的偏移量生效到dom元素上
+   * @param x 盒子相对于页面 x 的位置
+   * @param y 盒子相对于页面 y 的位置
    */
-  private setOffsetPosition(x: number, y: number): void {
+  private setOffsetPosition(x: number, y: number) {
     let [offsetX = 0, offsetY = 0] = this.style.offset;
     // 设置 arrow 的 offset
     if (this.container.querySelector(`.${CLASS_NAME.ARROW}`)) {
