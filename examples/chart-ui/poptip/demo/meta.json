@@ -13,6 +13,14 @@
       "screenshot": ""
     },
     {
+      "filename": "poptip-domStyles.ts",
+      "title": {
+        "zh": "气泡提示框样式",
+        "en": "Poptip domStyles"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "update-poptip.ts",
       "title": {
         "zh": "更新位置气泡提示框",

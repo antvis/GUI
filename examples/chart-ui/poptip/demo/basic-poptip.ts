@@ -70,12 +70,7 @@ function createDom(text = 'DOM 元素') {
 // G.Rect
 const poptip = new Poptip({
   style: {
-    style: {
-      '.poptip': {
-        height: '30px',
-      },
-    },
-    text: 'Tooltip 信息',
+    text: '隐藏信息',
   },
 });
 poptip.bind(rect);

@@ -59,10 +59,8 @@ export interface PoptipCfg {
    * @title 样式
    * @description 所有内容模版都可以通过 '.className': cssStyle 的方式，来改变 poptip 的样式
    */
-  style?: {
-    [key: string]: {
-      [key: string]: string;
-    };
+  domStyles?: {
+    [key: '.gui-poptip' | '.gui-poptip-arrow' | '.gui-poptip-text' | string]: { [key: string]: string };
   };
 }
 

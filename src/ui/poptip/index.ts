@@ -2,7 +2,8 @@ import { deepMix, isString, isElement, assign } from '@antv/util';
 import { createDom } from '@antv/dom-util';
 import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
-import { CLASS_NAME, POPTIP_STYLE, TOOLTIP_STYLE } from './constant';
+import { deepAssign } from '../../util';
+import { CLASS_NAME, POPTIP_STYLE } from './constant';
 import { getPositionXY } from './helpers';
 
 import type { PoptipCfg, PoptipOptions } from './types';
@@ -34,7 +35,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       position: 'top',
       follow: false,
       offset: [0, 0],
-      style: POPTIP_STYLE,
+      domStyles: POPTIP_STYLE,
       template: {
         container: `<div class="${CLASS_NAME.CONTAINER}"></div>`,
         text: `<div class="${CLASS_NAME.TEXT}"></div>`,
@@ -203,9 +204,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     const {
       text,
       template: { text: templateText },
-      style,
+      domStyles,
     } = this.style;
-    const containerStyle = style;
 
     container.className = this.containerClassName;
     // 增加 arrow 元素
@@ -225,7 +225,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     }
 
     // 应用样式表
-    const styles = assign({}, TOOLTIP_STYLE, containerStyle);
+    const styles: Record<string, object> = deepAssign({}, POPTIP_STYLE, domStyles);
     const styleStr = Object.entries(styles).reduce((r, [key, value]) => {
       const styleStr = Object.entries(value).reduce((r, [k, v]) => `${r}${k}: ${v};`, '');
       return `${r}${key} { ${styleStr} }`;

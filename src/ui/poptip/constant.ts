@@ -2,9 +2,9 @@
  * 默认类名
  */
 export const CLASS_NAME = {
-  CONTAINER: 'poptip',
-  ARROW: 'poptip-arrow',
-  TEXT: 'poptip-text',
+  CONTAINER: 'gui-poptip',
+  ARROW: 'gui-poptip-arrow',
+  TEXT: 'gui-poptip-text',
 };
 
 /**
@@ -22,7 +22,7 @@ export const POPTIP_STYLE = {
     opacity: 0.8,
     'font-size': '12px',
     'line-height': '20px',
-    padding: '10px 10px 10px 10px',
+    padding: '4px 6px',
     display: 'flex',
     'justify-content': 'center',
     'align-items': 'center',
@@ -70,13 +70,6 @@ export const POPTIP_STYLE = {
   [`.${CLASS_NAME.CONTAINER}[data-position='bottom-right']`]: {
     transform: `translate(-100%, 0)`,
   },
-};
-
-/**
- * tooltip 内置 样式
- * -span 为 tooltip 指向小尖头 的 配置
- */
-export const TOOLTIP_STYLE = {
   [`.${CLASS_NAME.ARROW}`]: {
     width: '6px',
     height: '6px',

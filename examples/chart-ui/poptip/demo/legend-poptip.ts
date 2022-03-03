@@ -48,31 +48,11 @@ const category1 = new Category({
 
 canvas.appendChild(category1);
 
-const poptip1 = new Poptip({
+const poptip = new Poptip({
   style: {
     position: 'top',
-    style: {
-      '.poptip': {
-        height: '20px',
-      },
-      '.poptip-text': {
-        padding: 0,
-        margin: 0,
-      },
-    },
   },
 });
-
-// 可以通过 更新 target 方式
-category1.itemsGroup.childNodes.forEach((item) => {
-  item.addEventListener('mouseenter', () => {
-    poptip1.update({
-      target: item,
-      text: item.attributes.identify,
-    });
-  });
-});
-
 const category2 = new Category({
   style: {
     x: 10,
@@ -93,43 +73,64 @@ const category2 = new Category({
     maxItemWidth: 160,
   },
 });
-
 canvas.appendChild(category2);
 
-const poptip2 = new Poptip({
-  style: {
-    position: 'bottom',
-    style: {
-      '.poptip': {
-        height: '20px',
-      },
-      '.poptip-text': {
-        padding: 0,
-        margin: 0,
-      },
-    },
+poptip.bind(category1, {
+  condition: (e) => {
+    // console.log('e:', e.composedPath());
+    return false;
   },
 });
-
-// 可以通过 更新 x,y 的方式
-category2.itemsGroup.childNodes.forEach((item) => {
-  // poptip 内部获取 元素位置相对body方法。
-  const { x, y, width, height } = getContainerOption(item);
-  // 通过 方向确定 位置
-  const { x: poptipX, y: poptipY } = getPositionXY({ x, y, width, height }, poptip2.position);
-
-  item.addEventListener('mouseenter', () => {
-    poptip2.update({
-      container: {
-        x: poptipX,
-        y: poptipY,
-      },
-      text: item.attributes.identify,
-    });
-    poptip2.show();
-  });
-
-  item.addEventListener('mouseleave', () => {
-    poptip2.hide();
-  });
+poptip.bind(category2, {
+  condition: (e) => {
+    console.log('e:', e);
+    return false;
+  },
 });
+// // 可以通过 更新 target 方式
+// category1.itemsGroup.childNodes.forEach((item) => {
+//   item.addEventListener('mouseenter', () => {
+//     poptip1.update({
+//       target: item,
+//       text: item.attributes.identify,
+//     });
+//   });
+// });
+
+// const poptip2 = new Poptip({
+//   style: {
+//     position: 'bottom',
+//     domStyles: {
+//       '.gui-poptip': {
+//         height: '20px',
+//       },
+//       '.gui-poptip-text': {
+//         padding: 0,
+//         margin: 0,
+//       },
+//     },
+//   },
+// });
+
+// // 可以通过 更新 x,y 的方式
+// category2.itemsGroup.childNodes.forEach((item) => {
+//   // poptip 内部获取 元素位置相对body方法。
+//   const { x, y, width, height } = getContainerOption(item);
+//   // 通过 方向确定 位置
+//   const { x: poptipX, y: poptipY } = getPositionXY({ x, y, width, height }, poptip2.position);
+
+//   item.addEventListener('mouseenter', () => {
+//     poptip2.update({
+//       container: {
+//         x: poptipX,
+//         y: poptipY,
+//       },
+//       text: item.attributes.identify,
+//     });
+//     poptip2.show();
+//   });
+
+//   item.addEventListener('mouseleave', () => {
+//     poptip2.hide();
+//   });
+// });
