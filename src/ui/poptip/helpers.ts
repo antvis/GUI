@@ -1,5 +1,5 @@
-import { isElement, includes } from '@antv/util';
-import { POSITIONS } from './constant';
+import { DisplayObject } from '@antv/g';
+import { isElement } from '@antv/util';
 
 import type { PoptipPosition } from './types';
 
@@ -27,81 +27,42 @@ export function getOffset(dom: Element) {
 
 /**
  * 计算不同方向的 poptip 在目标盒子上的位置，配置 POPTIP_STYLE 达到需要的 样式效果
- * @param option { x: number, y: number, width: number, height: number }
  * @param position PoptipPosition
  * @returns { x: number, y: number }
  */
 export function getPositionXY(
-  option: { x: number; y: number; width: number; height: number },
-  position: PoptipPosition
-): { x: number; y: number } {
-  const { x, y, width, height } = option;
+  clientX: number,
+  clientY: number,
+  target: HTMLElement | DisplayObject,
+  position: PoptipPosition,
+  arrowPointAtCenter: boolean = false,
+  follow: boolean = false
+): [number, number] {
+  if (follow) return [clientX, clientY];
+
+  const { x, y, width, height } = target.getBoundingClientRect();
   switch (position) {
     case 'top':
-      return {
-        x: x + width / 2,
-        y,
-      };
+      return arrowPointAtCenter ? [x + width / 2, y] : [clientX, y];
     case 'left':
-      return {
-        x,
-        y: y + height / 2,
-      };
+      return arrowPointAtCenter ? [x, y + height / 2] : [x, clientY];
     case 'bottom':
-      return {
-        x: x + width / 2,
-        y: y + height,
-      };
+      return arrowPointAtCenter ? [x + width / 2, y + height] : [clientX, y + height];
     case 'right':
-      return {
-        x: x + width,
-        y: y + height / 2,
-      };
-    case 'top-left':
-      return {
-        x,
-        y,
-      };
+      return arrowPointAtCenter ? [x + width, y + height / 2] : [x + width, clientY];
     case 'top-right':
-      return {
-        x: x + width,
-        y,
-      };
-    case 'left-top':
-      return {
-        x,
-        y,
-      };
-    case 'left-bottom':
-      return {
-        x,
-        y: y + height,
-      };
     case 'right-top':
-      return {
-        x: x + width,
-        y,
-      };
-    case 'right-bottom':
-      return {
-        x: x + width,
-        y: y + height,
-      };
+      return [x + width, y];
+    case 'left-bottom':
     case 'bottom-left':
-      return {
-        x,
-        y: y + height,
-      };
+      return [x, y + height];
+    case 'right-bottom':
     case 'bottom-right':
-      return {
-        x: x + width,
-        y: y + height,
-      };
+      return [x + width, y + height];
+    case 'top-left':
+    case 'left-top':
     default:
-      return {
-        x,
-        y,
-      };
+      return [x, y];
   }
 }
 
@@ -145,8 +106,4 @@ export function getContainerOption(target: any): { x: number; y: number; width: 
     width,
     height,
   };
-}
-
-export function getPosition(position: string): PoptipPosition {
-  return (includes(POSITIONS, position) ? position : 'top') as PoptipPosition;
 }

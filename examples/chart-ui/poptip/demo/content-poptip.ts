@@ -36,7 +36,7 @@ new Poptip({
     position: 'right',
     target: rect,
     backgroundShape: false,
-    style: {
+    domStyles: {
       '.custom': {
         height: '80px',
         width: '80px',
