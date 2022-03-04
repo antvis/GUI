@@ -41,3 +41,29 @@ export function getPositionXY(
       return [x, y];
   }
 }
+
+const getSingleTon = <T, P>(fn: (...args: P[]) => T) => {
+  let instance: T;
+  return (...args: P[]) => {
+    if (!instance) instance = fn.apply(this, args);
+    return instance;
+  };
+};
+
+function createElement(id: string) {
+  let div = id && document.getElementById(id);
+  if (!div) {
+    div = document.createElement('div');
+    div.setAttribute('id', id);
+    document.body.appendChild(div);
+  }
+  return div;
+}
+
+/**
+ * 获取全局唯一的 dom 元素
+ */
+export function getSingleTonElement(id: string): HTMLElement {
+  const element = getSingleTon(createElement)(id);
+  return element;
+}

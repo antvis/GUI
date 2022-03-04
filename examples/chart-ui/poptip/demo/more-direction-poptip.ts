@@ -15,9 +15,6 @@ const canvas = new Canvas({
   renderer,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
-
 const rect = new Rect({
   style: {
     x: 60,
@@ -54,6 +51,8 @@ canvas.appendChild(circle);
 const createPoptip = (target, position, arrowPointAtCenter, follow) => {
   const poptip = new Poptip({
     style: {
+      // 每个方向的 poptip 使用不同 id 辨识
+      id: `gui-${position}-poptip`,
       position,
       text: position,
       // top left right bottom 方向定点
@@ -98,3 +97,12 @@ positions2.forEach((position) => {
 });
 
 createPoptip(circle, 'top', false, true);
+
+const observer = new MutationObserver(() => {
+  const poptips = document.getElementsByClassName('gui-poptip');
+  Array.from(poptips).forEach((poptip) => {
+    if (poptip.id !== 'gui-poptip') poptip.remove();
+  });
+});
+const container = document.getElementById('container');
+observer.observe(container, { childList: true });

@@ -15,9 +15,6 @@ const canvas = new Canvas({
   renderer,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
-
 // todo 坐标轴 label 的 poptip
 const data = [
   '蚂蚁技术研究院',

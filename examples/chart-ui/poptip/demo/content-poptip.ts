@@ -15,9 +15,6 @@ const canvas = new Canvas({
   renderer,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
-
 const rect = new Rect({
   style: {
     x: 0,
@@ -34,8 +31,9 @@ canvas.appendChild(rect);
 const poptip = new Poptip({
   style: {
     position: 'right',
+    containerClassName: 'custom-poptip',
     domStyles: {
-      '.custom': {
+      '.custom-poptip': {
         height: '80px',
         width: '80px',
         'background-color': '#fff',
@@ -44,6 +42,14 @@ const poptip = new Poptip({
         'background-size': 'cover',
         'border-radius': '50%',
         opacity: 1,
+      },
+      // 内置小箭头样式自定义
+      '.custom-poptip .gui-poptip-arrow': {
+        width: '6px',
+        height: '6px',
+        transform: 'rotate(45deg)',
+        'background-color': '#fff',
+        position: 'absolute',
       },
       '.custom-text': {
         color: '#000',
@@ -59,22 +65,11 @@ const poptip = new Poptip({
         'border-radius': '50%',
         display: 'inline-block',
       },
-      // 内置小箭头样式自定义
-      '.gui-poptip-arrow': {
-        width: '6px',
-        height: '6px',
-        transform: 'rotate(45deg)',
-        'background-color': '#fff',
-        position: 'absolute',
-      },
     },
-    template: {
-      container: `<div class="gui-poptip custom"></div>`,
-      text: `<div class="custom-text">
+    template: `<div class="custom-text">
         <div class='text-marker'></div>
         <div class='text'>文本内容</div>
       </div>`,
-    },
   },
 });
 

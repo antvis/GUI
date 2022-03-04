@@ -43,8 +43,9 @@ canvas.appendChild(text);
 // G.Rect
 const poptip = new Poptip({
   style: {
+    containerClassName: 'custom-poptip-domStyles',
     domStyles: {
-      '.gui-poptip': {
+      '.custom-poptip-domStyles': {
         'border-radius': '8px',
       },
     },

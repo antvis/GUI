@@ -1,17 +1,16 @@
 import { deepMix, isString, isElement, assign } from '@antv/util';
-import { createDom } from '@antv/dom-util';
 import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { deepAssign } from '../../util';
-import { CLASS_NAME, POPTIP_STYLE } from './constant';
-import { getPositionXY } from './helpers';
+import { CLASS_NAME, POPTIP_ID, POPTIP_STYLE } from './constant';
+import { getPositionXY, getSingleTonElement } from './utils';
 
 import type { PoptipCfg, PoptipOptions } from './types';
 
 export type { PoptipCfg, PoptipOptions };
 
 // 到处方法，可以外部使用
-export { getPositionXY } from './helpers';
+export { getPositionXY } from './utils';
 
 export class Poptip extends GUI<Required<PoptipCfg>> {
   public static tag = 'poptip';
@@ -27,18 +26,12 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       follow: false,
       offset: [0, 0],
       domStyles: POPTIP_STYLE,
-      template: {
-        container: `<div class="${CLASS_NAME.CONTAINER}"></div>`,
-        text: `<div class="${CLASS_NAME.TEXT}"></div>`,
-      },
+      template: `<div class="${CLASS_NAME.TEXT}"></div>`,
     },
   };
 
   /** 容器 HTML 元素节点 */
   private container!: HTMLElement;
-
-  // 暂时需要 container 的类名 之后 element 可以更新后 去除
-  private containerClassName!: string;
 
   /** 显影控制 */
   private visibility: 'visible' | 'hidden' = 'visible';
@@ -46,8 +39,11 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
   /** 所有绑定的目标对象 */
   private map: Map<HTMLElement | DisplayObject, any[]> = new Map();
 
+  /** 节点样式 */
+  private domStyles: string = '';
+
   constructor(options: PoptipOptions) {
-    super(deepMix({}, Poptip.defaultOptions, options));
+    super(deepMix({ style: { id: POPTIP_ID } }, Poptip.defaultOptions, options));
     this.init();
   }
 
@@ -140,6 +136,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    * @param text 文本变化
    */
   public showTip(x?: number, y?: number, options?: Pick<PoptipCfg, 'text' | 'position' | 'offset'>) {
+    this.applyStyles();
     // 不传入 不希望改变 x y
     if (x && y && options) {
       const { offset, position, text } = options;
@@ -176,31 +173,23 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     return this.container;
   }
 
+  public getClassName(): string {
+    const { containerClassName } = this.style;
+    return `${CLASS_NAME.CONTAINER}${containerClassName ? ` ${containerClassName}` : ''}`;
+  }
+
   /**
    * 初始化容器
    */
   private initShape() {
-    const { template } = this.style;
-    const { container } = template;
-    if (!container) return;
+    const { id } = this.style;
 
-    if (isString(container)) {
-      this.container = createDom(container!) as HTMLElement;
-    } else if (isElement(container)) {
-      this.container = container;
-    }
-
-    document.body.appendChild(this.container);
-
-    this.containerClassName = this.container.className;
+    this.container = getSingleTonElement(id);
+    this.container.setAttribute('class', this.getClassName());
 
     // 盒子添加交互
     this.container.addEventListener('mousemove', () => this.showTip());
     this.container.addEventListener('mouseleave', () => this.hideTip());
-
-    if (this.id || this.id !== '') {
-      this.container.setAttribute('id', this.id);
-    }
   }
 
   /**
@@ -210,22 +199,20 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     const { container } = this;
 
     this.clear();
-    const {
-      text,
-      template: { text: templateText },
-      domStyles,
-    } = this.style;
+    const { id, template, text } = this.style;
 
-    container.className = this.containerClassName;
+    this.container.setAttribute('id', id);
+    this.container.setAttribute('class', this.getClassName());
+
     // 增加 arrow 元素
     const arrowNode = `<span class="${CLASS_NAME.ARROW}"></span>`;
     container.innerHTML = arrowNode;
 
     // 置入 text 模版
-    if (isString(templateText)) {
-      container.innerHTML += templateText;
-    } else if (templateText && isElement(templateText)) {
-      container.appendChild(templateText);
+    if (isString(template)) {
+      container.innerHTML += template;
+    } else if (template && isElement(template)) {
+      container.appendChild(template);
     }
 
     // 置入 text
@@ -233,19 +220,28 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       container.getElementsByClassName(CLASS_NAME.TEXT)[0]!.textContent = text;
     }
 
-    // 应用样式表
-    const styles: Record<string, object> = deepAssign({}, POPTIP_STYLE, domStyles);
+    this.container.style.visibility = this.visibility;
+  }
+
+  /**
+   * 应用样式表
+   */
+  private applyStyles() {
+    const styles = deepAssign({}, POPTIP_STYLE, this.style.domStyles) as object;
+
     const styleStr = Object.entries(styles).reduce((r, [key, value]) => {
       const styleStr = Object.entries(value).reduce((r, [k, v]) => `${r}${k}: ${v};`, '');
-      return `${r}${key} { ${styleStr} }`;
+      return `${r} ${key} {${styleStr}}`;
     }, '');
-    let styleDOM = this.container.querySelector('style') as HTMLStyleElement;
-    if (styleDOM) this.container.removeChild(styleDOM);
-    styleDOM = document.createElement('style');
-    styleDOM.innerHTML = styleStr;
-    this.container.appendChild(styleDOM);
 
-    this.container.style.visibility = this.visibility;
+    if (this.domStyles !== styleStr) {
+      this.domStyles = styleStr;
+      let styleDOM = this.container.querySelector('style') as HTMLStyleElement;
+      if (styleDOM) this.container.removeChild(styleDOM);
+      styleDOM = document.createElement('style');
+      styleDOM.innerHTML = styleStr;
+      this.container.appendChild(styleDOM);
+    }
   }
 
   /**

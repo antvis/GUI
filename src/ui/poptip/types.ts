@@ -19,6 +19,16 @@ export type PoptipPosition =
 
 export interface PoptipCfg {
   /**
+   * @title 唯一 ID
+   * @description poptip 组件的 id。如果没有设置，则全局共享一个 poptip 组件
+   */
+  id?: string;
+  /**
+   * @title 容器类名
+   * @description poptip 组件的 class 类名，默认为 .gui-poptip
+   */
+  containerClassName?: string;
+  /**
    * @title 是否可见。
    * @description 控制 poptip 默认是否可见。
    */
@@ -49,12 +59,9 @@ export interface PoptipCfg {
   follow?: boolean;
   /**
    * @title 内容模版
-   * @description 可以添加容器模版 背景模版 和 文本模版
+   * @description 可以添加内容的模板
    */
-  template?: {
-    container?: string | HTMLElement;
-    text?: string | HTMLElement;
-  };
+  template?: string | HTMLElement;
   /**
    * @title 样式
    * @description 所有内容模版都可以通过 '.className': cssStyle 的方式，来改变 poptip 的样式

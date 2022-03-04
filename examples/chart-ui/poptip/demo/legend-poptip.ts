@@ -15,9 +15,6 @@ const canvas = new Canvas({
   renderer,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('gui-poptip')).forEach((poptip) => poptip.remove());
-
 const items = [
   { id: '事例一', color: '#4982f8' },
   { id: '事例二', color: '#41d59c' },

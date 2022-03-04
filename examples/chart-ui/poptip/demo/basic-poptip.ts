@@ -8,9 +8,6 @@ const renderer = new CanvasRenderer({
   enableDirtyRectangleRendering: true,
 });
 
-// 移出之前创建的 poptip
-Array.from(document.getElementsByClassName('poptip')).forEach((poptip) => poptip.remove());
-
 const canvas = new Canvas({
   container: 'container',
   width: 600,

@@ -1,3 +1,5 @@
+export const POPTIP_ID = 'gui-poptip';
+
 /**
  * 默认类名
  */
