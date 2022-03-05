@@ -58,16 +58,8 @@ const poptip = new Poptip({
         'justify-content': 'center',
         'align-items': 'center',
       },
-      '.text-marker': {
-        background: 'green',
-        width: '8px',
-        height: '8px',
-        'border-radius': '50%',
-        display: 'inline-block',
-      },
     },
     template: `<div class="custom-text">
-        <div class='text-marker'></div>
         <div class='text'>文本内容</div>
       </div>`,
   },

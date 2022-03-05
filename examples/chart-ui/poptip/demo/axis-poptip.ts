@@ -50,10 +50,13 @@ const linear = new Linear({
       offset: [0, 15],
       minLength: 20,
       maxLength: 80,
-      autoEllipsis: false,
+      autoEllipsis: true,
       optionalAngles: [20, 30, 45],
       padding: [0, 0, 0, 0],
       autoHide: false,
+      style: {
+        default: { textAlign: 'left' },
+      },
     },
     axisLine: {
       arrow: {
@@ -72,12 +75,18 @@ const poptip = new Poptip();
 
 poptip.bind(linear, {
   position: 'top',
+  follow: true,
+  offset: [0, -10],
   html: (e) => {
-    return e.target?.attributes?.text;
+    // 获取原始文本
+    return e.target?.getConfig().style.text;
   },
   condition: (e) => {
-    // 筛选为 label 以及 label text 大于 5 的显示
-    if (e.target?.name === 'label' && e.target?.attributes?.text.length > 5) {
+    const { target } = e;
+
+    if (target?.name === 'label') {
+      if (!target?.style?.text.endsWith('...')) return;
+      // 判断展示的文本是否缺省
       return e.target;
     }
     return false;
