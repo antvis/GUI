@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { deepMix, isString, isElement, assign, get } from '@antv/util';
+=======
+import { deepMix, isString, isElement, assign } from '@antv/util';
+>>>>>>> be1c57b (feat(poptip): poptip 组件 · 初版 (#122))
 import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { deepAssign } from '../../util';
