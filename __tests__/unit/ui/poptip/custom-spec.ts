@@ -35,25 +35,21 @@ describe('poptip', () => {
 
     const customPoptip = new Poptip({
       style: {
-        template: {
-          container: `<div class="poptip custom" ></div>`,
-          text: `<div class="poptip-text custom-text">
+        containerClassName: 'custom',
+        template: `<div class="poptip-text custom-text">
           <div class='text-marker'></div> 
           <div class='text'>文本内容</div></div>`,
-        },
         domStyles,
       },
     });
 
     const element = customPoptip.getContainer();
 
-    expect(element.className).toBe('poptip custom');
+    expect(element.className).toBe('gui-poptip custom');
     Object.keys(domStyles).forEach((key) => {
       // @ts-ignore
-      expect(element.querySelector('style').innerHTML).toMatch(
-        // @ts-ignore
-        `${key} { ${Object.entries(domStyles[key]).reduce((r, [k, v]) => `${r}${k}: ${v};`, '')} }`
-      );
+      const styles = element.querySelector('style').innerHTML;
+      expect(styles).toContain('.custom{height: 80px');
     });
 
     // @ts-ignore

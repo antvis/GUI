@@ -220,6 +220,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       container.getElementsByClassName(CLASS_NAME.TEXT)[0]!.textContent = text;
     }
 
+    this.applyStyles();
+
     this.container.style.visibility = this.visibility;
   }
 
@@ -231,7 +233,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
 
     const styleStr = Object.entries(styles).reduce((r, [key, value]) => {
       const styleStr = Object.entries(value).reduce((r, [k, v]) => `${r}${k}: ${v};`, '');
-      return `${r} ${key} {${styleStr}}`;
+      return `${r}${key}{${styleStr}}`;
     }, '');
 
     if (this.domStyles !== styleStr) {
