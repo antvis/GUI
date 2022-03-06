@@ -137,7 +137,7 @@
     },
     {
       "path": "dist/gui.min.js",
-      "limit": "320 Kb"
+      "limit": "350 Kb"
     }
   ],
   "author": {
