@@ -1,13 +1,17 @@
-import { Rect } from '@antv/g';
+import { Rect, RectStyleProps } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { TickDatum } from 'ui/axis/types';
 import { GUI } from '../../core/gui';
 import { Linear as Ticks } from '../axis/linear';
 import { BACKGROUND_STYLE, CELL_STYLE } from './constants';
-import { CellAxisCfg, CellAxisOptions, TimeData } from './types';
+import { CellAxisCfg, CellAxisOptions } from './types';
+import { createTickData } from './slideraxis';
 
 export class CellAxis extends GUI<Required<CellAxisCfg>> {
   public static tag = 'cellaxis';
+
+  public get background() {
+    return this.backgroundShape;
+  }
 
   public static defaultOptions = {
     style: {
@@ -15,29 +19,27 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         selected: CELL_STYLE.selected,
         default: CELL_STYLE.default,
       },
-      background: BACKGROUND_STYLE,
+      backgroundStyle: BACKGROUND_STYLE,
       padding: [2, 4, 2, 4] /* top | right | bottom | left */,
       cellGap: 2,
-      tickOptions: {
-        style: {
-          verticalFactor: -1,
-          label: {
-            offset: [0, 8],
-            alignTick: true,
-            style: {
-              default: {
-                fontSize: 5,
-                fill: 'rgba(0,0,0,0.45)',
-              },
+      tickCfg: {
+        verticalFactor: -1,
+        axisLine: false,
+        label: {
+          offset: [0, 8],
+          alignTick: true,
+          style: {
+            default: {
+              fontSize: 5,
+              fill: 'rgba(0,0,0,0.45)',
             },
           },
-          tickLine: {
-            len: 4,
-            style: {
-              default: { stroke: 'rgba(0,0,0,0.25)', lineWidth: 1 },
-            },
+        },
+        tickLine: {
+          len: 4,
+          style: {
+            default: { stroke: 'rgba(0,0,0,0.25)', lineWidth: 1 },
           },
-          axisLine: false,
         },
       },
     },
@@ -49,42 +51,37 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
 
   private ticks: Ticks | undefined;
 
-  private timeDataCache: TimeData[] = [];
-
   constructor(options: CellAxisOptions) {
     super(deepMix({}, CellAxis.defaultOptions, options));
     this.init();
   }
 
   public init(): void {
-    this.timeDataCache = this.attributes.timeData;
     this.createBackground();
     this.createCells();
     this.createTicks();
   }
 
   private createBackground() {
-    const { x, y, length, background } = this.attributes;
+    const { x, y, length, backgroundStyle } = this.attributes;
     this.backgroundShape = new Rect({
-      style: { x, y, width: length, height: background.height, fill: background.fill },
+      style: { ...(backgroundStyle as RectStyleProps), x, y, width: length },
     });
     this.appendChild(this.backgroundShape);
   }
 
   private updateBackground() {
-    const { x, y, length, background } = this.attributes;
+    const { x, y, length, backgroundStyle } = this.attributes;
+    this.backgroundShape.attr(backgroundStyle);
     this.backgroundShape.setAttribute('x', x);
     this.backgroundShape.setAttribute('y', y);
     this.backgroundShape.setAttribute('width', length);
-    this.backgroundShape.setAttribute('height', background.height);
-    this.backgroundShape.setAttribute('fill', background.fill);
   }
 
   private createCells() {
     this.cellShapes = [];
     const { length, timeData, padding, cellGap, cell } = this.attributes;
     const { default: defaultStyle, selected: selectedStyle } = cell;
-
     const [top, right, bottom, left] = padding;
     const cellNum = timeData.length;
     if (cellNum === 0) return;
@@ -106,33 +103,46 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     }
   }
 
-  // 由于timeData的个数很有可能发生变化，姑且全部重新创建，可能会有性能问题，不推荐在动画里使用update
+  // 思路，先不销毁cells，按需创建，修改，删除
   private updateCells() {
     const { length, timeData, padding, cellGap, cell } = this.attributes;
-    if (timeData.length !== this.timeDataCache.length) this.createCells();
+    const { default: defaultStyle, selected: selectedStyle } = cell;
+    const [top, right, bottom, left] = padding;
+    // 根据新的timeData计算得到cell个数
+    const cellNum = timeData.length;
+    if (cellNum === 0) return;
+    const cellWidth = (length - right - left - cellNum * cellGap + cellGap) / cellNum;
+    if (cellWidth < 0) return;
+    const cellHeight = (this.backgroundShape.getAttribute('height') as number) - top - bottom;
+    if (cellHeight < 0) return;
+    let i;
+    for (i = 0; i < cellNum; i += 1) {
+      const style = {
+        ...defaultStyle,
+        x: right + i * cellWidth + i * cellGap,
+        y: top,
+        width: cellWidth,
+        height: cellHeight,
+      };
+      if (i < this.cellShapes.length) {
+        this.cellShapes[i].attr(style);
+      } else {
+        const cell = new Rect({ style });
+        this.cellShapes.push(cell);
+        this.backgroundShape.appendChild(cell);
+      }
+    }
+    i = this.cellShapes.length - 1;
+    while (i >= cellNum) {
+      this.backgroundShape.removeChild(this.cellShapes[i]);
+      this.cellShapes[i].destroy();
+      this.cellShapes.pop();
+      i -= 1;
+    }
   }
 
   private createTicks() {
-    const createTickData = (data: TimeData[], tickInterval = 1) => {
-      const tickData = [];
-      for (let i = 0; i < data.length; i += tickInterval) {
-        const step = 1 / (data.length - 1);
-        tickData.push({
-          value: step * i,
-          text: data[i].date,
-          state: 'default',
-          id: String(i),
-        } as TickDatum);
-      }
-      return tickData;
-    };
-
-    const {
-      x,
-      y,
-      timeData,
-      tickOptions: { style: tickStyle },
-    } = this.attributes;
+    const { x, y, timeData, tickCfg: tickStyle } = this.attributes;
 
     if (this.cellShapes.length <= 1) return;
     const firstCell = this.cellShapes[0];
@@ -146,10 +156,16 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     this.appendChild(this.ticks);
   }
 
+  private updateTicks() {
+    this.ticks?.destroy();
+    this.createTicks();
+  }
+
   public update(cfg: Partial<Required<CellAxisCfg>>): void {
     this.attr(deepMix({}, this.attributes, cfg));
     this.updateBackground();
-    this.update;
+    this.updateCells();
+    this.updateTicks();
   }
 
   public clear(): void {}
