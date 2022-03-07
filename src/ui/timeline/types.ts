@@ -1,6 +1,6 @@
 import { DisplayObjectConfig } from '@antv/g';
-import { CircleProps, MixAttrs, RectProps } from 'types';
-import { CheckboxOptions, LinearOptions } from 'ui';
+import { CircleProps, LabelProps, MixAttrs, RectProps, TextProps } from 'types';
+import { CheckboxOptions, LinearCfg, LinearOptions, TextCfg } from 'ui';
 import { ButtonCfg } from 'ui/button';
 import { TooltipOptions } from 'ui/tooltip';
 
@@ -9,6 +9,16 @@ export type TimeData = {
   [k: string]: any;
 };
 export type PlayAxisBaseCfg = {
+  /**
+   * @title 时间选择
+   * @description 时间选择， 起始时间与结束时间/单一时间
+   */
+  selection?: [TimeData, TimeData] | [TimeData];
+  /**
+   * @title  单一时间
+   * @description 单一时间
+   */
+  single?: boolean;
   /**
    * @title x 坐标
    * @description x 坐标
@@ -28,7 +38,7 @@ export type PlayAxisBaseCfg = {
    * @title 刻度配置
    * @description 调整刻度配置,实际上刻度是一条width为0的linear型axis组件
    */
-  tickOptions?: Partial<LinearOptions>;
+  tickCfg?: Partial<LinearCfg>;
   /**
    * @title 刻度配置
    * @description 调整刻度配置,实际上刻度是一条width为0的linear型axis组件
@@ -61,7 +71,7 @@ export type CellAxisCfg = PlayAxisBaseCfg & {
    * @title  背景样式
    * @description 背景样式
    */
-  background?: Partial<RectProps>;
+  backgroundStyle?: Partial<RectProps>;
   /**
    * @title   padding
    * @description background 的 padding
@@ -79,17 +89,17 @@ export type SliderAxisCfg = PlayAxisBaseCfg & {
    * @title  手柄样式
    * @description 手柄样式
    */
-  handler?: CircleProps;
+  handleStyle?: CircleProps;
   /**
    * @title  背景样式
    * @description 背景样式
    */
-  background?: RectProps;
+  backgroundStyle?: Omit<RectProps, 'width' | 'x' | 'y'>;
   /**
    * @title  selection样式
    * @description 选中时间范围样式
    */
-  selection?: RectProps;
+  selectionStyle?: Omit<RectProps, 'width' | 'x' | 'y'>;
 };
 export type CellAxisOptions = DisplayObjectConfig<CellAxisCfg>;
 export type SliderAxisOptions = DisplayObjectConfig<SliderAxisCfg>;
@@ -99,6 +109,51 @@ type Orient = {
   layout: 'row' | 'col';
   controlButtonAlign: 'normal' | 'left' | 'right';
 };
+export type SpeedControlCfg = {
+  /**
+   * @title 可调节的速度
+   * @description 配置可调节的速度，建议配置范围在 5 个区间，如: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
+   */
+  speeds?: string[];
+  /**
+   * @title   速度变化回调函数
+   * @description 监听速度变化的回调函数
+   */
+  onSpeedChange?: (speed: number) => void;
+  /**
+   * @title   x
+   * @description x坐标
+   */
+  x: number;
+  /**
+   * @title   y
+   * @description y坐标
+   */
+  y: number;
+  /**
+   * @title   width
+   * @description 宽度
+   */
+  width?: number;
+  /**
+   * @title   height
+   * @description 高
+   */
+  height?: number;
+  /**
+   * @title   label
+   * @description label配置
+   */
+  label?: Omit<TextCfg, 'text'>;
+  /**
+   * @title   spacing
+   * @description label与按钮的间隔
+   */
+  spacing?: number;
+};
+
+export type SpeedControlOptions = DisplayObjectConfig<SpeedControlCfg>;
+
 type Controls =
   | false
   | {
@@ -137,18 +192,7 @@ type Controls =
        * @title 倍速调节器
        * @description 倍速调节器设置。设置为 null 时，不展示倍速调节器
        */
-      speedControl?: {
-        /**
-         * @title 可调节的速度
-         * @description 配置可调节的速度，建议配置范围在 5 个区间，如: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
-         */
-        speeds?: number[];
-        /**
-         * @title   速度变化回调函数
-         * @description 监听速度变化的回调函数
-         */
-        onSpeedChange?: (speed: number) => void;
-      };
+      speedControl?: SpeedControlCfg;
     };
 
 type TooltipFormatter = (time: string | Date) => TooltipOptions;
@@ -195,7 +239,7 @@ export type TimelineCfg = {
    * @title 播放轴cell类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
    */
-  cellOptions?: CellAxisCfg;
+  cellAxisCfg?: CellAxisCfg;
   /**
    * @title 播放轴slider类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
