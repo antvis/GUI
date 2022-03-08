@@ -61,11 +61,22 @@ describe('play axis', () => {
         length: 300,
         timeData: date2,
         tickCfg: {},
-        selection: [date2[0].date],
+        selection: [date2[7].date],
+        selectionStyle: {
+          stroke: '#ff00ee',
+        },
+        backgroundStyle: {
+          stroke: '#eeeeee',
+        },
         onSelectionChange: console.log,
       },
     });
     canvas.appendChild(slideraxis);
+    const { sliderBackground, sliderSelection, sliderTicks } = slideraxis;
+    const { startPos, endPos } = sliderTicks.attributes;
+    expect(sliderSelection.style.stroke).toBe('#ff00ee');
+    expect(sliderBackground.style.stroke).toBe('#eeeeee');
+    expect(sliderSelection.style.x).toBeCloseTo(((endPos[0] - startPos[0]) * (7 - 0)) / (date2.length - 1), 4);
   });
   test('cell', () => {
     const cellaxis = new CellAxis({
@@ -76,12 +87,22 @@ describe('play axis', () => {
         timeData: date2,
         tickCfg: {},
         selection: [date2[2].date, date2[7].date],
+        cellStyle: {
+          selected: { fill: '#ff00ee' },
+        },
+        backgroundStyle: {
+          fill: '#eeeeee',
+        },
         onSelectionChange: console.log,
       },
     });
     cellaxis.update({ timeData: date, selection: [date[1].date, date[6].date] });
+    const { cells, cellBackground } = cellaxis;
     canvas.appendChild(cellaxis);
-    expect(1).toBe(1);
+    for (let i = 1; i <= 6; i += 1) {
+      expect(cells[i].style.fill).toBe('#ff00ee');
+    }
+    expect(cellBackground.style.fill).toBe('#eeeeee');
   });
   test('cell single', () => {
     const cellaxis = new CellAxis({

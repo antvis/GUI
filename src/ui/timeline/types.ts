@@ -94,12 +94,12 @@ export type SliderAxisCfg = PlayAxisBaseCfg & {
    * @title  背景样式
    * @description 背景样式
    */
-  backgroundStyle?: Omit<RectProps, 'width' | 'x' | 'y'>;
+  backgroundStyle?: Partial<Omit<RectProps, 'width' | 'x' | 'y'>>;
   /**
    * @title  selection样式
    * @description 选中时间范围样式
    */
-  selectionStyle?: Omit<RectProps, 'width' | 'x' | 'y'>;
+  selectionStyle?: Partial<Omit<RectProps, 'width' | 'x' | 'y'>>;
 };
 export type CellAxisOptions = DisplayObjectConfig<CellAxisCfg>;
 export type SliderAxisOptions = DisplayObjectConfig<SliderAxisCfg>;
