@@ -3,7 +3,7 @@ import { clone, deepMix, minBy, maxBy, get, sortBy, isString, isNumber, isUndefi
 import { vec2 } from '@antv/matrix-util';
 import type { vec2 as Vector } from '@antv/matrix-util';
 import type { PathCommand } from '@antv/g';
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type {
   Point,
   TickDatum,
@@ -42,10 +42,10 @@ import { isLabelsOverlap } from './overlap/is-overlap';
 interface IAxisLineCfg {
   style: ShapeAttrs;
   arrow: {
-    start: MarkerCfg & {
+    start: MarkerStyleProps & {
       rotate: number;
     };
-    end: MarkerCfg & {
+    end: MarkerStyleProps & {
       rotate: number;
     };
   };

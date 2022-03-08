@@ -1,5 +1,5 @@
 import type { DisplayObjectConfig, MixAttrs, RectProps, LabelProps } from '../../types';
-import type { MarkerCfg } from '../marker/types';
+import type { MarkerStyleProps } from '../marker/types';
 
 export type SwitchCfg = {
   /**
@@ -49,7 +49,7 @@ export type SwitchCfg = {
      * @title 图标
      * @description 标签文本前缀的图标
      */
-    marker?: MarkerCfg;
+    marker?: MarkerStyleProps;
   };
   /**
    * @title 非选中时的内容
@@ -60,7 +60,7 @@ export type SwitchCfg = {
      * @title 图标
      * @description 标签文本前缀的图标
      */
-    marker?: MarkerCfg;
+    marker?: MarkerStyleProps;
   };
   /**
    * @title 样式

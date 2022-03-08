@@ -5,7 +5,7 @@ import { GUI } from '../../core/gui';
 import { Handle } from './handle';
 import { Sparkline } from '../sparkline';
 import { toPrecision, getShapeSpace, getEventPos, getStateStyle, normalPadding } from '../../util';
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type { SparklineCfg } from '../sparkline';
 import type { IHandleCfg } from './handle';
 import type { ShapeAttrs, RectProps } from '../../types';
@@ -437,7 +437,7 @@ export class Slider extends GUI<SliderCfg> {
     const { show, handleIcon, handleStyle: style } = handleCfg;
     const cursor = this.getOrientVal(['ew-resize', 'ns-resize']) as Cursor;
     const size = this.getHandleSize(handleType);
-    let tempStyle!: RectProps | MarkerCfg | ShapeAttrs;
+    let tempStyle!: RectProps | MarkerStyleProps | ShapeAttrs;
     let type!: 'hide' | 'default' | 'symbol';
     if (!show) {
       type = 'hide';
@@ -465,7 +465,7 @@ export class Slider extends GUI<SliderCfg> {
         cursor,
         size,
         symbol: handleIcon,
-      } as MarkerCfg;
+      } as MarkerStyleProps;
     }
 
     return {

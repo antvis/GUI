@@ -1,23 +1,22 @@
 import { Path, Image, PathCommand, ImageStyleProps, PathStyleProps, DisplayObject } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
 import { GUI } from '../../core/gui';
-import type { ShapeAttrs } from '../../types';
 import { parseMarker } from './utils';
 import { circle, square, diamond, triangleDown, triangle, line, dot, dash, smooth, hv, vh, hvh, vhv } from './symbol';
-import type { MarkerCfg, MarkerOptions, FunctionalSymbol } from './types';
+import type { MarkerStyleProps, MarkerOptions, FunctionalSymbol } from './types';
 
-export type { MarkerCfg, MarkerOptions, FunctionalSymbol };
+export type { MarkerStyleProps, MarkerOptions, FunctionalSymbol };
 
 /**
  * Marker
  */
-export class Marker extends GUI<Required<MarkerCfg>> {
+export class Marker extends GUI<Required<MarkerStyleProps>> {
   /**
    * 标签类型
    */
   public static tag = 'marker';
 
-  private markerShape?: DisplayObject;
+  private markerShape?: Path | Image;
 
   private static MARKER_SYMBOL_MAP = new Map<string, FunctionalSymbol>();
 
@@ -51,13 +50,13 @@ export class Marker extends GUI<Required<MarkerCfg>> {
    * 根据 type 获取 maker shape
    */
   public init(): void {
-    this.createMarker();
+    this.update();
   }
 
   /**
    * 组件的更新
    */
-  public update(cfg: Partial<MarkerCfg>): void {
+  public update(cfg?: Partial<MarkerStyleProps>): void {
     this.attr(deepMix({}, this.attributes, cfg));
     this.clear();
     this.createMarker();
@@ -69,15 +68,6 @@ export class Marker extends GUI<Required<MarkerCfg>> {
   public clear() {
     this.markerShape?.destroy();
     this.removeChildren();
-  }
-
-  /**
-   * @override
-   */
-  setAttribute<O extends MarkerCfg, Key extends keyof O>(attributeName: Key, value: O[Key], force?: boolean) {
-    if (this.markerShape) {
-      this.markerShape.setAttribute(attributeName, value, force);
-    }
   }
 
   private createMarker() {

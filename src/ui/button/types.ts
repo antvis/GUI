@@ -1,8 +1,8 @@
 import { Cursor } from '@antv/g';
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type { DisplayObjectConfig, MixAttrs, TextProps, RectProps } from '../../types';
 
-export type IMarkerCfg = Omit<MarkerCfg, 'symbol'>;
+export type IMarkerCfg = Omit<MarkerStyleProps, 'symbol'>;
 
 /**
  * @title Button 组件
@@ -68,7 +68,7 @@ export type ButtonCfg = {
    * @title 图标
    * @description 图标
    */
-  marker?: MarkerCfg['symbol'];
+  marker?: MarkerStyleProps['symbol'];
   /**
    * @description marker 位置
    */

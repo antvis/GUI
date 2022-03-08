@@ -7,11 +7,11 @@ import type {
   ImageProps,
   PathProps,
 } from '../../types';
-import type { MarkerCfg } from '../marker/types';
+import type { MarkerStyleProps } from '../marker/types';
 import type { PageNavigatorCfg } from '../page-navigator';
 
 export type State = StyleState | 'default-active' | 'selected-active';
-export type SymbolCfg = MarkerCfg['symbol'];
+export type SymbolCfg = MarkerStyleProps['symbol'];
 // 色板
 export type RailCfg = {
   // 色板宽度
@@ -66,7 +66,7 @@ type CategoryItem = {
 };
 
 // 图例项图标
-export type ItemMarkerCfg = {
+export type ItemMarkerStyleProps = {
   marker?: SymbolCfg;
   size?: number;
   spacing?: number;
@@ -95,7 +95,7 @@ export type CategoryItemCfg = {
   itemWidth?: number;
   maxItemWidth?: number;
   state?: State;
-  itemMarker: ItemMarkerCfg;
+  itemMarker: ItemMarkerStyleProps;
   itemName: {
     content?: string;
     spacing?: number;
@@ -180,7 +180,9 @@ export type CategoryCfg = LegendBaseCfg & {
   maxItemWidth?: number;
   // 图例项间的间隔
   spacing?: [number, number];
-  itemMarker?: Partial<ItemMarkerCfg> | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerCfg);
+  itemMarker?:
+    | Partial<ItemMarkerStyleProps>
+    | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemMarkerStyleProps);
   itemName?: ItemNameCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemNameCfg);
   itemValue?: ItemValueCfg | ((item: CategoryItem, index: number, items: CategoryItem[]) => ItemValueCfg);
   itemBackgroundStyle?:
