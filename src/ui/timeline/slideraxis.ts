@@ -380,7 +380,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     if (!this.backgroundShape) {
       this.backgroundShape = new Rect({
         style: {
-          ...backgroundStyle,
+          ...(backgroundStyle as RectStyleProps),
           width: length,
         },
       });
