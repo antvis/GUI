@@ -1,5 +1,5 @@
 import { Circle, Rect, RectStyleProps } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, isArray } from '@antv/util';
 import { GUIOption } from 'types';
 import { TickDatum } from 'ui/axis/types';
 import { GUI } from '../../core/gui';
@@ -73,7 +73,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     },
   };
 
-  private timeIndexMap = new Map<TimeData, number>();
+  private timeIndexMap = new Map<TimeData['date'], number>();
 
   private minLength: number = 0;
 
@@ -96,66 +96,205 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     this.bindEvents();
   }
 
-  private bindEvents() {
-    this.bindStartHandleEvents();
+  private backgroundShape!: Rect;
+
+  private selectionShape!: Rect;
+
+  private startHandleShape!: Circle;
+
+  private endHandleShape!: Circle;
+
+  private ticks: Ticks | undefined;
+
+  private clearEvents = () => {};
+
+  public get sliderBackground() {
+    return this.backgroundShape;
   }
 
-  private bindStartHandleEvents() {
-    const { selection, backgroundStyle, length, timeData } = this.attributes;
-    const radius = backgroundStyle.radius as number;
-    const actualLength = length - radius * 2; // 实际的总长度
-    let dragging = false; // 拖拽状态
-    let lastPosition: number; // 保存上次的位置
-    let maxLength = Infinity; //  蓝轴最长长度
-    const nearestTimeDataId: number = this.timeIndexMap.get(selection[0]) as number; // 最近的时间节点
-    const onDragStart = (event: any) => {
-      dragging = true;
-      lastPosition = event.canvasX;
-      maxLength =
-        (this.selectionShape.getAttribute('x') as number) + (this.selectionShape.getAttribute('width') as number);
-    };
-    const onDragMove = (event: any) => {
-      event.stopPropagation();
-      if (dragging) {
-        console.log('test');
-        const offset = event.canvasX - lastPosition;
-        const newLength = (this.selectionShape.getAttribute('width') as number) - offset;
-        if (newLength > this.minLength && newLength < maxLength) {
-          // TODO 拖拽性能卡顿
-          this.startHandleShape.style.x = (this.startHandleShape.getAttribute('x') as number) + offset;
-          // this.selectionShape.attr({
-          //   x: (this.selectionShape.getAttribute('x') as number) + offset,
-          //   width: newLength,
-          // });
-          // this.endHandleShape.attr({
-          //   x: newLength,
-          // });
-          // const startHandleX = (this.selectionShape.getAttribute('x') as number) - radius; //相对背景的x坐标
-          // nearestTimeDataId = Math.round((startHandleX / actualLength) * timeData.length);
-          // nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+  public get sliderTicks() {
+    return this.ticks;
+  }
+
+  public get sliderSelection() {
+    return this.selectionShape;
+  }
+
+  public get sliderStartHandle() {
+    return this.startHandleShape;
+  }
+
+  public get sliderEndHandle() {
+    return this.endHandleShape;
+  }
+
+  private bindEvents() {
+    const { selection, backgroundStyle, length, timeData, single, onSelectionChange } = this.attributes;
+    if (single && Array.isArray(selection) && selection.length === 1) {
+      const radius = backgroundStyle.radius as number;
+      let selectionDragging = false;
+      let lastPosition: number; // 保存上次的位置
+      const actualLength = length - radius * 2; // 实际的总长度
+      const newSelection: [string] = selection as [string]; // 变化的选中时间
+      const onSelectionDragStart = (event: any) => {
+        event.stopPropagation();
+        selectionDragging = true;
+        lastPosition = event.canvasX;
+      };
+      const onDragMove = (event: any) => {
+        event.stopPropagation();
+        if (selectionDragging) {
+          const offset = event.canvasX - lastPosition;
+          this.selectionShape.attr({
+            x: (this.selectionShape.getAttribute('x') as number) + offset,
+          });
+          const selectionX = this.selectionShape.getAttribute('x') as number; // 相对背景的x坐标
+          let nearestTimeDataId = Math.round((selectionX / actualLength) * (timeData.length - 1));
+          nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+          newSelection[0] = timeData[nearestTimeDataId].date;
+          lastPosition = event.x;
+          this.attr({ selection: newSelection });
+          onSelectionChange(newSelection);
+        }
+      };
+      const onDragEnd = () => {
+        selectionDragging = false;
+        this.attr({ selection: newSelection });
+      };
+      this.selectionShape.addEventListener('mousedown', onSelectionDragStart);
+      this.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      document.addEventListener('mouseleave', onDragEnd);
+      // 清理监听事件函数
+      const clearListeners = () => {
+        this.selectionShape.removeEventListener('mousedown', onSelectionDragStart);
+        this.removeEventListener('mousemove', onDragMove);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('mouseleave', onDragEnd);
+      };
+      this.clearEvents = clearListeners;
+    } else if (!single && Array.isArray(selection) && selection.length === 2) {
+      const radius = backgroundStyle.radius as number;
+      const actualLength = length - radius * 2; // 实际的总长度
+      let startHandleDragging = false; // startHandle拖拽状态
+      let endHandleDragging = false;
+      let selectionDragging = false;
+      let lastPosition: number; // 保存上次的位置
+      let maxLength = Infinity; //  蓝轴最长长度
+      const newSelection: [string, string] = selection as [string, string]; // 变化的时间范围
+      const onStartHandleDragStart = (event: any) => {
+        event.stopPropagation();
+        startHandleDragging = true;
+        lastPosition = event.canvasX;
+        maxLength =
+          (this.selectionShape.getAttribute('x') as number) + (this.selectionShape.getAttribute('width') as number);
+      };
+      const onEndHandleDragStart = (event: any) => {
+        event.stopPropagation();
+        endHandleDragging = true;
+        lastPosition = event.canvasX;
+        maxLength = -(this.selectionShape.getAttribute('x') as number) + length;
+      };
+      const onSelectionDragStart = (event: any) => {
+        event.stopPropagation();
+        selectionDragging = true;
+        lastPosition = event.canvasX;
+      };
+      const onDragMove = (event: any) => {
+        event.stopPropagation();
+        if (startHandleDragging) {
+          const offset = event.canvasX - lastPosition;
+          const newLength = (this.selectionShape.getAttribute('width') as number) - offset;
+          if (newLength > this.minLength && newLength < maxLength) {
+            // TODO 拖拽性能卡顿
+            // this.startHandleShape.attr({ x: (this.startHandleShape.getAttribute('x') as number) + offset });
+            this.selectionShape.attr({
+              x: (this.selectionShape.getAttribute('x') as number) + offset,
+              width: newLength,
+            });
+            this.endHandleShape.attr({
+              x: newLength,
+            });
+            const startHandleX = (this.selectionShape.getAttribute('x') as number) - radius; // 相对背景的x坐标
+            let nearestTimeDataId = Math.round((startHandleX / actualLength) * (timeData.length - 1));
+            nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+            newSelection[0] = timeData[nearestTimeDataId].date;
+            lastPosition = event.x;
+          }
+        } else if (endHandleDragging) {
+          const offset = event.canvasX - lastPosition;
+          const newLength = (this.selectionShape.getAttribute('width') as number) + offset;
+          if (newLength > this.minLength && newLength < maxLength) {
+            this.selectionShape.attr({
+              width: newLength,
+            });
+            this.endHandleShape.attr({
+              x: newLength,
+            });
+            const endHandleX = (this.selectionShape.getAttribute('x') as number) + newLength - radius;
+            let nearestTimeDataId = Math.round((endHandleX / actualLength) * (timeData.length - 1));
+            nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+            newSelection[1] = timeData[nearestTimeDataId].date;
+            lastPosition = event.x;
+          }
+        } else if (selectionDragging) {
+          const offset = event.canvasX - lastPosition;
+          this.selectionShape.attr({
+            x: (this.selectionShape.getAttribute('x') as number) + offset,
+          });
+          const startHandleX = (this.selectionShape.getAttribute('x') as number) - radius; // 相对背景的x坐标
+          const endHandleX = startHandleX + (this.selectionShape.getAttribute('width') as number);
+
+          let nearestTimeDataId = Math.round((startHandleX / actualLength) * (timeData.length - 1));
+          nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+          newSelection[0] = timeData[nearestTimeDataId].date;
+          nearestTimeDataId = Math.round((endHandleX / actualLength) * (timeData.length - 1));
+          nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+          newSelection[1] = timeData[nearestTimeDataId].date;
+
           lastPosition = event.x;
         }
-      }
-    };
-    const onDragEnd = () => {
-      dragging = false;
-    };
-    this.startHandleShape.addEventListener('mousedown', onDragStart);
-    this.startHandleShape.addEventListener('mousemove', onDragMove);
-    this.startHandleShape.addEventListener('mouseup', onDragEnd);
-    this.startHandleShape.addEventListener('mouseleave', onDragEnd);
+        if (selectionDragging || startHandleDragging || endHandleDragging) {
+          this.attr({ selection: newSelection });
+          onSelectionChange(newSelection);
+        }
+      };
+      const onDragEnd = () => {
+        startHandleDragging = false;
+        endHandleDragging = false;
+        selectionDragging = false;
+        this.attr({ selection: newSelection });
+      };
+      this.endHandleShape.addEventListener('mousedown', onEndHandleDragStart);
+      this.startHandleShape.addEventListener('mousedown', onStartHandleDragStart);
+      this.selectionShape.addEventListener('mousedown', onSelectionDragStart);
+      this.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      document.addEventListener('mouseleave', onDragEnd);
+
+      // 清理监听事件函数
+      const clearListeners = () => {
+        this.startHandleShape.removeEventListener('mousedown', onStartHandleDragStart);
+        this.startHandleShape.removeEventListener('mousedown', onStartHandleDragStart);
+        this.selectionShape.removeEventListener('mousedown', onSelectionDragStart);
+        this.removeEventListener('mousemove', onDragMove);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('mouseleave', onDragEnd);
+      };
+      this.clearEvents = clearListeners;
+    }
   }
 
   private initTimeIndexMap() {
-    this.timeIndexMap = new Map<TimeData, number>();
+    this.timeIndexMap = new Map<TimeData['date'], number>();
     const { timeData } = this.attributes;
     for (let i = 0; i < timeData.length; i += 1) {
-      this.timeIndexMap.set(timeData[i], i);
+      this.timeIndexMap.set(timeData[i].date, i);
     }
   }
 
   private createTicks() {
-    const { x, y, timeData, tickCfg: tickStyle, length, backgroundStyle } = this.attributes;
+    const { timeData, tickCfg: tickStyle, length, backgroundStyle } = this.attributes;
     const radius = backgroundStyle.radius as number;
     const actualLength = length - radius * 2;
     if (actualLength > 0) {
@@ -163,8 +302,8 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         this.ticks = new Ticks({
           style: {
             ...tickStyle,
-            startPos: [x + radius, y],
-            endPos: [x + radius + actualLength, y],
+            startPos: [radius, 0],
+            endPos: [radius + actualLength, 0],
             ticks: createTickData(timeData),
           },
         });
@@ -172,8 +311,8 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       } else {
         this.ticks.update({
           ...tickStyle,
-          startPos: [x + radius, y],
-          endPos: [x + radius + actualLength, y],
+          startPos: [radius, 0],
+          endPos: [radius + actualLength, 0],
           ticks: createTickData(timeData),
         });
       }
@@ -184,7 +323,16 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     const { length, selectionStyle, timeData, selection, single, handleStyle, backgroundStyle } = this.attributes;
     const radius = backgroundStyle.radius as number;
     const actualLength = length - radius * 2;
-    if (selection.length === 2 && !single && actualLength > 0) {
+    if (Array.isArray(selection) && selection.length === 1 && single) {
+      const idx = this.timeIndexMap.get(selection[0]);
+      if (idx !== undefined) {
+        const startX = (actualLength * idx) / (timeData.length - 1);
+        this.selectionShape = new Rect({
+          style: { ...(selectionStyle as RectStyleProps), x: startX, width: radius * 2, radius },
+        });
+        this.backgroundShape.appendChild(this.selectionShape);
+      }
+    } else if (selection.length === 2 && !single && actualLength > 0) {
       const [start, end] = selection;
       const [startIdx, endIdx] = [this.timeIndexMap.get(start), this.timeIndexMap.get(end)];
       if (startIdx !== undefined && endIdx !== undefined && endIdx > startIdx) {
@@ -228,12 +376,10 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   }
 
   private createBackground() {
-    const { x, y, length, backgroundStyle } = this.attributes;
+    const { length, backgroundStyle } = this.attributes;
     if (!this.backgroundShape) {
       this.backgroundShape = new Rect({
         style: {
-          x,
-          y,
           ...backgroundStyle,
           width: length,
         },
@@ -241,8 +387,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       this.appendChild(this.backgroundShape);
     } else {
       this.backgroundShape.attr({
-        x,
-        y,
         ...backgroundStyle,
         width: length,
       });
@@ -250,25 +394,17 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   }
 
   public update(cfg: Partial<Required<SliderAxisCfg>>): void {
+    this.clearEvents();
     this.attr(deepMix({}, this.attributes, cfg));
     this.initTimeIndexMap();
     this.initMinLength();
     this.createTicks();
     this.createBackground();
     this.createSelection();
+    this.bindEvents();
   }
 
   public clear(): void {
     throw new Error('Method not implemented.');
   }
-
-  private backgroundShape!: Rect;
-
-  private selectionShape!: Rect;
-
-  private startHandleShape!: Circle;
-
-  private endHandleShape!: Circle;
-
-  private ticks: Ticks | undefined;
 }
