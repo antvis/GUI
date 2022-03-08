@@ -2,7 +2,7 @@ import { Rect, RectStyleProps, Text, TextStyleProps } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { getStateStyle as getStyle, normalPadding, getShapeSpace } from '../../util';
-import { Marker, MarkerCfg } from '../marker';
+import { Marker, MarkerStyleProps } from '../marker';
 import type { TagCfg, TagOptions } from './types';
 
 export type { TagCfg, TagOptions };
@@ -24,7 +24,7 @@ export class Tag extends GUI<Required<TagCfg>> {
     };
   }
 
-  private get markerShapeCfg(): MarkerCfg {
+  private get markerShapeCfg(): MarkerStyleProps {
     const { marker } = this.attributes;
     return marker;
   }

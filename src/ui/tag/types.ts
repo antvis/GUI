@@ -1,4 +1,4 @@
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type { RectProps, TextProps, MixAttrs, DisplayObjectConfig } from '../../types';
 
 export type TagCfg = {
@@ -9,7 +9,7 @@ export type TagCfg = {
   /** tag 文本 */
   text?: string;
   /** 图标类型，也可以自定义; 默认不显示 */
-  marker?: MarkerCfg;
+  marker?: MarkerStyleProps;
   /** text 和 marker 的间距，默认为 4px (只有当 marker 存在时，才生效) */
   spacing?: number;
   /** 水平对齐方式 */

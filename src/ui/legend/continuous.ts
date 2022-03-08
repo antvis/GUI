@@ -11,7 +11,7 @@ import { toPrecision, getShapeSpace, getEventPos, deepAssign } from '../../util'
 import type { Pair } from '../slider/types';
 import type { IRailCfg } from './rail';
 import type { ILabelsCfg } from './labels';
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type { DisplayObject, TextProps } from '../../types';
 import type { ContinuousCfg, ContinuousOptions, IndicatorCfg, RailCfg, HandleCfg, SymbolCfg } from './types';
 
@@ -19,7 +19,7 @@ export type { ContinuousOptions };
 
 type HandleType = 'start' | 'end';
 interface IHandleCfg {
-  markerCfg: MarkerCfg;
+  markerCfg: MarkerStyleProps;
   textCfg: TextProps;
 }
 
@@ -520,7 +520,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
     const icon = new Marker({
       name: 'icon',
-      style: markerCfg as MarkerCfg,
+      style: markerCfg as MarkerStyleProps,
     });
     el.appendChild(icon);
 
@@ -581,7 +581,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 指示器小箭头
     const icon = new Marker({
       name: `arrow`,
-      style: markerCfg as MarkerCfg,
+      style: markerCfg as MarkerStyleProps,
     });
     icon.toBack();
     el.appendChild(icon);

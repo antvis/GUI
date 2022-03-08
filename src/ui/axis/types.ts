@@ -1,4 +1,4 @@
-import type { MarkerCfg } from '../marker';
+import type { MarkerStyleProps } from '../marker';
 import type { MixAttrs, DisplayObjectConfig, LineProps, ShapeAttrs, StyleState as State, TextProps } from '../../types';
 
 export type LabelType = 'text' | 'number' | 'time';
@@ -27,8 +27,8 @@ export type AxisTitleCfg = {
 export type AxisLineCfg = {
   style?: ShapeAttrs;
   arrow?: {
-    start?: false | MarkerCfg;
-    end?: false | MarkerCfg;
+    start?: false | MarkerStyleProps;
+    end?: false | MarkerStyleProps;
   };
 };
 

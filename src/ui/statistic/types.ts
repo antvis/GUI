@@ -1,4 +1,4 @@
-import { MarkerCfg } from 'ui/marker';
+import { MarkerStyleProps } from 'ui/marker';
 import type { DisplayObjectConfig, LabelProps, RectProps } from '../../types';
 
 export type StatisticCfg = {
@@ -21,7 +21,7 @@ export type StatisticCfg = {
      * @title 图标
      * @description 标签文本前缀的图标
      */
-    marker?: MarkerCfg;
+    marker?: MarkerStyleProps;
   };
   /**
    * @title 值 string | 数值 | 时间(毫秒)
@@ -32,7 +32,7 @@ export type StatisticCfg = {
      * @title 图标
      * @description 标签文本前缀的图标
      */
-    marker?: MarkerCfg;
+    marker?: MarkerStyleProps;
   };
   /**
    * @title 间距
