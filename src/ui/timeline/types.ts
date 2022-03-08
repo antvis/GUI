@@ -13,7 +13,7 @@ export type PlayAxisBaseCfg = {
    * @title 时间选择
    * @description 时间选择， 起始时间与结束时间/单一时间
    */
-  selection?: [TimeData, TimeData] | [TimeData];
+  selection?: [TimeData['date'], TimeData['date']] | [TimeData['date']];
   /**
    * @title  单一时间
    * @description 单一时间
@@ -58,7 +58,7 @@ export type PlayAxisBaseCfg = {
    * @title  变化时回调函数
    * @description 监听时间范围（或单一时间）变化的回调函数
    */
-  onSelectionChange?: (selection: string[] | Date[]) => void;
+  onSelectionChange?: (selection: PlayAxisBaseCfg['selection']) => void;
 };
 
 export type CellAxisCfg = PlayAxisBaseCfg & {
@@ -66,7 +66,7 @@ export type CellAxisCfg = PlayAxisBaseCfg & {
    * @title  cell 样式
    * @description 格子样式
    */
-  cell?: MixAttrs<Partial<RectProps>>;
+  cellStyle?: MixAttrs<Partial<RectProps>>;
   /**
    * @title  背景样式
    * @description 背景样式

@@ -25,30 +25,77 @@ describe('play axis', () => {
   test('slider', () => {
     const slideraxis = new SliderAxis({
       style: {
-        x: 5,
-        y: 60,
+        x: 20,
+        y: 40,
         length: 300,
-        timeData: date,
+        timeData: date2,
         tickCfg: {},
-        selection: [date[0], date[5]],
+        selection: [date2[1].date, date2[6].date],
+        selectionStyle: {
+          fill: '#ff00ee',
+        },
+        backgroundStyle: {
+          fill: '#eeeeee',
+        },
+        onSelectionChange: console.log,
       },
     });
-    slideraxis.update({ timeData: date2, selection: [date2[1], date2[6]] });
+    slideraxis.update({ timeData: date, selection: [date[1].date, date[6].date] });
     canvas.appendChild(slideraxis);
-    expect(2).toBe(2);
+    const { sliderBackground, sliderSelection, sliderTicks } = slideraxis;
+    const { startPos, endPos } = sliderTicks.attributes;
+    expect(sliderSelection.style.fill).toBe('#ff00ee');
+    expect(sliderBackground.style.fill).toBe('#eeeeee');
+    expect(sliderSelection.style.x).toBeCloseTo(
+      ((endPos[0] - startPos[0]) * (1 - 0)) / (date.length - 1) + sliderBackground.style.radius,
+      4
+    );
+    expect(sliderSelection.style.width).toBeCloseTo(((endPos[0] - startPos[0]) * (6 - 1)) / (date.length - 1), 4);
+  });
+  test('slider single', () => {
+    const slideraxis = new SliderAxis({
+      style: {
+        single: true,
+        x: 20,
+        y: 90,
+        length: 300,
+        timeData: date2,
+        tickCfg: {},
+        selection: [date2[0].date],
+        onSelectionChange: console.log,
+      },
+    });
+    canvas.appendChild(slideraxis);
   });
   test('cell', () => {
     const cellaxis = new CellAxis({
       style: {
         x: 20,
-        y: 20,
+        y: 150,
         length: 300,
-        timeData: date,
+        timeData: date2,
         tickCfg: {},
+        selection: [date2[2].date, date2[7].date],
+        onSelectionChange: console.log,
       },
     });
-    cellaxis.update({ timeData: date2 });
-    // console.log(cellaxis.background);
+    cellaxis.update({ timeData: date, selection: [date[1].date, date[6].date] });
+    canvas.appendChild(cellaxis);
+    expect(1).toBe(1);
+  });
+  test('cell single', () => {
+    const cellaxis = new CellAxis({
+      style: {
+        x: 20,
+        y: 210,
+        length: 300,
+        timeData: date2,
+        tickCfg: {},
+        selection: [date2[2].date],
+        onSelectionChange: console.log,
+        single: true,
+      },
+    });
     canvas.appendChild(cellaxis);
     expect(1).toBe(1);
   });
