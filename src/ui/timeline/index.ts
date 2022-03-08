@@ -2,7 +2,7 @@ import { deepMix } from '@antv/util';
 import { GUI } from 'core/gui';
 import { GUIOption } from 'types';
 import { Checkbox } from 'ui';
-import { Rect } from '@antv/g';
+import { Rect, RectStyleProps } from '@antv/g';
 import { CELL_STYLE, BACKGROUND_STYLE } from './constants';
 import type { TimelineCfg, TimelineOptions } from './types';
 
@@ -19,7 +19,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
   /**
    * 默认配置项
    */
-  public static defaultOptions: GUIOption<TimelineCfg> = {
+  public static defaultOptions = {
     type: Timeline.tag,
     style: {
       x: 20,
@@ -29,17 +29,15 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       data: [],
       orient: { layout: 'row', controlButtonAlign: 'left' },
       type: 'cell',
-      cellOptions: {
-        cell: {
+      cellAxisCfg: {
+        cellStyle: {
           selected: CELL_STYLE.selected,
           default: CELL_STYLE.default,
         },
-        background: BACKGROUND_STYLE,
+        backgroundStyle: BACKGROUND_STYLE as RectStyleProps,
         padding: [2, 4, 2, 4] /* top | right | bottom | left */,
         cellGap: 2,
-      },
-      ticks: {
-        style: {
+        tickCfg: {
           startPos: [0, 0],
           endPos: [0, 0],
           verticalFactor: -1,
@@ -64,10 +62,6 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       },
     },
   };
-
-  private backgroundShape: Rect | undefined;
-
-  private cellBackgroundShape: Rect | undefined;
 
   constructor(options: TimelineOptions) {
     super(deepMix({}, Timeline.defaultOptions, options));
