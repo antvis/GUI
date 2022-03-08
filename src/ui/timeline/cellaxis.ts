@@ -51,6 +51,14 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
 
   private backgroundShape!: Rect;
 
+  public get cells() {
+    return this.cellShapes;
+  }
+
+  public get cellBackground() {
+    return this.backgroundShape;
+  }
+
   private ticks: Ticks | undefined;
 
   private clearEvents = () => {};
@@ -84,12 +92,22 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     const { selection, cellStyle, single, onSelectionChange, timeData } = this.attributes;
     const { selected: selectedStyle, default: defaultStyle } = cellStyle;
     if (single && Array.isArray(selection) && selection.length === 1) {
-      let selectionDragging = false;
-      let lastPosition: number; // 保存上次的位置
-      const newSelection: [string] = selection as [string]; // 变化的时间范围
+      // single时默认为点选
+      let newSelection: [string] = selection as [string]; // 变化的时间范围
+
       const onClick = (event: any) => {
-        lastPosition = event.canvasX;
-        selectionDragging = true;
+        const idx = this.positionXToCellIdx(event.canvasX);
+        this.cellShapes[idx].attr({
+          ...selectedStyle,
+        });
+        newSelection = [timeData[idx].date];
+        this.attr({ selection: newSelection });
+        onSelectionChange(newSelection);
+      };
+
+      this.backgroundShape.addEventListener('click', onClick);
+      this.clearEvents = () => {
+        this.backgroundShape.removeEventListener('click', onClick);
       };
     } else if (!single && Array.isArray(selection) && selection.length === 2) {
       let selectionDragging = false;
@@ -105,6 +123,8 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
           ...selectedStyle,
         });
         newSelection = [timeData[startIdx].date, timeData[startIdx].date];
+        this.attr({ selection: newSelection });
+        onSelectionChange(newSelection);
         selectionDragging = true;
       };
       const onDragMove = (event: any) => {
@@ -132,18 +152,17 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
       document.addEventListener('mouseleave', onDragEnd);
 
       // 清理监听事件函数
-      const clearListeners = () => {
+      this.clearEvents = () => {
         this.backgroundShape.removeEventListener('mousedown', onDragStart);
         this.removeEventListener('mousemove', onDragMove);
         document.removeEventListener('mouseup', onDragEnd);
         document.removeEventListener('mouseleave', onDragEnd);
       };
-      this.clearEvents = clearListeners;
     }
   }
 
   private positionXToCellIdx(positionX: number): number {
-    const { padding, cellGap, length, x } = this.attributes;
+    const { padding, cellGap, x } = this.attributes;
     // 已经确保了padding长度为4
     const left = padding[3];
     const cellNums = this.cellShapes.length;
@@ -152,7 +171,6 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     console.log(positionX, x, left, cellWidth + cellGap);
     let cellIdx = Math.floor((positionX - x - left) / (cellWidth + cellGap));
     cellIdx = cellIdx >= 0 ? cellIdx : 0;
-    // console.log(cellIdx);
     return cellIdx;
   }
 
