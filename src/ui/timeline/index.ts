@@ -1,10 +1,11 @@
 import { deepMix } from '@antv/util';
-import { GUI } from 'core/gui';
 import { GUIOption } from 'types';
-import { Checkbox } from 'ui';
-import { Rect, RectStyleProps } from '@antv/g';
-import { CELL_STYLE, BACKGROUND_STYLE } from './constants';
+import { GUI } from '../../core/gui';
+import { Checkbox } from '../checkbox';
 import type { TimelineCfg, TimelineOptions } from './types';
+import { CellAxis } from './cellaxis';
+import { SliderAxis } from './slideraxis';
+import { SpeedControl } from './speedcontrol';
 
 export type { TimelineOptions };
 
@@ -16,50 +17,25 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
 
   private singleTimeCheckbox!: Checkbox;
 
+  private cellAxis: CellAxis | undefined;
+
+  private sliderAxis: SliderAxis | undefined;
+
+  private speedControl: SpeedControl | undefined;
+
   /**
    * 默认配置项
    */
-  public static defaultOptions = {
+  public static defaultOptions: GUIOption<TimelineCfg> = {
     type: Timeline.tag,
     style: {
-      x: 20,
-      y: 20,
+      x: 0,
+      y: 0,
       width: 500,
       height: 40,
       data: [],
       orient: { layout: 'row', controlButtonAlign: 'left' },
       type: 'cell',
-      cellAxisCfg: {
-        cellStyle: {
-          selected: CELL_STYLE.selected,
-          default: CELL_STYLE.default,
-        },
-        backgroundStyle: BACKGROUND_STYLE as RectStyleProps,
-        padding: [2, 4, 2, 4] /* top | right | bottom | left */,
-        cellGap: 2,
-        tickCfg: {
-          startPos: [0, 0],
-          endPos: [0, 0],
-          verticalFactor: -1,
-          label: {
-            offset: [0, 8],
-            alignTick: true,
-            style: {
-              default: {
-                fontSize: 8,
-                fill: 'rgba(0,0,0,0.45)',
-              },
-            },
-          },
-          tickLine: {
-            len: 4,
-            style: {
-              default: { stroke: 'rgba(0,0,0,0.25)', lineWidth: 1 },
-            },
-          },
-          axisLine: false,
-        },
-      },
     },
   };
 
@@ -68,9 +44,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     this.init();
   }
 
-  public init() {
-    this.update(this.style);
-  }
+  public init() {}
 
   public update(cfg: Partial<Required<TimelineCfg>>): void {
     this.attr(deepMix({}, this.attributes, cfg));
