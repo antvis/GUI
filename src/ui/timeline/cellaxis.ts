@@ -96,10 +96,16 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
       let newSelection: [string] = selection as [string]; // 变化的时间范围
 
       const onClick = (event: any) => {
+        const lastIdx = this.timeIndexMap.get(this.attributes.selection[0]) as number;
         const idx = this.positionXToCellIdx(event.canvasX);
         this.cellShapes[idx].attr({
           ...selectedStyle,
         });
+        if (lastIdx !== idx) {
+          this.cellShapes[lastIdx].attr({
+            ...defaultStyle,
+          });
+        }
         newSelection = [timeData[idx].date];
         this.attr({ selection: newSelection });
         onSelectionChange(newSelection);

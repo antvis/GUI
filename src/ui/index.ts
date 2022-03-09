@@ -41,8 +41,6 @@ export type {
 } from './axis';
 export { Sheet } from './sheet';
 export type { SheetOptions } from './sheet';
-export { Timeline } from './timeline';
-export type { TimelineOptions } from './timeline';
 // author by [Aarebecca](https://github.com/Aarebecca)
 export { Continuous, Category } from './legend';
 export type { ContinuousOptions, CategoryOptions } from './legend';
@@ -69,3 +67,5 @@ export type { PoptipCfg, PoptipOptions } from './poptip/types';
 export { Toolbox } from './toolbox';
 export type { ToolboxCfg, ToolboxOptions } from './toolbox/types';
 // to be continued...
+export { Timeline } from './timeline';
+export type { TimelineOptions } from './timeline';
