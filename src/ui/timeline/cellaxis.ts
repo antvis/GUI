@@ -116,6 +116,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         this.backgroundShape.removeEventListener('click', onClick);
       };
     } else if (!single && Array.isArray(selection) && selection.length === 2) {
+      // 非single时的监听事件
       let selectionDragging = false;
       let newSelection: [string, string] = selection as [string, string]; // 变化的时间范围
       const onDragStart = (event: any) => {
@@ -174,7 +175,6 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     const cellNums = this.cellShapes.length;
     if (cellNums === 0) return -1;
     const cellWidth = this.cellShapes[0].getAttribute('width') as number;
-    console.log(positionX, x, left, cellWidth + cellGap);
     let cellIdx = Math.floor((positionX - x - left) / (cellWidth + cellGap));
     cellIdx = cellIdx >= 0 ? cellIdx : 0;
     return cellIdx;
@@ -212,7 +212,6 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
   private updateBackground() {
     const { length, backgroundStyle } = this.attributes;
     this.backgroundShape.attr(backgroundStyle);
-
     this.backgroundShape.setAttribute('width', length);
   }
 

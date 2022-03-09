@@ -106,8 +106,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   private ticks: Ticks | undefined;
 
-  private clearEvents = () => {};
-
   public get sliderBackground() {
     return this.backgroundShape as Rect;
   }
@@ -165,14 +163,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       this.addEventListener('mousemove', onDragMove);
       document.addEventListener('mouseup', onDragEnd);
       document.addEventListener('mouseleave', onDragEnd);
-      // 清理监听事件函数
-      const clearListeners = () => {
-        this.selectionShape.removeEventListener('mousedown', onSelectionDragStart);
-        this.removeEventListener('mousemove', onDragMove);
-        document.removeEventListener('mouseup', onDragEnd);
-        document.removeEventListener('mouseleave', onDragEnd);
-      };
-      this.clearEvents = clearListeners;
     } else if (!single && Array.isArray(selection) && selection.length === 2) {
       const radius = backgroundStyle.radius as number;
       const actualLength = length - radius * 2; // 实际的总长度
@@ -271,17 +261,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       this.addEventListener('mousemove', onDragMove);
       document.addEventListener('mouseup', onDragEnd);
       document.addEventListener('mouseleave', onDragEnd);
-
-      // 清理监听事件函数
-      const clearListeners = () => {
-        this.startHandleShape!.removeEventListener('mousedown', onStartHandleDragStart);
-        this.startHandleShape!.removeEventListener('mousedown', onStartHandleDragStart);
-        this.selectionShape.removeEventListener('mousedown', onSelectionDragStart);
-        this.removeEventListener('mousemove', onDragMove);
-        document.removeEventListener('mouseup', onDragEnd);
-        document.removeEventListener('mouseleave', onDragEnd);
-      };
-      this.clearEvents = clearListeners;
     }
   }
 
@@ -368,14 +347,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     this.appendChild(this.backgroundShape);
   }
 
-  // 防止single模式handle未清除
-  private clearHandles() {
-    this.startHandleShape && this.selectionShape.removeChild(this.startHandleShape) && this.startHandleShape.destroy();
-    this.endHandleShape && this.selectionShape.removeChild(this.endHandleShape) && this.endHandleShape.destroy();
-  }
-
   public update(cfg: Partial<Required<SliderAxisCfg>>): void {
-    this.clearEvents();
     this.attr(deepMix({}, this.attributes, cfg));
     this.clear();
     this.initTimeIndexMap();
