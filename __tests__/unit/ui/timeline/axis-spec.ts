@@ -47,7 +47,7 @@ describe('play axis', () => {
     expect(sliderSelection.style.fill).toBe('#ff00ee');
     expect(sliderBackground.style.fill).toBe('#eeeeee');
     expect(sliderSelection.style.x).toBeCloseTo(
-      ((endPos[0] - startPos[0]) * (1 - 0)) / (date.length - 1) + sliderBackground.style.radius,
+      ((endPos[0] - startPos[0]) * (1 - 0)) / (date.length - 1) + sliderBackground!.style!.radius,
       4
     );
     expect(sliderSelection.style.width).toBeCloseTo(((endPos[0] - startPos[0]) * (6 - 1)) / (date.length - 1), 4);

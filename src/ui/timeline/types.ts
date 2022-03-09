@@ -1,8 +1,10 @@
 import { DisplayObjectConfig } from '@antv/g';
-import { CircleProps, LabelProps, MixAttrs, RectProps, TextProps } from 'types';
-import { CheckboxOptions, LinearCfg, LinearOptions, TextCfg } from 'ui';
-import { ButtonCfg } from 'ui/button';
+import { CircleProps, MixAttrs, RectProps } from 'types';
 import { TooltipOptions } from 'ui/tooltip';
+import { LinearOptions, LinearCfg } from '../axis';
+import { TextCfg } from '../text';
+import { ButtonCfg } from '../button';
+import { Checkbox, CheckboxOptions } from '../checkbox';
 
 export type TimeData = {
   date: string;

@@ -41,8 +41,6 @@ export type {
 } from './axis';
 export { Sheet } from './sheet';
 export type { SheetOptions } from './sheet';
-export { Timeline } from './timeline';
-export type { TimelineOptions } from './timeline';
 // author by [Aarebecca](https://github.com/Aarebecca)
 export { Continuous, Category } from './legend';
 export type { ContinuousOptions, CategoryOptions } from './legend';
@@ -64,3 +62,5 @@ export type { TextCfg, TextOptions } from './text';
 export { Checkbox } from './checkbox';
 export type { CheckboxOptions } from './checkbox';
 // to be continued...
+export { Timeline } from './timeline';
+export type { TimelineOptions } from './timeline';

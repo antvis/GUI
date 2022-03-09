@@ -100,24 +100,24 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   private selectionShape!: Rect;
 
-  private startHandleShape!: Circle;
+  private startHandleShape: Circle | undefined;
 
-  private endHandleShape!: Circle;
+  private endHandleShape: Circle | undefined;
 
   private ticks: Ticks | undefined;
 
   private clearEvents = () => {};
 
   public get sliderBackground() {
-    return this.backgroundShape;
+    return this.backgroundShape as Rect;
   }
 
   public get sliderTicks() {
-    return this.ticks;
+    return this.ticks as Ticks;
   }
 
   public get sliderSelection() {
-    return this.selectionShape;
+    return this.selectionShape as Rect;
   }
 
   public get sliderStartHandle() {
@@ -212,7 +212,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
               x: (this.selectionShape.getAttribute('x') as number) + offset,
               width: newLength,
             });
-            this.endHandleShape.attr({
+            this.endHandleShape!.attr({
               x: newLength,
             });
             const startHandleX = (this.selectionShape.getAttribute('x') as number) - radius; // 相对背景的x坐标
@@ -228,7 +228,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
             this.selectionShape.attr({
               width: newLength,
             });
-            this.endHandleShape.attr({
+            this.endHandleShape!.attr({
               x: newLength,
             });
             const endHandleX = (this.selectionShape.getAttribute('x') as number) + newLength - radius;
@@ -265,8 +265,8 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         selectionDragging = false;
         this.attr({ selection: newSelection });
       };
-      this.endHandleShape.addEventListener('mousedown', onEndHandleDragStart);
-      this.startHandleShape.addEventListener('mousedown', onStartHandleDragStart);
+      this.endHandleShape!.addEventListener('mousedown', onEndHandleDragStart);
+      this.startHandleShape!.addEventListener('mousedown', onStartHandleDragStart);
       this.selectionShape.addEventListener('mousedown', onSelectionDragStart);
       this.addEventListener('mousemove', onDragMove);
       document.addEventListener('mouseup', onDragEnd);
@@ -274,8 +274,8 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
       // 清理监听事件函数
       const clearListeners = () => {
-        this.startHandleShape.removeEventListener('mousedown', onStartHandleDragStart);
-        this.startHandleShape.removeEventListener('mousedown', onStartHandleDragStart);
+        this.startHandleShape!.removeEventListener('mousedown', onStartHandleDragStart);
+        this.startHandleShape!.removeEventListener('mousedown', onStartHandleDragStart);
         this.selectionShape.removeEventListener('mousedown', onSelectionDragStart);
         this.removeEventListener('mousemove', onDragMove);
         document.removeEventListener('mouseup', onDragEnd);
@@ -298,24 +298,15 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     const radius = backgroundStyle.radius as number;
     const actualLength = length - radius * 2;
     if (actualLength > 0) {
-      if (!this.ticks) {
-        this.ticks = new Ticks({
-          style: {
-            ...tickStyle,
-            startPos: [radius, 0],
-            endPos: [radius + actualLength, 0],
-            ticks: createTickData(timeData),
-          },
-        });
-        this.appendChild(this.ticks);
-      } else {
-        this.ticks.update({
+      this.ticks = new Ticks({
+        style: {
           ...tickStyle,
           startPos: [radius, 0],
           endPos: [radius + actualLength, 0],
           ticks: createTickData(timeData),
-        });
-      }
+        },
+      });
+      this.appendChild(this.ticks);
     }
   }
 
@@ -338,64 +329,55 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       if (startIdx !== undefined && endIdx !== undefined && endIdx > startIdx) {
         const selectionLength = (actualLength * (endIdx - startIdx)) / (timeData.length - 1);
         const startX = radius + (actualLength * startIdx) / (timeData.length - 1);
-        if (!this.selectionShape) {
-          this.selectionShape = new Rect({
-            style: {
-              ...(selectionStyle as RectStyleProps),
-              x: startX,
-              width: selectionLength,
-            },
-          });
-          this.startHandleShape = new Circle({
-            style: {
-              ...handleStyle,
-              y: (this.selectionShape.getAttribute('height') as number) / 2,
-            },
-          });
-          this.endHandleShape = new Circle({
-            style: {
-              ...handleStyle,
-              x: selectionLength,
-              y: (this.selectionShape.getAttribute('height') as number) / 2,
-            },
-          });
-          this.selectionShape.appendChild(this.startHandleShape);
-          this.selectionShape.appendChild(this.endHandleShape);
-          this.backgroundShape.appendChild(this.selectionShape);
-        } else {
-          this.selectionShape.attr({ ...(selectionStyle as RectStyleProps), x: startX, width: selectionLength });
-          this.startHandleShape.attr({ ...handleStyle, y: (this.selectionShape.getAttribute('height') as number) / 2 });
-          this.endHandleShape.attr({
+
+        this.selectionShape = new Rect({
+          style: {
+            ...(selectionStyle as RectStyleProps),
+            x: startX,
+            width: selectionLength,
+          },
+        });
+        this.startHandleShape = new Circle({
+          style: {
+            ...handleStyle,
+            y: (this.selectionShape.getAttribute('height') as number) / 2,
+          },
+        });
+        this.endHandleShape = new Circle({
+          style: {
             ...handleStyle,
             x: selectionLength,
             y: (this.selectionShape.getAttribute('height') as number) / 2,
-          });
-        }
+          },
+        });
+        this.selectionShape.appendChild(this.startHandleShape);
+        this.selectionShape.appendChild(this.endHandleShape);
+        this.backgroundShape.appendChild(this.selectionShape);
       }
     }
   }
 
   private createBackground() {
     const { length, backgroundStyle } = this.attributes;
-    if (!this.backgroundShape) {
-      this.backgroundShape = new Rect({
-        style: {
-          ...(backgroundStyle as RectStyleProps),
-          width: length,
-        },
-      });
-      this.appendChild(this.backgroundShape);
-    } else {
-      this.backgroundShape.attr({
-        ...backgroundStyle,
+    this.backgroundShape = new Rect({
+      style: {
+        ...(backgroundStyle as RectStyleProps),
         width: length,
-      });
-    }
+      },
+    });
+    this.appendChild(this.backgroundShape);
+  }
+
+  // 防止single模式handle未清除
+  private clearHandles() {
+    this.startHandleShape && this.selectionShape.removeChild(this.startHandleShape) && this.startHandleShape.destroy();
+    this.endHandleShape && this.selectionShape.removeChild(this.endHandleShape) && this.endHandleShape.destroy();
   }
 
   public update(cfg: Partial<Required<SliderAxisCfg>>): void {
     this.clearEvents();
     this.attr(deepMix({}, this.attributes, cfg));
+    this.clear();
     this.initTimeIndexMap();
     this.initMinLength();
     this.createTicks();
@@ -405,6 +387,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   }
 
   public clear(): void {
-    throw new Error('Method not implemented.');
+    this.removeChildren();
   }
 }
