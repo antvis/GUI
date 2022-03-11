@@ -126,10 +126,8 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   }
 
   private createLabelShape(): Text {
-    const {
-      disabled,
-      label: { text, spacing, textStyle },
-    } = this.attributes;
+    const { disabled, label } = this.attributes;
+    const { textStyle, text, spacing } = label;
     const { width } = this.checkboxBackgroundShape.attributes;
     return new Text({
       name: 'label',
@@ -175,11 +173,11 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     if (isUndefined(this.getAttribute('label')) || isNil(this.getAttribute('label'))) {
       this.labelShape && this.labelShape.destroy();
       this.labelShape = undefined;
-    } else if (this.labelShape) {
-      // 当label存在时，根据labelshape存在与否决定创建或更新
-      this.updateLabelShape();
     } else {
-      this.createLabelShape();
+      this.checkboxBackgroundShape.removeChild(this.labelShape as Text);
+      this.labelShape = this.createLabelShape();
+      this.checkboxBackgroundShape.appendChild(this.labelShape);
+      this.verticalCenter();
     }
     if (this.getAttribute('disabled')) {
       this.removeEvents();
