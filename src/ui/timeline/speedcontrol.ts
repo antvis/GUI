@@ -1,4 +1,4 @@
-import { Path, PathCommand } from '@antv/g';
+import { Group, Path, PathCommand, Rect } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUIOption } from 'types';
 import { Text } from '../text';
@@ -9,15 +9,27 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
   public static tag = 'speedcontrol';
 
   public init(): void {
-    this.createShapes();
+    this.createLines();
+    this.createTriangle();
+    this.createLabel();
+    this.bindEvents();
   }
 
-  public clear(): void {}
+  public clear(): void {
+    this.removeChildren();
+  }
 
-  public update(cfg: Partial<Required<SpeedControlCfg>>): void {}
+  public update(cfg: Partial<Required<SpeedControlCfg>>): void {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.clear();
+    this.createLines();
+    this.createTriangle();
+    this.createLabel();
+    this.bindEvents();
+  }
 
   private trianglePath = (x: number, y: number) => {
-    return [['M', x - 2.5, y - 2], ['L', x - 2.5, y + 2], ['L', x + 2.5, y], ['Z']];
+    return [['M', x, y], ['L', x, y + 4], ['L', x + 5, y + 2], ['Z']];
   };
 
   private linePath = (x: number, y: number) => {
@@ -33,25 +45,26 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
 
   private labelShape: Text | undefined;
 
-  private selectedSpeed: number = 0;
+  private lines: Group | undefined;
 
   private static defaultOptions: GUIOption<SpeedControlCfg> = {
     type: SpeedControl.tag,
     style: {
       x: 0,
       y: 0,
-      width: 30,
+      width: 35,
       height: 18,
       speeds: ['1.0', '2.0', '3.0', '4.0', '5.0'],
+      currentSpeedIdx: 0,
       spacing: 2,
       label: {
-        width: 21,
         fontColor: 'rgba(0,0,0,0.45)',
         height: 14,
         fontStyle: 'normal',
         fontWeight: 500,
         fontSize: 10,
         verticalAlign: 'bottom',
+        overflow: 'clip',
       },
     },
   };
@@ -61,58 +74,79 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
     this.init();
   }
 
-  private createShapes() {
-    this.createLines();
-    this.createTriangle();
-    this.createLabel();
+  private bindEvents() {
+    if (!this.lineShapes) return;
+    const { onSpeedChange, speeds } = this.attributes;
+
+    for (let i = 0; i < this.lineShapes.length; i += 1) {
+      const onClick = (event: any) => {
+        const line = event.target as Path;
+        const { y } = line.attributes;
+        this.triangleShape?.setAttribute('y', (y as number) - 2);
+        this.labelShape?.update({ text: speeds[i] });
+        this.setAttribute('currentSpeedIdx', i);
+        onSpeedChange && onSpeedChange(i);
+      };
+      this.lineShapes[i].addEventListener('click', onClick);
+    }
   }
 
   private createTriangle() {
-    const { x, y } = this.attributes;
+    if (!this.lineShapes) return;
+    const { currentSpeedIdx } = this.attributes;
+    const line = this.lineShapes[currentSpeedIdx];
+    const { y } = line.attributes;
     this.triangleShape = new Path({
       style: {
         fill: '#8c8c8c',
-        path: this.trianglePath(x, y) as PathCommand[],
+        path: this.trianglePath(0, 0) as PathCommand[],
       },
     });
+    this.triangleShape.setAttribute('y', (y as number) - 2);
     this.triangleShape.translateLocal(0);
     this.appendChild(this.triangleShape);
   }
 
   private createLines() {
-    const { x, y } = this.attributes;
     const mapLines = () =>
       new Path({
         style: {
           stroke: '#bfbfbf',
-          path: this.linePath(x + 3.5, y) as PathCommand[],
+          path: this.linePath(3.5, 0) as PathCommand[],
         },
       });
     this.lineShapes = new Array(5).fill(undefined).map(mapLines);
-    this.lineShapes[1].translateLocal(0, 2);
-    this.lineShapes[2].translateLocal(0, 5);
-    this.lineShapes[3].translateLocal(0, 9);
-    this.lineShapes[4].translateLocal(0, 14);
+    this.lineShapes[0].translateLocal(0, 2);
+    this.lineShapes[1].translateLocal(0, 4);
+    this.lineShapes[2].translateLocal(0, 7);
+    this.lineShapes[3].translateLocal(0, 11);
+    this.lineShapes[4].translateLocal(0, 16);
+    this.lines = new Rect({ style: { width: 7, height: 16, x: 3, y: 0, cursor: 'pointer' } });
     this.lineShapes.forEach((line) => {
-      this.appendChild(line);
+      this.lines!.appendChild(line);
     });
+    this.appendChild(this.lines);
   }
 
   private createLabel() {
-    const { x, y, width, height, speeds, label, spacing } = this.attributes;
-    const restSpacing = width - 7 - spacing;
-
+    const { width, speeds, label, spacing, currentSpeedIdx } = this.attributes;
+    const lastLine = this.lineShapes && this.lineShapes[(this.lineShapes?.length as number) - 1];
+    const lastLineY = lastLine?.attributes.y as number;
+    let restSpacing = width - 10 - spacing;
+    restSpacing = restSpacing > 0 ? restSpacing : 0;
     this.labelShape = new Text({
       style: {
-        x: x + 7 + spacing,
-        width: restSpacing > (label.width as number) ? label.width : restSpacing,
-        y: y + height - (label.height as number),
         ...(label as any),
-        text: speeds[this.selectedSpeed],
+        x: 10 + spacing,
+        width: restSpacing,
+        y: lastLineY - (label.height as number) + 3,
+        text: speeds[currentSpeedIdx],
       },
     });
     this.appendChild(this.labelShape);
   }
 
-  private updateLabel() {}
+  public getActualHeight() {
+    return this.getBounds()!.max[1] - this.getBounds()!.min[1];
+  }
 }

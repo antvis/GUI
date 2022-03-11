@@ -1,5 +1,5 @@
 import { Circle, Rect, RectStyleProps } from '@antv/g';
-import { deepMix, isArray } from '@antv/util';
+import { deepMix, isArray, isFunction } from '@antv/util';
 import { GUIOption } from 'types';
 import { TickDatum } from 'ui/axis/types';
 import { GUI } from '../../core/gui';
@@ -27,12 +27,12 @@ export function updateShapeStyle(shape: any, style: any) {
 export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   public static tag = 'slideraxis';
 
-  public static defaultOptions: GUIOption<SliderAxisCfg> = {
+  public static defaultOptions: GUIOption<Omit<SliderAxisCfg, 'selection'>> = {
     type: SliderAxis.tag,
     style: {
       x: 0,
       y: 0,
-      length: 0,
+      length: 100,
       timeData: [],
       single: false,
       tickCfg: {
@@ -60,6 +60,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         stroke: '#BFBFBF',
         lineWidth: 1,
         fill: '#f7f7f7',
+        cursor: 'ew-resize',
       },
       backgroundStyle: {
         height: 8,
@@ -77,25 +78,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   private minLength: number = 0;
 
-  constructor(options: SliderAxisOptions) {
-    super(deepMix({}, SliderAxis.defaultOptions, options));
-    this.init();
-  }
-
-  private initMinLength() {
-    const { length, timeData } = this.attributes;
-    this.minLength = length / (timeData.length - 1);
-  }
-
-  public init(): void {
-    this.initMinLength();
-    this.initTimeIndexMap();
-    this.createTicks();
-    this.createBackground();
-    this.createSelection();
-    this.bindEvents();
-  }
-
   private backgroundShape!: Rect;
 
   private selectionShape!: Rect;
@@ -105,6 +87,39 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   private endHandleShape: Circle | undefined;
 
   private ticks: Ticks | undefined;
+
+  constructor(options: SliderAxisOptions) {
+    super(deepMix({}, SliderAxis.defaultOptions, options));
+    this.init();
+  }
+
+  private initSelection() {
+    const { selection, timeData, single } = this.attributes;
+    if (selection === undefined) {
+      single
+        ? this.setAttribute('selection', [timeData[0].date])
+        : this.setAttribute('selection', [timeData[0].date, timeData[timeData.length - 1].date]);
+    }
+  }
+
+  private initMinLength() {
+    const { length, timeData } = this.attributes;
+    this.minLength = length / (timeData.length - 1);
+  }
+
+  public init(): void {
+    this.initSelection();
+    this.initMinLength();
+    this.initTimeIndexMap();
+    this.createTicks();
+    this.createBackground();
+    this.createSelection();
+    this.bindEvents();
+  }
+
+  public get backgroundVerticalCenter() {
+    return this.backgroundShape.getBounds()?.center[1] as number;
+  }
 
   public get sliderBackground() {
     return this.backgroundShape as Rect;
@@ -152,7 +167,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
           newSelection[0] = timeData[nearestTimeDataId].date;
           lastPosition = event.x;
           this.attr({ selection: newSelection });
-          onSelectionChange(newSelection);
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
         }
       };
       const onDragEnd = () => {
@@ -246,7 +261,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         }
         if (selectionDragging || startHandleDragging || endHandleDragging) {
           this.attr({ selection: newSelection });
-          onSelectionChange(newSelection);
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
         }
       };
       const onDragEnd = () => {
