@@ -1,8 +1,6 @@
 import { Canvas } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-svg';
-import { Button } from '../../../../src/ui/button';
-import { FunctionalSymbol } from '../../../../src/ui/marker';
-import { SpeedControl } from '../../../../src/ui/timeline/speedcontrol';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
+import { Timeline } from '../../../../src/ui/timeline';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -14,149 +12,160 @@ const div = createDiv();
 
 const canvas = new Canvas({
   container: div,
-  width: 500,
-  height: 500,
+  width: 600,
+  height: 600,
   renderer,
 });
 
-describe('buttons', () => {
-  test('speedcontrol', () => {
-    const speedcontrol = new SpeedControl({
+const canvas2 = new Canvas({
+  container: div,
+  width: 600,
+  height: 600,
+  renderer,
+});
+
+// 2022年1月的日期数据
+const date = new Array(20).fill(undefined).map((_, id) => ({ date: new Date(2022, 0, id).toLocaleString('zh-CN') }));
+
+describe('timeline layout cell', () => {
+  test('left', () => {
+    const timeline = new Timeline({
       style: {
-        x: 100,
-        y: 120,
-        speeds: ['1.0x', '2.0x', '3.0x', '4.0x', '5.0x'],
-        width: 20,
-      },
-    });
-    canvas.appendChild(speedcontrol);
-  });
-  test('playButton', () => {
-    const playMarker: FunctionalSymbol = (x: number, y: number) => {
-      return [['M', x + 3, y], ['L', x - 1.5, y - 1.5 * Math.sqrt(3)], ['L', x - 1.5, y + 1.5 * Math.sqrt(3)], ['Z']];
-    };
-    const playButton = new Button({
-      style: {
-        x: 80,
-        y: 50,
-        width: 20,
+        x: 10,
+        y: 60,
         height: 20,
-        buttonStyle: {
-          default: {
-            fill: '#F7F7F7',
-            stroke: '#bfbfbf',
-            radius: 10,
-          },
-          active: {
-            fill: 'rgba(52, 113, 249, 0.1)',
-            stroke: '#3471F9',
-            radius: 10,
-          },
+        width: 500,
+        data: date,
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'left',
         },
-        markerStyle: {
-          default: {
-            stroke: '#bfbfbf',
-          },
-          active: {
-            stroke: '#3471F9',
-          },
-        },
-        marker: playMarker,
+        onSelectionChange: console.log,
       },
     });
-    const stopMarker: FunctionalSymbol = (x: number, y: number) => {
-      return [
-        ['M', x + 2, y + 3],
-        ['L', x + 2, y - 3],
-        ['M', x - 2, y + 3],
-        ['L', x - 2, y - 3],
-      ];
-    };
-    playButton.addEventListener('click', () => {
-      playButton.update({
-        marker: stopMarker,
-      });
-    });
-    canvas.appendChild(playButton);
+    canvas.appendChild(timeline);
   });
-  test('prev next', () => {
-    const prevMarker: FunctionalSymbol = (x: number, y: number) => {
-      return [
-        ['M', x + 6, y + 6],
-        ['L', x, y],
-        ['L', x + 6, y - 6],
-        ['M', x, y + 6],
-        ['L', x - 6, y],
-        ['L', x, y - 6],
-      ];
-    };
-    const nextMarker: FunctionalSymbol = (x: number, y: number) => {
-      return [
-        ['M', x, y + 6],
-        ['L', x + 6, y],
-        ['L', x, y - 6],
-        ['M', x - 6, y + 6],
-        ['L', x, y],
-        ['L', x - 6, y - 6],
-      ];
-    };
-    const prevBtn = new Button({
+  test('normal', () => {
+    const timeline = new Timeline({
       style: {
-        x: 60,
-        y: 50,
-        width: 12,
-        height: 12,
-        buttonStyle: {
-          default: {
-            stroke: 'none',
-          },
-          selected: {
-            stroke: 'none',
-          },
-          active: {
-            stroke: 'none',
-          },
-        },
-        marker: prevMarker,
-        markerStyle: {
-          default: {
-            stroke: '#bfbfbf',
-          },
-          active: {
-            stroke: '#3471F9',
-          },
+        x: 10,
+        y: 150,
+        height: 20,
+        width: 500,
+        data: date,
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'normal',
         },
       },
     });
-    const nextBtn = new Button({
+    canvas.appendChild(timeline);
+  });
+  test('right', () => {
+    const timeline = new Timeline({
       style: {
-        x: 110,
-        y: 50,
-        width: 12,
-        height: 12,
-        buttonStyle: {
-          default: {
-            stroke: 'none',
-          },
-          selected: {
-            stroke: 'none',
-          },
-          active: {
-            stroke: 'none',
-          },
-        },
-        marker: nextMarker,
-        markerStyle: {
-          default: {
-            stroke: '#bfbfbf',
-          },
-          active: {
-            stroke: '#3471F9',
-          },
+        x: 10,
+        y: 250,
+        height: 20,
+        width: 500,
+        data: date,
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'right',
         },
       },
     });
-    canvas.appendChild(nextBtn);
-    canvas.appendChild(prevBtn);
+    canvas.appendChild(timeline);
+  });
+  test('normal column', () => {
+    const timeline = new Timeline({
+      style: {
+        x: 10,
+        y: 350,
+        height: 20,
+        width: 500,
+        data: date,
+        orient: {
+          layout: 'col',
+          controlButtonAlign: 'normal',
+        },
+      },
+    });
+    canvas.appendChild(timeline);
+  });
+});
+
+describe('timeline slider', () => {
+  test('left', () => {
+    const timeline = new Timeline({
+      style: {
+        x: 10,
+        y: 60,
+        height: 20,
+        width: 500,
+        data: date,
+        type: 'slider',
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'left',
+        },
+      },
+    });
+    canvas2.appendChild(timeline);
+  });
+  test('normal', () => {
+    const timeline = new Timeline({
+      style: {
+        x: 10,
+        y: 150,
+        height: 20,
+        width: 500,
+        data: date,
+        type: 'slider',
+        sliderAxisCfg: {
+          selection: [date[0].date, date[7].date],
+        },
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'normal',
+        },
+        onSelectionChange: console.log,
+      },
+    });
+    canvas2.appendChild(timeline);
+  });
+  test('right', () => {
+    const timeline = new Timeline({
+      style: {
+        x: 10,
+        y: 250,
+        height: 20,
+        width: 500,
+        data: date,
+        type: 'slider',
+        orient: {
+          layout: 'row',
+          controlButtonAlign: 'right',
+        },
+      },
+    });
+    canvas2.appendChild(timeline);
+  });
+  test('normal column', () => {
+    const timeline = new Timeline({
+      style: {
+        x: 10,
+        y: 350,
+        height: 20,
+        width: 500,
+        data: date,
+        type: 'slider',
+        orient: {
+          layout: 'col',
+          controlButtonAlign: 'normal',
+        },
+      },
+    });
+    canvas2.appendChild(timeline);
   });
 });

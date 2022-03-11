@@ -1,5 +1,5 @@
 import { Rect, RectStyleProps } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, isFunction } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { Linear as Ticks } from '../axis/linear';
 import { BACKGROUND_STYLE, CELL_STYLE } from './constants';
@@ -59,9 +59,22 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     return this.backgroundShape;
   }
 
+  public get backgroundVerticalCenter() {
+    return this.backgroundShape.getBounds()?.center[1] as number;
+  }
+
   private ticks: Ticks | undefined;
 
   private clearEvents = () => {};
+
+  private initSelection() {
+    const { selection, timeData, single } = this.attributes;
+    if (selection === undefined) {
+      single
+        ? this.setAttribute('selection', [timeData[0].date])
+        : this.setAttribute('selection', [timeData[0].date, timeData[timeData.length - 1].date]);
+    }
+  }
 
   constructor(options: CellAxisOptions) {
     super(deepMix({}, CellAxis.defaultOptions, options));
@@ -80,6 +93,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
   }
 
   public init() {
+    this.initSelection();
     this.initTimeIndexMap();
     this.createBackground();
     this.createCells();
@@ -108,7 +122,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         }
         newSelection = [timeData[idx].date];
         this.attr({ selection: newSelection });
-        onSelectionChange(newSelection);
+        isFunction(onSelectionChange) && onSelectionChange(newSelection);
       };
 
       this.backgroundShape.addEventListener('click', onClick);
@@ -131,7 +145,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         });
         newSelection = [timeData[startIdx].date, timeData[startIdx].date];
         this.attr({ selection: newSelection });
-        onSelectionChange(newSelection);
+        isFunction(onSelectionChange) && onSelectionChange(newSelection);
         selectionDragging = true;
       };
       const onDragMove = (event: any) => {
@@ -146,7 +160,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
           newSelection[1] = timeData[endIdx].date;
           this.attr({ selection: newSelection });
           this.createSelection();
-          onSelectionChange(newSelection);
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
         }
       };
       const onDragEnd = () => {
@@ -169,7 +183,8 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
   }
 
   private positionXToCellIdx(positionX: number): number {
-    const { padding, cellGap, x } = this.attributes;
+    const { padding, cellGap } = this.attributes;
+    const x = this.backgroundShape.getBounds()?.getMin()[0] as number;
     // 已经确保了padding长度为4
     const left = padding[3];
     const cellNums = this.cellShapes.length;
@@ -177,6 +192,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     const cellWidth = this.cellShapes[0].getAttribute('width') as number;
     let cellIdx = Math.floor((positionX - x - left) / (cellWidth + cellGap));
     cellIdx = cellIdx >= 0 ? cellIdx : 0;
+    console.log(cellIdx);
     return cellIdx;
   }
 

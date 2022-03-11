@@ -26,6 +26,11 @@ describe('checkbox', () => {
         label: { text: 'label text' },
       },
     });
+    checkbox.update({
+      label: {
+        text: 'test',
+      },
+    });
     canvas.appendChild(checkbox);
     const {
       x,
@@ -33,11 +38,12 @@ describe('checkbox', () => {
       label: { text, spacing },
       checked,
     } = checkbox.attributes;
+    console.log(checkbox);
     expect(checkbox.getPosition()[0]).toBe(20);
     expect(checkbox.getPosition()[1]).toBe(10);
     expect(x).toBe(20);
     expect(y).toBe(10);
-    expect(text).toBe('label text');
+    expect(text).toBe('test');
     expect(spacing).toBe(4);
     expect(checked).toBe(false);
     const { label } = checkbox;

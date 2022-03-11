@@ -1,11 +1,19 @@
-import { DisplayObjectConfig } from '@antv/g';
+import { DisplayObject, DisplayObjectConfig } from '@antv/g';
 import { CircleProps, MixAttrs, RectProps } from 'types';
 import { TooltipOptions } from 'ui/tooltip';
-import { LinearOptions, LinearCfg } from '../axis';
+import { LinearOptions, LinearCfg, AxisBaseCfg } from '../axis';
 import { TextCfg } from '../text';
 import { ButtonCfg } from '../button';
 import { Checkbox, CheckboxOptions } from '../checkbox';
 
+export interface LayoutRowData {
+  shape: DisplayObject;
+  width: number | 'auto';
+}
+export interface LayoutColData {
+  shape: DisplayObject;
+  height: number | 'auto';
+}
 export type TimeData = {
   date: string;
   [k: string]: any;
@@ -121,17 +129,17 @@ export type SpeedControlCfg = {
    * @title   速度变化回调函数
    * @description 监听速度变化的回调函数
    */
-  onSpeedChange?: (speed: number) => void;
+  onSpeedChange?: (speedIdx: number) => void;
   /**
    * @title   x
    * @description x坐标
    */
-  x: number;
+  x?: number;
   /**
    * @title   y
    * @description y坐标
    */
-  y: number;
+  y?: number;
   /**
    * @title   width
    * @description 宽度
@@ -146,12 +154,17 @@ export type SpeedControlCfg = {
    * @title   label
    * @description label配置
    */
-  label?: Omit<TextCfg, 'text'>;
+  label?: Omit<TextCfg, 'text' | 'width'>;
   /**
    * @title   spacing
    * @description label与按钮的间隔
    */
   spacing?: number;
+  /**
+   * @title        currentSpeed
+   * @description 当前选择的时间下标
+   */
+  currentSpeedIdx?: number;
 };
 
 export type SpeedControlOptions = DisplayObjectConfig<SpeedControlCfg>;
@@ -163,38 +176,38 @@ type Controls =
        * @title  是否显示单一时间checkbox
        * @description false 不显示，否则应传入checkbox参数
        */
-      singleModeControl?: SingleModeControl;
+      singleModeControl?: SingleModeControl | false;
       /**
        * @title 播放器按钮，包含：play button，prev button and next button
        * @description 播放器按钮设置。设置为 null 时，不展示播放器按钮
        */
       controlButton?: {
-        /**
-         * @title  停止按钮
-         * @description 播放按钮设置。设置为 null 时，不展示播放按钮
-         */
-        stopBtn?: ButtonCfg;
+        // /**
+        //  * @title  停止按钮
+        //  * @description 播放按钮设置。设置为 null 时，不展示播放按钮
+        //  */
+        // stopBtn?: ButtonCfg;
         /**
          * @title 播放按钮
          * @description 播放按钮设置。设置为 null 时，不展示播放按钮
          */
-        playBtn?: ButtonCfg;
+        playBtn?: Omit<ButtonCfg, 'onClick'> | false;
         /**
          * @title 后退按钮
          * @description 后退按钮设置。设置为 null 时，不展示后退按钮
          */
-        prevBtn?: ButtonCfg;
+        prevBtn?: Omit<ButtonCfg, 'onClick'> | false;
         /**
          * @title 前进按钮
          * @description 前进按钮设置。设置为 null 时，不展示前进按钮
          */
-        nextBtn?: ButtonCfg;
+        nextBtn?: Omit<ButtonCfg, 'onClick'> | false;
       };
       /**
        * @title 倍速调节器
        * @description 倍速调节器设置。设置为 null 时，不展示倍速调节器
        */
-      speedControl?: SpeedControlCfg;
+      speedControl?: Omit<SpeedControlCfg, 'onSpeedChange'> | false;
     };
 
 type TooltipFormatter = (time: string | Date) => TooltipOptions;
@@ -236,23 +249,23 @@ export type TimelineCfg = {
    * @description 播放轴为slider型还是格子刻度型
    * @default 'slider'
    */
-  type: 'slider' | 'cell';
+  type?: 'slider' | 'cell';
   /**
    * @title 播放轴cell类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
    */
-  cellAxisCfg?: CellAxisCfg;
+  cellAxisCfg?: Omit<CellAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData'>;
   /**
    * @title 播放轴slider类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
    */
-  sliderOptions?: SliderAxisCfg;
+  sliderAxisCfg?: Omit<SliderAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData'>;
   /**
    * @title 播放控制
    * @description 配置播放器、单一时间checkbox
    * @default 'slider'
    */
-  controls?: Controls;
+  controls?: false | Controls;
   /**
    * @title  tooltip内容
    * @description 自定义tooltip内容
@@ -267,6 +280,36 @@ export type TimelineCfg = {
    * @title  变化时回调函数
    * @description 监听时间范围（或单一时间）变化的回调函数
    */
-  onSelectionChange?: (selection: string[] | Date[]) => void;
+  onSelectionChange?: PlayAxisBaseCfg['onSelectionChange'];
+  /**
+   * @title  播放时回调函数
+   * @description 监听播放的回调函数
+   */
+  onPlay?: (played: boolean) => void;
+  /**
+   * @title  停止时回调函数
+   * @description 监听停止回调函数
+   */
+  onStop?: () => void;
+  /**
+   * @title  后退按钮点击回调函数
+   * @description 监听后退的回调函数
+   */
+  onBackward?: () => void;
+  /**
+   * @title   前进按钮点击回调函数
+   * @description 监听前进的回调函数
+   */
+  onForward?: () => void;
+  /**
+   * @title   速度变化回调函数
+   * @description 监听速度变化的回调函数
+   */
+  onSpeedChange?: (speed: number) => void;
+  /**
+   * @title  单一时间设置变化回调函数
+   * @description 监听单一时间设置的回调函数
+   */
+  onSingleTimeChange?: (value: boolean) => void;
 };
 export type TimelineOptions = DisplayObjectConfig<TimelineCfg>;
