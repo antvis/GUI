@@ -92,6 +92,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-i18next": "^11.7.0",
+    "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "^0.13.7",
     "rimraf": "^3.0.2",
     "ts-jest": "^26.5.1",
