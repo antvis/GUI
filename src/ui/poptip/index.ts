@@ -19,6 +19,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     style: {
       x: 0,
       y: 0,
+      width: 0,
+      height: 0,
       target: null,
       visibility: 'hidden',
       text: '',
