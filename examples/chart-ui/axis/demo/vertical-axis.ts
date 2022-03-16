@@ -18,14 +18,8 @@ const canvas = new Canvas({
 });
 
 // 创建一个包围盒
-const $rect = wrapper(Rect, { x: 0, y: 0, width: 0, height: 0 });
-$rect
-  .style('width', 460)
-  .style('height', 500)
-  .style('x', 20)
-  .style('y', 20)
-  .style('stroke', '#dfdfdf')
-  .style('lineWidth', 1);
+const $rect = wrapper(Rect, { x: 20, y: 20, width: 460, height: 500 });
+$rect.style('stroke', '#dfdfdf').style('lineWidth', 1);
 const rect = $rect.node();
 canvas.appendChild(rect);
 

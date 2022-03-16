@@ -755,6 +755,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   }
 
   /**
+   * todo 需要考虑国际化问题，具体省略规则策略见：https://yuque.antfin.com/antv/cfksca/406601
    * 宽度为 width 时采取何种数字缩写缩略
    */
   private getNumberSimplifyStrategy(width: number) {

@@ -29,6 +29,14 @@
       "screenshot": ""
     },
     {
+      "filename": "time-axis.ts",
+      "title": {
+        "zh": "时间坐标轴",
+        "en": "Time Axis"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "label-formatter.ts",
       "title": {
         "zh": "标签格式化",
