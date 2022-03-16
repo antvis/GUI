@@ -227,9 +227,9 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     // tickLine is undefined | false
     if (isUndefined(tickLine) || !tickLine) {
       return {
-        ...AXIS_BASE_DEFAULT_OPTIONS.style.tickLine,
+        ...AXIS_BASE_DEFAULT_OPTIONS.style!.tickLine,
         len: 0,
-      };
+      } as Required<AxisTickLineCfg>;
     }
     return tickLine as Required<AxisTickLineCfg>;
   }
@@ -360,12 +360,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
   public init() {
     this.initShape();
-    // 绘制title
-    this.updateTitleShape();
-    // 绘制轴线
-    this.updateAxisLineShape();
-    // 绘制刻度与子刻度以及label
-    this.updateTicksShape();
+    this.update({});
   }
 
   public update(cfg: Partial<T>) {
@@ -452,10 +447,11 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   private initShape() {
     // 初始化group
     // 标题
+    const dftAxisTitle = AxisBase.defaultOptions.style!.title;
     this.titleShape = new Text({
       name: 'title',
       style: {
-        text: AxisBase.defaultOptions.style.title.content,
+        text: dftAxisTitle ? dftAxisTitle.content ?? '' : '',
       },
     });
     this.appendChild(this.titleShape);
@@ -528,6 +524,11 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       ...lineStyle,
       fillOpacity: 0,
     });
+    // fixme-later 后续修复
+    const { lineWidth } = this.axisLine.style;
+    if (lineWidth && lineWidth <= 0.5) {
+      this.axisLine.style.lineWidth = 0.51;
+    }
 
     Object.entries(arrow).forEach(([key, { rotate: angle, ...style }]) => {
       const arw = key === 'start' ? this.axisStartArrow : this.axisEndArrow;

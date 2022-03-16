@@ -13,6 +13,14 @@
       "screenshot": ""
     },
     {
+      "filename": "vertical-axis.ts",
+      "title": {
+        "zh": "纵向笛卡尔坐标轴",
+        "en": "Vertical Cartesian Axis"
+      },
+      "screenshot": ""
+    },
+    {
       "filename": "style.ts",
       "title": {
         "zh": "样式设置",

@@ -69,19 +69,19 @@ module.exports = {
         },
       },
       {
-        slug: 'basic-ui',
-        icon: 'gallery',
-        title: {
-          zh: '基础 UI',
-          en: 'Basic UI',
-        },
-      },
-      {
         slug: 'chart-ui',
         icon: 'gallery',
         title: {
           zh: '图表组件',
           en: 'Chart UI',
+        },
+      },
+      {
+        slug: 'basic-ui',
+        icon: 'gallery',
+        title: {
+          zh: '基础 UI',
+          en: 'Basic UI',
         },
       },
       {
