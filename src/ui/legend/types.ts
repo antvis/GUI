@@ -110,13 +110,22 @@ export type CategoryItemCfg = {
 };
 
 export type LegendBaseCfg = ShapeAttrs & {
-  // 图例内边距
+  /**
+   * @title 内边距
+   * @description 图例内边距
+   */
   padding?: number | number[];
-  // 背景
+  /**
+   * @title 背景样式
+   */
   backgroundStyle?: MixAttrs<ShapeAttrs>;
-  // 布局
+  /**
+   * @title 图例方向
+   */
   orient?: 'horizontal' | 'vertical';
-  // 标题
+  /**
+   * @title 图例标题
+   */
   title?: {
     content?: string;
     spacing?: number;
@@ -124,7 +133,9 @@ export type LegendBaseCfg = ShapeAttrs & {
     style?: Partial<TextProps>;
     formatter?: (text: string) => string;
   };
-  // Legend类型
+  /**
+   * @title 图例类型
+   */
   type?: 'category' | 'continuous';
 };
 
@@ -147,6 +158,10 @@ export type ContinuousCfg = LegendBaseCfg & {
     | false
     | {
         style?: TextProps;
+        /**
+         * @title 标签与轨道间距
+         * @description
+         */
         spacing?: number;
         formatter?: (value: number, idx: number) => string;
         align?: 'rail' | 'inside' | 'outside';

@@ -2,7 +2,7 @@ import { Canvas, Rect } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { Linear as LinearScale } from '@antv/scale';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { Linear as LinearAxis, wrapper } from '@antv/gui';
+import { Linear as LinearAxis } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -18,9 +18,7 @@ const canvas = new Canvas({
 });
 
 // 创建一个包围盒
-const $rect = wrapper(Rect, { x: 20, y: 20, width: 460, height: 500 });
-$rect.style('stroke', '#dfdfdf').style('lineWidth', 1);
-const rect = $rect.node();
+const rect = new Rect({ style: { x: 20, y: 20, width: 460, height: 500, stroke: '#dfdfdf', lineWidth: 1 } });
 canvas.appendChild(rect);
 
 function createAxis(startPos = [0, 0], endPos = [0, 0], options = {}) {

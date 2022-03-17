@@ -15,15 +15,22 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
     },
     title: {
       content: '',
-      spacing: 10,
+      spacing: 8,
       align: 'left',
       style: {
-        fill: 'gray',
-        fontWeight: 'bold',
-        fontSize: 16,
+        fill: '#2C3542',
+        fillOpacity: 0.45,
+        fontSize: 12,
         textBaseline: 'top',
       },
       formatter: (text: string) => text,
+    },
+    label: {
+      style: {
+        fill: '#2C3542',
+        fillOpacity: 0.65,
+        fontSize: 12,
+      },
     },
   },
 };
@@ -134,14 +141,13 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
       '#e23455',
       '#e7655b',
     ],
-    padding: 10,
+    padding: 8,
     label: {
       style: {
-        fill: 'black',
         textAlign: 'center',
         textBaseline: 'middle',
       },
-      spacing: 10,
+      spacing: 8,
       formatter: (value: number) => String(value),
       align: 'rail',
     },
@@ -158,7 +164,7 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
     slidable: true,
     handle: {
       size: 25,
-      spacing: 10,
+      spacing: 8,
       icon: {
         marker: 'default',
         style: {
@@ -170,7 +176,8 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
       text: {
         align: 'outside',
         style: {
-          fill: '#63656e',
+          fill: '#2C3542',
+          fillOpacity: 0.45,
           fontSize: 12,
           textAlign: 'center',
           textBaseline: 'middle',
