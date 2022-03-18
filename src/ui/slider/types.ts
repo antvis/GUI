@@ -40,7 +40,7 @@ export type HandleCfg = {
   /**
    * 手柄图标样式
    */
-  handleStyle?: MixAttrs<ImageProps | PathProps>;
+  handleStyle?: ShapeAttrs & { radius?: number };
 };
 
 export type SliderCfg = {
