@@ -141,12 +141,12 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
     this.customContent?.remove();
   }
 
-  public showTip() {
+  public show() {
     this.visibility = 'visible';
     this.element.style.visibility = 'visible';
   }
 
-  public hideTip() {
+  public hide() {
     this.visibility = 'hidden';
     this.element.style.visibility = 'hidden';
   }

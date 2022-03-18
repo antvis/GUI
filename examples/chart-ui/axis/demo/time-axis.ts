@@ -1,4 +1,4 @@
-import { Canvas } from '@antv/g';
+import { Canvas, Rect } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Linear } from '@antv/gui';
 
@@ -27,8 +27,12 @@ function createTickData(data) {
   });
 }
 
+// 创建一个包围盒
+const rect = new Rect({ style: { x: 20, y: 20, width: 460, height: 500, stroke: '#dfdfdf', lineWidth: 1 } });
+canvas.appendChild(rect);
+
 function createAxis(startPos, endPos, tickData, type, formatter = (item) => item.text) {
-  canvas.appendChild(
+  rect.appendChild(
     new Linear({
       style: {
         startPos,
@@ -53,21 +57,15 @@ function createAxis(startPos, endPos, tickData, type, formatter = (item) => item
   );
 }
 
-const data0 = new Array(6).fill(0);
-const data1 = new Array(6).fill(0).map((d, i) => i * 10);
-const data2 = new Array(6).fill(0).map((d, i) => 10 ** i);
-const data3 = new Array(7).fill(0).map((d, i) => 10 ** i);
-const data4 = new Array(8).fill(0).map((d, i) => 10 ** i);
+const data5 = ['2020-12-28', '2020-12-29', '2020-12-30', '2020-12-31', '2021-01-01', '2021-01-02'];
+const data6 = ['2020-12-27', ...data5];
+const data7 = ['2020-12-26', ...data6];
 
-createAxis([50, 5], [400, 5], data0, 'number', (item, idx) => String(idx));
-createAxis([50, 50], [400, 50], data1, 'number');
-createAxis([50, 100], [400, 100], data2, 'number');
-createAxis([50, 150], [400, 150], data3, 'number');
-createAxis([50, 200], [400, 200], data4, 'number');
-
-const data8 = ['A', 'BC', 'DEF', 'GHIJ', 'KMLNO', 'PQRSTV', 'VWXYZA'];
-const data9 = ['ABC', 'BCED', 'DEFGH', 'GHIJKM', 'KMLNOPQ', 'PQRSTVVW', 'VWXYZABC'];
-const data10 = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-createAxis([50, 300], [400, 300], data8, 'text');
-createAxis([50, 350], [400, 350], data9, 'text');
-createAxis([50, 400], [400, 400], data10, 'text', (item) => new Array(10).fill(item.text).join(''));
+createAxis([50, 50], [400, 50], data5, 'text');
+createAxis([50, 100], [400, 100], data5, 'time');
+createAxis([50, 180], [400, 180], data6, 'text');
+// 日期优化展示
+createAxis([50, 230], [400, 230], data6, 'time');
+createAxis([50, 310], [400, 310], data7, 'text');
+// todo 日期优化展示，始终展示最后一个标签（全称）
+createAxis([50, 360], [400, 360], data7, 'time');

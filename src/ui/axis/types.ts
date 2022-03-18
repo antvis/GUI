@@ -6,6 +6,9 @@ export type Position = 'start' | 'center' | 'end';
 export type AxisType = 'linear' | 'arc' | 'helix';
 export type OverlapType = 'autoRotate' | 'autoEllipsis' | 'autoHide';
 
+/**
+ * @description tick 元数据类型: value, text?, state?, id?
+ */
 export type TickDatum = {
   value: number;
   text?: string;
@@ -59,7 +62,7 @@ export type AxisLabelCfg = {
   alignTick?: boolean;
   // 标签文本与轴线的对齐方式，normal-水平，tangential-切向 radial-径向
   align?: 'normal' | 'tangential' | 'radial';
-  formatter?: (tick: TickDatum, index: number) => string;
+  formatter?: (tick: TickDatum, index?: number) => string;
   offset?: [number, number];
   // 处理label重叠的优先级
   overlapOrder?: OverlapType[];
