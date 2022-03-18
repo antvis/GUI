@@ -1,7 +1,7 @@
 import type { DisplayObjectConfig, MixAttrs, RectProps, LabelProps } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
 
-export type SwitchCfg = {
+export type SwitchStyleProps = {
   /**
    * @title x 坐标
    * @description 局部坐标系下 x 轴坐标
@@ -79,4 +79,4 @@ export type SwitchCfg = {
   onClick?: (checked: boolean, e: Event) => void;
 };
 
-export type SwitchOptions = DisplayObjectConfig<SwitchCfg>;
+export type SwitchOptions = DisplayObjectConfig<SwitchStyleProps>;

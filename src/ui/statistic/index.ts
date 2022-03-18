@@ -5,7 +5,7 @@ import { GUI } from '../../core/gui';
 import { Tag } from '../tag';
 import { getStateStyle as getStyle } from '../../util';
 import type { RectProps, GUIOption } from '../../types';
-import type { TagCfg } from '../tag/types';
+import type { TagStyleProps } from '../tag/types';
 import type { StatisticCfg, StatisticOptions } from './types';
 
 export type { StatisticCfg, StatisticOptions };
@@ -104,7 +104,7 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
   /**
    * 获取标题配置
    */
-  public getTitleShapeCfg(): TagCfg {
+  public getTitleShapeCfg(): TagStyleProps {
     const { title } = this.attributes;
 
     return {
@@ -127,7 +127,7 @@ export class Statistic<T extends StatisticCfg = StatisticCfg> extends GUI<Requir
   /**
    * 获取内容配置
    */
-  public getValueShapeCfg(): TagCfg {
+  public getValueShapeCfg(): TagStyleProps {
     const { value, spacing } = this.attributes;
 
     let titleHeight = 0;

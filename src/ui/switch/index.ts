@@ -1,14 +1,14 @@
 import { Rect, Line } from '@antv/g';
 import { deepMix, isNil, omit, get, isPlainObject, assign, isFunction } from '@antv/util';
 import type { RectStyleProps } from '@antv/g';
-import { Tag, TagCfg } from '../tag';
+import { Tag, TagStyleProps } from '../tag';
 import { GUI } from '../../core/gui';
 import { getShapeSpace } from '../../util';
 import type { GUIOption } from '../../types';
-import type { SwitchCfg, SwitchOptions } from './types';
+import type { SwitchStyleProps, SwitchOptions } from './types';
 import { SIZE_STYLE } from './constant';
 
-export type { SwitchCfg, SwitchOptions };
+export type { SwitchStyleProps, SwitchOptions };
 
 // 开启颜色 默认
 const OPTION_COLOR = '#1890FF';
@@ -23,9 +23,9 @@ const checkedChildrenStyle = {
       fill: '#fff',
     },
   },
-} as TagCfg;
+} as TagStyleProps;
 
-export class Switch extends GUI<Required<SwitchCfg>> {
+export class Switch extends GUI<Required<SwitchStyleProps>> {
   /**
    * 组件 switch
    */
@@ -67,7 +67,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
   /**
    * 默认配置项
    */
-  public static defaultOptions: GUIOption<SwitchCfg> = {
+  public static defaultOptions: GUIOption<SwitchStyleProps> = {
     type: Switch.tag,
     style: {
       x: 0,
@@ -108,7 +108,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
   /**
    * 组件的更新
    */
-  public update(cfg?: Partial<SwitchCfg>) {
+  public update(cfg?: Partial<SwitchStyleProps>) {
     this.attr(deepMix({}, this.attributes, cfg));
 
     // 更新开关
@@ -248,12 +248,12 @@ export class Switch extends GUI<Required<SwitchCfg>> {
   // 创建/更新/销毁 开关显示标签 Shape
   private updateCheckedChildrenShape() {
     ['checkedChildren', 'unCheckedChildren'].forEach((key, index) => {
-      const childTag = get(this.attributes, key) as SwitchCfg['checkedChildren'];
+      const childTag = get(this.attributes, key) as SwitchStyleProps['checkedChildren'];
       if (!childTag) return;
       const dftTextStyle = get(SIZE_STYLE, [this.attributes.size, 'textStyle']);
       const dftMarkerStyle = get(SIZE_STYLE, [this.attributes.size, 'markerStyle']);
       // 转换为 Tag 组件的配置
-      const children: TagCfg = {
+      const children: TagStyleProps = {
         ...childTag,
         marker: childTag.marker && assign({}, dftMarkerStyle, childTag.marker),
         textStyle: {
@@ -324,7 +324,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     if (!this.animateFlag) {
       updateAttr = {
         ...updateAttr,
-        x: this.defaultChecked ? width - height + spacing : spacing,
+        x: this.defaultChecked ? width - (height as number) + spacing : spacing,
       };
     }
 
@@ -332,7 +332,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
 
     // 更新轨迹
     this.pathLineShape.attr({
-      x1: width - height + spacing,
+      x1: width - (height as number) + spacing,
       y1: spacing,
       x2: spacing,
       y2: spacing,
@@ -343,7 +343,7 @@ export class Switch extends GUI<Required<SwitchCfg>> {
    * 获取文本和边界的距离，默认取: 1/3 高度
    */
   private getTextSpacing(): number {
-    return Math.floor(this.sizeStyle.height / 3);
+    return Math.floor((this.sizeStyle.height as number) / 3);
   }
 
   // 获取背景Shape宽度  在有tag 和 无tag 的情况下是不同的
@@ -356,9 +356,11 @@ export class Switch extends GUI<Required<SwitchCfg>> {
     const textSpacing = this.getTextSpacing();
     const hasChildTag = get(this.attributes, [this.checked ? 'checkedChildren' : 'unCheckedChildren']);
     const childrenShape = this.childrenShape[this.checked ? 0 : 1];
-    const childrenWidth = hasChildTag ? getShapeSpace(childrenShape)?.width + textSpacing - this.sizeStyle.height : 0;
+    const childrenWidth = hasChildTag
+      ? getShapeSpace(childrenShape)?.width + textSpacing - (this.sizeStyle.height as number)
+      : 0;
 
-    return childrenWidth + this.sizeStyle.width;
+    return childrenWidth + (this.sizeStyle.width as number);
   }
 
   // 更新 checked 如果 没有传入 checked 并且 checked 没有改变则不更新

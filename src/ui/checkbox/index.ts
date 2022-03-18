@@ -136,7 +136,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       style: {
         ...(textStyle as TextCfg),
         text,
-        x: width + (spacing as number),
+        x: (width as number) + (spacing as number),
         fontColor: disabled ? 'rgba(0,0,0,0.25)' : (textStyle?.stroke as string),
       },
     });
@@ -199,7 +199,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     } = this.attributes;
     const { width } = this.checkboxBackgroundShape.attributes;
     this.labelShape!.setAttribute('text', text as string);
-    this.labelShape!.setAttribute('x', width + (spacing as number));
+    this.labelShape!.setAttribute('x', (width as number) + (spacing as number));
     Object.entries(textStyle || {}).forEach(([key, value]) =>
       this.labelShape!.setAttribute(key as keyof TextCfg, value as any)
     );
@@ -275,7 +275,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   private verticalCenter() {
     const { height } = this.checkboxBackgroundShape.attributes;
     const { lineHeight: labelHeight } = this.labelShape!.attributes;
-    this.labelShape!.setAttribute('y', (height - (labelHeight as number)) / 2);
+    this.labelShape!.setAttribute('y', ((height as number) - (labelHeight as number)) / 2);
   }
 
   public get labelBounds() {
