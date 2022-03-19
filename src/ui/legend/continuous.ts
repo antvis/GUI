@@ -35,7 +35,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 结构：
    * this
    * |- titleShape
-   * |-backgroundShape
+   * |- middleGroup
    *   |- labelsShape
    *   |- railShape
    *      |- pathGroup
@@ -43,6 +43,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    *      |- startHandle
    *      |- endHandle
    *      |- indicator
+   * |-backgroundShape
    */
 
   public get selection() {
@@ -150,7 +151,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 获取手柄属性
    */
   private get handleShapeCfg(): IHandleCfg {
-    const { handle } = this.attributes;
+    const { handle, label } = this.attributes;
     if (!handle)
       return {
         markerCfg: {
@@ -164,8 +165,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
         },
       };
 
-    const { size, icon, text } = handle as Required<Pick<HandleCfg, 'size' | 'icon' | 'text'>>;
-    const { style: textStyle } = text;
+    const { size, icon } = handle as Required<Pick<HandleCfg, 'size' | 'icon'>>;
     const { marker, style: markerStyle } = icon;
     // 替换默认手柄
     const symbol =
@@ -181,12 +181,12 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       textCfg: {
         text: '',
         opacity: 1,
-        ...textStyle,
+        ...(label?.style || {}),
       },
     };
   }
 
-  // 获取Label属性
+  // 获取 Label 属性
   private get labelsShapeCfg(): ILabelsCfg {
     const { label } = this.attributes;
     // 不绘制label
@@ -226,6 +226,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
   private labelsGroup!: Labels;
 
+  private middleGroup!: Group;
+
   // 色板
   private railShape!: Rail;
 
@@ -257,6 +259,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
   public init() {
     super.init();
+    this.appendChild((this.middleGroup = new Group()));
     // 创建labels
     this.createLabels();
     // 创建色板及其背景
@@ -485,7 +488,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       id: 'labels',
       style: this.labelsShapeCfg,
     });
-    this.appendChild(this.labelsGroup);
+    this.middleGroup.appendChild(this.labelsGroup);
   }
 
   // 创建色板
@@ -496,7 +499,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       id: 'rail',
       style: this.railShapeCfg,
     });
-    this.appendChild(this.railShape);
+    this.middleGroup.appendChild(this.railShape);
   }
 
   /**
@@ -594,14 +597,9 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 调整handle结构
    */
   private adjustHandle() {
-    const { rail, handle } = this.attributes;
+    const { rail, label } = this.attributes;
     const [start, end] = this.selection;
     const { width: railWidth, height: railHeight } = rail as Required<Pick<IRailCfg, 'width' | 'height'>>;
-
-    // handle为false时，取默认布局方式进行布局，但不会显示出来
-    const handleCfg = handle || get(Continuous.defaultOptions, ['style', 'handle']);
-    const { spacing: handleSpacing, text: handleText } = handleCfg;
-    const { align: handleTextAlign } = handleText;
 
     // 设置Handle位置
     const { startHandle } = this;
@@ -630,36 +628,42 @@ export class Continuous extends LegendBase<ContinuousCfg> {
         },
       ])
     );
+
+    // handle为false时，取默认布局方式进行布局，但不会显示出来
+    if (!label) return;
+    const { spacing = 0 } = label;
+    const align = label.align === 'rail' ? 'end' : label.align;
+
     // 调整文本位置
     let handleTextStyle = {};
     // rail 不做处理
-    if (handleTextAlign === 'inside') {
+    if (align === 'start') {
       handleTextStyle = this.getOrientVal([
         {
           x: 0,
-          y: -railHeight / 2 - handleSpacing,
+          y: -railHeight / 2 - spacing,
           textAlign: 'center',
           textBaseline: 'bottom',
         },
         {
-          x: railWidth + handleSpacing,
+          x: -railWidth / 2 - spacing,
           y: 0,
-          textAlign: 'start',
+          textAlign: 'end',
           textBaseline: 'middle',
         },
       ]);
-    } else if (handleTextAlign === 'outside') {
+    } else if (align === 'end') {
       handleTextStyle = this.getOrientVal([
         {
           x: 0,
-          y: railHeight / 2 + handleSpacing,
+          y: railHeight / 2 + spacing,
           textAlign: 'center',
           textBaseline: 'top',
         },
         {
-          x: -railWidth / 2 - handleSpacing,
+          x: railWidth + spacing,
           y: 0,
-          textAlign: 'end',
+          textAlign: 'start',
           textBaseline: 'middle',
         },
       ]);
@@ -670,11 +674,23 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   }
 
   /**
-   * 调整labels结构
+   * 调整 labels 布局位置
+   *
+   * if labelAlign == 'inside' | 'outside'
+   *    orient: horizontal
+   *      ||||||||||||||||||||||
+   *      0  20  40  60  80  100
+   *    orient: vertical
+   *      —— 0
+   *      —— 20
+   *      —— 40
+   *      —— 60
    */
   private adjustLabels() {
     const { min, max, label, rail, orient } = this.attributes;
+
     if (!label) return;
+
     // 容器内可用空间起点
     const { x: innerX, y: innerY } = this.availableSpace;
     const {
@@ -682,17 +698,12 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       height: railHeight,
       ticks: _t,
     } = rail as Required<Pick<IRailCfg, 'width' | 'height' | 'ticks'>>;
-    // 绘制label
-    const { align: labelAlign, spacing: labelSpacing } = label as {
-      align: 'inside' | 'outside' | 'rail';
-      spacing: number;
-    };
-    // label位置
-    if (labelAlign === 'rail') {
-      /**
-       * 此时labelsShape中只包含min、max label
-       * 1. 设置minLabel位置
-       */
+
+    const { align = 'rail', spacing: labelSpacing = 0, flush: labelFlush, offset = [] } = label!;
+    const [offsetX = 0, offsetY = 0] = offset;
+
+    if (align === 'rail') {
+      // 此时 labelsShape 中只包含 min、max label。1. 设置 minLabel 位置
       if (orient === 'horizontal') {
         /**
          * 0  ||||||||||||||||||||||  100
@@ -701,93 +712,56 @@ export class Continuous extends LegendBase<ContinuousCfg> {
           x: innerX,
           y: innerY + railHeight / 2,
         });
-        let railStart = innerX;
         const [firstChild] = this.labelsGroup.getLabels();
         // 设置左侧文本
         if (firstChild) {
-          firstChild.attr({ textAlign: 'end' });
-          railStart += labelSpacing;
+          firstChild.attr({ textAlign: 'start', x: offsetX, y: offsetY });
         }
-        // 设置rail位置
-        this.railShape.attr({
-          x: railStart,
-          y: innerY,
-        });
+
         const [lastChild] = this.labelsGroup.getLabels().slice(-1);
         if (lastChild) {
           firstChild;
           // 设置右侧文本位置
           lastChild.attr({
-            x: railWidth + labelSpacing,
-            y: 0,
+            x: getShapeSpace(firstChild).width + railWidth + labelSpacing * 2 + offsetX,
+            y: offsetY,
             textAlign: 'start',
           });
         }
-        return;
+      } else {
+        this.labelsGroup.attr({
+          x: innerX + railWidth / 2,
+          y: innerY,
+        });
+        // 顶部文本高度
+        const firstLabelText = this.labelsGroup.getLabels()[0];
+        const { height: topTextHeight } = getShapeSpace(firstLabelText);
+        firstLabelText.attr({
+          x: offsetX,
+          y: topTextHeight / 2 + offsetY,
+          textBaseline: 'middle',
+        });
+        // 底部文本位置
+        const lastLabelText = this.labelsGroup.getLabels().slice(-1)[0];
+        lastLabelText.attr({
+          x: offsetX,
+          y: railHeight + topTextHeight * 1.5 + labelSpacing * 2 + offsetY,
+          textBaseline: 'middle',
+        });
       }
-      /**
-       * rail-vertical
-       * else if orient === 'vertical'
-       *   0
-       *  --
-       *  --
-       *  --
-       *  --
-       *  --
-       *  --
-       *  400
-       */
-      this.labelsGroup.attr({
-        x: innerX + railWidth / 2,
-        y: innerY,
-      });
-      // 顶部文本高度
-      const firstLabelText = this.labelsGroup.getLabels()[0];
-      const { height: topTextHeight } = getShapeSpace(firstLabelText);
-      firstLabelText.attr({
-        y: topTextHeight / 2,
-        textAlign: 'center',
-        textBaseline: 'middle',
-      });
-      // rail位置
-      this.railShape.attr({
-        x: innerX,
-        y: innerY + topTextHeight + labelSpacing,
-      });
-      // 底部文本位置
-      const lastLabelText = this.labelsGroup.getLabels().slice(-1)[0];
-      lastLabelText.attr({
-        y: railHeight + 1.5 * topTextHeight + labelSpacing * 2,
-        textAlign: 'center',
-        textBaseline: 'middle',
-      });
+
       return;
     }
 
-    /**
-     * if labelAlign == 'inside' | 'outside'
-     *  ||||||||||||||||||||||
-     *  0  20  40  60  80  100
-     *
-     *  -- 0
-     *  -- 20
-     *  -- 40
-     *  -- 60
-     *  -- 80
-     *  -- 100
-     */
     if (orient === 'horizontal') {
       // labelsShape 高度
       const { height: labelsHeight } = getShapeSpace(this.labelsGroup);
-      this.railShape.attr({
-        x: innerX,
-        y: innerY + (labelAlign === 'inside' ? labelSpacing + labelsHeight : 0),
-      });
+
       this.labelsGroup.attr({
         x: innerX,
-        y: innerY + (labelAlign === 'inside' ? labelsHeight / 2 : labelSpacing + railHeight + labelsHeight / 2),
+        y: innerY + (align === 'start' ? labelsHeight / 2 : labelSpacing + railHeight + labelsHeight / 2),
       });
-      // 补上min，max
+      // 补上 min，max
       const ticks = [min, ..._t, max];
       // 设置labelsShape中每个文本的位置
       this.labelsGroup.getLabels().forEach((child, idx) => {
@@ -798,42 +772,39 @@ export class Continuous extends LegendBase<ContinuousCfg> {
           y: 0,
           textBaseline: 'middle',
           textAlign: (() => {
-            // 调整两端label位置
+            if (!labelFlush) return 'center';
+
+            // use LabelFlush to control whether change the textAlign of labels on the edge of the axis os that they could stay inside the span of axis.
             if (idx === 0) return 'start';
-            if (idx === ticks.length - 1) return 'end';
-            return 'center';
+            return idx < ticks.length - 1 ? 'center' : 'end';
           })(),
         });
       });
       return;
     }
-    /**
-     * vertical inside/outside
-     */
-    // 调整labelsShape位置
-    this.railShape.attr({
-      x: innerX + (labelAlign === 'inside' ? 0 : labelSpacing),
-      y: innerY,
-    });
+
+    // vertical orient
     this.labelsGroup.attr({
-      x: innerX + (labelAlign === 'inside' ? labelSpacing + railWidth : 0),
+      x: innerX + (align === 'end' ? labelSpacing + railWidth : 0),
       y: innerY,
     });
-    // 补上min，max
+
+    // 补上 min，max
     const ticks = [min, ..._t, max];
     this.labelsGroup.getLabels().forEach((child, idx) => {
       const val = ticks[idx];
-      // 通过val拿到偏移量
+      // 通过 val 拿到偏移量
       child.attr({
         x: 0,
         y: this.getValueOffset(val),
         textBaseline: (() => {
-          // 调整两端label位置
+          if (!labelFlush) return 'middle';
+
+          // use LabelFlush to control whether change the textAlign of labels on the edge of the axis os that they could stay inside the span of axis.
           if (idx === 0) return 'top';
-          if (idx === ticks.length - 1) return 'bottom';
-          return 'middle';
+          return idx < ticks.length - 1 ? 'middle' : 'bottom';
         })(),
-        textAlign: labelAlign === 'inside' ? 'start' : 'end',
+        textAlign: align === 'end' ? 'start' : 'end',
       });
     });
   }
@@ -845,28 +816,66 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 2. label.align === 'rail' 时，需要调整 rail 位置
    */
   private adjustLayout() {
-    const { handle, label } = this.attributes;
-    // 调整handle
-    // 显示handle时不显示label
+    const { handle, label, orient } = this.attributes;
+
+    const { x: innerX, y: innerY } = this.availableSpace;
+    const { width: handleW } = getShapeSpace(this.startHandle);
+
+    let railX = innerX;
+    let railY = innerY;
+
+    let labelW = 0;
+    let labelH = 0;
     if (handle) {
       this.labelsGroup?.hide();
-    } else {
-      this.labelsGroup?.show();
+
+      if (orient === 'horizontal') railX = innerX + handleW / 2;
+    } else if (this.labelsGroup && label) {
+      this.labelsGroup.show();
+      this.adjustLabels();
+
+      const { align: labelAlign, spacing: labelSpacing = 0 } = label;
+      const [firstChild] = this.labelsGroup.getLabels();
+
+      labelW = getShapeSpace(firstChild).width;
+      labelH = getShapeSpace(firstChild).height;
+
+      if (labelAlign === 'rail') {
+        railX = innerX + labelW + labelSpacing;
+
+        if (orient === 'vertical') {
+          railX = innerX;
+          railY = innerY + labelH + labelSpacing;
+        }
+      } else if (labelAlign === 'start' && orient === 'horizontal') {
+        railY = innerY + getShapeSpace(firstChild).height + labelSpacing;
+      } else if (labelAlign === 'start' && orient === 'vertical') {
+        railX = innerX + labelSpacing;
+      }
     }
 
-    // rail位置
-    const { x: innerX, y: innerY } = this.availableSpace;
+    // 调整 rail位置
     this.railShape.attr({
-      x: innerX,
-      y: innerY,
+      x: railX,
+      y: railY,
     });
-    // handle 位置
-    if (this.startHandle) {
-      this.adjustHandle();
+
+    // 调整 handle 位置
+    this.adjustHandle();
+
+    // 整体调整位置
+    if (!label?.flush) {
+      if (orient === 'horizontal') this.middleGroup.setLocalPosition(labelW / 2, 0);
+      if (orient === 'vertical') this.middleGroup.setLocalPosition(0, labelH / 2);
     }
-    // 调整labels
-    if (label && this.labelsGroup.isVisible()) {
-      this.adjustLabels();
+    if (orient === 'vertical') {
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (handle && this.startHandle) offsetY = getShapeSpace(this.startHandle).height / 2;
+      if (label?.align === 'start') offsetX = getShapeSpace(this.labelsGroup).width + (label?.spacing || 0);
+
+      this.middleGroup.setLocalPosition(offsetX, offsetY);
     }
   }
 
@@ -903,10 +912,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
     // indicator hover事件
     this.railShape.getRail().addEventListener('mouseenter', this.onHoverStart('rail'));
-    this.addEventListener('mouseout', () => {
-      // 关闭指示器
-      this.setIndicator(false);
-    });
+    this.addEventListener('mouseout', () => this.setIndicator(false));
   }
 
   /**

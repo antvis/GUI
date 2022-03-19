@@ -79,7 +79,6 @@ export class Sparkline extends GUI<SparklineCfg> {
   private get baseline(): number {
     const { y } = this.scales;
     const [y1, y2] = y.getOptions().domain || [0, 0];
-    console.log('domain: ', y1, y2);
     if (y2 < 0) {
       return y.map(y2);
     }
