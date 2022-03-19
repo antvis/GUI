@@ -104,7 +104,6 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.checkedShape = this.createCheckedShape();
     if (!isNil(this.getAttribute('label')) && !isUndefined(this.getAttribute('label')))
       this.labelShape = this.createLabelShape();
-
     this.checkboxBackgroundShape.appendChild(this.checkedShape);
     this.labelShape && this.checkboxBackgroundShape.appendChild(this.labelShape);
     this.appendChild(this.checkboxBackgroundShape);
@@ -134,7 +133,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
       style: {
         ...(textStyle as TextCfg),
         text,
-        x: width + (spacing as number),
+        x: (width as number) + (spacing as number),
         fontColor: disabled ? 'rgba(0,0,0,0.25)' : (textStyle?.stroke as string),
       },
     });
@@ -154,7 +153,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     } as PathStyleProps;
 
     const checkedShape = new Path({ style: CHECKED_SHAPE_STYLE });
-    checkedShape.setAttribute('visibility', 'hidden');
+    checkedShape.setAttribute('visibility', this.checked ? 'visible' : 'hidden');
     return checkedShape;
   }
 
@@ -257,7 +256,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
   private verticalCenter() {
     const { height } = this.checkboxBackgroundShape.attributes;
     const { lineHeight: labelHeight } = this.labelShape!.attributes;
-    this.labelShape!.setAttribute('y', (height - (labelHeight as number)) / 2);
+    this.labelShape!.setAttribute('y', ((height as number) - (labelHeight as number)) / 2);
   }
 
   public get labelBounds() {

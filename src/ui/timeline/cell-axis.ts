@@ -1,19 +1,16 @@
-import { Rect, RectStyleProps } from '@antv/g';
+import { CustomEvent, Rect, RectStyleProps } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { Linear as Ticks } from '../axis/linear';
 import { BACKGROUND_STYLE, CELL_STYLE } from './constants';
 import { CellAxisCfg, CellAxisOptions, TimeData } from './types';
-import { createTickData } from './slideraxis';
+import { createTickData } from './util';
+import { Poptip } from '../poptip';
 
 export class CellAxis extends GUI<Required<CellAxisCfg>> {
   public static tag = 'cellaxis';
 
   private timeIndexMap: Map<TimeData['date'], number> = new Map<TimeData['date'], number>();
-
-  public get background() {
-    return this.backgroundShape;
-  }
 
   public static defaultOptions = {
     style: {
@@ -21,6 +18,10 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         selected: CELL_STYLE.selected,
         default: CELL_STYLE.default,
       },
+      loop: true,
+      dataPerStep: 1,
+      playMode: 'fixed',
+      interval: 1000,
       backgroundStyle: BACKGROUND_STYLE,
       padding: [2, 4, 2, 4] /* top | right | bottom | left */,
       cellGap: 2,
@@ -28,6 +29,8 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         verticalFactor: -1,
         axisLine: false,
         label: {
+          autoRotate: false,
+          autoEllipsis: true,
           offset: [0, 8],
           alignTick: true,
           style: {
@@ -51,6 +54,20 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
 
   private backgroundShape!: Rect;
 
+  private ticks: Ticks | undefined;
+
+  private poptip: Poptip | undefined;
+
+  private timer: number | undefined;
+
+  public played: boolean = false;
+
+  private clearEvents = () => {};
+
+  public get axisTimeIndexMap() {
+    return this.timeIndexMap;
+  }
+
   public get cells() {
     return this.cellShapes;
   }
@@ -59,21 +76,12 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     return this.backgroundShape;
   }
 
-  public get backgroundVerticalCenter() {
-    return this.backgroundShape.getBounds()?.center[1] as number;
+  public get cellTicks() {
+    return this.ticks;
   }
 
-  private ticks: Ticks | undefined;
-
-  private clearEvents = () => {};
-
-  private initSelection() {
-    const { selection, timeData, single } = this.attributes;
-    if (selection === undefined) {
-      single
-        ? this.setAttribute('selection', [timeData[0].date])
-        : this.setAttribute('selection', [timeData[0].date, timeData[timeData.length - 1].date]);
-    }
+  public get backgroundVerticalCenter() {
+    return this.backgroundShape.getBounds()?.center[1] as number;
   }
 
   constructor(options: CellAxisOptions) {
@@ -82,14 +90,6 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
       this.setAttribute('padding', CellAxis.defaultOptions.style.padding as [number, number, number, number]);
     }
     this.init();
-  }
-
-  private initTimeIndexMap() {
-    this.timeIndexMap = new Map<TimeData['date'], number>();
-    const { timeData } = this.attributes;
-    for (let i = 0; i < timeData.length; i += 1) {
-      this.timeIndexMap.set(timeData[i].date, i);
-    }
   }
 
   public init() {
@@ -102,14 +102,198 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     this.bindEvents();
   }
 
+  public update(cfg: Partial<Required<CellAxisCfg>>): void {
+    const lastSingle = this.attributes.single;
+    this.attr(deepMix({}, this.attributes, cfg));
+    if (this.attributes.single !== lastSingle) {
+      this.removeChildren();
+      this.init();
+      return;
+    }
+    if (this.attributes.padding.length !== 4) {
+      this.setAttribute('padding', CellAxis.defaultOptions.style.padding as [number, number, number, number]);
+    }
+    this.clearEvents();
+    this.initTimeIndexMap();
+    this.updateBackground();
+    this.updateCells();
+    this.createSelection();
+    this.updateTicks();
+    this.bindEvents();
+  }
+
+  public clear(): void {
+    this.removeChildren();
+    this.clearTimer();
+  }
+
+  private initSelection() {
+    const { selection, timeData, single } = this.attributes;
+    if (selection === undefined) {
+      single
+        ? this.setAttribute('selection', [timeData[0].date])
+        : this.setAttribute('selection', [timeData[0].date, timeData[timeData.length - 1].date]);
+    }
+  }
+
+  private initTimeIndexMap() {
+    this.timeIndexMap = new Map<TimeData['date'], number>();
+    const { timeData } = this.attributes;
+    for (let i = 0; i < timeData.length; i += 1) {
+      this.timeIndexMap.set(timeData[i].date, i);
+    }
+  }
+
+  public play() {
+    if (this.timer) {
+      this.clearTimer();
+    }
+    const { playMode, dataPerStep, interval } = this.attributes;
+    this.played = true;
+    this.timer = window.setInterval(() => {
+      if (playMode === 'fixed') {
+        this.moveDistance(dataPerStep);
+      } else {
+        this.increase(dataPerStep, 2);
+      }
+    }, interval);
+  }
+
+  public clearTimer() {
+    window.clearInterval(this.timer);
+  }
+
+  public stop() {
+    this.played = false;
+    this.clearTimer();
+  }
+
+  public moveDistance(distance: number) {
+    if (!this.played) return;
+    const { selection, single, onSelectionChange, timeData, loop } = this.attributes;
+    if (single && Array.isArray(selection) && selection.length === 1) {
+      const currIdx = this.timeIndexMap.get(selection[0]) as number;
+      if (currIdx === timeData.length - 1 && loop) {
+        const newSelection = [timeData[0].date] as [string];
+        this.update({
+          selection: newSelection,
+        });
+        isFunction(onSelectionChange) && onSelectionChange(newSelection);
+      }
+      if (currIdx + distance > timeData.length - 1) {
+        const nextIdx = timeData.length - 1;
+        const newSelection = [timeData[nextIdx].date] as [string];
+        if (currIdx !== nextIdx) {
+          this.update({
+            selection: newSelection,
+          });
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
+        }
+        return;
+      }
+      if (currIdx + distance < 0) {
+        return;
+      }
+      const nextIdx = (currIdx + distance) % timeData.length;
+      const newSelection = [timeData[nextIdx].date] as [string];
+      this.update({
+        selection: newSelection,
+      });
+      isFunction(onSelectionChange) && onSelectionChange(newSelection);
+    } else if (!single && Array.isArray(selection) && selection.length === 2) {
+      const currStartIdx = this.timeIndexMap.get(selection[0]) as number;
+      const currEndIdx = this.timeIndexMap.get(selection[1]) as number;
+      if (currEndIdx === timeData.length - 1 && loop) {
+        const nextStartIdx = 0;
+        const nextEndIdx = currEndIdx - currStartIdx;
+        const newSelection = [timeData[nextStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+        this.update({
+          selection: newSelection,
+        });
+        isFunction(onSelectionChange) && onSelectionChange(newSelection);
+      }
+      if (currEndIdx + distance > timeData.length - 1) {
+        const nextStartIdx = timeData.length - 1 - currEndIdx + currStartIdx;
+        const nextEndIdx = timeData.length - 1;
+        const newSelection = [timeData[nextStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+        if (nextEndIdx !== currEndIdx) {
+          this.update({
+            selection: newSelection,
+          });
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
+        }
+        return;
+      }
+      if (currStartIdx + distance < 0) {
+        return;
+      }
+      const nextStartIdx = currStartIdx + distance;
+      const nextEndIdx = currEndIdx + distance;
+      const newSelection = [timeData[nextStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+      this.update({
+        selection: newSelection,
+      });
+      isFunction(onSelectionChange) && onSelectionChange(newSelection);
+    }
+  }
+
+  public increase(distance: number, startWidth = 1) {
+    const { selection, single, onSelectionChange, timeData, loop } = this.attributes;
+    if (!single && Array.isArray(selection) && selection.length === 2) {
+      const currStartIdx = this.timeIndexMap.get(selection[0]) as number;
+      const currEndIdx = this.timeIndexMap.get(selection[1]) as number;
+      if (currEndIdx === timeData.length - 1 && loop) {
+        const nextEndIdx = currStartIdx + startWidth - 1;
+        const newSelection = [timeData[currStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+        this.update({
+          selection: newSelection,
+        });
+        isFunction(onSelectionChange) && onSelectionChange(newSelection);
+        return;
+      }
+      if (currEndIdx + distance > timeData.length - 1) {
+        const nextEndIdx = timeData.length - 1;
+        const newSelection = [timeData[currStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+        if (nextEndIdx !== currEndIdx) {
+          this.update({
+            selection: newSelection,
+          });
+          isFunction(onSelectionChange) && onSelectionChange(newSelection);
+        }
+        return;
+      }
+      if (currEndIdx + distance < currStartIdx) {
+        return;
+      }
+      const nextEndIdx = currEndIdx + distance;
+      const newSelection = [timeData[currStartIdx].date, timeData[nextEndIdx].date] as [string, string];
+      this.update({
+        selection: newSelection,
+      });
+      isFunction(onSelectionChange) && onSelectionChange(newSelection);
+    }
+  }
+
   private bindEvents() {
     const { selection, cellStyle, single, onSelectionChange, timeData } = this.attributes;
     const { selected: selectedStyle, default: defaultStyle } = cellStyle;
+    let axisDraggingEvent: CustomEvent;
+    this.addEventListener('dragging', (e: any) => {
+      e.stopPropagation();
+      if (e.dragging) {
+        this.clearTimer();
+      } else if (this.played) {
+        this.play();
+      }
+    });
+
     if (single && Array.isArray(selection) && selection.length === 1) {
       // single时默认为点选
       let newSelection: [string] = selection as [string]; // 变化的时间范围
 
       const onClick = (event: any) => {
+        axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
+        this.dispatchEvent(axisDraggingEvent);
         const lastIdx = this.timeIndexMap.get(this.attributes.selection[0]) as number;
         const idx = this.positionXToCellIdx(event.canvasX);
         this.cellShapes[idx].attr({
@@ -123,6 +307,8 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         newSelection = [timeData[idx].date];
         this.attr({ selection: newSelection });
         isFunction(onSelectionChange) && onSelectionChange(newSelection);
+        axisDraggingEvent = new CustomEvent('dragging', { dragging: false });
+        this.dispatchEvent(axisDraggingEvent);
       };
 
       this.backgroundShape.addEventListener('click', onClick);
@@ -135,6 +321,8 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
       let newSelection: [string, string] = selection as [string, string]; // 变化的时间范围
       const onDragStart = (event: any) => {
         const startIdx = this.positionXToCellIdx(event.canvasX);
+        axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
+        this.dispatchEvent(axisDraggingEvent);
         this.cellShapes.forEach((cell) => {
           cell.attr({
             ...defaultStyle,
@@ -164,6 +352,10 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         }
       };
       const onDragEnd = () => {
+        if (selectionDragging) {
+          axisDraggingEvent = new CustomEvent('dragging', { dragging: false });
+          this.dispatchEvent(axisDraggingEvent);
+        }
         selectionDragging = false;
       };
 
@@ -174,6 +366,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
 
       // 清理监听事件函数
       this.clearEvents = () => {
+        this.removeAllEventListeners();
         this.backgroundShape.removeEventListener('mousedown', onDragStart);
         this.removeEventListener('mousemove', onDragMove);
         document.removeEventListener('mouseup', onDragEnd);
@@ -183,7 +376,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
   }
 
   private positionXToCellIdx(positionX: number): number {
-    const { padding, cellGap } = this.attributes;
+    const { padding, cellGap, timeData } = this.attributes;
     const x = this.backgroundShape.getBounds()?.getMin()[0] as number;
     // 已经确保了padding长度为4
     const left = padding[3];
@@ -192,7 +385,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     const cellWidth = this.cellShapes[0].getAttribute('width') as number;
     let cellIdx = Math.floor((positionX - x - left) / (cellWidth + cellGap));
     cellIdx = cellIdx >= 0 ? cellIdx : 0;
-    console.log(cellIdx);
+    cellIdx = cellIdx <= timeData.length - 1 ? cellIdx : timeData.length - 1;
     return cellIdx;
   }
 
@@ -232,6 +425,16 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
   }
 
   private createCells() {
+    this.poptip = new Poptip({
+      style: {
+        containerClassName: 'poptip-domStyles',
+        domStyles: {
+          '.poptip-domStyles': {
+            'font-size': '8px',
+          },
+        },
+      },
+    });
     this.cellShapes = [];
     const { length, timeData, padding, cellGap, cellStyle } = this.attributes;
     const { default: defaultStyle } = cellStyle;
@@ -250,7 +453,19 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         width: cellWidth,
         height: cellHeight,
       };
-      const cell = new Rect({ style });
+      const { date } = timeData[i];
+      const cell = new Rect({ style, className: `${date}` });
+      this.poptip.bind(cell, {
+        follow: true,
+        offset: [0, -10],
+        html: (e) => {
+          return e.target.className as string;
+        },
+        condition: (e: any) => {
+          const { target } = e;
+          return target;
+        },
+      });
       this.cellShapes.push(cell);
       this.backgroundShape.appendChild(cell);
     }
@@ -276,6 +491,7 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         y: top,
         width: cellWidth,
         height: cellHeight,
+        className: `${i}`,
       };
       if (i < this.cellShapes.length) {
         this.cellShapes[i].attr(style);
@@ -313,20 +529,4 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
     this.ticks?.destroy();
     this.createTicks();
   }
-
-  public update(cfg: Partial<Required<CellAxisCfg>>): void {
-    this.attr(deepMix({}, this.attributes, cfg));
-    if (this.attributes.padding.length !== 4) {
-      this.setAttribute('padding', CellAxis.defaultOptions.style.padding as [number, number, number, number]);
-    }
-    this.clearEvents();
-    this.initTimeIndexMap();
-    this.updateBackground();
-    this.updateCells();
-    this.createSelection();
-    this.updateTicks();
-    this.bindEvents();
-  }
-
-  public clear(): void {}
 }

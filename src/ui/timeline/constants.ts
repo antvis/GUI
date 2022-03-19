@@ -1,6 +1,5 @@
 import { RectStyleProps } from '@antv/g';
 import { MixAttrs } from 'types';
-import { CellAxisCfg } from './types';
 
 export const CELL_STYLE: MixAttrs<Partial<RectStyleProps>> = {
   default: {

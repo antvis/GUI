@@ -19,6 +19,8 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     style: {
       x: 0,
       y: 0,
+      width: 0,
+      height: 0,
       target: null,
       visibility: 'hidden',
       text: '',
@@ -72,7 +74,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     element: HTMLElement | DisplayObject,
     options?: {
       html: (e: any) => string;
-      condition: (e: any) => HTMLElement | DisplayObject | false;
+      condition?: (e: any) => HTMLElement | DisplayObject | false;
     } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow' | 'offset'>
   ): void {
     if (!element) return;

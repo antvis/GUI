@@ -23,7 +23,7 @@ describe('speedcontrol', () => {
       style: {
         x: 50,
         y: 50,
-        speeds: ['1.0x', '2.0x', '3.0x', '4.0x', '5.0x'],
+        speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
         width: 35,
       },
     });

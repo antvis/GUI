@@ -1,11 +1,11 @@
 import { deepMix, isFunction, isNumber } from '@antv/util';
 import { GUIOption } from 'types';
-import { AABB, DisplayObject, Group, Rect } from '@antv/g';
+import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { Checkbox, CheckboxOptions } from '../checkbox';
 import type { CellAxisCfg, LayoutRowData, SliderAxisCfg, SpeedControlCfg, TimelineCfg, TimelineOptions } from './types';
-import { CellAxis } from './cellaxis';
-import { SliderAxis } from './slideraxis';
+import { CellAxis } from './cell-axis';
+import { SliderAxis } from './slider-axis';
 import { SpeedControl } from './speedcontrol';
 import { Button, ButtonCfg } from '../button';
 import { FunctionalSymbol } from '../marker';
@@ -44,9 +44,14 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       y: 0,
       width: 500,
       height: 40,
+      dataPerStep: 1,
       data: [],
       orient: { layout: 'row', controlButtonAlign: 'left' },
+      playMode: 'fixed',
+      loop: true,
       type: 'cell',
+      speed: 1,
+      single: false,
       controls: {
         singleModeControl: {
           style: {
@@ -125,7 +130,27 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     },
   };
 
-  public played: boolean = false;
+  public delay = 800;
+
+  public duration = 200;
+
+  private played: boolean = false;
+
+  private playListener: () => void = () => {};
+
+  private cachedSelection: [string] | [string, string] | undefined;
+
+  public get components() {
+    return {
+      sliderAxis: this.sliderAxis,
+      cellAxis: this.cellAxis,
+      speedControl: this.speedControl,
+      playBtn: this.playBtn,
+      prevBtn: this.prevBtn,
+      nextBtn: this.nextBtn,
+      singleTimeCheckbox: this.singleTimeCheckbox,
+    };
+  }
 
   constructor(options: TimelineOptions) {
     super(deepMix({}, Timeline.defaultOptions, options));
@@ -136,13 +161,70 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     this.createControl();
     this.createAxis();
     this.layout();
+    this.bindCustomEvents();
+  }
+
+  public update(cfg: Partial<Required<TimelineCfg>>): void {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.clear();
+    this.init();
+  }
+
+  public clear() {
+    this.removeChildren();
+  }
+
+  private bindCustomEvents() {
+    this.addEventListener('replay', () => {
+      if (!this.attributes.loop) return;
+      if (this.sliderAxis) {
+        this.sliderAxis.update({ selection: this.cachedSelection });
+      }
+    });
+  }
+
+  public play() {
+    const { dataPerStep, playMode, loop, speed } = this.attributes;
+    const axis = this.cellAxis ? this.cellAxis : this.sliderAxis;
+    if (!axis) return;
+    if (this.cellAxis) {
+      this.cellAxis.attr({ dataPerStep, loop, playMode, interval: 1000 / speed });
+      this.cellAxis.play();
+    }
+    if (this.sliderAxis) {
+      this.sliderAxis.attr({ duration: this.duration / speed, delay: this.delay / speed, dataPerStep, loop, playMode });
+      this.sliderAxis.play();
+    }
+  }
+
+  public setSelection(selection: [string, string] | [string]) {
+    const { onSelectionChange } = this.attributes;
+    const axis = this.cellAxis ? this.cellAxis : this.sliderAxis;
+    if (axis) {
+      const { single } = axis.attributes;
+      // 若正在播放，关闭播放，避免动画出错。
+      if (this.played) {
+        this.playListener();
+      }
+      if ((single && selection.length === 1) || (!single && selection.length === 2))
+        axis.update({
+          selection,
+        });
+    }
+    isFunction(onSelectionChange) && onSelectionChange(selection);
+  }
+
+  public setPlayed() {
+    if (this.playBtn) {
+      this.playListener();
+    }
   }
 
   private createAxis() {
-    const { type, cellAxisCfg, sliderAxisCfg, data, onSelectionChange, width } = this.attributes;
+    const { type, cellAxisCfg, sliderAxisCfg, data, onSelectionChange, width, single } = this.attributes;
     if (type === 'cell') {
       this.cellAxis = new CellAxis({
-        style: { ...(cellAxisCfg as CellAxisCfg), length: width, timeData: data, onSelectionChange },
+        style: { ...(cellAxisCfg as CellAxisCfg), length: width, timeData: data, onSelectionChange, single },
       });
     } else {
       this.sliderAxis = new SliderAxis({
@@ -150,6 +232,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
           ...(sliderAxisCfg as SliderAxisCfg),
           timeData: data,
           onSelectionChange,
+          single,
         },
       });
     }
@@ -187,12 +270,22 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
         ['L', x - 6, y - 6],
       ];
     };
+    const forwardListener = () => {
+      if (this.attributes.playMode === 'fixed') {
+        this.cellAxis?.moveDistance(1);
+        this.sliderAxis?.moveDistance(1);
+      } else {
+        this.cellAxis?.increase(1);
+        this.sliderAxis?.increase(1);
+      }
+      isFunction(onForward) && onForward();
+    };
     this.nextBtn = new Button({
       style: {
         ...nextBtnCfg,
         width: 12,
         marker: nextMarker,
-        onClick: onForward,
+        onClick: forwardListener,
       },
     });
     this.appendChild(this.nextBtn);
@@ -210,15 +303,35 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
         ['L', x, y - 6],
       ];
     };
+    const backwardListener = () => {
+      if (this.attributes.playMode === 'fixed') {
+        this.cellAxis?.moveDistance(-1);
+        this.sliderAxis?.moveDistance(-1);
+      } else {
+        this.cellAxis?.increase(-1);
+        this.sliderAxis?.increase(-1);
+      }
+      isFunction(onBackward) && onBackward();
+    };
     this.prevBtn = new Button({
       style: {
         ...prevBtnCfg,
         width: 12,
         marker: prevMarker,
-        onClick: onBackward,
+        onClick: backwardListener,
       },
     });
     this.appendChild(this.prevBtn);
+  }
+
+  public get timeSelection() {
+    if (this.cellAxis) {
+      return this.cellAxis.attributes.selection;
+    }
+    if (this.sliderAxis) {
+      return this.sliderAxis.attributes.selection;
+    }
+    return undefined;
   }
 
   private createPlayBtn(playBtnCfg: Omit<ButtonCfg, 'onClick'> | undefined) {
@@ -243,26 +356,68 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
         marker: playMarker,
       },
     });
-    this.playBtn.addEventListener('click', () => {
+
+    this.playListener = () => {
       this.played = !this.played;
+      if (this.played) {
+        this.cachedSelection = this.timeSelection as [string] | [string, string];
+        this.play();
+      } else {
+        this.stop();
+      }
       this.playBtn?.update({
         marker: this.played ? stopMarker : playMarker,
       });
       isFunction(this.attributes.onPlay) && this.attributes?.onPlay(this.played);
-    });
+    };
+    this.playBtn.addEventListener('click', this.playListener);
     this.appendChild(this.playBtn);
   }
 
+  private stop() {
+    this.played = false;
+    this.cellAxis?.stop();
+    this.sliderAxis?.stop();
+    if (this.cellAxis) this.cellAxis.played = false;
+    if (this.sliderAxis) this.sliderAxis.played = false;
+  }
+
   private createSingleModeControl(options: CheckboxOptions | undefined) {
-    const { onSingleTimeChange } = this.attributes;
+    const { onSingleTimeChange, data, single } = this.attributes;
+    const singleListener = (single: boolean) => {
+      if (single) {
+        this.sliderAxis?.update({
+          single,
+          selection: [data[0].date],
+        });
+
+        this.cellAxis?.update({
+          single,
+          selection: [data[0].date],
+        });
+      } else {
+        this.sliderAxis?.update({
+          single,
+          selection: [data[0].date, data[data.length - 1].date],
+        });
+
+        this.cellAxis?.update({
+          single,
+          selection: [data[0].date, data[data.length - 1].date],
+        });
+      }
+      if (this.played) this.playListener();
+      isFunction(onSingleTimeChange) && onSingleTimeChange(single);
+    };
     this.singleTimeCheckbox = new Checkbox({
       ...options,
       ...{
         style: {
+          checked: single,
           label: {
             text: '单一时间',
           },
-          onChange: onSingleTimeChange,
+          onChange: singleListener,
         },
       },
     });
@@ -270,19 +425,24 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
   }
 
   private createSpeedControl(cfg: Omit<SpeedControlCfg, 'onSpeedChange'> | undefined) {
-    const { onSpeedChange } = this.attributes;
+    const { onSpeedChange, speed } = this.attributes;
+    const speedListener = (idx: number) => {
+      if (this.speedControl) {
+        const { speeds } = this.speedControl.attributes;
+        this.attr({ speed: speeds[idx] });
+        isFunction(onSpeedChange) && onSpeedChange(idx);
+        if (this.played) {
+          this.playListener();
+        }
+      }
+    };
     this.speedControl = new SpeedControl({
-      style: { ...cfg, speeds: ['0.5x', '1.0x', '1.5x', '2.0x', '2.5x'], width: 35, onSpeedChange },
+      style: { ...cfg, width: 35, onSpeedChange: speedListener },
     });
+    const { speeds } = this.speedControl.attributes;
+    const currIdx = speeds.findIndex((val) => val === speed);
+    currIdx !== -1 && this.speedControl.update({ currentSpeedIdx: currIdx });
     this.appendChild(this.speedControl);
-  }
-
-  public update(cfg: Partial<Required<TimelineCfg>>): void {
-    this.attr(deepMix({}, this.attributes, cfg));
-    // this.updateAxis();
-    // this.updateControl();
-    // this.updateSingleTime();
-    this.layout();
   }
 
   private layout() {
@@ -291,10 +451,22 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     } else {
       this.layoutCol(); // 竖向
     }
+    // 最后要根据ticks调整整体位置，使得一开始的y在左上角
+    if (this.cellAxis) {
+      const offsetY =
+        (this.cellAxis.cellBackground?.getBounds()?.min[1] as number) -
+        (this.cellAxis.cellTicks?.getBounds()?.min[1] as number);
+      this.translate(0, offsetY);
+    } else if (this.sliderAxis) {
+      const offsetY =
+        (this.sliderAxis.sliderBackground?.getBounds()?.min[1] as number) -
+        (this.sliderAxis.sliderTicks?.getBounds()?.min[1] as number);
+      this.translate(0, offsetY);
+    }
   }
 
   private layoutCol() {
-    const { orient, height, width } = this.attributes;
+    const { orient, width, x } = this.attributes;
     let y = 0;
     if (this.sliderAxis) {
       this.sliderAxis.update({
@@ -326,7 +498,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
         rightElements[0].translate(width - totalWidth, y);
       } else if (rightElements.length === 2) {
         rightElements[0].translate(width - totalWidth, y);
-        rightElements[1].translate(width - totalWidth + this.getWidth(rightElements[0]) + SPACING, y);
+        rightElements[1].translate(width - this.getWidth(rightElements[1]), y);
       }
 
       const group: DisplayObject[] = [];
@@ -339,8 +511,10 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
         (group[i] as DisplayObject).translate(startX);
         startX += this.getWidth(group[i] as DisplayObject) + SPACING;
       }
+
       // 移到水平位置的中心处，并且竖直方向与axis的中心对齐 再移动到axis正下方
-      const offsetX = (width - startX - this.getWidth(group[group.length - 1])) / 2;
+      const offsetX = 0.5 * (width - startX + SPACING);
+      // const offsetX = (width - startX - this.getWidth(group[group.length - 1])) / 2;
       for (let i = 0; i < group.length; i += 1) {
         (group[i] as DisplayObject).translate(offsetX, y);
       }
@@ -368,28 +542,12 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     shape.translate(0, offset);
   }
 
-  private drawBB(shape: DisplayObject) {
-    const bounding = shape.getBounds() as AABB;
-    const { center, halfExtents } = bounding;
-    const bounds = new Rect({
-      style: {
-        stroke: 'black',
-        lineWidth: 2,
-        width: halfExtents[0] * 2,
-        height: halfExtents[1] * 2,
-      },
-    });
-    this.append(bounds);
-    bounds.setPosition(center[0] - halfExtents[0], center[1] - halfExtents[1]);
-  }
-
   private layoutVertical() {
     this.prevBtn && this.verticalCenter(this.prevBtn);
     this.playBtn && this.verticalCenter(this.playBtn);
     this.nextBtn && this.verticalCenter(this.nextBtn);
     this.speedControl && this.verticalCenter(this.speedControl);
     this.singleTimeCheckbox && this.verticalCenter(this.singleTimeCheckbox);
-    // this.drawAllBBs();
   }
 
   private layoutRow() {
@@ -455,8 +613,4 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     }
     this.layoutVertical();
   }
-
-  public clear() {}
-
-  public destroy(): void {}
 }
