@@ -1,5 +1,6 @@
 import { CustomEvent, Group, Text } from '@antv/g';
 import { clamp, deepMix, get, isUndefined, minBy } from '@antv/util';
+import Hammer from 'hammerjs';
 import { Rail } from './rail';
 import { Labels } from './labels';
 import { Tag } from '../tag';
@@ -23,6 +24,7 @@ interface IHandleCfg {
   textCfg: TextProps;
 }
 
+const RAIL_NAME = 'rail';
 export class Continuous extends LegendBase<ContinuousCfg> {
   public static tag = 'continuous';
 
@@ -142,7 +144,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       end,
       orient,
       color,
-      cursor: 'pointer' as 'pointer',
+      // todo 鼠标样式有闪动问题
+      cursor: 'grab',
       ...(rail as Required<RailCfg>),
     };
   }
@@ -151,7 +154,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 获取手柄属性
    */
   private get handleShapeCfg(): IHandleCfg {
-    const { handle, label } = this.attributes;
+    const { handle, label, slidable } = this.attributes;
     if (!handle)
       return {
         markerCfg: {
@@ -175,12 +178,12 @@ export class Continuous extends LegendBase<ContinuousCfg> {
         symbol,
         size,
         opacity: 1,
-        cursor: this.getOrientVal(['ew-resize', 'ns-resize']),
+        cursor: slidable ? this.getOrientVal(['ew-resize', 'ns-resize']) : 'not-allowed',
         ...markerStyle,
       },
       textCfg: {
         text: '',
-        opacity: 1,
+        opacity: label ? 1 : 0,
         ...(label?.style || {}),
       },
     };
@@ -495,7 +498,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private createRail() {
     // 确定绘制类型
     this.railShape = new Rail({
-      name: 'rail',
+      name: RAIL_NAME,
       id: 'rail',
       style: this.railShapeCfg,
     });
@@ -574,7 +577,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.railShape.appendChild(el);
 
     // 创建 取用icon填充色
-    // 位置大小在setIndicator中设置
+    // 位置大小在 setIndicator 中设置
     const tag = new Tag({
       name: 'tag',
       style: tagCfg,
@@ -898,13 +901,12 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private bindEvents() {
     // 如果！slidable，则不绑定事件或者事件响应不生效
     // 各种hover事件
-
     // 放置需要绑定drag事件的对象
     const dragObject = new Map<string, DisplayObject>();
     dragObject.set('rail', this.railShape);
-    dragObject.set('start', this.getHandle('start', 'icon'));
-    dragObject.set('end', this.getHandle('end', 'icon'));
-    // 绑定drag开始事件
+    dragObject.set('start', this.startHandle);
+    dragObject.set('end', this.endHandle);
+    // 绑定 drag 开始事件
     dragObject.forEach((obj, key) => {
       obj.addEventListener('mousedown', this.onDragStart(key));
       obj.addEventListener('touchstart', this.onDragStart(key));
@@ -959,13 +961,14 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.removeEventListener('touchmove', this.onDragging);
     document.removeEventListener('mouseup', this.onDragEnd);
     document.removeEventListener('touchend', this.onDragEnd);
+
     // 抬起时修正位置
     this.target = undefined;
   };
 
   private onHoverStart = (target: string) => (e: any) => {
     e.stopPropagation();
-    // 如果target不为undefine，表明当前有其他事件被监听
+    // 如果 target 不为 undefine，表明当前有其他事件被监听
     if (isUndefined(this.target)) {
       this.target = target;
       this.addEventListener('mousemove', this.onHovering);
