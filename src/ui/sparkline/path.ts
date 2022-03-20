@@ -9,7 +9,8 @@ import type { Data, Line, Point, Scales } from './types';
 export function dataToLines(data: Data, scales: Scales): Line[] {
   const { x, y } = scales;
 
-  const [max, min] = (y.getOptions().range || [0, 0]) as [number, number];
+  let [max, min] = (y.getOptions().range || [0, 0]) as [number, number];
+  if (min > max) [min, max] = [max, min];
 
   return data.map((points) => {
     const lines = points.map((val: number, idx: number) => {

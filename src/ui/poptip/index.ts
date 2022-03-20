@@ -143,7 +143,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    */
   public showTip(x?: number, y?: number, options?: Pick<PoptipCfg, 'text' | 'position' | 'offset'>) {
     const text = get(options, 'text');
-    if (typeof text !== 'string' || !text) return;
+    if (text && typeof text !== 'string') return;
 
     this.applyStyles();
     // 不传入 不希望改变 x y
@@ -152,15 +152,17 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
       position && this.container.setAttribute('data-position', position);
 
       this.setOffsetPosition(x, y, offset);
-      // do something
-      const textElement = this.container.querySelector(`.${CLASS_NAME.TEXT}`);
-      if (textElement) {
-        (textElement as HTMLDivElement).innerHTML = text;
+      if (typeof text === 'string') {
+        // do something
+        const textElement = this.container.querySelector(`.${CLASS_NAME.TEXT}`);
+        if (textElement) {
+          (textElement as HTMLDivElement).innerHTML = text;
+        }
       }
-    }
 
-    this.visibility = 'visible';
-    this.container.style.visibility = 'visible';
+      this.visibility = 'visible';
+      this.container.style.visibility = 'visible';
+    }
   }
 
   /**
