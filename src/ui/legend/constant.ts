@@ -194,14 +194,13 @@ export const CONTINUOUS_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTION
       spacing: 10,
       padding: 5,
       backgroundStyle: {
-        fill: '#262626',
-        stroke: '#262626',
-        radius: 5,
+        'background-color': '#262626',
+        'border-radius': '5px',
       },
       text: {
         style: {
-          fill: 'white',
-          fontSize: 12,
+          color: 'white',
+          'font-size': '12px',
         },
         formatter: (value: number) => String(value),
       },

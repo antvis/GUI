@@ -1,5 +1,5 @@
-import { CustomEvent, Group, Text, Path } from '@antv/g';
-import { clamp, deepMix, get, isUndefined, minBy } from '@antv/util';
+import { CustomEvent, Group, Text } from '@antv/g';
+import { clamp, deepMix, get, isUndefined, minBy, uniqueId, omit } from '@antv/util';
 import { Rail } from './rail';
 import { Labels } from './labels';
 import { Marker } from '../marker';
@@ -265,37 +265,40 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.backgroundShape.attr(this.backgroundShapeCfg);
   }
 
-  public clear() {}
+  public clear() {
+    this.poptip.node().destroy();
+  }
 
   public destroy() {
     super.destroy();
     this.poptip.node().destroy();
   }
 
-  /**
-   * 设置指示器
-   * @param value 设置的值，用于确定位置
-   * @param text 可选；显示的文本，若无则通过value取值
-   * @param useFormatter 是否使用formatter
-   * @returns
-   */
-  public setIndicator(value: false | number) {
-    const { indicator } = this.attributes;
+  // /**
+  //  * 设置指示器 (暂时不提供)
+  //  * @param value 设置的值，用于确定位置
+  //  * @param text 可选；显示的文本，若无则通过value取值
+  //  * @param useFormatter 是否使用formatter
+  //  * @returns
+  //  */
+  // public setIndicator(value: false | number) {
+  //   const { indicator } = this.attributes;
 
-    const poptip = this.poptip.node();
-    if (!indicator || value === false) {
-      poptip.hideTip();
-      return;
-    }
+  //   const poptip = this.poptip.node();
+  //   if (!indicator || value === false) {
+  //     poptip.hideTip();
+  //     return;
+  //   }
 
-    const railPath = this.railShape.getElementsByClassName('rail-path')[0] as Path;
-    const { x, y } = railPath.getBoundingClientRect();
-    const { min, max } = this.attributes;
-    const safeValue = clamp(value, min, max);
-    const offsetX = this.getValueOffset(safeValue);
-    const [v1] = this.getIndicatorValue(value) || [];
-    poptip.showTip(x + offsetX, y, { text: v1 });
-  }
+  //   const railPath = this.railShape.getElementsByClassName('rail-path')[0] as Path;
+  //   const { x, y } = railPath.getBoundingClientRect();
+  //   const { min, max } = this.attributes;
+  //   const safeValue = clamp(value, min, max);
+  //   const offsetX = this.getValueOffset(safeValue);
+  //   const [v1] = this.getIndicatorValue(value) || [];
+
+  //   poptip.showTip(x + offsetX, y, { text: v1 });
+  // }
 
   public setSelection(stVal: number, endVal: number) {
     // 值校验
@@ -516,11 +519,30 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
     if (!indicator) return;
     if (!this.poptip) {
+      const bgStyle = indicator.backgroundStyle || {};
+      const textStyle = get(indicator, ['text', 'style']) || {};
       // indicator hover事件
-      this.poptip = wrapper<PoptipCfg, Poptip>(Poptip, {
-        id: 'continuous-legend-poptip',
-        domStyles: { '.gui-poptip': { padding: '2px', radius: '4px' } },
-      });
+      const cls = `${uniqueId('gui-poptip-')}`;
+
+      this.poptip = wrapper<PoptipCfg, Poptip>(
+        Poptip,
+        deepMix(
+          {},
+          {
+            id: 'continuous-legend-poptip',
+            containerClassName: cls,
+            domStyles: { '.gui-poptip': { padding: '2px', radius: '4px', 'box-shadow': 'none' } },
+          },
+          {
+            ...indicator,
+            domStyles: {
+              [`.gui-poptip.${cls}`]: bgStyle,
+              [`.${cls} .gui-poptip-arrow`]: omit(bgStyle, ['border-radius']),
+              [`.${cls} .gui-poptip-text`]: textStyle,
+            },
+          }
+        )
+      );
       this.poptip.node().bind(this.railShape, {
         position: orient === 'vertical' ? 'left' : 'top',
         html: (e) => {
@@ -930,7 +952,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     }
 
     const formatter =
-      get(this.attributes, ['indicator', 'formatter']) ??
+      get(this.attributes, ['indicator', 'text', 'formatter']) ??
       (chunked ? ([v1, v2]: [number, number]) => `${v1}-${v2}` : (v: number) => `${v ?? ''}`);
     const poptipValue = formatter(actualValue);
 

@@ -96,9 +96,3 @@ const end = events
     const endValue = value < startValue ? startValue : value;
     continuous.setSelection(startValue, endValue);
   });
-const indicator = events
-  .add(continuousCfg, '指示器', 0, 100)
-  .step(1)
-  .onChange((value) => {
-    continuous.setIndicator(value);
-  });

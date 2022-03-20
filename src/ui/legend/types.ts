@@ -53,13 +53,25 @@ export type RailCfg = {
  */
 export type IndicatorCfg = {
   /**
-   * @title 文本格式化方式
+   * @title 背景样式. CSS 样式
    */
-  formatter?: (value: number) => string;
+  backgroundStyle?: {
+    backgroundColor: string;
+    padding: string;
+  };
   /**
-   * @title dom 节点样式
+   * @title 文本内容
    */
-  domStyles?: PoptipCfg['domStyles'];
+  text?: {
+    /**
+     * @title 文本格式化方式
+     */
+    formatter?: (value: number) => string;
+    /**
+     * @title 文本样式. CSS 样式
+     */
+    style?: object;
+  };
 };
 
 /**
