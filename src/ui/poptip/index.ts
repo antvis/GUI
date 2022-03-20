@@ -1,4 +1,4 @@
-import { deepMix, isString, isElement, assign } from '@antv/util';
+import { deepMix, isString, isElement, assign, get } from '@antv/util';
 import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { deepAssign } from '../../util';
@@ -14,6 +14,10 @@ export { getPositionXY } from './utils';
 
 export class Poptip extends GUI<Required<PoptipCfg>> {
   public static tag = 'poptip';
+
+  public get visible(): boolean {
+    return this.visibility === 'visible';
+  }
 
   private static defaultOptions = {
     style: {
@@ -74,7 +78,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
     element: HTMLElement | DisplayObject,
     options?: {
       html: (e: any) => string;
-      condition: (e: any) => HTMLElement | DisplayObject | false;
+      condition?: (e: any) => HTMLElement | DisplayObject | false;
     } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow' | 'offset'>
   ): void {
     if (!element) return;
@@ -138,14 +142,16 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    * @param text 文本变化
    */
   public showTip(x?: number, y?: number, options?: Pick<PoptipCfg, 'text' | 'position' | 'offset'>) {
+    const text = get(options, 'text');
+    if (text && typeof text !== 'string') return;
+
     this.applyStyles();
     // 不传入 不希望改变 x y
     if (x && y && options) {
-      const { offset, position, text } = options;
+      const { offset, position } = options;
       position && this.container.setAttribute('data-position', position);
 
       this.setOffsetPosition(x, y, offset);
-
       if (typeof text === 'string') {
         // do something
         const textElement = this.container.querySelector(`.${CLASS_NAME.TEXT}`);
@@ -153,10 +159,10 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
           (textElement as HTMLDivElement).innerHTML = text;
         }
       }
-    }
 
-    this.visibility = 'visible';
-    this.container.style.visibility = 'visible';
+      this.visibility = 'visible';
+      this.container.style.visibility = 'visible';
+    }
   }
 
   /**

@@ -20,9 +20,7 @@ const continuous = new Continuous({
   style: {
     title: {
       content: '连续图例',
-    },
-    label: {
-      align: 'rail',
+      spacing: 4,
     },
     rail: {
       width: 100,

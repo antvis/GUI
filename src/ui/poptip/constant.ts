@@ -23,7 +23,6 @@ export const POPTIP_STYLE = {
     color: '#fff',
     opacity: 0.8,
     'font-size': '12px',
-    'line-height': '20px',
     padding: '4px 6px',
     display: 'flex',
     'justify-content': 'center',

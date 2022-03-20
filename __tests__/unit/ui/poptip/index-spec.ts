@@ -29,15 +29,14 @@ describe('poptip', () => {
     });
   });
 
-  test('update', async () => {
-    poptip.update({
-      text: '测试3',
-    });
-    poptip.showTip(200, 300, { offset: [20, 20] });
+  test('update', () => {
+    poptip.hideTip();
+    poptip.update({ text: '测试3', follow: true });
+    poptip.showTip(180, 300, { offset: [20, 20] });
 
     expect(poptip.getContainer().getElementsByClassName('gui-poptip-text')[0].textContent).toBe('测试3');
     expect(poptip.getContainer().style).toMatchObject({
-      left: '220px',
+      left: '200px',
       top: '320px',
     });
   });
