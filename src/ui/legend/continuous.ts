@@ -1,20 +1,20 @@
-import { CustomEvent, Group, Text } from '@antv/g';
+import { CustomEvent, Group, Text, Path } from '@antv/g';
 import { clamp, deepMix, get, isUndefined, minBy } from '@antv/util';
-import Hammer from 'hammerjs';
 import { Rail } from './rail';
 import { Labels } from './labels';
-import { Tag } from '../tag';
 import { Marker } from '../marker';
 import { LegendBase } from './base';
 import { getValueOffset, getStepValueByValue } from './utils';
 import { CONTINUOUS_DEFAULT_OPTIONS, STEP_RATIO } from './constant';
-import { toPrecision, getShapeSpace, getEventPos, deepAssign } from '../../util';
+import { toPrecision, getShapeSpace, getEventPos, deepAssign, throttle } from '../../util';
+import { wrapper, WrapperNode } from '../../util/wrapper';
+import { Poptip, PoptipCfg } from '../poptip';
 import type { Pair } from '../slider/types';
 import type { IRailCfg } from './rail';
 import type { ILabelsCfg } from './labels';
 import type { MarkerStyleProps } from '../marker';
 import type { DisplayObject, TextProps } from '../../types';
-import type { ContinuousCfg, ContinuousOptions, IndicatorCfg, RailCfg, HandleCfg, SymbolCfg } from './types';
+import type { ContinuousCfg, ContinuousOptions, RailCfg, HandleCfg, SymbolCfg } from './types';
 
 export type { ContinuousOptions };
 
@@ -40,8 +40,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * |- middleGroup
    *   |- labelsShape
    *   |- railShape
-   *      |- pathGroup
-   *      |- backgroundGroup
+   *      |- pathGroup (.rail-path)
+   *      |- backgroundGroup (.rail-path)
    *      |- startHandle
    *      |- endHandle
    *      |- indicator
@@ -80,46 +80,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     return step;
   }
 
-  private get indicator() {
-    return this.indicatorShape.getElementsByName('tag')[0] as Tag;
-  }
-
-  /**
-   * 获得指示器配置
-   */
-  private get indicatorShapeCfg() {
-    const { indicator } = this.attributes;
-    if (!indicator) return {};
-    const { size, text, backgroundStyle } = indicator as Required<IndicatorCfg>;
-    const { style: textStyle } = text;
-    return {
-      markerCfg: {
-        size,
-        ...this.getOrientVal([
-          { x: 0, y: size },
-          { x: -size, y: 0 },
-        ]),
-        symbol: this.getOrientVal(['downArrow', 'leftArrow']),
-        fill: backgroundStyle.fill,
-      },
-      tagCfg: {
-        text: '',
-        align: this.getOrientVal(['center', 'start']) as 'center' | 'start',
-        verticalAlign: 'middle' as const,
-        ...this.getOrientVal([
-          { x: 0, y: -size / 2 },
-          { x: -size / 2, y: 0 },
-        ]),
-        textStyle: {
-          default: textStyle,
-        },
-        backgroundStyle: {
-          default: backgroundStyle,
-        },
-      },
-    };
-  }
-
   /**
    * 获取颜色
    */
@@ -145,7 +105,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       orient,
       color,
       // todo 鼠标样式有闪动问题
-      cursor: 'grab',
+      cursor: 'pointer',
       ...(rail as Required<RailCfg>),
     };
   }
@@ -241,9 +201,9 @@ export class Continuous extends LegendBase<ContinuousCfg> {
   private endHandle!: Group;
 
   /**
-   * 指示器
+   * 悬浮提示
    */
-  private indicatorShape!: Group;
+  private poptip!: WrapperNode<PoptipCfg, Poptip>;
 
   /**
    * 当前交互的对象
@@ -278,7 +238,7 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     // 最后再绘制背景
     this.createBackground();
     // 指示器
-    this.createIndicator();
+    this.updateIndicator();
     // // 监听事件
     this.bindEvents();
   }
@@ -297,8 +257,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.updateHandles();
     // 更新手柄文本
     this.setHandleText();
-    // 关闭指示器
-    this.setIndicator(false);
+    // 更新指示器
+    this.updateIndicator();
     // 更新布局
     this.adjustLayout();
     // 更新背景
@@ -307,6 +267,11 @@ export class Continuous extends LegendBase<ContinuousCfg> {
 
   public clear() {}
 
+  public destroy() {
+    super.destroy();
+    this.poptip.node().destroy();
+  }
+
   /**
    * 设置指示器
    * @param value 设置的值，用于确定位置
@@ -314,41 +279,22 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * @param useFormatter 是否使用formatter
    * @returns
    */
-  public setIndicator(value: false | number, text?: string, useFormatter = true) {
-    // 值校验
-    const { min, max, rail, indicator } = this.attributes;
+  public setIndicator(value: false | number) {
+    const { indicator } = this.attributes;
 
-    if (value === false || !indicator) {
-      this.indicatorShape?.hide();
+    const poptip = this.poptip.node();
+    if (!indicator || value === false) {
+      poptip.hideTip();
       return;
     }
-    this.indicatorShape.show();
+
+    const railPath = this.railShape.getElementsByClassName('rail-path')[0] as Path;
+    const { x, y } = railPath.getBoundingClientRect();
+    const { min, max } = this.attributes;
     const safeValue = clamp(value, min, max);
-    const { type, width: railWidth, height: railHeight } = rail as Required<Pick<RailCfg, 'type' | 'width' | 'height'>>;
-    const { spacing } = indicator;
     const offsetX = this.getValueOffset(safeValue);
-    // 设置指示器位置
-    // type = color;
-    // type=size时，指示器需要贴合轨道上边缘
-    // handle会影响rail高度
-
-    const offsetY =
-      type === 'size' ? (1 - (safeValue - min) / (max - min)) * this.getOrientVal([railHeight, railWidth]) : 0;
-
-    this.indicatorShape?.attr(
-      this.getOrientVal([
-        { x: offsetX, y: offsetY - spacing! },
-        { x: railWidth - offsetY + spacing!, y: offsetX },
-      ])
-    );
-
-    const formatter = get(this.attributes, ['indicator', 'text', 'formatter']);
-    let showText = text || String(safeValue);
-    if (useFormatter) {
-      showText = formatter(showText);
-    }
-    // 设置文本
-    this.indicator.update({ text: showText });
+    const [v1] = this.getIndicatorValue(value) || [];
+    poptip.showTip(x + offsetX, y, { text: v1 });
   }
 
   public setSelection(stVal: number, endVal: number) {
@@ -428,9 +374,9 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 取值所在的刻度范围
    */
   private getTickIntervalByValue(value: number) {
-    const [start, end] = this.selection;
+    const { min, max } = this.attributes;
     const ticks = get(this.attributes, ['rail', 'ticks']);
-    const temp = [start, ...ticks, end];
+    const temp = [min, ...ticks, max];
     for (let i = 1; i < temp.length; i += 1) {
       const st = temp[i - 1];
       const end = temp[i];
@@ -565,35 +511,34 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     return handle.getElementsByName('icon')[0] as Marker;
   }
 
-  private createIndicator() {
-    const { indicator } = this.attributes;
+  private updateIndicator() {
+    const { indicator, orient } = this.attributes;
+
     if (!indicator) return;
-    const { markerCfg, tagCfg } = this.indicatorShapeCfg;
-    const el = new Group({
-      name: 'indicator',
-      id: 'indicator',
-    });
-    // 将tag挂载到rail
-    this.railShape.appendChild(el);
+    if (!this.poptip) {
+      // indicator hover事件
+      this.poptip = wrapper<PoptipCfg, Poptip>(Poptip, {
+        id: 'continuous-legend-poptip',
+        domStyles: { '.gui-poptip': { padding: '2px', radius: '4px' } },
+      });
+      this.poptip.node().bind(this.railShape, {
+        position: orient === 'vertical' ? 'left' : 'top',
+        html: (e) => {
+          const value = this.getEventPosValue(e);
+          const [v1, v2] = this.getIndicatorValue(value) || [];
+          value && this.dispatchIndicated(value, v2);
 
-    // 创建 取用icon填充色
-    // 位置大小在 setIndicator 中设置
-    const tag = new Tag({
-      name: 'tag',
-      style: tagCfg,
-    });
+          return v1 || '';
+        },
+        condition: (e) => {
+          if (e.target.className !== 'rail-path') return false;
+          return e.target;
+        },
+      });
+      return;
+    }
 
-    el.appendChild(tag);
-    // 指示器小箭头
-    const icon = new Marker({
-      name: `arrow`,
-      style: markerCfg as MarkerStyleProps,
-    });
-    icon.toBack();
-    el.appendChild(icon);
-    this.indicatorShape = el;
-    // 默认隐藏
-    this.indicatorShape.hide();
+    this.poptip.node().hide();
   }
 
   /**
@@ -899,8 +844,8 @@ export class Continuous extends LegendBase<ContinuousCfg> {
    * 绑定事件
    */
   private bindEvents() {
+    const { orient } = this.attributes;
     // 如果！slidable，则不绑定事件或者事件响应不生效
-    // 各种hover事件
     // 放置需要绑定drag事件的对象
     const dragObject = new Map<string, DisplayObject>();
     dragObject.set('rail', this.railShape);
@@ -911,10 +856,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
       obj.addEventListener('mousedown', this.onDragStart(key));
       obj.addEventListener('touchstart', this.onDragStart(key));
     });
-
-    // indicator hover事件
-    this.railShape.getRail().addEventListener('mouseenter', this.onHoverStart('rail'));
-    this.addEventListener('mouseout', () => this.setIndicator(false));
   }
 
   /**
@@ -925,7 +866,6 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     const { slidable } = this.attributes;
     // 关闭滑动
     if (!slidable) return;
-    this.onHoverEnd();
     this.target = target;
     this.prevValue = this.getTickValue(this.getEventPosValue(e));
     this.addEventListener('mousemove', this.onDragging);
@@ -966,56 +906,47 @@ export class Continuous extends LegendBase<ContinuousCfg> {
     this.target = undefined;
   };
 
-  private onHoverStart = (target: string) => (e: any) => {
-    e.stopPropagation();
-    // 如果 target 不为 undefine，表明当前有其他事件被监听
-    if (isUndefined(this.target)) {
-      this.target = target;
-      this.addEventListener('mousemove', this.onHovering);
-      this.addEventListener('touchmove', this.onHovering);
-    }
-  };
-
-  private onHovering = (e: any) => {
-    e.stopPropagation();
-    const value = this.getEventPosValue(e);
-    // chunked为true时
-    if (get(this.attributes, ['rail', 'chunked'])) {
-      const interval = this.getTickIntervalByValue(value);
-      if (!interval) return;
-      const [st, end] = interval;
-      this.setIndicator(toPrecision((st + end) / 2, 0), `${st}-${end}`, false);
-      // 计算value并发出事件
-      this.dispatchIndicated(interval);
-    } else {
-      const val = this.getTickValue(value);
-      this.setIndicator(val);
-      // TODO 节流
-      this.dispatchIndicated(val);
-    }
-  };
-
   /**
-   * hover结束
+   * 获取指示器内容
    */
-  private onHoverEnd = () => {
-    this.removeEventListener('mousemove', this.onHovering);
-    this.removeEventListener('touchmove', this.onHovering);
-    // 关闭指示器
-    this.setIndicator(false);
-    // 恢复状态
-    this.target = undefined;
-  };
+  private getIndicatorValue(value: number): [string, unknown] {
+    const { min, max, rail } = this.attributes;
 
-  private dispatchIndicated(val: any) {
+    let val;
+    let actualValue;
+
+    // chunked 为 true 时
+    const chunked = get(rail, ['chunked']);
+    if (chunked) {
+      const interval = this.getTickIntervalByValue(value);
+      if (!interval) return ['', null];
+
+      const [st, end] = interval;
+      val = toPrecision((st + end) / 2, 0);
+      actualValue = interval;
+    } else {
+      val = clamp(this.getTickValue(value), min, max);
+      actualValue = val;
+    }
+
+    const formatter =
+      get(this.attributes, ['indicator', 'formatter']) ??
+      (chunked ? ([v1, v2]: [number, number]) => `${v1}-${v2}` : (v: number) => `${v ?? ''}`);
+    const poptipValue = formatter(actualValue);
+
+    return [poptipValue, actualValue];
+  }
+
+  @throttle(20)
+  private dispatchIndicated(value: number, range?: unknown) {
     const evt = new CustomEvent('onIndicated', {
-      detail: {
-        value: val,
-      },
+      detail: { value, range },
     });
+
     this.dispatchEvent(evt);
   }
 
+  @throttle(20)
   private dispatchSelection() {
     const evt = new CustomEvent('valueChanged', {
       detail: {

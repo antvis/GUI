@@ -117,3 +117,20 @@ createContinuousLegend({
   label: { align: 'start', spacing: 4 },
   title: { content: 'label 在左侧' },
 });
+createContinuousLegend({
+  x: 340,
+  y: 280,
+  orient: 'vertical',
+  rail: { width: 16, height: 80, chunked: true, ticks: [350, 600, 850] },
+  handle: {},
+  label: { spacing: 4 },
+  title: { content: 'label 在左侧' },
+});
+createContinuousLegend({
+  x: 340,
+  y: 420,
+  orient: 'vertical',
+  rail: { width: 16, height: 80, chunked: true, ticks: [350, 600, 850] },
+  label: { align: 'end', flush: false, spacing: 4 },
+  title: { content: '自定义滑轨 tick 标签', spacing: 12 },
+});

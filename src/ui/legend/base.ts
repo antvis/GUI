@@ -69,6 +69,11 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<Required<T
     this.adjustTitle();
   }
 
+  public destroy() {
+    this.removeChildren(true);
+    super.destroy();
+  }
+
   // 获取对应状态的样式
   protected getStyle(name: string | string[], state?: StyleState) {
     const style = get(this.attributes, name);

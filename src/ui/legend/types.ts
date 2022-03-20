@@ -7,6 +7,7 @@ import type {
   ImageProps,
   PathProps,
 } from '../../types';
+import type { PoptipCfg } from '../poptip/types';
 import type { MarkerStyleProps } from '../marker/types';
 import type { PageNavigatorCfg } from '../page-navigator';
 
@@ -47,15 +48,18 @@ export type RailCfg = {
   backgroundColor?: string;
 };
 
+/**
+ * @title 连续图例指示器
+ */
 export type IndicatorCfg = {
-  size?: number;
-  backgroundStyle?: ShapeAttrs;
-  spacing?: number;
-  padding?: number | number[];
-  text?: {
-    formatter?: (value: number) => string;
-    style?: TextProps;
-  };
+  /**
+   * @title 文本格式化方式
+   */
+  formatter?: (value: number) => string;
+  /**
+   * @title dom 节点样式
+   */
+  domStyles?: PoptipCfg['domStyles'];
 };
 
 /**
@@ -215,7 +219,7 @@ export type ContinuousCfg = LegendBaseCfg & {
   // 手柄配置
   handle?: false | HandleCfg;
   // 指示器
-  indicator?: false | IndicatorCfg;
+  indicator?: IndicatorCfg;
 };
 
 export type ContinuousOptions = DisplayObjectConfig<ContinuousCfg>;
