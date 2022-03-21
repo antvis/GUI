@@ -178,7 +178,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     this.addEventListener('replay', () => {
       if (!this.attributes.loop) return;
       if (this.sliderAxis) {
-        this.sliderAxis.update({ selection: this.cachedSelection });
+        // this.sliderAxis.update({ selection: this.cachedSelection });
       }
     });
   }

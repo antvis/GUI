@@ -1,5 +1,5 @@
 import { Canvas, DisplayObject } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-svg';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Timeline } from '../../../../src/ui/timeline';
 import { createDiv } from '../../../utils';
 
@@ -102,8 +102,8 @@ describe('timeline layout cell', () => {
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
-    expect(timeline.timeSelection[1]).toBe(date[4].date);
-    expect(timeline.timeSelection[0]).toBe(date[0].date);
+    expect(timeline?.timeSelection[1]).toBe(date[4].date);
+    expect(timeline?.timeSelection[0]).toBe(date[0].date);
   });
   test('normal column', () => {
     const timeline = new Timeline({

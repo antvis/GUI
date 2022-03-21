@@ -85,9 +85,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   public played: boolean = false;
 
-  private idxCurrentTimeMap = new Map<number, number>();
-
-  private currentTimeIdxMap = new Map<number, number>();
+  private cachedSelection: SliderAxisCfg['selection'];
 
   public get axisTimeIndexMap() {
     return this.timeIndexMap;
@@ -178,6 +176,67 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     isFunction(onSelectionChange) && onSelectionChange([selection[0], timeData[newEndIdx].date]);
   }
 
+  // 动画，向后增长一步
+  public increaseStepWithAnimation() {
+    const { single, timeData, selection, onSelectionChange, dataPerStep, duration, length, backgroundStyle } =
+      this.attributes;
+    if (single || selection.length !== 2) return;
+    const currStartIdx = this.timeIndexMap.get(selection[0]) as number;
+    const endIdx = this.timeIndexMap.get(selection[1] as string) as number;
+    const newEndIdx = endIdx + dataPerStep;
+    if (newEndIdx >= timeData.length) {
+      const replay = new CustomEvent('replay');
+      this.dispatchEvent(replay);
+      return;
+    }
+    if (newEndIdx <= currStartIdx) return;
+    let stepLength = (dataPerStep / (timeData.length - 1)) * this.actualLength;
+    const endHandleX = (this.endHandleShape?.attributes.x as number) + (this.selectionShape.attributes.x as number);
+    if (endHandleX + stepLength > length - (backgroundStyle.radius as number)) {
+      stepLength = -endHandleX + length - (backgroundStyle.radius as number);
+    }
+    this.animation = this.selectionShape.animate(
+      [
+        { width: this.selectionShape.attributes.width },
+        { width: (this.selectionShape.attributes.width as number) + stepLength },
+      ],
+      {
+        duration,
+        fill: 'forwards',
+      }
+    );
+    if (this.animation) {
+      this.animation.onframe = () => {
+        this.endHandleShape?.attr({ x: this.selectionShape.parsedStyle.width.value as number });
+        // console.log(this.endHandleShape?.style.x);
+      };
+      this.animation.onfinish = () => {
+        const newSelection = this.calculateSelection() as [string, string];
+        this.endHandleShape?.attr({ x: this.selectionShape.parsedStyle.width.value as number });
+        this.attr({ selection: newSelection });
+        isFunction(onSelectionChange) && onSelectionChange([selection[0], timeData[newEndIdx].date]);
+      };
+    }
+    // this.update({ selection: [selection[0], timeData[newEndIdx].date] });
+    // isFunction(onSelectionChange) && onSelectionChange([selection[0], timeData[newEndIdx].date]);
+  }
+
+  private calculateSelection() {
+    const { timeData, backgroundStyle } = this.attributes;
+    const radius = backgroundStyle.radius as number;
+    const newSelection = new Array(2).fill(undefined);
+    const startHandleX = (this.selectionShape.getAttribute('x') as number) - radius; // 相对背景的x坐标
+    const endHandleX = startHandleX + (this.selectionShape.getAttribute('width') as number);
+
+    let nearestTimeDataId = Math.round((startHandleX / this.actualLength) * (timeData.length - 1));
+    nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+    newSelection[0] = timeData[nearestTimeDataId].date;
+    nearestTimeDataId = Math.round((endHandleX / this.actualLength) * (timeData.length - 1));
+    nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
+    newSelection[1] = timeData[nearestTimeDataId].date;
+    return newSelection;
+  }
+
   private get actualLength() {
     const { length, backgroundStyle } = this.attributes;
     const radius = backgroundStyle.radius as number;
@@ -190,91 +249,20 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     }
   }
 
-  private getCurrentTime() {
-    const { timeData } = this.attributes;
-    const selectionShapeX = this.selectionShape.attributes.x as number;
+  // private getCurrentTime() {
+  //   const { timeData } = this.attributes;
+  //   const selectionShapeX = this.selectionShape.attributes.x as number;
 
-    const prevIndex = Math.floor((selectionShapeX / this.actualLength) * (timeData.length - 1));
-    const prevX = (prevIndex / (timeData.length - 1)) * this.actualLength;
-    const nextIndex = prevIndex + 1;
-    const nextX = (nextIndex / (timeData.length - 1)) * this.actualLength;
-    const prevT = this.idxCurrentTimeMap.get(prevIndex) as number;
-    const nextT = this.idxCurrentTimeMap.get(nextIndex) as number;
+  //   const prevIndex = Math.floor((selectionShapeX / this.actualLength) * (timeData.length - 1));
+  //   const prevX = (prevIndex / (timeData.length - 1)) * this.actualLength;
+  //   const nextIndex = prevIndex + 1;
+  //   const nextX = (nextIndex / (timeData.length - 1)) * this.actualLength;
+  //   const prevT = this.idxCurrentTimeMap.get(prevIndex) as number;
+  //   const nextT = this.idxCurrentTimeMap.get(nextIndex) as number;
 
-    const t = prevT + ((nextT - prevT) / (nextX - prevX)) * (selectionShapeX - prevX);
-    return t;
-  }
-
-  // 开始播放动画
-  public playAnimation() {
-    if (this.animation && this.animation.playState !== 'idle') return;
-    const { duration, delay, dataPerStep } = this.attributes;
-
-    const { single, timeData, onSelectionChange } = this.attributes;
-
-    if (single) {
-      const startIdx = 0;
-      const endIdx = timeData.length - 1;
-      if (endIdx === startIdx) return;
-
-      const totalTime = duration * timeData.length + delay * timeData.length;
-      const keyframes: any[] = [{ transform: 'translateX(0px)', change: false }];
-      const stepDistance = this.actualLength / (timeData.length - 1);
-      let offset = 0;
-      this.idxCurrentTimeMap = new Map<number, number>();
-      this.currentTimeIdxMap = new Map<number, number>();
-      this.idxCurrentTimeMap.set(0, 0);
-      this.currentTimeIdxMap.set(0, 0);
-      const offsets = [0];
-      for (let i = 1; i <= endIdx; i += 1) {
-        offset += duration / totalTime;
-        offsets.push(offset);
-        keyframes.push({
-          transform: `translateX(${stepDistance * i}px)`,
-          offset,
-          distance: stepDistance * i,
-          change: true,
-        });
-        this.idxCurrentTimeMap.set(i, offset * totalTime);
-        this.currentTimeIdxMap.set(offset * totalTime, i);
-        offset += delay / totalTime;
-        keyframes.push({
-          transform: `translateX(${stepDistance * i}px)`,
-          offset,
-          change: false,
-        });
-      }
-      offset += duration / totalTime;
-      offsets.push(offset);
-      keyframes.push(
-        ...[
-          { transform: 'translateX(0px)', offset, change: true },
-          { transform: 'translateX(0px)', change: false },
-        ]
-      );
-
-      const startTime = this.getCurrentTime() as number;
-      this.selectionShape.attr({ x: 0 });
-      this.animation = this.selectionShape.animate(keyframes, { duration: totalTime, iterations: Infinity });
-
-      if (this.animation) {
-        this.animation.currentTime = startTime;
-        this.animation.onframe = (e: any) => {
-          const currentOffset = ((this.animation?.currentTime as number) % totalTime) / totalTime;
-          const idx = offsets.findIndex((val) => Math.abs(currentOffset - val) <= 0.01);
-          if (idx !== -1) {
-            const selectionX = this.selectionShape.attributes.x as number; // 相对背景的x坐标
-            const nearestTimeDataId = Math.round((selectionX / this.actualLength) * (timeData.length - 1));
-            const newSelection: [string] = [timeData[nearestTimeDataId].date]; // 变化的选中时间
-            if (this.attributes.selection[0] !== timeData[nearestTimeDataId].date) {
-              this.attr({ selection: newSelection });
-              isFunction(onSelectionChange) && onSelectionChange(newSelection);
-            }
-          }
-        };
-      }
-    }
-  }
+  //   const t = prevT + ((nextT - prevT) / (nextX - prevX)) * (selectionShapeX - prevX);
+  //   return t;
+  // }
 
   public moveDistance(distance: number) {
     const { single, timeData, selection, onSelectionChange, duration } = this.attributes;
@@ -318,9 +306,10 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     }
   }
 
-  // 动画，向后移动一步,第二个参数为动画时间
+  // 动画，向后移动一步
   public moveStep() {
-    const { single, timeData, selection, onSelectionChange, dataPerStep, duration } = this.attributes;
+    const { single, timeData, selection, onSelectionChange, dataPerStep, duration, length, backgroundStyle } =
+      this.attributes;
     if (single) {
       const idx = this.timeIndexMap.get(selection[0]);
       if (idx === undefined) return;
@@ -356,8 +345,22 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       }
       const newStartIdx = startIdx + dataPerStep;
       if (newStartIdx < 0) return;
-      this.update({ selection: [timeData[newStartIdx].date, timeData[newEndIdx].date] });
-      isFunction(onSelectionChange) && onSelectionChange([timeData[newStartIdx].date, timeData[newEndIdx].date]);
+      let stepLength = (dataPerStep / (timeData.length - 1)) * this.actualLength;
+      const endHandleX = (this.endHandleShape?.attributes.x as number) + (this.selectionShape.attributes.x as number);
+      if (endHandleX + stepLength > length - (backgroundStyle.radius as number)) {
+        stepLength = -endHandleX + length - (backgroundStyle.radius as number);
+      }
+      this.animation = this.selectionShape.animate(
+        [{ transform: `translate(${0}px,0px)` }, { transform: `translate(${stepLength}px,0px)` }],
+        {
+          duration,
+          fill: 'forwards',
+        }
+      ) as any as Animation;
+      this.animation.onfinish = () => {
+        this.attr({ selection: [timeData[newStartIdx].date, timeData[newEndIdx].date] });
+        isFunction(onSelectionChange) && onSelectionChange([timeData[newStartIdx].date, timeData[newEndIdx].date]);
+      };
     }
   }
 
@@ -366,21 +369,23 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       clearInterval(this.timer);
       this.animation?.cancel();
     }
-    const { playMode, duration, delay, dataPerStep } = this.attributes;
+    const { playMode, duration, delay } = this.attributes;
     this.played = true;
+    this.update({ selection: this.attributes.selection });
     if (playMode === 'fixed') {
       this.timer = window.setInterval(() => {
         this.moveStep();
       }, delay + duration);
     } else {
       this.timer = window.setInterval(() => {
-        this.increase(dataPerStep);
+        this.increaseStepWithAnimation();
       }, delay + duration);
     }
   }
 
   public stop() {
     window.clearInterval(this.timer);
+    // if (this.animation) this.animation.cancel();
   }
 
   // 计算hover时的最近邻刻度
@@ -388,22 +393,16 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     const { timeData, backgroundStyle } = this.attributes;
     const { x } = this.attributes;
     const localX = canvasX - x - (backgroundStyle.radius as number);
-    // console.log(localX, (1 * this.actualLength) / (timeData.length - 1));
     const nearsetIdx = Math.round((localX / this.actualLength) * (timeData.length - 1));
     return clamp(nearsetIdx, 0, timeData.length - 1);
   }
 
-  // // 计算hover时的最近邻刻度
-  // private getSelectionShapeNearestIdx(canvasX: number) {
-  //   const { timeData, backgroundStyle } = this.attributes;
-  //   const { x } = this.attributes;
-  //   const localX = canvasX - x - (backgroundStyle.radius as number);
-  //   // console.log(localX, (1 * this.actualLength) / (timeData.length - 1));
-  //   const nearsetIdx = Math.round((localX / this.actualLength) * (timeData.length - 1));
-  //   return clamp(nearsetIdx, 0, timeData.length - 1);
-  // }
-
   private bindEvents() {
+    this.addEventListener('replay', () => {
+      if (!this.attributes.loop) return;
+      if (this.cachedSelection) this.update({ selection: this.cachedSelection });
+    });
+
     this.poptip = new Poptip({
       style: {
         id: 'slider-poptip',
@@ -451,7 +450,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       };
       const onDragEnd = () => {
         if (selectionDragging && this.played) {
-          console.log('drag end');
+          this.cachedSelection = newSelection;
           this.play();
           selectionDragging = false;
           this.attr({ selection: newSelection });
@@ -470,32 +469,35 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       let maxLength = Infinity; //  蓝轴最长长度
       const newSelection: [string, string] = selection as [string, string]; // 变化的时间范围
       const onStartHandleDragStart = (event: any) => {
-        const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
-        this.dispatchEvent(axisDraggingEvent);
+        // const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
+        // this.dispatchEvent(axisDraggingEvent);
         event.stopPropagation();
+        this.stop();
         startHandleDragging = true;
         lastPosition = event.canvasX;
         maxLength =
           (this.selectionShape.getAttribute('x') as number) + (this.selectionShape.getAttribute('width') as number);
       };
       const onEndHandleDragStart = (event: any) => {
-        const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
-        this.dispatchEvent(axisDraggingEvent);
+        // const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
+        // this.dispatchEvent(axisDraggingEvent);
         event.stopPropagation();
+        this.stop();
         endHandleDragging = true;
         lastPosition = event.canvasX;
         maxLength = -(this.selectionShape.getAttribute('x') as number) + length;
       };
       const onSelectionDragStart = (event: any) => {
-        const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
-        this.dispatchEvent(axisDraggingEvent);
+        // const axisDraggingEvent = new CustomEvent('dragging', { dragging: true });
+        // this.dispatchEvent(axisDraggingEvent);
         event.stopPropagation();
+        this.stop();
         selectionDragging = true;
         lastPosition = event.canvasX;
       };
       const onDragMove = (event: any) => {
         event.stopPropagation();
-        if (startHandleDragging) {
+        if (startHandleDragging && !this.played) {
           const offset = event.canvasX - lastPosition;
           const newLength = (this.selectionShape.getAttribute('width') as number) - offset;
           const newX = (this.selectionShape.getAttribute('x') as number) + offset;
@@ -515,7 +517,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
             newSelection[0] = timeData[nearestTimeDataId].date;
             lastPosition = event.x;
           }
-        } else if (endHandleDragging) {
+        } else if (endHandleDragging && !this.played) {
           const offset = event.canvasX - lastPosition;
           const newLength = (this.selectionShape.getAttribute('width') as number) + offset;
           if (newLength > this.minLength && newLength < maxLength) {
@@ -559,14 +561,16 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         }
       };
       const onDragEnd = () => {
-        if (startHandleDragging || endHandleDragging || selectionDragging) {
-          const axisDraggingEvent = new CustomEvent('dragging', { dragging: false });
-          this.dispatchEvent(axisDraggingEvent);
+        if ((startHandleDragging || endHandleDragging || selectionDragging) && this.played) {
+          this.play();
         }
-        startHandleDragging = false;
-        endHandleDragging = false;
-        selectionDragging = false;
-        this.attr({ selection: newSelection });
+        if (startHandleDragging || endHandleDragging || selectionDragging) {
+          startHandleDragging = false;
+          endHandleDragging = false;
+          selectionDragging = false;
+          this.cachedSelection = newSelection;
+          this.attr({ selection: newSelection });
+        }
       };
       this.endHandleShape!.addEventListener('mousedown', onEndHandleDragStart);
       this.startHandleShape!.addEventListener('mousedown', onStartHandleDragStart);

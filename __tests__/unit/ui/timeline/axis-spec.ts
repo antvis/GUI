@@ -79,7 +79,6 @@ describe('play axis', () => {
     expect(sliderSelection.style.stroke).toBe('#ff00ee');
     expect(sliderBackground.style.stroke).toBe('#eeeeee');
     expect(sliderSelection.style.x).toBeCloseTo(((endPos[0] - startPos[0]) * (3 - 0)) / (date2.length - 1), 4);
-    slideraxis.playAnimation();
   });
   test('cell', () => {
     const cellaxis = new CellAxis({
