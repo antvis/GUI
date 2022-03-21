@@ -140,6 +140,10 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
 
   private cachedSelection: [string] | [string, string] | undefined;
 
+  public get isPlayed() {
+    return this.played;
+  }
+
   public get components() {
     return {
       sliderAxis: this.sliderAxis,
@@ -168,6 +172,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     this.attr(deepMix({}, this.attributes, cfg));
     this.clear();
     this.init();
+    this.played = false;
   }
 
   public clear() {
@@ -183,7 +188,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     });
   }
 
-  public play() {
+  private play() {
     const { dataPerStep, playMode, loop, speed } = this.attributes;
     const axis = this.cellAxis ? this.cellAxis : this.sliderAxis;
     if (!axis) return;
@@ -214,7 +219,7 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     isFunction(onSelectionChange) && onSelectionChange(selection);
   }
 
-  public setPlayed() {
+  public togglePlay() {
     if (this.playBtn) {
       this.playListener();
     }
@@ -362,13 +367,14 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       if (this.played) {
         this.cachedSelection = this.timeSelection as [string] | [string, string];
         this.play();
+        isFunction(this.attributes.onPlay) && this.attributes?.onPlay();
       } else {
         this.stop();
+        isFunction(this.attributes.onStop) && this.attributes?.onStop();
       }
       this.playBtn?.update({
         marker: this.played ? stopMarker : playMarker,
       });
-      isFunction(this.attributes.onPlay) && this.attributes?.onPlay(this.played);
     };
     this.playBtn.addEventListener('click', this.playListener);
     this.appendChild(this.playBtn);
@@ -456,12 +462,16 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       const offsetY =
         (this.cellAxis.cellBackground?.getBounds()?.min[1] as number) -
         (this.cellAxis.cellTicks?.getBounds()?.min[1] as number);
-      this.translate(0, offsetY);
+      this.children.forEach((child: any) => {
+        child.translate(0, offsetY);
+      });
     } else if (this.sliderAxis) {
       const offsetY =
         (this.sliderAxis.sliderBackground?.getBounds()?.min[1] as number) -
         (this.sliderAxis.sliderTicks?.getBounds()?.min[1] as number);
-      this.translate(0, offsetY);
+      this.children.forEach((child: any) => {
+        child.translate(0, offsetY);
+      });
     }
   }
 
@@ -481,44 +491,44 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       y = this.getHeight(this.cellAxis.cellBackground) + SPACING;
     }
 
-    if (orient.controlButtonAlign === 'normal') {
-      // 先水平从右到左排版
-      const rightElements: DisplayObject[] = [];
+    // if (orient.controlButtonAlign === 'normal') {
+    // 先水平从右到左排版
+    const rightElements: DisplayObject[] = [];
 
-      this.speedControl && rightElements.push(this.speedControl);
-      this.singleTimeCheckbox && rightElements.push(this.singleTimeCheckbox);
+    this.speedControl && rightElements.push(this.speedControl);
+    this.singleTimeCheckbox && rightElements.push(this.singleTimeCheckbox);
 
-      let totalWidth = 0;
-      for (let i = 0; i < rightElements.length; i += 1) {
-        if (i !== rightElements.length - 1) totalWidth += this.getWidth(rightElements[i]) + SPACING;
-        else totalWidth += this.getWidth(rightElements[i]);
-        this.verticalCenter(rightElements[i]);
-      }
-      if (rightElements.length === 1) {
-        rightElements[0].translate(width - totalWidth, y);
-      } else if (rightElements.length === 2) {
-        rightElements[0].translate(width - totalWidth, y);
-        rightElements[1].translate(width - this.getWidth(rightElements[1]), y);
-      }
-
-      const group: DisplayObject[] = [];
-      this.prevBtn && group.push(this.prevBtn);
-      this.playBtn && group.push(this.playBtn);
-      this.nextBtn && group.push(this.nextBtn);
-      let startX = 0;
-      for (let i = 0; i < group.length; i += 1) {
-        this.verticalCenter(group[i]);
-        (group[i] as DisplayObject).translate(startX);
-        startX += this.getWidth(group[i] as DisplayObject) + SPACING;
-      }
-
-      // 移到水平位置的中心处，并且竖直方向与axis的中心对齐 再移动到axis正下方
-      const offsetX = 0.5 * (width - startX + SPACING);
-      // const offsetX = (width - startX - this.getWidth(group[group.length - 1])) / 2;
-      for (let i = 0; i < group.length; i += 1) {
-        (group[i] as DisplayObject).translate(offsetX, y);
-      }
+    let totalWidth = 0;
+    for (let i = 0; i < rightElements.length; i += 1) {
+      if (i !== rightElements.length - 1) totalWidth += this.getWidth(rightElements[i]) + SPACING;
+      else totalWidth += this.getWidth(rightElements[i]);
+      this.verticalCenter(rightElements[i]);
     }
+    if (rightElements.length === 1) {
+      rightElements[0].translate(width - totalWidth, y);
+    } else if (rightElements.length === 2) {
+      rightElements[0].translate(width - totalWidth, y);
+      rightElements[1].translate(width - this.getWidth(rightElements[1]), y);
+    }
+
+    const group: DisplayObject[] = [];
+    this.prevBtn && group.push(this.prevBtn);
+    this.playBtn && group.push(this.playBtn);
+    this.nextBtn && group.push(this.nextBtn);
+    let startX = 0;
+    for (let i = 0; i < group.length; i += 1) {
+      this.verticalCenter(group[i]);
+      (group[i] as DisplayObject).translate(startX);
+      startX += this.getWidth(group[i] as DisplayObject) + SPACING;
+    }
+
+    // 移到水平位置的中心处，并且竖直方向与axis的中心对齐 再移动到axis正下方
+    const offsetX = 0.5 * (width - startX + SPACING);
+    // const offsetX = (width - startX - this.getWidth(group[group.length - 1])) / 2;
+    for (let i = 0; i < group.length; i += 1) {
+      (group[i] as DisplayObject).translate(offsetX, y);
+    }
+    // }
   }
 
   private getWidth(shape: DisplayObject) {

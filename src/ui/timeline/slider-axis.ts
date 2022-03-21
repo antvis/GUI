@@ -28,11 +28,11 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
           autoRotate: false,
           rotate: 0,
           autoEllipsis: true,
-          offset: [0, 8],
+          offset: [0, 15],
           alignTick: true,
           style: {
             default: {
-              fontSize: 5,
+              fontSize: 10,
               fill: 'rgba(0,0,0,0.45)',
             },
           },

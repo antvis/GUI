@@ -31,11 +31,11 @@ export class CellAxis extends GUI<Required<CellAxisCfg>> {
         label: {
           autoRotate: false,
           autoEllipsis: true,
-          offset: [0, 8],
+          offset: [0, 15],
           alignTick: true,
           style: {
             default: {
-              fontSize: 5,
+              fontSize: 10,
               fill: 'rgba(0,0,0,0.45)',
             },
           },

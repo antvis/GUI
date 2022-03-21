@@ -312,7 +312,7 @@ export type TimelineCfg = {
    * @title  播放时回调函数
    * @description 监听播放的回调函数
    */
-  onPlay?: (played: boolean) => void;
+  onPlay?: () => void;
   /**
    * @title  停止时回调函数
    * @description 监听停止回调函数
