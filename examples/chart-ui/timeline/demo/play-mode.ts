@@ -73,7 +73,7 @@ cfgFolder.add(timelineCfg, 'playMode', ['fixed', 'increase']).onChange((value) =
 const cfgFolder2 = cfg.addFolder('slider型播放模式');
 cfgFolder2.open();
 const timelineCfg2 = { playMode: 'fixed' };
-cfgFolder2.add(timelineCfg, 'playMode', ['fixed', 'increase']).onChange((value) => {
+cfgFolder2.add(timelineCfg2, 'playMode', ['fixed', 'increase']).onChange((value) => {
   timeline2.update({
     playMode: value,
   });

@@ -180,7 +180,10 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   public increaseStepWithAnimation() {
     const { single, timeData, selection, onSelectionChange, dataPerStep, duration, length, backgroundStyle } =
       this.attributes;
-    if (single || selection.length !== 2) return;
+    if (single || selection.length !== 2) {
+      console.error('单一时间不支持increase播放模式');
+      return;
+    }
     const currStartIdx = this.timeIndexMap.get(selection[0]) as number;
     const endIdx = this.timeIndexMap.get(selection[1] as string) as number;
     const newEndIdx = endIdx + dataPerStep;
@@ -208,7 +211,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     if (this.animation) {
       this.animation.onframe = () => {
         this.endHandleShape?.attr({ x: this.selectionShape.parsedStyle.width.value as number });
-        // console.log(this.endHandleShape?.style.x);
       };
       this.animation.onfinish = () => {
         const newSelection = this.calculateSelection() as [string, string];
@@ -217,8 +219,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
         isFunction(onSelectionChange) && onSelectionChange([selection[0], timeData[newEndIdx].date]);
       };
     }
-    // this.update({ selection: [selection[0], timeData[newEndIdx].date] });
-    // isFunction(onSelectionChange) && onSelectionChange([selection[0], timeData[newEndIdx].date]);
   }
 
   private calculateSelection() {
