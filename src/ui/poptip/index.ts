@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { deepMix, isString, isElement, assign, get } from '@antv/util';
-=======
-import { deepMix, isString, isElement, assign } from '@antv/util';
->>>>>>> be1c57b (feat(poptip): poptip 组件 · 初版 (#122))
 import { DisplayObject } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { deepAssign } from '../../util';
@@ -85,14 +81,7 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    */
   public bind(
     element: HTMLElement | DisplayObject,
-<<<<<<< HEAD
     callback?: PoptipCallbackOptions | ((e: any) => PoptipCallbackOptions)
-=======
-    options?: {
-      html: (e: any) => string;
-      condition?: (e: any) => HTMLElement | DisplayObject | false;
-    } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow' | 'offset'>
->>>>>>> 62cd51d (chore: commit history cleared)
   ): void {
     if (!element) return;
 
