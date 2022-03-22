@@ -104,7 +104,6 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     this.checkedShape = this.createCheckedShape();
     if (!isNil(this.getAttribute('label')) && !isUndefined(this.getAttribute('label')))
       this.labelShape = this.createLabelShape();
-
     this.checkboxBackgroundShape.appendChild(this.checkedShape);
     this.labelShape && this.checkboxBackgroundShape.appendChild(this.labelShape);
     this.appendChild(this.checkboxBackgroundShape);
@@ -154,7 +153,7 @@ export class Checkbox extends GUI<Required<CheckboxCfg>> {
     } as PathStyleProps;
 
     const checkedShape = new Path({ style: CHECKED_SHAPE_STYLE });
-    checkedShape.setAttribute('visibility', 'hidden');
+    checkedShape.setAttribute('visibility', this.checked ? 'visible' : 'hidden');
     return checkedShape;
   }
 

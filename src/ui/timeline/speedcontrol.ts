@@ -1,32 +1,13 @@
 import { Group, Path, PathCommand, Rect } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, isFunction } from '@antv/util';
 import { GUIOption } from 'types';
 import { Text } from '../text';
 import { GUI } from '../../core/gui';
 import { SpeedControlCfg, SpeedControlOptions } from './types';
+import { formatter } from './util';
 
 export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
   public static tag = 'speedcontrol';
-
-  public init(): void {
-    this.createLines();
-    this.createTriangle();
-    this.createLabel();
-    this.bindEvents();
-  }
-
-  public clear(): void {
-    this.removeChildren();
-  }
-
-  public update(cfg: Partial<Required<SpeedControlCfg>>): void {
-    this.attr(deepMix({}, this.attributes, cfg));
-    this.clear();
-    this.createLines();
-    this.createTriangle();
-    this.createLabel();
-    this.bindEvents();
-  }
 
   private trianglePath = (x: number, y: number) => {
     return [['M', x, y], ['L', x, y + 4], ['L', x + 5, y + 2], ['Z']];
@@ -54,7 +35,7 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
       y: 0,
       width: 35,
       height: 18,
-      speeds: ['1.0', '2.0', '3.0', '4.0', '5.0'],
+      speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
       currentSpeedIdx: 0,
       spacing: 2,
       label: {
@@ -74,18 +55,37 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
     this.init();
   }
 
+  public init(): void {
+    this.createLines();
+    this.createTriangle();
+    this.createLabel();
+    this.bindEvents();
+  }
+
+  public update(cfg: Partial<Required<SpeedControlCfg>>): void {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.clear();
+    this.createLines();
+    this.createTriangle();
+    this.createLabel();
+    this.bindEvents();
+  }
+
+  public clear(): void {
+    this.removeChildren();
+  }
+
   private bindEvents() {
     if (!this.lineShapes) return;
     const { onSpeedChange, speeds } = this.attributes;
-
     for (let i = 0; i < this.lineShapes.length; i += 1) {
       const onClick = (event: any) => {
         const line = event.target as Path;
         const { y } = line.attributes;
         this.triangleShape?.setAttribute('y', (y as number) - 2);
-        this.labelShape?.update({ text: speeds[i] });
+        this.labelShape?.update({ text: formatter(speeds[i]) });
         this.setAttribute('currentSpeedIdx', i);
-        onSpeedChange && onSpeedChange(i);
+        isFunction(onSpeedChange) && onSpeedChange(i);
       };
       this.lineShapes[i].addEventListener('click', onClick);
     }
@@ -140,7 +140,7 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
         x: 10 + spacing,
         width: restSpacing,
         y: lastLineY - (label.height as number) + 3,
-        text: speeds[currentSpeedIdx],
+        text: formatter(speeds[currentSpeedIdx]),
       },
     });
     this.appendChild(this.labelShape);

@@ -85,7 +85,14 @@ export class Poptip extends GUI<Required<PoptipCfg>> {
    */
   public bind(
     element: HTMLElement | DisplayObject,
+<<<<<<< HEAD
     callback?: PoptipCallbackOptions | ((e: any) => PoptipCallbackOptions)
+=======
+    options?: {
+      html: (e: any) => string;
+      condition?: (e: any) => HTMLElement | DisplayObject | false;
+    } & Pick<PoptipCfg, 'position' | 'arrowPointAtCenter' | 'follow' | 'offset'>
+>>>>>>> 62cd51d (chore: commit history cleared)
   ): void {
     if (!element) return;
 

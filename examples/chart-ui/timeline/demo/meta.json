@@ -1,0 +1,48 @@
+{
+  "title": {
+    "zh": "中文分类",
+    "en": "Category"
+  },
+  "demos": [
+    {
+      "filename": "basic-cell.ts",
+      "title": {
+        "zh": "基本刻度形时间轴",
+        "en": "Basic cell timeline"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "basic-slider.ts",
+      "title": {
+        "zh": "基本条形时间轴",
+        "en": "Basic slider timeline"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "event.ts",
+      "title": {
+        "zh": "时间轴事件监听",
+        "en": "Event listener"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "custom.ts",
+      "title": {
+        "zh": "样式设置",
+        "en": "Custom Style"
+      },
+      "screenshot": ""
+    },
+    {
+      "filename": "play-mode.ts",
+      "title": {
+        "zh": "播放模式",
+        "en": "Play mode"
+      },
+      "screenshot": ""
+    }
+  ]
+}

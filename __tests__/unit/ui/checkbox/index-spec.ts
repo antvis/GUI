@@ -38,7 +38,6 @@ describe('checkbox', () => {
       label: { text, spacing },
       checked,
     } = checkbox.attributes;
-    console.log(checkbox);
     expect(checkbox.getPosition()[0]).toBe(20);
     expect(checkbox.getPosition()[1]).toBe(10);
     expect(x).toBe(20);

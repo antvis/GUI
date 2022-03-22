@@ -1,7 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { SliderAxis } from '../../../../src/ui/timeline/slideraxis';
-import { CellAxis } from '../../../../src/ui/timeline/cellaxis';
+import { SliderAxis } from '../../../../src/ui/timeline/slider-axis';
+import { CellAxis } from '../../../../src/ui/timeline/cell-axis';
 import { createDiv } from '../../../utils';
 
 const renderer = new CanvasRenderer({
@@ -52,16 +52,16 @@ describe('play axis', () => {
     );
     expect(sliderSelection.style.width).toBeCloseTo(((endPos[0] - startPos[0]) * (6 - 1)) / (date.length - 1), 4);
   });
-  test('slider single', () => {
+  test.only('slider single', () => {
     const slideraxis = new SliderAxis({
       style: {
         single: true,
-        x: 20,
+        x: 30,
         y: 90,
         length: 300,
         timeData: date2,
         tickCfg: {},
-        selection: [date2[7].date],
+        selection: [date2[3].date],
         selectionStyle: {
           stroke: '#ff00ee',
         },
@@ -71,12 +71,14 @@ describe('play axis', () => {
         onSelectionChange: console.log,
       },
     });
+
     canvas.appendChild(slideraxis);
+
     const { sliderBackground, sliderSelection, sliderTicks } = slideraxis;
     const { startPos, endPos } = sliderTicks.attributes;
     expect(sliderSelection.style.stroke).toBe('#ff00ee');
     expect(sliderBackground.style.stroke).toBe('#eeeeee');
-    expect(sliderSelection.style.x).toBeCloseTo(((endPos[0] - startPos[0]) * (7 - 0)) / (date2.length - 1), 4);
+    expect(sliderSelection.style.x).toBeCloseTo(((endPos[0] - startPos[0]) * (3 - 0)) / (date2.length - 1), 4);
   });
   test('cell', () => {
     const cellaxis = new CellAxis({
@@ -94,6 +96,8 @@ describe('play axis', () => {
           fill: '#eeeeee',
         },
         onSelectionChange: console.log,
+        dataPerStep: 3,
+        playMode: 'increase',
       },
     });
     cellaxis.update({ timeData: date, selection: [date[1].date, date[6].date] });
@@ -103,6 +107,9 @@ describe('play axis', () => {
       expect(cells[i].style.fill).toBe('#ff00ee');
     }
     expect(cellBackground.style.fill).toBe('#eeeeee');
+    cellaxis.play();
+    cellaxis.stop();
+    cellaxis.play();
   });
   test('cell single', () => {
     const cellaxis = new CellAxis({
@@ -112,12 +119,20 @@ describe('play axis', () => {
         length: 300,
         timeData: date2,
         tickCfg: {},
+        cellStyle: {
+          selected: {
+            fill: '#ff0000',
+          },
+        },
         selection: [date2[2].date],
         onSelectionChange: console.log,
         single: true,
+        dataPerStep: 2,
+        loop: true,
       },
     });
     canvas.appendChild(cellaxis);
-    expect(1).toBe(1);
+    const { fill } = cellaxis.cells[2].attributes;
+    expect(fill).toBe('#ff0000');
   });
 });

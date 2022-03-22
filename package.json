@@ -43,7 +43,7 @@
   ],
   "dependencies": {
     "@antv/dom-util": "^2.0.3",
-    "@antv/g": "^5.0.1",
+    "@antv/g": "^5.0.11",
     "@antv/g-canvas": "^1.0.1",
     "@antv/g-svg": "^1.0.1",
     "@antv/matrix-util": "^3.0.4",
@@ -52,6 +52,7 @@
     "@antv/util": "^2.0.13",
     "csstype": "^3.0.8",
     "fecha": "^4.2.1",
+    "reflect-metadata": "^0.1.13",
     "svg-path-parser": "^1.1.0"
   },
   "peerDependencies": {

@@ -1,10 +1,9 @@
 import { DisplayObject, DisplayObjectConfig } from '@antv/g';
 import { CircleProps, MixAttrs, RectProps } from 'types';
-import { TooltipOptions } from 'ui/tooltip';
-import { LinearOptions, LinearCfg, AxisBaseCfg } from '../axis';
+import { LinearOptions, LinearCfg } from '../axis';
 import { TextCfg } from '../text';
 import { ButtonCfg } from '../button';
-import { Checkbox, CheckboxOptions } from '../checkbox';
+import { CheckboxOptions } from '../checkbox';
 
 export interface LayoutRowData {
   shape: DisplayObject;
@@ -63,15 +62,35 @@ export type PlayAxisBaseCfg = {
    * @title  tooltip内容
    * @description 自定义tooltip内容
    */
-  customTooltip?: (time: string | Date) => TooltipOptions;
+  customTooltip?: (timeData: TimeData) => string;
   /**
    * @title  变化时回调函数
    * @description 监听时间范围（或单一时间）变化的回调函数
    */
   onSelectionChange?: (selection: PlayAxisBaseCfg['selection']) => void;
+  /**
+   * @title     播放模式
+   * @description increase 时间范围不断扩大，fixed固定平移selection
+   */
+  playMode?: 'increase' | 'fixed';
+  /**
+   * @title     播放循环
+   * @description true循环，反之不循环
+   */
+  loop?: boolean;
+  /**
+   * @title    步距
+   * @description 每一次移动多少个数据点
+   */
+  dataPerStep?: number;
 };
 
 export type CellAxisCfg = PlayAxisBaseCfg & {
+  /**
+   * @title    间隔时间
+   * @description 每隔多少秒前进一步
+   */
+  interval?: number;
   /**
    * @title  cell 样式
    * @description 格子样式
@@ -95,6 +114,16 @@ export type CellAxisCfg = PlayAxisBaseCfg & {
 };
 
 export type SliderAxisCfg = PlayAxisBaseCfg & {
+  /**
+   * @title  delay
+   * @description  动画停顿(ms)
+   */
+  delay?: number;
+  /**
+   * @title  duration
+   * @description  动画过渡(ms)
+   */
+  duration?: number;
   /**
    * @title  手柄样式
    * @description 手柄样式
@@ -124,7 +153,7 @@ export type SpeedControlCfg = {
    * @title 可调节的速度
    * @description 配置可调节的速度，建议配置范围在 5 个区间，如: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
    */
-  speeds?: string[];
+  speeds?: number[];
   /**
    * @title   速度变化回调函数
    * @description 监听速度变化的回调函数
@@ -210,8 +239,6 @@ type Controls =
       speedControl?: Omit<SpeedControlCfg, 'onSpeedChange'> | false;
     };
 
-type TooltipFormatter = (time: string | Date) => TooltipOptions;
-
 export type TimelineCfg = {
   /**
    * @title x 坐标
@@ -254,12 +281,12 @@ export type TimelineCfg = {
    * @title 播放轴cell类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
    */
-  cellAxisCfg?: Omit<CellAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData'>;
+  cellAxisCfg?: Omit<CellAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData' | 'single'>;
   /**
    * @title 播放轴slider类型配置
    * @description 播放轴为格子刻度型的配置，如果type不是cell则忽略
    */
-  sliderAxisCfg?: Omit<SliderAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData'>;
+  sliderAxisCfg?: Omit<SliderAxisCfg, 'onSelectionChange' | 'x' | 'y' | 'length' | 'timeData' | 'single'>;
   /**
    * @title 播放控制
    * @description 配置播放器、单一时间checkbox
@@ -270,7 +297,7 @@ export type TimelineCfg = {
    * @title  tooltip内容
    * @description 自定义tooltip内容
    */
-  tooltip?: false | TooltipFormatter;
+  customTooltip?: (timeData: TimeData) => string;
   /**
    * @title   刻度尺
    * @description 自定义刻度尺
@@ -285,7 +312,7 @@ export type TimelineCfg = {
    * @title  播放时回调函数
    * @description 监听播放的回调函数
    */
-  onPlay?: (played: boolean) => void;
+  onPlay?: () => void;
   /**
    * @title  停止时回调函数
    * @description 监听停止回调函数
@@ -311,5 +338,30 @@ export type TimelineCfg = {
    * @description 监听单一时间设置的回调函数
    */
   onSingleTimeChange?: (value: boolean) => void;
+  /**
+   * @title    一倍速设置
+   * @description 一秒多少个数据点
+   */
+  dataPerStep?: number;
+  /**
+   * @title    几倍速
+   * @description 几倍速，透传给speedcontrol
+   */
+  speed?: number;
+  /**
+   * @title     播放模式
+   * @description increase 时间范围不断扩大，fixed固定平移selection
+   */
+  playMode?: 'increase' | 'fixed';
+  /**
+   * @title     播放循环
+   * @description true循环，反之不循环
+   */
+  loop?: boolean;
+  /**
+   * @title     单一时间
+   * @description true为单一时间，false为时间范围
+   */
+  single?: boolean;
 };
 export type TimelineOptions = DisplayObjectConfig<TimelineCfg>;
