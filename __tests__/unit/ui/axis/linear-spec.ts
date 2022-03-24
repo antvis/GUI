@@ -97,7 +97,9 @@ describe('linear', () => {
     // @ts-ignore
     const { axisLine } = linear;
     const linePath = axisLine.attr('path');
+    // @ts-ignore
     expect(linePath[0]).toStrictEqual(['M', 250, 50]);
+    // @ts-ignore
     expect(linePath[1]).toStrictEqual(['L', 250, 450]);
   });
   test('oblique', () => {
@@ -134,7 +136,9 @@ describe('linear', () => {
     expect(axisLine.attr('x')).toBe(50);
     expect(axisLine.attr('y')).toBe(50);
     const linePath = axisLine.attr('path');
+    // @ts-ignore
     expect(linePath[0]).toStrictEqual(['M', 50, 50]);
+    // @ts-ignore
     expect(linePath[1]).toStrictEqual(['L', 450, 50]);
   });
   test('arrow', () => {

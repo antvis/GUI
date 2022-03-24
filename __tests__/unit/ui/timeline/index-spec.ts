@@ -106,7 +106,9 @@ describe('timeline layout cell', () => {
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
-    timeline && expect(timeline.timeSelection[1] as any as number).toBe(date[4].date);
+    // @ts-ignore
+    expect(timeline.timeSelection[1] as any as number).toBe(date[4].date);
+    // @ts-ignore
     expect(timeline.timeSelection[0] as any as number).toBe(date[0].date);
   });
   test('normal column', () => {
@@ -240,10 +242,9 @@ describe('timeline slider', () => {
     canvas.appendChild(timeline);
     const { components } = timeline;
     const { sliderAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
-    // expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
-    expect(playBtn!.getBounds()!.center[0] - sliderAxis.sliderBackground.getBounds().center[0]).toBeCloseTo(0, 4);
   });
 });
