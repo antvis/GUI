@@ -4,6 +4,14 @@ import { Timeline } from '../../../../src/ui/timeline';
 import { drawBB } from '../../../../src/ui/timeline/util';
 import { createDiv } from '../../../utils';
 
+function delay(delay: number) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve('');
+    }, delay);
+  });
+}
+
 function getVerticalCenter(shape: DisplayObject | undefined) {
   return shape?.getBounds()?.center[1] as number;
 }
@@ -26,7 +34,7 @@ const canvas = new Canvas({
 const date = new Array(20).fill(undefined).map((_, id) => ({ date: new Date(2022, 0, id).toLocaleString('zh-CN') }));
 
 describe('timeline layout cell', () => {
-  test('left', () => {
+  test.only('left', async () => {
     const timeline = new Timeline({
       style: {
         x: 10,
@@ -48,6 +56,7 @@ describe('timeline layout cell', () => {
       },
     });
     canvas.appendChild(timeline);
+    delay(2000)
     const { components } = timeline;
     const { cellAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
