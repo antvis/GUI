@@ -56,7 +56,7 @@ describe('timeline layout cell', () => {
       },
     });
     canvas.appendChild(timeline);
-    delay(2000)
+    delay(2000);
     const { components } = timeline;
     const { cellAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
