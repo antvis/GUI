@@ -24,6 +24,7 @@ describe('checkbox', () => {
         x: 20,
         y: 10,
         label: { text: 'label text' },
+        checked: true,
       },
     });
     canvas.appendChild(checkbox);

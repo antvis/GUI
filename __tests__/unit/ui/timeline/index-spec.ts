@@ -34,7 +34,7 @@ const canvas = new Canvas({
 const date = new Array(20).fill(undefined).map((_, id) => ({ date: new Date(2022, 0, id).toLocaleString('zh-CN') }));
 
 describe('timeline layout cell', () => {
-  test.only('left', async () => {
+  test('left', async () => {
     const timeline = new Timeline({
       style: {
         x: 10,
@@ -62,9 +62,9 @@ describe('timeline layout cell', () => {
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
     // drawBB(playBtn as DisplayObject, 'red', canvas);
     // 由于g处理隐藏元素计算包围盒会有问题，playBtn有隐藏的文本，所以暂时取消这个测试
-    // expect(getVerticalCenter(cellAxis?.cellBackground) as number).toBeCloseTo(getVerticalCenter(playBtn), 4);
+    expect(getVerticalCenter(cellAxis?.cellBackground) as number).toBeCloseTo(getVerticalCenter(playBtn), 4);
     // g引擎服务器与本地不一致
-    // expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
+    expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
     expect(cellAxis?.cellBackground.style.fill).toBe('#FFAA22');
