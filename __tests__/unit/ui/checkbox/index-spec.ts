@@ -40,7 +40,7 @@ describe('checkbox', () => {
     expect(y).toBe(10);
     expect(text).toBe('label text');
     expect(spacing).toBe(4);
-    expect(checked).toBe(false);
+    expect(checked).toBe(true);
     const { label } = checkbox;
     const labelX = (label as Text).getAttribute('x');
     expect(labelX).toBe(16);
