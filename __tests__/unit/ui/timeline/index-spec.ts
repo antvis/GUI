@@ -1,16 +1,7 @@
 import { Canvas, DisplayObject } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-svg';
 import { Timeline } from '../../../../src/ui/timeline';
-import { drawBB } from '../../../../src/ui/timeline/util';
 import { createDiv } from '../../../utils';
-
-function delay(delay: number) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve('');
-    }, delay);
-  });
-}
 
 function getVerticalCenter(shape: DisplayObject | undefined) {
   return shape?.getBounds()?.center[1] as number;
@@ -56,14 +47,10 @@ describe('timeline layout cell', () => {
       },
     });
     canvas.appendChild(timeline);
-    delay(2000);
     const { components } = timeline;
     const { cellAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // drawBB(playBtn as DisplayObject, 'red', canvas);
-    // 由于g处理隐藏元素计算包围盒会有问题，playBtn有隐藏的文本，所以暂时取消这个测试
     expect(getVerticalCenter(cellAxis?.cellBackground) as number).toBeCloseTo(getVerticalCenter(playBtn), 4);
-    // g引擎服务器与本地不一致
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -87,7 +74,7 @@ describe('timeline layout cell', () => {
     const { components } = timeline;
     const { cellAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -109,10 +96,10 @@ describe('timeline layout cell', () => {
     timeline.setSelection([date[0].date, date[4].date]);
     canvas.appendChild(timeline);
     const { components } = timeline;
-    const { cellAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
+    const { cellAxis, speedControl, prevBtn, nextBtn, singleTimeCheckbox, playBtn } = components;
 
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -138,7 +125,7 @@ describe('timeline layout cell', () => {
     canvas.appendChild(timeline);
     const { components } = timeline;
     const { speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
-    // expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -175,7 +162,7 @@ describe('timeline slider', () => {
     expect(singleTimeCheckbox!.attributes!.checked).toBe(true);
     expect(sliderAxis?.sliderBackground.style.fill).toBe('#feaafe');
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -205,7 +192,7 @@ describe('timeline slider', () => {
     expect(sliderAxis!.attributes!.selection[0]).toBe(date[0].date);
     expect(sliderAxis!.attributes!.selection[1]).toBe(date[7].date);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -229,7 +216,7 @@ describe('timeline slider', () => {
     const { components } = timeline;
     const { sliderAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(speedControl)).toBeCloseTo(0, 4);
-    // expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect((sliderAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
@@ -251,8 +238,8 @@ describe('timeline slider', () => {
     });
     canvas.appendChild(timeline);
     const { components } = timeline;
-    const { sliderAxis, speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
-    // expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
+    const { speedControl, playBtn, prevBtn, nextBtn, singleTimeCheckbox } = components;
+    expect(getVerticalCenter(speedControl) - getVerticalCenter(playBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(prevBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(nextBtn)).toBeCloseTo(0, 4);
     expect(getVerticalCenter(speedControl) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
