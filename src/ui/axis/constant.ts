@@ -8,7 +8,6 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
       style: {
         fontSize: 12,
         fill: '#2C3542',
-        fillOpacity: 0.45,
       },
       position: 'center',
       offset: [0, 0],
