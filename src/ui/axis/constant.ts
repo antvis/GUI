@@ -7,7 +7,7 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
       content: '',
       style: {
         fontSize: 12,
-        fill: '#2C3542',
+        fill: 'black',
       },
       position: 'center',
       offset: [0, 0],
@@ -21,7 +21,7 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
         fill: '#416180',
         stroke: '#416180',
         lineWidth: 0.5,
-        strokeOpacity: 0.45,
+        strokeOpacity: 0.85,
       },
       arrow: {
         start: {
@@ -40,11 +40,10 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
       style: {
         default: {
           stroke: '#416180',
-          strokeOpacity: 0.45,
+          strokeOpacity: 0.65,
           lineWidth: 0.5,
         },
       },
-      offset: 0,
       appendTick: false,
     },
     subTickLine: {
@@ -57,21 +56,19 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
           lineWidth: 0.5,
         },
       },
-      offset: 0,
     },
     label: {
       type: 'text',
       style: {
         default: {
-          fill: '#2C3542',
+          fill: 'black',
           fillOpacity: 0.65,
           fontSize: 12,
-          textBaseline: 'middle',
         },
       },
       alignTick: true,
       formatter: (tick: TickDatum) => tick?.text || String(tick?.value || ''),
-      offset: [0, 0],
+      tickPadding: 4,
       overlapOrder: ['autoRotate', 'autoEllipsis', 'autoHide'],
       margin: [0, 0, 0, 0],
       autoRotate: true,
@@ -91,6 +88,8 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
 export const LINEAR_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
   style: {
     type: 'linear',
+    startPos: [0, 0],
+    endPos: [0, 0],
   },
 });
 
@@ -102,6 +101,12 @@ export const ARC_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
     center: [0, 0],
     label: {
       ...LINEAR_DEFAULT_OPTIONS.style.label,
+      tickPadding: 8,
+      style: {
+        default: {
+          textBaseline: 'middle',
+        },
+      },
       align: 'normal',
     },
   },

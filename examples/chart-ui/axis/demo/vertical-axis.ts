@@ -32,9 +32,6 @@ function createAxis(startPos = [0, 0], endPos = [0, 0], options = {}) {
         title: {
           content: '数值',
         },
-        label: {
-          offset: [0, -4],
-        },
       },
       options
     ),
@@ -57,35 +54,22 @@ const data = linearScale.getTicks().map((d, idx) => {
 // 创建纵坐标，由下至上
 createAxis([100, 200], [100, 60], {
   ticks: data,
+  verticalFactor: -1,
+  title: {
+    // todo 应该支持自动计算，否则需要外部去判断 axis tickLabel 的长度情况
+    offset: [-40, 0],
+    rotate: -90,
+  },
+  label: {},
+});
+
+createAxis([160, 200], [160, 60], {
+  ticks: data,
   title: {
     offset: [-4, -16],
     // 设置 axisTitle 位置
     position: 'end',
     rotate: 0,
   },
-  label: {
-    style: {
-      default: {
-        textAlign: 'right',
-      },
-    },
-  },
-});
-
-createAxis([160, 200], [160, 60], {
-  ticks: data,
-  verticalFactor: -1,
-  title: {
-    // todo 应该支持自动计算，否则需要外部去判断 axis tickLabel 的长度情况
-    offset: [38, 0],
-    rotate: 90,
-  },
-  label: {
-    offset: [0, -4],
-    style: {
-      default: {
-        textAlign: 'left',
-      },
-    },
-  },
+  label: {},
 });

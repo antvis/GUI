@@ -1,10 +1,14 @@
-import { deepMix, get } from '@antv/util';
+import { deepMix, get, min } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import type { PathCommand } from '@antv/g';
 import type { LinearCfg, LinearOptions, Point, Position } from './types';
 import { AxisBase } from './base';
 import { getVerticalVector } from './utils';
 import { LINEAR_DEFAULT_OPTIONS } from './constant';
+
+function minus(sp: Point, ep: Point) {
+  return [Math.abs(sp[0] - ep[0]), Math.abs(sp[1] - ep[1])];
+}
 
 export class Linear extends AxisBase<LinearCfg> {
   public static tag = 'linear';
@@ -59,21 +63,56 @@ export class Linear extends AxisBase<LinearCfg> {
     return { startPos, endPos };
   }
 
+  protected inferLabelPosition(startPoint: Point, endPoint: Point): any {
+    const { verticalFactor } = this.attributes;
+    const vector = this.getTangentVector();
+
+    let position = 'bottom';
+    if (Math.abs(vector[0]) > Math.abs(vector[1])) position = verticalFactor === 1 ? 'bottom' : 'top';
+    else position = verticalFactor === -1 ? 'left' : 'right';
+
+    const [dx, dy] = minus(startPoint, endPoint);
+
+    if (position === 'left') {
+      return {
+        x: startPoint[0] - dx,
+        y: startPoint[1],
+        textBaseline: 'middle',
+        textAlign: 'right',
+      };
+    }
+    if (position === 'top') {
+      return {
+        x: startPoint[0],
+        y: startPoint[1] - dy,
+        textBaseline: 'bottom',
+        textAlign: 'center',
+      };
+    }
+    if (position === 'right') {
+      return {
+        x: startPoint[0] + dx,
+        y: startPoint[1],
+        textBaseline: 'middle',
+        textAlign: 'left',
+      };
+    }
+    return {
+      x: startPoint[0],
+      y: startPoint[1] + dy,
+      textBaseline: 'top',
+      textAlign: 'center',
+    };
+  }
+
   protected getLabelLayout(labelVal: number, tickAngle: number, angle: number) {
-    const { verticalFactor, label } = this.attributes;
-    // 如果 label.style.default 定义了 textAlign，则使用用户定义的
-    const precision = 1;
-    const sign = verticalFactor === 1 ? 0 : 1;
+    const { label } = this.attributes;
     let rotate = angle;
-    let textAlign = 'center' as Position;
     if (angle > 90) rotate = (rotate - 180) % 360;
     else if (angle < -90) rotate = (rotate + 180) % 360;
-    // 由于精度问题, 取 -precision precision
-    if (rotate < -precision) textAlign = ['end', 'start'][sign] as Position;
-    else if (rotate > precision) textAlign = ['start', 'end'][sign] as Position;
     return {
       rotate,
-      textAlign: get(label, ['style', 'default', 'textAlign']) ?? textAlign,
+      textAlign: get(label, ['style', 'default', 'textAlign']),
     };
   }
 }

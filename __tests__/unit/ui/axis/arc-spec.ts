@@ -1,31 +1,12 @@
-import { Canvas } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Arc } from '../../../../src';
-import { createDiv } from '../../../utils';
+import { createCanvas } from '../../../utils/render';
 import type { StyleState as State } from '../../../../src/types';
 import type { TickDatum } from '../../../../src/ui/axis/types';
 
-const renderer = new CanvasRenderer({
-  enableDirtyRectangleRenderingDebug: false,
-  enableAutoRendering: true,
-  enableDirtyRectangleRendering: true,
-});
-
-const div = createDiv();
-const canvas = new Canvas({
-  container: div,
-  width: 500,
-  height: 500,
-  renderer,
-});
+const canvas = createCanvas(600, 'svg');
 
 const arc = new Arc({
-  style: {
-    startAngle: -90,
-    endAngle: 180,
-    radius: 100,
-    center: [200, 200],
-  },
+  style: { radius: 60, center: [150, 100] },
 });
 
 canvas.appendChild(arc);
@@ -40,8 +21,83 @@ function createData(values: number[], texts?: string[], states?: State[], ids?: 
   });
 }
 
-describe('arc', () => {
-  test('basic', async () => {
+const ticks = createData([0, 0.2, 0.4, 0.6, 0.8], ['A', 'B', 'C', 'D', 'E']);
+
+describe('Arc axis', () => {
+  it('new Arc({}) should create a arc axis', () => {
+    const arc = new Arc({});
+    canvas.appendChild(arc);
+
+    expect(arc).toBeDefined();
+    expect(arc.getElementsByName('axis-line').length).toBe(1);
+
+    canvas.removeChild(arc);
+    arc.destroy();
+  });
+
+  it('new Arc({}) update `startAngle` and `endAngle`', () => {
+    arc.update({ endAngle: 270, radius: 50 });
+    const axisLine = arc.getElementsByName('axis-line')[0];
+    expect(axisLine.getAttribute('path')[0]).toEqual(['M', arc.style.center[0], arc.style.center[1]]);
+    expect(axisLine.getAttribute('path')[1]).toEqual([
+      'L',
+      arc.style.center[0] + arc.style.radius,
+      arc.style.center[1],
+    ]);
+  });
+
+  it('new Arc({ style: { label } }) should create axis with labels', () => {
+    arc.update({ endAngle: 360, ticks });
+
+    const tickData = new Array(30).fill(0).map((tick, idx) => {
+      const step = 1 / 30;
+      return {
+        value: idx * step,
+        text: `周 ${String(idx)}`,
+      };
+    });
+    const common = { startAngle: -90, endAngle: 270, radius: 100 };
+
+    const arc2 = new Arc({ style: { ...common, center: [400, 120], ticks: tickData, label: { align: 'tangential' } } });
+    canvas.appendChild(arc2);
+
+    const arc3 = new Arc({
+      style: {
+        ...common,
+        radius: 70,
+        center: [150, 280],
+        ticks: tickData,
+        verticalFactor: -1,
+        label: { autoRotate: false },
+      },
+    });
+    canvas.appendChild(arc3);
+
+    const arc4 = new Arc({
+      style: {
+        ...common,
+        center: [400, 350],
+        ticks: tickData,
+        label: { align: 'radial', autoHideTickLine: false },
+        verticalFactor: -1,
+      },
+    });
+    canvas.appendChild(arc4);
+
+    const arc5 = new Arc({
+      style: {
+        ...common,
+        radius: 70,
+        center: [150, 470],
+        ticks: tickData,
+        label: { align: 'radial', autoHideTickLine: false },
+      },
+    });
+    canvas.appendChild(arc5);
+  });
+
+  // ----- 以下单测未进行调整 ----- //
+  it('basic', async () => {
     arc.update({
       title: {
         content: '弧形轴',
@@ -63,7 +119,7 @@ describe('arc', () => {
       ticks: createData([0, 0.2, 0.4, 0.6, 0.8], ['A', 'B', 'C', 'D', 'E']),
       label: {
         alignTick: false,
-        offset: [0, 20],
+        tickPadding: 20,
       },
       subTickLine: {
         count: 0,
@@ -80,19 +136,19 @@ describe('arc', () => {
     expect(CMD3).toStrictEqual(['A', 100, 100, 0, 1, 1, 100, 200]);
   });
 
-  test('arrow', async () => {
+  it('arrow', async () => {
     // @ts-ignore
     expect(arc.axisEndArrow.getEulerAngles()).toBeCloseTo(-90);
   });
 
-  test('ticks', async () => {
+  it('ticks', async () => {
     // @ts-ignore
     const [[, x1, y1], [, x2, y2]] = arc.tickLinesGroup.children[0]!.attr('path');
     expect(x2 - x1).toBeCloseTo(0);
     expect(Math.abs(y2 - y1)).toBe(6);
   });
 
-  test('autoRotate', async () => {
+  it('autoRotate', async () => {
     // 默认布局下应该不会有碰撞
     arc.update({
       label: {
@@ -107,7 +163,7 @@ describe('arc', () => {
     });
   });
 
-  test('autoEllipsis', async () => {
+  it('autoEllipsis', async () => {
     arc.update({
       label: {
         type: 'text',
@@ -122,7 +178,7 @@ describe('arc', () => {
     expect(arc.labelsGroup.children[0]!.attr('text').endsWith('...')).toBe(true);
   });
 
-  test('autoHide', async () => {
+  it('autoHide', async () => {
     // 默认布局下应该不会有碰撞
     arc.update({
       startAngle: 0,

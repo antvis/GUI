@@ -39,8 +39,6 @@ export type AxisTickLineCfg = {
   // 刻度线长度
   len?: number;
   style?: MixAttrs<Partial<LineProps>>;
-  // 刻度线在其方向上的偏移量
-  offset?: number;
   // 末尾追加tick，一般用于label alignTick 为 false 的情况
   appendTick?: boolean;
 };
@@ -51,8 +49,6 @@ export type AxisSubTickLineCfg = {
   // 两个刻度之间的子刻度数
   count?: number;
   style?: MixAttrs<Partial<LineProps>>;
-  // 偏移量
-  offset?: number;
 };
 
 export type AxisLabelCfg = {
@@ -63,7 +59,11 @@ export type AxisLabelCfg = {
   // 标签文本与轴线的对齐方式，normal-水平，tangential-切向 radial-径向
   align?: 'normal' | 'tangential' | 'radial';
   formatter?: (tick: TickDatum, index?: number) => string;
-  offset?: [number, number];
+  /**
+   * @description determine additional offset (pixel) to the position of `tickLine`
+   * @description 4
+   */
+  tickPadding?: number;
   // 处理label重叠的优先级
   overlapOrder?: OverlapType[];
   // 标签外边距，在进行自动避免重叠时的额外间隔
@@ -120,8 +120,8 @@ export type AxisBaseOptions = DisplayObjectConfig<AxisBaseCfg>;
 export type Point = [number, number];
 
 export type LinearCfg = AxisBaseCfg & {
-  startPos: Point;
-  endPos: Point;
+  startPos?: Point;
+  endPos?: Point;
 };
 export type LinearOptions = DisplayObjectConfig<LinearCfg>;
 

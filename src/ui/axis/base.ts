@@ -1,4 +1,4 @@
-import { Group, Path, Text } from '@antv/g';
+import { Group, Path, Text, TextStyleProps } from '@antv/g';
 import { clone, deepMix, minBy, maxBy, get, sortBy, isString, isNumber, isUndefined } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import type { vec2 as Vector } from '@antv/matrix-util';
@@ -80,7 +80,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
   /** 轴线 path */
   private get axisLine() {
-    return this.axisLineGroup.getElementsByName('line')[0]! as Path;
+    return this.axisLineGroup.getElementsByName('axis-line')[0]! as Path;
   }
 
   private get axisStartArrow() {
@@ -224,18 +224,12 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
   private get tickLineCfg(): Required<AxisTickLineCfg> {
     const { tickLine } = this.attributes;
-    // tickLine is undefined | false
-    if (isUndefined(tickLine) || !tickLine) {
-      return {
-        ...AXIS_BASE_DEFAULT_OPTIONS.style!.tickLine,
-        len: 0,
-      } as Required<AxisTickLineCfg>;
-    }
-    return tickLine as Required<AxisTickLineCfg>;
+    const len = !tickLine ? 0 : tickLine.len;
+    return { ...AXIS_BASE_DEFAULT_OPTIONS.style!.tickLine, ...tickLine, len } as Required<AxisTickLineCfg>;
   }
 
   /**
-   * 获得绘制刻度线的属性
+   * get styleProps of `tickLines`, `subTickLines` and `labels`.
    */
   private get ticksCfg(): ITicksCfg {
     const { subTickLine, label } = this.attributes as {
@@ -250,20 +244,15 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       labels: [],
     } as ITicksCfg;
     const ticks = this.ticksData;
-    // 不绘制刻度线
-    if (!tickLine) {
-      return cfg;
-    }
-
     this.labelsValues = [];
 
-    const { len, offset, appendTick } = tickLine;
+    const { len, appendTick } = tickLine;
     if (appendTick) {
       const { value, state, id } = ticks[ticks.length - 1];
       if (value !== 1) {
         ticks.push({
           value: 1,
-          text: ' ',
+          text: '',
           state,
           id: String(Number(id) + 1),
         });
@@ -274,37 +263,36 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     ticks.forEach((tick: TickDatum, idx: number) => {
       const nextTickValue = idx === ticks.length - 1 ? 1 : ticks[idx + 1].value;
       const { value: currTickValue, text } = tick;
-      const [st, end] = this.calcTick(currTickValue, len, offset);
+      const [sp, ep] = this.calcTick(currTickValue, len);
       cfg.tickLines.push({
         path: [
-          ['M', ...st],
-          ['L', ...end],
+          ['M', ...sp],
+          ['L', ...ep],
         ],
         ...this.getStyle(['tickLine', 'style']),
       });
       if (label) {
-        const {
-          alignTick,
-          // TODO 暂时只支持平行于刻度方向的偏移量
-          offset: [, o2],
-        } = label;
+        const { alignTick, tickPadding } = label;
         const labelVal = alignTick ? currTickValue : (currTickValue + nextTickValue) / 2;
-        const [st] = this.calcTick(labelVal, len, o2);
         this.labelsValues.push(labelVal);
+        const [sp, ep] = this.calcTick(currTickValue, len + tickPadding);
+        const inferStyle = this.inferLabelPosition(sp, ep);
+
         cfg.labels.push({
-          x: st[0],
-          y: st[1],
+          x: sp[0],
+          y: sp[1],
           text: text!,
+          ...inferStyle,
           ...this.getStyle(['label', 'style']),
         });
       }
       // 子刻度属性
       if (isCreateSubTickLines && idx >= 0 && currTickValue < 1) {
         // 子刻度只在两个刻度之间绘制
-        const { count, len, offset } = subTickLine;
+        const { count, len } = subTickLine;
         const subStep = (nextTickValue - currTickValue) / (count + 1);
         for (let i = 1; i <= count; i += 1) {
-          const [st, end] = this.calcTick(currTickValue + i * subStep, len, offset);
+          const [st, end] = this.calcTick(currTickValue + i * subStep, len);
           cfg.subTickLines.push({
             path: [
               ['M', ...st],
@@ -392,8 +380,8 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       const labelVal = this.labelsValues[idx];
       const tickAngle = getVectorsAngle([1, 0], this.getVerticalVector(labelVal));
       const { rotate, textAlign } = this.getLabelLayout(labelVal, tickAngle, formatAngle(accAngle));
-      label.attr({ textAlign });
-      label.setEulerAngles(rotate);
+      textAlign && label.attr({ textAlign });
+      rotate && label.setEulerAngles(rotate);
     });
   }
 
@@ -423,6 +411,11 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   protected abstract getTerminals(): { startPos: Point; endPos: Point };
 
   /**
+   * 获取推断位置
+   */
+  protected abstract inferLabelPosition(startPoint: Point, endPoint: Point): Partial<TextStyleProps>;
+
+  /**
    * 获取不同位置的 label 的对齐方式和旋转角度
    * @param labelVal {number} label的值
    * @param tickAngle {number} label对应的刻度角度
@@ -433,8 +426,8 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     tickAngle: number,
     angle: number
   ): {
-    textAlign: TextProps['textAlign'];
-    rotate: number;
+    textAlign?: TextProps['textAlign'];
+    rotate?: number;
   };
 
   /**
@@ -462,7 +455,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     this.appendChild(this.axisLineGroup);
     // 轴线
     const axisLine = new Path({
-      name: 'line',
+      name: 'axis-line',
       style: {
         path: [],
       },
@@ -544,7 +537,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 获取对应的tick
    */
   private getTickLineShape(idx: number) {
-    return this.tickLinesGroup.getElementsByName('tickLine').filter((tickLine, index) => {
+    return this.tickLinesGroup.getElementsByName('axis-tickLine').filter((tickLine, index) => {
       if (index === idx) return true;
       return false;
     })[0] as Path;
@@ -555,12 +548,12 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   /**
    * 计算刻度起始位置
    */
-  private calcTick(value: number, len: number, offset: number): [Point, Point] {
+  private calcTick(value: number, len: number, offset = [0, 0]): [Point, Point] {
     const [s1, s2] = this.getValuePoint(value);
     const v = this.getVerticalVector(value);
     const [v1, v2] = vec2.scale([0, 0], v, len);
+    const [o1, o2] = offset;
     // 偏移量
-    const [o1, o2] = vec2.scale([0, 0], v, offset);
     return [
       [s1 + o1, s2 + o2],
       [s1 + v1 + o1, s2 + v2 + o2],
@@ -581,7 +574,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     tickLines.forEach((style) => {
       this.tickLinesGroup.appendChild(
         new Path({
-          name: 'tickLine',
+          name: 'axis-tickLine',
           style: {
             // identity: idx,
             ...style,
@@ -593,7 +586,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     labels.forEach(({ ...style }) => {
       this.labelsGroup.appendChild(
         new Text({
-          name: 'label',
+          name: 'axis-label',
           style,
         })
       );

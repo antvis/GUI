@@ -37,7 +37,6 @@ const arc = new Arc({
       };
     }),
     label: {
-      offset: [0, 14],
       autoHideTickLine: false,
     },
     tickLine: {

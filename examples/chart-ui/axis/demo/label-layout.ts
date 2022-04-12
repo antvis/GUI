@@ -58,7 +58,6 @@ const linear = new Linear({
       offset: [0, -20],
     },
     label: {
-      offset: [0, 15],
       minLength: 20,
       maxLength: 80,
       autoEllipsis: false,
@@ -119,7 +118,6 @@ const getDefaultLabelCfg = ({
     autoHideTickLine: true,
     minLabel,
     ellipsisStep: ' ',
-    offset: [0, 15],
     minLength,
     maxLength,
     autoEllipsis,

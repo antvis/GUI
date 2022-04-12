@@ -35,8 +35,6 @@ function createAxis(startPos = [0, 0], endPos = [0, 0], options = {}) {
           rotate: 0,
           autoHide: false,
           autoEllipsis: true,
-          // 向下偏移
-          offset: [0, 15],
         },
       },
       options

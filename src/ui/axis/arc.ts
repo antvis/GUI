@@ -88,36 +88,46 @@ export class Arc extends AxisBase<ArcCfg> {
     return { startPos, endPos };
   }
 
+  protected inferLabelPosition(startPoint: Point, endPoint: Point): any {
+    return {
+      // x: endPoint[0],
+      // y: endPoint[1],
+    };
+  }
+
   protected getLabelLayout(labelVal: number, tickAngle: number, angle: number) {
     // 精度
     const approxTickAngle = toPrecision(tickAngle, 0);
     const { label } = this.attributes;
     const { align } = label as AxisLabelCfg;
     let rotate = angle;
-    let textAlign = 'center' as Position;
     if (align === 'tangential') {
-      rotate = getVectorsAngle([1, 0], this.getTangentVector(labelVal)) % 180;
-    } else {
-      // 非径向垂直于刻度的情况下（水平、径向），调整锚点
+      return {
+        rotate: getVectorsAngle([1, 0], this.getTangentVector(labelVal)) % 180,
+        textAlign: 'center' as Position,
+      };
+    }
 
-      const absAngle = Math.abs(approxTickAngle);
-      if (absAngle < 90) textAlign = 'start';
-      else if (absAngle > 90) textAlign = 'end';
+    // 非径向垂直于刻度的情况下（水平、径向），调整锚点
+    let textAlign = 'center' as Position;
+    const absAngle = Math.abs(approxTickAngle);
+    if (absAngle < 90) textAlign = 'start';
+    else if (absAngle > 90) textAlign = 'end';
 
-      if (angle !== 0 || [90].includes(approxTickAngle)) {
-        const sign = angle > 0 ? 0 : 1;
-        if (absAngle < 90) {
-          textAlign = ['end', 'start'][sign] as Position;
-        } else if (absAngle > 90) {
-          textAlign = ['start', 'end'][sign] as Position;
-        }
+    if (angle !== 0 || [90].includes(approxTickAngle)) {
+      const sign = angle > 0 ? 0 : 1;
+      if (absAngle < 90) {
+        textAlign = ['end', 'start'][sign] as Position;
+      } else if (absAngle > 90) {
+        textAlign = ['start', 'end'][sign] as Position;
       }
+    }
+    console.log('textAlign', textAlign, rotate);
 
-      // 超过旋转超过 90 度时，文本会倒置，这里将其正置
-      if (align === 'radial') {
-        rotate = approxTickAngle;
-        if (Math.abs(rotate) > 90) rotate -= 180;
-      }
+    // 超过旋转超过 90 度时，文本会倒置，这里将其正置
+    if (align === 'radial') {
+      rotate = approxTickAngle;
+      if (Math.abs(rotate) > 90) rotate -= 180;
     }
     return {
       rotate,

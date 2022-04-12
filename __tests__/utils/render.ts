@@ -15,11 +15,11 @@ const svgRenderer = new SvgRenderer({
   enableDirtyRectangleRendering: true,
 });
 
-export function createCanvas(renderer = 'canvas') {
+export function createCanvas(size = 300, renderer = 'canvas') {
   return new Canvas({
     container: createDiv(),
-    width: 300,
-    height: 300,
+    width: size,
+    height: size,
     renderer: renderer === 'svg' ? svgRenderer : canvasRenderer,
   });
 }

@@ -55,7 +55,6 @@ const linear = new Linear({
     endPos: [800, 50],
     ticks: tickData,
     label: {
-      offset: [0, 15],
       minLength: 20,
       maxLength: 80,
       autoEllipsis: false,

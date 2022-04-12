@@ -1,32 +1,26 @@
-import { Canvas, Text } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-canvas';
+import { Text } from '@antv/g';
+import { Band as BandScale, Linear as LinearScale } from '@antv/scale';
 import { Linear } from '../../../../src';
-import { createDiv } from '../../../utils';
+import { createCanvas } from '../../../utils/render';
 import type { StyleState as State } from '../../../../src/types';
 import type { TickDatum } from '../../../../src/ui/axis/types';
 
-const renderer = new CanvasRenderer({
-  enableDirtyRectangleRenderingDebug: false,
-  enableAutoRendering: true,
-  enableDirtyRectangleRendering: true,
-});
-
-const div = createDiv();
-const canvas = new Canvas({
-  container: div,
-  width: 500,
-  height: 500,
-  renderer,
-});
+const canvas = createCanvas(500);
 
 const linear = new Linear({
   style: {
-    startPos: [50, 50],
-    endPos: [450, 50],
+    startPos: [50, 150],
+    endPos: [450, 150],
   },
 });
 
-canvas.appendChild(linear);
+function createAxis(startPos: any = [0, 0], endPos: any = [0, 0], options = {}) {
+  const axis = new Linear({ style: { startPos, endPos, ...options } });
+  canvas.appendChild(axis);
+
+  return axis;
+}
+// canvas.appendChild(linear);
 
 function createData(values: number[], texts?: string[], states?: State[], ids?: string[]): TickDatum[] {
   return values.map((value, idx) => {
@@ -38,8 +32,82 @@ function createData(values: number[], texts?: string[], states?: State[], ids?: 
   });
 }
 
-describe('linear', () => {
-  test('basic', () => {
+describe('Linear axis', () => {
+  it('new Linear({}) should create a linear axis', () => {
+    const axis = new Linear({});
+    expect(axis).toBeDefined();
+    const axisLines = axis.getElementsByName('axis-line');
+    expect(axisLines.length).toBe(1);
+    const [[, x1, y1], [, x2, y2]] = axisLines[0].getAttribute('path');
+    expect(x2 - x1).toBe(0);
+    expect(y2 - y1).toBe(0);
+  });
+
+  it('({ tickLine: { appendTick: true }, label: { alignTick: false } }) should draw a empty label at final', () => {
+    const domain = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+    const scale = new BandScale({ domain });
+    const ticks = domain.map((d) => ({
+      value: scale.map(d),
+      text: d,
+    }));
+
+    const taxis = new Linear({
+      style: {
+        startPos: [50, 50],
+        endPos: [400, 50],
+        ticks,
+        verticalFactor: -1,
+        tickLine: { appendTick: true },
+        label: { alignTick: false },
+      },
+    });
+    canvas.appendChild(taxis);
+    const tickLines = taxis.getElementsByName('axis-tickLine');
+    const axisLabels = taxis.getElementsByName('axis-label');
+    expect(tickLines.length).toBe(axisLabels.length);
+    expect(axisLabels[axisLabels.length - 1].style.text).toBe('');
+  });
+
+  it('axis with BandScale', () => {
+    const domain = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+    const scale = new BandScale({ domain });
+    const ticks = domain.map((d) => ({
+      value: scale.map(d),
+      text: d,
+    }));
+
+    const common = { tickLine: { appendTick: true }, label: { alignTick: false } };
+
+    const tAxis = new Linear({
+      style: { startPos: [100, 100], endPos: [400, 100], ticks, verticalFactor: -1, ...common },
+    });
+    const bAxis = new Linear({ style: { startPos: [100, 400], endPos: [400, 400], ticks, ...common } });
+    const rAxis = new Linear({ style: { startPos: [400, 100], endPos: [400, 400], ticks, ...common } });
+    const lAxis = new Linear({
+      style: { startPos: [100, 100], endPos: [100, 400], ticks, verticalFactor: -1, ...common },
+    });
+    canvas.appendChild(tAxis);
+    canvas.appendChild(lAxis);
+    canvas.appendChild(bAxis);
+    canvas.appendChild(rAxis);
+  });
+
+  it('axis with LinearScale', () => {
+    const linearScale = new LinearScale({ domain: [0, 479], range: [0, 1], tickCount: 10, nice: true });
+    const data = linearScale.getTicks().map((d, idx) => {
+      return {
+        value: linearScale.map(d as number),
+        text: String(d),
+        state: 'default',
+        id: String(idx),
+      };
+    });
+
+    // 创建纵坐标，由下至上
+    createAxis([100, 200], [100, 60], { ticks: data });
+  });
+  // ------ 以下单测需要调整 ----- //
+  it('basic', () => {
     linear.update({
       title: {
         content: '直线轴线',
@@ -56,7 +124,7 @@ describe('linear', () => {
       },
       label: {
         alignTick: false,
-        offset: [0, 20],
+        tickPadding: 20,
       },
       subTickLine: {
         count: 4,
@@ -86,7 +154,7 @@ describe('linear', () => {
     // @ts-ignore
     expect(linear.tickLinesGroup.children[0]!.attr('stroke')).toBe('red');
   });
-  test('vertical', () => {
+  it('vertical', () => {
     linear.update({
       startPos: [250, 50],
       endPos: [250, 450],
@@ -100,7 +168,7 @@ describe('linear', () => {
     expect(linePath![0]).toStrictEqual(['M', 250, 50]);
     expect(linePath![1]).toStrictEqual(['L', 250, 450]);
   });
-  test('oblique', () => {
+  it('oblique', () => {
     linear.update({
       startPos: [50, 50],
       endPos: [450, 450],
@@ -112,16 +180,16 @@ describe('linear', () => {
       },
     });
   });
-  test('ticks', () => {
+  it('ticks', () => {
     // @ts-ignore
     const [[, x1, y1], [, x2, y2]] = linear.tickLinesGroup.children[0]!.attr('path');
     expect((y2 - y1) / (x2 - x1)).toBeCloseTo(-1);
   });
-  test('title', () => {
+  it('title', () => {
     // @ts-ignore
     expect(linear.titleShape.attr('text')).toBe('直线轴线');
   });
-  test('line', () => {
+  it('line', () => {
     linear.update({
       title: {
         offset: [0, -40],
@@ -137,11 +205,11 @@ describe('linear', () => {
     expect(linePath![0]).toStrictEqual(['M', 50, 50]);
     expect(linePath![1]).toStrictEqual(['L', 450, 50]);
   });
-  test('arrow', () => {
+  it('arrow', () => {
     // @ts-ignore
     expect(linear.axisEndArrow.getEulerAngles()).toBeCloseTo(0);
   });
-  test('label', () => {
+  it('label', () => {
     linear.update({
       label: {
         alignTick: true,
@@ -164,7 +232,7 @@ describe('linear', () => {
     // @ts-ignore
     expect(linear.labelsGroup.children[4]!.attr('text')).toBe('0.8-E');
   });
-  test('autoRotate', () => {
+  it('autoRotate', () => {
     linear.update({
       label: {
         formatter: () => {
@@ -178,7 +246,7 @@ describe('linear', () => {
     // @ts-ignore
     expect(linear.labelsGroup.children[0]!.getEulerAngles()).toBeCloseTo(30);
   });
-  test('autoHide', () => {
+  it('autoHide', () => {
     linear.update({
       label: {
         autoRotate: false,
@@ -194,7 +262,7 @@ describe('linear', () => {
     expect(group[3]!.attr('visibility')).toBe('hidden');
     expect(group[4]!.attr('visibility')).toBe('visible');
   });
-  test('autoEllipsis text', () => {
+  it('autoEllipsis text', () => {
     // 没有现在最大长度
     linear.update({
       label: {
@@ -222,7 +290,7 @@ describe('linear', () => {
     expect(x2 - x1).toBeGreaterThanOrEqual(50);
     expect(x2 - x1).toBeLessThanOrEqual(100);
   });
-  test('autoEllipsis time', () => {
+  it('autoEllipsis time', () => {
     linear.update({
       ticks: createData(
         [0, 0.2, 0.4, 0.6, 0.8, 1],
@@ -247,7 +315,7 @@ describe('linear', () => {
     // todo
     // expect(group[1].attr('text')).toBe('09-11');
   });
-  test('autoEllipsis number', () => {
+  it('autoEllipsis number', () => {
     linear.update({
       ticks: createData([0, 0.2, 0.4, 0.6, 0.8, 1]),
       label: {

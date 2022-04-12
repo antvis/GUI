@@ -42,7 +42,6 @@ function createAxis(startPos, endPos, tickData, type, formatter = (item) => item
           maxLength: 100,
           minLength: 20,
           autoEllipsis: true,
-          offset: [0, 15],
           alignTick: true,
         },
         tickLine: {
