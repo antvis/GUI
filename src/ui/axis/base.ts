@@ -54,8 +54,8 @@ interface IAxisLineCfg {
 }
 
 interface ITicksCfg {
-  tickLines: PathProps[];
-  subTickLines: PathProps[];
+  tickLines: Array<PathProps & { id: string }>;
+  subTickLines: Array<PathProps & { id: string }>;
   labels: Array<TextProps & { id: string }>;
 }
 
@@ -270,6 +270,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
           ['M', ...sp],
           ['L', ...ep],
         ],
+        id: tick.id ?? `${idx}-${text || ''}`,
         ...this.getStyle(['tickLine', 'style']),
       });
       if (label) {
@@ -293,13 +294,14 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
         // 子刻度只在两个刻度之间绘制
         const { count, len } = subTickLine;
         const subStep = (nextTickValue - currTickValue) / (count + 1);
-        for (let i = 1; i <= count; i += 1) {
-          const [st, end] = this.calcTick(currTickValue + i * subStep, len);
+        for (let subTickIdx = 1; subTickIdx <= count; subTickIdx += 1) {
+          const [st, end] = this.calcTick(currTickValue + subTickIdx * subStep, len);
           cfg.subTickLines.push({
             path: [
               ['M', ...st],
               ['L', ...end],
             ],
+            id: `${tick.id}-${subTickIdx}` ?? `${idx}-${subTickIdx}-${text || ''}`,
             ...this.getStyle(['subTickLine', 'style']),
           });
         }
@@ -338,13 +340,11 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    */
   private labelsValues: number[] = [];
 
-  private tickLinesGroup!: Group;
+  private tickLinesGroup!: Selection<ITicksCfg['tickLines']>;
 
   private labelsGroup!: Selection<ITicksCfg['labels']>;
 
-  // private labels: Selection;
-
-  private subTickLinesGroup!: Group;
+  private subTickLinesGroup!: Selection<ITicksCfg['subTickLines']>;
 
   constructor(options: AxisBaseOptions) {
     super(deepMix({}, AxisBase.defaultOptions, options));
@@ -485,19 +485,9 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     this.axisLineGroup.appendChild(endArrow);
 
     /** ------------刻度分组-------------------- */
-    this.tickLinesGroup = new Group({
-      name: 'tickLinesGroup',
-    });
-    this.appendChild(this.tickLinesGroup);
-    // 子刻度分组
-    this.subTickLinesGroup = new Group({
-      name: 'subTickLinesGroup',
-    });
-    this.appendChild(this.subTickLinesGroup);
-    // 标题分组
-    const group = new Group({ name: 'labelsGroup' });
-    this.appendChild(group);
-    this.labelsGroup = new Selection([], [], group);
+    this.tickLinesGroup = new Selection([], [], this.appendChild(new Group({ name: 'tickLinesGroup' })));
+    this.subTickLinesGroup = new Selection([], [], this.appendChild(new Group({ name: 'subTickLinesGroup' })));
+    this.labelsGroup = new Selection([], [], this.appendChild(new Group({ name: 'labelsGroup' })));
   }
 
   /**
@@ -540,10 +530,13 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 获取对应的tick
    */
   private getTickLineShape(idx: number) {
-    return this.tickLinesGroup.getElementsByName('axis-tickLine').filter((tickLine, index) => {
-      if (index === idx) return true;
-      return false;
-    })[0] as Path;
+    return this.tickLinesGroup
+      .selectAll('[name="axis-tickLine"]')
+      .getElements()
+      .filter((tickLine, index) => {
+        if (index === idx) return true;
+        return false;
+      })[0] as Path;
   }
 
   /** -----------------------------绘制刻度线与label-------------------------------------- */
@@ -567,22 +560,23 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
    * 创建刻度线、子刻度线和label
    */
   private updateTicksShape() {
-    this.tickLinesGroup.removeChildren(true);
-    this.subTickLinesGroup.removeChildren(true);
     const { tickLines, labels, subTickLines } = this.ticksCfg;
-
     // 刻度
-    tickLines.forEach((style) => {
-      this.tickLinesGroup.appendChild(
-        new Path({
-          name: 'axis-tickLine',
-          style: {
-            // identity: idx,
-            ...style,
-          },
-        })
+    this.tickLinesGroup = this.tickLinesGroup
+      .data(tickLines, (d) => d.id)
+      .join(
+        (enter) =>
+          enter.append('path').each((element, datum) => ((element.name = 'axis-tickLine'), element.attr(datum))),
+        (update) => {
+          return update.each((element, datum) => {
+            console.log('datum', element, datum);
+
+            element.attr(datum);
+          });
+        },
+        (exit) => exit?.remove()
       );
-    });
+
     // label
     this.labelsGroup = this.labelsGroup
       .data(labels, (d) => d.id)
@@ -593,14 +587,14 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       );
 
     // 子刻度
-    subTickLines.forEach((style) => {
-      this.subTickLinesGroup.appendChild(
-        new Path({
-          name: 'subTickLine',
-          style,
-        })
+    this.subTickLinesGroup = this.subTickLinesGroup
+      .data(subTickLines, (d) => d.id)
+      .join(
+        (enter) =>
+          enter.append('path').each((element, datum) => ((element.name = 'axis-subTickLine'), element.attr(datum))),
+        (update) => update.each((element, datum) => element.attr(datum)),
+        (exit) => exit?.remove()
       );
-    });
 
     this.adjustLabels();
   }
