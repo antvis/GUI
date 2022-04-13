@@ -106,13 +106,21 @@ export class Linear extends AxisBase<LinearCfg> {
   }
 
   protected getLabelLayout(labelVal: number, tickAngle: number, angle: number) {
-    const { label } = this.attributes;
+    const { verticalFactor, label } = this.attributes;
+    const precision = 1;
+    const sign = verticalFactor === 1 ? 0 : 1;
     let rotate = angle;
+    let textAlign = 'center' as Position;
     if (angle > 90) rotate = (rotate - 180) % 360;
     else if (angle < -90) rotate = (rotate + 180) % 360;
+    // 由于精度问题, 取 -precision precision
+    if (rotate < -precision) textAlign = ['end', 'start'][sign] as Position;
+    else if (rotate > precision) textAlign = ['start', 'end'][sign] as Position;
+
     return {
       rotate,
-      textAlign: get(label, ['style', 'default', 'textAlign']),
+      // If user not specified `textAlign` and `rotation` applied, then infer the actual `textAlign`
+      textAlign: get(label, ['style', 'default', 'textAlign']) ?? (rotate ? textAlign : undefined),
     };
   }
 }
