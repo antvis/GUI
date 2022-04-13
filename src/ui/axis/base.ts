@@ -38,6 +38,7 @@ import {
 import { getVectorsAngle, centerRotate, formatAngle } from './utils';
 import { AXIS_BASE_DEFAULT_OPTIONS, NULL_ARROW, NULL_TEXT, COMMON_TIME_MAP } from './constant';
 import { isLabelsOverlap } from './overlap/is-overlap';
+import { Selection } from '../../util/diff';
 
 interface IAxisLineCfg {
   style: ShapeAttrs;
@@ -55,7 +56,7 @@ interface IAxisLineCfg {
 interface ITicksCfg {
   tickLines: PathProps[];
   subTickLines: PathProps[];
-  labels: TextProps[];
+  labels: Array<TextProps & { id: string }>;
 }
 
 // 注册轴箭头
@@ -122,7 +123,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   }
 
   private get labels() {
-    return this.labelsGroup.children as Text[];
+    return this.labelsGroup.selectAll('[name="axis-label"]').getElements() as Text[];
   }
 
   /**
@@ -282,6 +283,7 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
           x: sp[0],
           y: sp[1],
           text: text!,
+          id: tick.id ?? `${idx}-${text || ''}`,
           ...inferStyle,
           ...this.getStyle(['label', 'style']),
         });
@@ -338,7 +340,9 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
 
   private tickLinesGroup!: Group;
 
-  private labelsGroup!: Group;
+  private labelsGroup!: Selection<ITicksCfg['labels']>;
+
+  // private labels: Selection;
 
   private subTickLinesGroup!: Group;
 
@@ -491,10 +495,9 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
     });
     this.appendChild(this.subTickLinesGroup);
     // 标题分组
-    this.labelsGroup = new Group({
-      name: 'labelsGroup',
-    });
-    this.appendChild(this.labelsGroup);
+    const group = new Group({ name: 'labelsGroup' });
+    this.appendChild(group);
+    this.labelsGroup = new Selection([], [], group);
   }
 
   /**
@@ -566,8 +569,6 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
   private updateTicksShape() {
     this.tickLinesGroup.removeChildren(true);
     this.subTickLinesGroup.removeChildren(true);
-    this.labelsGroup.removeChildren(true);
-
     const { tickLines, labels, subTickLines } = this.ticksCfg;
 
     // 刻度
@@ -583,14 +584,13 @@ export abstract class AxisBase<T extends AxisBaseCfg> extends GUI<Required<T>> {
       );
     });
     // label
-    labels.forEach(({ ...style }) => {
-      this.labelsGroup.appendChild(
-        new Text({
-          name: 'axis-label',
-          style,
-        })
+    this.labelsGroup = this.labelsGroup
+      .data(labels, (d) => d.id)
+      .join(
+        (enter) => enter.append('text').each((element, datum) => ((element.name = 'axis-label'), element.attr(datum))),
+        (update) => update.each((element, datum) => element.attr(datum)),
+        (exit) => exit?.remove()
       );
-    });
 
     // 子刻度
     subTickLines.forEach((style) => {

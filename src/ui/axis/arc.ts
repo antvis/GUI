@@ -122,7 +122,6 @@ export class Arc extends AxisBase<ArcCfg> {
         textAlign = ['start', 'end'][sign] as Position;
       }
     }
-    console.log('textAlign', textAlign, rotate);
 
     // 超过旋转超过 90 度时，文本会倒置，这里将其正置
     if (align === 'radial') {
