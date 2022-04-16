@@ -111,8 +111,7 @@ describe('Linear axis', () => {
     linear.update({
       title: {
         content: '直线轴线',
-        offset: [0, -40],
-        position: 'start',
+        titleAnchor: 'start',
       },
       axisLine: {
         arrow: {
@@ -143,9 +142,7 @@ describe('Linear axis', () => {
       tickLine: {
         appendTick: true,
         style: {
-          default: {
-            stroke: 'red',
-          },
+          stroke: 'red',
         },
       },
     });
@@ -158,9 +155,7 @@ describe('Linear axis', () => {
     linear.update({
       startPos: [250, 50],
       endPos: [250, 450],
-      title: {
-        offset: [0, 0],
-      },
+      title: {},
     });
     // @ts-ignore
     const { axisLine } = linear;
@@ -172,43 +167,14 @@ describe('Linear axis', () => {
     linear.update({
       startPos: [50, 50],
       endPos: [450, 450],
-      title: {
-        offset: [0, 0],
-      },
+      title: {},
       label: {
         align: 'radial',
       },
     });
   });
-  it('ticks', () => {
-    // @ts-ignore
-    const [[, x1, y1], [, x2, y2]] = linear.tickLinesGroup.children[0]!.attr('path');
-    expect((y2 - y1) / (x2 - x1)).toBeCloseTo(-1);
-  });
-  it('title', () => {
-    // @ts-ignore
-    expect(linear.titleShape.attr('text')).toBe('直线轴线');
-  });
-  it('line', () => {
-    linear.update({
-      title: {
-        offset: [0, -40],
-      },
-      startPos: [50, 50],
-      endPos: [450, 50],
-    });
-    // @ts-ignore
-    const { axisLine } = linear;
-    expect(axisLine.attr('x')).toBe(50);
-    expect(axisLine.attr('y')).toBe(50);
-    const linePath = axisLine.attr('path');
-    expect(linePath![0]).toStrictEqual(['M', 50, 50]);
-    expect(linePath![1]).toStrictEqual(['L', 450, 50]);
-  });
-  it('arrow', () => {
-    // @ts-ignore
-    expect(linear.axisEndArrow.getEulerAngles()).toBeCloseTo(0);
-  });
+
+  it('arrow', () => {});
   it('label', () => {
     linear.update({
       label: {
@@ -302,9 +268,7 @@ describe('Linear axis', () => {
         autoEllipsis: true,
         autoHide: false,
         style: {
-          default: {
-            fontSize: 20,
-          },
+          fontSize: 20,
         },
         formatter: (tick) => tick.text!,
       },
@@ -321,9 +285,7 @@ describe('Linear axis', () => {
       label: {
         type: 'number',
         style: {
-          default: {
-            fontSize: 20,
-          },
+          fontSize: 20,
         },
         formatter: ({ value }: TickDatum) => String(value * 5000),
       },

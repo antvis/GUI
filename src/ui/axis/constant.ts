@@ -9,16 +9,15 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
         fontSize: 12,
         fill: 'black',
       },
-      position: 'center',
-      offset: [0, 0],
-      rotate: undefined,
+      titleAnchor: 'center',
+      titlePadding: 4,
+      rotation: undefined,
     },
     ticks: [],
     ticksThreshold: 400,
     // 轴线
     axisLine: {
       style: {
-        fill: '#416180',
         stroke: '#416180',
         lineWidth: 0.5,
         strokeOpacity: 0.85,
@@ -38,11 +37,9 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
     tickLine: {
       len: 6,
       style: {
-        default: {
-          stroke: '#416180',
-          strokeOpacity: 0.65,
-          lineWidth: 0.5,
-        },
+        stroke: '#416180',
+        strokeOpacity: 0.65,
+        lineWidth: 0.5,
       },
       appendTick: false,
     },
@@ -50,30 +47,25 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
       len: 4,
       count: 0,
       style: {
-        default: {
-          stroke: '#416180',
-          strokeOpacity: 0.25,
-          lineWidth: 0.5,
-        },
+        stroke: '#416180',
+        strokeOpacity: 0.25,
+        lineWidth: 0.5,
       },
     },
     label: {
       type: 'text',
       style: {
-        default: {
-          fill: 'black',
-          fillOpacity: 0.65,
-          fontSize: 12,
-        },
+        fill: 'black',
+        fillOpacity: 0.65,
+        fontSize: 12,
       },
       alignTick: true,
-      formatter: (tick: TickDatum) => tick?.text || String(tick?.value || ''),
       tickPadding: 4,
       overlapOrder: ['autoRotate', 'autoEllipsis', 'autoHide'],
       margin: [0, 0, 0, 0],
       autoRotate: true,
       optionalAngles: [0, 30, 45, 60, 90],
-      autoHide: true,
+      autoHide: false,
       autoHideTickLine: true,
       minLabel: 0,
       autoEllipsis: true,
@@ -96,17 +88,13 @@ export const LINEAR_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
 export const ARC_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
   style: {
     type: 'arc',
-    startAngle: 0,
-    endAngle: 360,
+    startAngle: -90,
+    endAngle: 270,
     center: [0, 0],
     label: {
       ...LINEAR_DEFAULT_OPTIONS.style.label,
-      tickPadding: 8,
-      style: {
-        default: {
-          textBaseline: 'middle',
-        },
-      },
+      tickPadding: 4,
+      style: {},
       align: 'normal',
     },
   },
@@ -122,6 +110,8 @@ export const HELIX_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_OPTIONS, {
 export const NULL_ARROW = {
   symbol: 'circle',
   size: 0,
+  fill: '#000',
+  fillOpacity: 0.45,
 };
 
 /**
@@ -163,3 +153,5 @@ export const COMMON_TIME_MAP = {
   ],
   second: [['second', 'second']],
 } as const;
+
+export const ORIGIN = '_origin_';

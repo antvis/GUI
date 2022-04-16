@@ -1,5 +1,5 @@
 import type { DisplayObject } from '@antv/g';
-import { Text } from '@antv/g';
+import { AxisLabel } from '../types/shape';
 import { getBoundsCenter } from '../utils';
 
 const { abs, atan2, cos, PI, sin, sqrt } = Math;
@@ -93,25 +93,28 @@ export class CollisionRect {
  * 获得图形在水平状态下的尺寸位置
  */
 export function getHorizontalShape(shape: DisplayObject) {
-  const currEulerAngles = shape.getEulerAngles();
+  const angle = shape.getEulerAngles();
   shape.setEulerAngles(0);
-  const bound = shape.getBoundingClientRect();
-  shape.setEulerAngles(currEulerAngles);
-  return bound;
+  const {
+    min: [x1, y1],
+    max: [x2, y2],
+  } = shape.getRenderBounds();
+  shape.setEulerAngles(angle);
+  return { width: x2 - x1, height: y2 - y1 };
 }
 
 /**
  * 获得 DisplayObject 的碰撞 Text
  */
-export function getCollisionText(shape: Text, [top, right, bottom, left]: Margin) {
-  const [x, y] = shape.getLocalPosition();
-  // // 水平状态下文本的宽高
+export function getCollisionText(shape: AxisLabel, [top = 0, right = 0, bottom = 0, left = 0]: Margin) {
+  const { min, max } = shape.getLocalBounds();
+  // 水平状态下文本的宽高
   const { width, height } = getHorizontalShape(shape);
   const [boxWidth, boxHeight] = [left + width + right, top + height + bottom];
   const angle = shape.getLocalEulerAngles();
   return new CollisionRect({
     angle,
-    center: [x, y],
+    center: [(max[0] + min[0]) / 2, (max[1] + min[1]) / 2],
     width: boxWidth,
     height: boxHeight,
   });
@@ -120,22 +123,18 @@ export function getCollisionText(shape: Text, [top, right, bottom, left]: Margin
 /**
  * 判断两个 Text 是否重叠
  */
-export function isTextOverlap(A: Text, B: Text, margin: Margin): boolean {
+export function intersect(A: AxisLabel, B: AxisLabel, margin: Margin = [0, 0, 0, 0]): boolean {
   const collisionA = getCollisionText(A, margin);
   const collisionB = getCollisionText(B, margin);
+
   return collisionA.isCollision(collisionB);
 }
 
-/**
- * 判断 labels 是否发生重叠
- */
-export function isLabelsOverlap(labels: Text[], margin: Margin): boolean {
-  for (let index = 1; index < labels.length; index += 1) {
-    const prevLabel = labels[index - 1];
-    const currLabel = labels[index];
-    if (isTextOverlap(prevLabel, currLabel, margin)) {
-      return true;
-    }
+export const hasOverlap = (items: AxisLabel[], margin?: any) => {
+  if (items.length <= 1) return false;
+
+  for (let i = 0; i < items.length - 1; ++i) {
+    if (intersect(items[i], items[i + 1], margin)) return true;
   }
   return false;
-}
+};

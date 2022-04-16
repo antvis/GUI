@@ -5,7 +5,7 @@ type Element = DisplayObject & {
   __data__?: any;
 };
 
-export function diff<T = any>(oldElements: Element[], data: T[], id: (d: T) => unknown = (d) => d) {
+export function diff<T = any>(oldElements: Element[], data: T[], id: (d: T, idx: number) => unknown = (d) => d) {
   // An array of new data
   const enter: T[] = [];
 
@@ -13,11 +13,11 @@ export function diff<T = any>(oldElements: Element[], data: T[], id: (d: T) => u
   const update: Element[] = [];
 
   // A Map from key to each element.
-  const keyElement = new Map(oldElements.map((d) => [id(d.__data__), d]));
+  const keyElement = new Map(oldElements.map((d, idx) => [id(d.__data__, idx), d]));
 
   // Diff
-  Object.entries(data).forEach(([, datum]) => {
-    const key = id(datum);
+  Object.entries(data).forEach(([, datum], idx) => {
+    const key = id(datum, idx);
     if (keyElement.has(key)) {
       const element = keyElement.get(key)!;
       element.__data__ = datum;
@@ -70,11 +70,6 @@ export class Selection<T = any> {
     this._data = data || [];
     this._parent = parent;
     [this._enter, this._update, this._exit] = selections;
-  }
-
-  selectAll(selector: string | Element[]): Selection<T> {
-    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<Element>(selector) : selector;
-    return new Selection<T>(elements, null, this._parent);
   }
 
   append(node: string | ((data: T, i: number) => Element)): Selection<T> {
@@ -162,7 +157,7 @@ export class Selection<T = any> {
     return new Selection<T>(elements, null, this._parent);
   }
 
-  data<T>(data: T[], id: (d: T) => unknown = (d) => d): Selection<T> {
+  data<T>(data: T[], id: (d: T, index: number) => unknown = (d) => d): Selection<T> {
     const { enter, update, exit } = diff(this._elements, data, id);
 
     // Create new selection with enter, update and exit.

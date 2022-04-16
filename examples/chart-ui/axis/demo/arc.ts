@@ -42,19 +42,15 @@ const arc = new Arc({
     tickLine: {
       len: 6,
       style: {
-        default: {
-          lineWidth: 1,
-        },
+        lineWidth: 1,
       },
     },
     subTickLine: {
       count: 1,
       len: 4,
       style: {
-        default: {
-          stroke: 'red',
-          lineWidth: 1,
-        },
+        stroke: 'red',
+        lineWidth: 1,
       },
     },
   },
