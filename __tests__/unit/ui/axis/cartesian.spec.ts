@@ -57,6 +57,11 @@ describe('Cartesian axis', () => {
       expect(tickLines.length).toBe(ticks.length);
       expect(x2 - x1).toBe(6);
     });
+
+    afterAll(() => {
+      b2tAxis.destroy();
+      b2tAxis.remove();
+    });
   });
 
   // [todo]
@@ -156,26 +161,55 @@ describe('Cartesian axis', () => {
     const bandWidth = scale.getBandWidth();
     const ticks = domain.map((d) => ({ value: scale.map(d) + bandWidth / 2, text: d }));
 
-    it('label autoHide', () => {
+    it('AutoHide and AutoEllipsis', () => {
+      const data = ['ABC', 'BCED', 'DEFGH', 'GHIJKM', 'KMLNOPQ', 'PQRSTVVW', 'VWXYZABC'];
+      const ticks = data.map((d, idx) => {
+        const step = 1 / (data.length - 1);
+        return {
+          value: step * idx,
+          text: String(d),
+          id: String(idx),
+        };
+      });
+
       const axis = canvas.appendChild(
         new Cartesian({
-          style: { startPos: [50, 50], endPos: [400, 50], label: { autoRotate: false, autoEllipsis: false } },
-        })
-      );
-      const axis1 = canvas.appendChild(
-        new Cartesian({
           style: {
-            startPos: [50, 100],
-            endPos: [400, 100],
-            label: { autoRotate: false, autoEllipsis: false, autoHide: { type: 'greedy' }, autoHideTickLine: false },
+            startPos: [50, 60],
+            endPos: [400, 60],
+            ticks,
+            label: { autoRotate: false, autoEllipsis: false, autoHide: true },
           },
         })
       );
 
-      axis.update({ ticks });
-      axis1.update({ ticks });
+      axis.addEventListener(
+        'axis-label-layout-end',
+        () => {
+          expect(
+            axis.getElementsByName('axis-label').filter((d) => d.style.visibility === 'visible').length
+          ).toBeLessThan(ticks.length);
+
+          const maxLength = (400 - 50) / ticks.length;
+          axis.update({ label: { autoHideTickLine: false, autoHide: false, autoEllipsis: true, maxLength } });
+          axis.addEventListener(
+            'axis-label-layout-end',
+            () => {
+              const labels = axis.getElementsByName('axis-label');
+              expect(labels.filter((d) => d.style.visibility === 'visible').length).toBe(ticks.length);
+              expect(labels.filter((d) => d.style.text.endsWith('...')).length).toBeGreaterThan(0);
+            },
+            { once: true }
+          );
+        },
+        { once: true }
+      );
+
+      axis.destroy();
+      axis.remove();
     });
 
+    // [todo]
     it('Different directions of axis with label autoRotate', () => {
       const domain = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
       const scale = new BandScale({ domain });
@@ -519,6 +553,8 @@ describe('Cartesian axis', () => {
       axis.update({ title: { maxLength: 60 } });
       expect(axisTitle.style.text.endsWith('...')).toBe(true);
       expect(axisTitle.style.text).not.toBe(axisTitle.style[ORIGIN]!.text);
+
+      axis.destroy();
     });
 
     const domain = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
@@ -572,6 +608,11 @@ describe('Cartesian axis', () => {
         axis.update({ title: { positionX: 0, offset: 0, style: { textBaseline: 'top' } } });
         expect(axisTitle.getBounds().min[0]).toBe(axisLine.getBounds().min[0]);
       });
+
+      afterAll(() => {
+        axis.destroy();
+        axis.remove();
+      });
     });
 
     describe('Cartesian axis orientation is top', () => {
@@ -591,6 +632,8 @@ describe('Cartesian axis', () => {
       // [todo] AxisLabelGroup is not stable yet, there will be some errors when `getBounds()`.
       // expect(y11 - y1).toBe(4);
       expect(x11 - x1).toBe(5);
+
+      axis.destroy();
     });
   });
 });

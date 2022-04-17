@@ -111,7 +111,9 @@ export const getEllipsisText = (text: any, maxWidth: number, font?: Font, str: s
 };
 
 export function getFont<T extends Text = Text>(textShape: T) {
-  const { fontSize, fontFamily, fontWeight, fontStyle, fontVariant } = textShape.attr();
+  const { fontFamily, fontWeight, fontStyle, fontVariant } = textShape.attr();
+  let fontSize = textShape.style.fontSize as any;
+  fontSize = typeof fontSize === 'object' ? fontSize.value : fontSize;
   return { fontSize: fontSize as number, fontFamily, fontWeight, fontStyle, fontVariant };
 }
 

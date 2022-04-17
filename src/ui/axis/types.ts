@@ -114,7 +114,7 @@ export type AxisLabelCfg = {
   /**
    * Rotation degree of axis label. If specified, `autoRotate` will be ignore.
    */
-  rotat?: number;
+  rotation?: number;
   /**
    * @title Auto Hide
    * @description The strategy to use for resolving overlap of axis labels by hiding overlapped labels.

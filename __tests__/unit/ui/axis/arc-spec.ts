@@ -177,7 +177,7 @@ describe('Arc axis', () => {
 
       arc2.update({ label: { autoHideTickLine: false } });
       arc2.addEventListener(
-        'axis-label-layout-en',
+        'axis-label-layout-end',
         () => {
           const visibleLabels = arc2.getElementsByName('axis-label').filter((d) => d.style.visibility === 'visible');
           const visibleTickLines = arc2

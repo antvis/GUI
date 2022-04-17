@@ -11,7 +11,7 @@ const methods: Record<string, (items: AxisLabel[], args: any) => AxisLabel[]> = 
 };
 
 // reset all items to be fully visible
-const reset = (source: AxisLabel[]) => (source.forEach((item) => (item.style.visibility = 'visible')), source);
+export const reset = (source: AxisLabel[]) => (source.forEach((item) => (item.style.visibility = 'visible')), source);
 
 /**
  * AutoHide Layout for axis label when overlap
@@ -28,7 +28,7 @@ export function AutoHide(labels: AxisLabel[], labelCfg: any, method = 'greedy') 
     source = reduce(reset(labels), { margin, seq });
     seq++;
     if (Date.now() - now > timeout) {
-      console.warn('layout time exceeded');
+      // console.warn('layout time exceeded');
       return;
     }
   }

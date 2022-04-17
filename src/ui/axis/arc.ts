@@ -275,11 +275,11 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
       // ['autoRotate', this.autoRotateLabel],
     ]);
     // Do layout after rendered
+    overlapOrder.forEach((type: any) => {
+      const layout = autoLayout.get(type) || (() => {});
+      layout.call(this, labels);
+    });
     window.requestAnimationFrame(() => {
-      overlapOrder.forEach((type: any) => {
-        const layout = autoLayout.get(type) || (() => {});
-        layout.call(this, labels);
-      });
       // dispatch layout end events
       this.dispatchEvent(new CustomEvent('axis-label-layout-end'));
     });

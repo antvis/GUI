@@ -1,10 +1,10 @@
 import { Group, Path, Text, CustomEvent } from '@antv/g';
-import { get, measureTextWidth, deepMix } from '@antv/util';
+import { get, deepMix } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import { deepAssign, getEllipsisText, getFont } from '../../util';
 import { Marker } from '../marker';
 import { getVerticalVector } from './utils';
-import { AutoHide } from './layouts/autoHide';
+import { AutoHide, reset } from './layouts/autoHide';
 import { AutoRotate, rotateLabel } from './layouts/autoRotate';
 import { LINEAR_DEFAULT_OPTIONS, NULL_ARROW, ORIGIN } from './constant';
 import type { AxisLabel, AxisTitle } from './types/shape';
@@ -81,10 +81,6 @@ function inferLabelAttrs(startPoint: Point, endPoint: Point, position: string, o
     textAlign: 'center',
     orient: 'bottom',
   };
-}
-
-function parseLength(length: string | number, font: any) {
-  return typeof length === 'string' ? measureTextWidth(length, font) : length;
 }
 
 function formatAxisTitle(text: string, limit: number, font?: any) {
@@ -376,6 +372,10 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
       const layout = autoLayout.get(type) || (() => {});
       layout.call(this, labels);
     });
+    window.requestAnimationFrame(() => {
+      // dispatch layout end events
+      this.dispatchEvent(new CustomEvent('axis-label-layout-end'));
+    });
   }
 
   /** --------- Common utils --------- */
@@ -395,6 +395,9 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
 
   /** --------- Label layout strategy --------- */
   private autoHideLabel() {
+    // reset all labels to be visible.
+    reset(this.labels);
+
     const { label: labelCfg } = this.style;
     if (!labelCfg || !labelCfg.autoHide) return;
 

@@ -45,7 +45,7 @@ function createAxis(startPos, endPos, tickData, type, formatter = (item) => item
           type,
           formatter,
           rotation: 0,
-          maxLength: 100,
+          maxLength: 80,
           minLength: 20,
           autoHide: true,
           autoEllipsis: false,

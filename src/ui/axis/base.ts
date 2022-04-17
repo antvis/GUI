@@ -1,5 +1,5 @@
-import { Group, parseLength, Path } from '@antv/g';
-import { deepMix, maxBy, minBy } from '@antv/util';
+import { Group, Path } from '@antv/g';
+import { maxBy, minBy } from '@antv/util';
 import { GUI } from '../../core/gui';
 import {
   formatTime,
@@ -34,6 +34,10 @@ Marker.registerSymbol('axis-arrow', (x: number, y: number, r: number) => {
     ['L', x, y],
   ];
 });
+
+function parseLength(length: string | number, font: any) {
+  return typeof length === 'string' ? measureTextWidth(length, font) : length;
+}
 
 export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps> extends GUI<T> {
   public static tag = 'axisBase';
@@ -113,6 +117,7 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     const font = this.labelFont;
     const step = parseLength(ellipsisStep!, font);
     const max = parseLength(maxLength!, font);
+    // [todo] Enable to ellipsis label when overlap.
     // 不限制长度
     if (max === Infinity) return;
     const min = parseLength(minLength!, font);
