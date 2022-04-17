@@ -64,7 +64,7 @@ export type AxisTickLineCfg = {
   len?: number;
   style?: Partial<LineProps>;
   // 末尾追加tick，一般用于label alignTick 为 false 的情况
-  appendTick?: boolean;
+  // appendTick?: boolean;
 };
 
 export type AxisSubTickLineCfg = {
@@ -114,7 +114,7 @@ export type AxisLabelCfg = {
   /**
    * Rotation degree of axis label. If specified, `autoRotate` will be ignore.
    */
-  rotation?: number;
+  rotat?: number;
   /**
    * @title Auto Hide
    * @description The strategy to use for resolving overlap of axis labels by hiding overlapped labels.

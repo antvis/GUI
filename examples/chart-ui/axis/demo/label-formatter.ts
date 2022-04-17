@@ -44,9 +44,6 @@ function createAxis(startPos, endPos, tickData, type, options?) {
             autoEllipsis: true,
             alignTick: true,
           },
-          tickLine: {
-            appendTick: true,
-          },
         },
         options
       ),

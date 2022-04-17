@@ -120,7 +120,7 @@ describe('Arc axis', () => {
 
       expect(subTickLines.length).toBe((ticks.length - 1) * 2);
       const subTickLine0 = subTickLines[0];
-      const [[, x1, y1], [, x2, y2]] = subTickLine0.attr('path');
+      const [[, x1, y1], [, x2, y2]] = subTickLine0.attr('path') as any;
       expect(+x2 - +x1).toBeCloseTo(0);
       expect(Math.abs(+y2 - +y1)).toBe(4);
       expect(subTickLine0.style.stroke).toBe('blue');
@@ -183,7 +183,7 @@ describe('Arc axis', () => {
           const visibleTickLines = arc2
             .getElementsByName('axis-tickLine')
             .filter((d) => d.style.visibility === 'visible');
-          expect(visibleTickLines.length).toBe(arc2.style.ticks.length);
+          expect(visibleTickLines.length).toBe(arc2.style!.ticks!.length);
           expect(visibleTickLines.length).toBeGreaterThan(visibleLabels.length);
         },
         { once: true }

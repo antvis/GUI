@@ -1,6 +1,5 @@
-import type { DisplayObject } from '@antv/g';
+import type { DisplayObject, Text } from '@antv/g';
 import { AxisLabel } from '../types/shape';
-import { getBoundsCenter } from '../utils';
 
 const { abs, atan2, cos, PI, sin, sqrt } = Math;
 
@@ -106,14 +105,16 @@ export function getHorizontalShape(shape: DisplayObject) {
 /**
  * 获得 DisplayObject 的碰撞 Text
  */
-export function getCollisionText(shape: AxisLabel, [top = 0, right = 0, bottom = 0, left = 0]: Margin) {
+export function getCollisionText(shape: AxisLabel | Text, [top = 0, right = 0, bottom = 0, left = 0]: Margin) {
   const { min, max } = shape.getLocalBounds();
+  // const [x, y] = shape.getLocalPosition();
   // 水平状态下文本的宽高
   const { width, height } = getHorizontalShape(shape);
   const [boxWidth, boxHeight] = [left + width + right, top + height + bottom];
   const angle = shape.getLocalEulerAngles();
   return new CollisionRect({
     angle,
+    // center: [x, y],
     center: [(max[0] + min[0]) / 2, (max[1] + min[1]) / 2],
     width: boxWidth,
     height: boxHeight,
@@ -123,7 +124,7 @@ export function getCollisionText(shape: AxisLabel, [top = 0, right = 0, bottom =
 /**
  * 判断两个 Text 是否重叠
  */
-export function intersect(A: AxisLabel, B: AxisLabel, margin: Margin = [0, 0, 0, 0]): boolean {
+export function intersect(A: AxisLabel | Text, B: AxisLabel | Text, margin: Margin = [0, 0, 0, 0]): boolean {
   const collisionA = getCollisionText(A, margin);
   const collisionB = getCollisionText(B, margin);
 

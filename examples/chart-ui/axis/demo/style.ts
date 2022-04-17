@@ -57,10 +57,11 @@ const linear = new Linear({
       offset: 4,
       minLength: 20,
       maxLength: 80,
+      autoHide: false,
       autoEllipsis: false,
+      autoRotate: true,
       optionalAngles: [20, 30, 45],
       padding: [0, 0, 0, 0],
-      autoHide: false,
     },
     title: {
       content: '坐标轴',

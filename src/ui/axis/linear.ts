@@ -1,4 +1,4 @@
-import { Group, Path, Text } from '@antv/g';
+import { Group, Path, Text, CustomEvent } from '@antv/g';
 import { get, measureTextWidth, deepMix } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import { deepAssign, getEllipsisText, getFont } from '../../util';
@@ -412,3 +412,5 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     AutoRotate(this.labels, this.style.label ?? { autoRotate: false });
   }
 }
+
+export { Cartesian as Linear };

@@ -57,10 +57,11 @@ const linear = new Linear({
     label: {
       minLength: 20,
       maxLength: 80,
+      autoRotate: true,
+      autoHide: false,
       autoEllipsis: false,
       optionalAngles: [20, 30, 45],
       padding: [0, 0, 0, 0],
-      autoHide: false,
       offset: 4,
     },
     tickLine: {

@@ -32,7 +32,7 @@ describe('Cartesian axis', () => {
 
       let axisArrow = b2tAxis.getElementsByName('axis-arrow') as DisplayObject[];
       expect(axisArrow.length).toBe(2);
-      expect(axisArrow[0].getEulerAngles()).toBeCloseTo(180);
+      expect(axisArrow[0].getEulerAngles()).toBeCloseTo(-90);
 
       b2tAxis.update({ axisLine: { arrow: { end: null } } });
       axisArrow = b2tAxis.getElementsByName('axis-arrow') as DisplayObject[];
@@ -225,6 +225,7 @@ describe('Cartesian axis', () => {
       canvas.appendChild(lAxis1);
     });
 
+    // [todo]
     it('label rotation', () => {
       const axis = canvas.appendChild(
         new Cartesian({ style: { startPos: [50, 50], endPos: [400, 50], label: { autoRotate: false, rotation: 90 } } })
