@@ -48,7 +48,7 @@ export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
       count: 0,
       style: {
         stroke: '#416180',
-        strokeOpacity: 0.25,
+        strokeOpacity: 0.45,
         lineWidth: 0.5,
       },
     },

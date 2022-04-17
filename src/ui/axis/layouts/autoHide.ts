@@ -22,14 +22,14 @@ export function AutoHide(labels: AxisLabel[], labelCfg: any, method = 'greedy') 
 
   let seq = 2;
   let source = labels;
-  const timeout = 500;
+  const timeout = 1000;
   const now = Date.now();
   while (hasOverlap(source, margin)) {
+    source = reduce(reset(labels), { margin, seq });
+    seq++;
     if (Date.now() - now > timeout) {
       console.warn('layout time exceeded');
       return;
     }
-    source = reduce(reset(labels), { margin, seq });
-    seq++;
   }
 }

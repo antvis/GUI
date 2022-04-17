@@ -1,5 +1,5 @@
-import { Group } from '@antv/g';
-import { maxBy, minBy } from '@antv/util';
+import { Group, parseLength, Path } from '@antv/g';
+import { deepMix, maxBy, minBy } from '@antv/util';
 import { GUI } from '../../core/gui';
 import {
   formatTime,
@@ -15,9 +15,11 @@ import {
   toScientificNotation,
   toThousands,
   scale as timeScale,
+  deepAssign,
 } from '../../util';
 import { Marker } from '../marker';
 import { ORIGIN, COMMON_TIME_MAP } from './constant';
+import { hasOverlap } from './overlap/is-overlap';
 import { AxisBaseOptions, AxisBaseStyleProps, Point } from './types';
 import { AxisLabel } from './types/shape';
 
@@ -69,15 +71,61 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     this.update();
   }
 
-  public update() {}
+  public update(cfg: Partial<AxisBaseStyleProps> = {}) {
+    // should not use this.style, because `style` is a Proxy object, not a Plain Object.
+    // should not use `deepMix`, because `undefined` should be assign, not to be ignore.
+    this.attr(deepAssign({}, this.attributes, cfg));
+    this.updateAxisLine();
+    // Trigger update data binding
+    this.updateTicks();
+    this.updateAxisTitle();
+  }
 
   public clear() {}
 
+  protected abstract updateAxisLine(): void;
+
   protected abstract updateTicks(): void;
+
+  protected abstract updateAxisTitle(): void;
 
   protected abstract getEndPoints(): Point[];
 
   protected abstract getLabelRotation(label?: AxisLabel): number | undefined;
+
+  protected autoHideTickLine() {
+    if (!this.style.label?.autoHideTickLine) return;
+
+    const idTickLines = new Map(this.tickLines.map((d) => [d.style.id, d]));
+    this.labels.forEach((label) => {
+      const tickLine = idTickLines.get(label.style.id) as Path;
+      if (label.style.visibility === 'hidden' && tickLine) tickLine.hide();
+      else tickLine.show();
+    });
+  }
+
+  /** --------- Label layout strategy --------- */
+  protected autoEllipsisLabel() {
+    const { label: labelCfg } = this.style;
+    if (!labelCfg || !labelCfg.autoEllipsis) return;
+
+    const { ellipsisStep, minLength, maxLength, margin } = labelCfg;
+    const font = this.labelFont;
+    const step = parseLength(ellipsisStep!, font);
+    const max = parseLength(maxLength!, font);
+    // 不限制长度
+    if (max === Infinity) return;
+    const min = parseLength(minLength!, font);
+
+    for (let allowedLength = max; allowedLength > min; allowedLength -= step) {
+      // 缩短文本
+      this.labelsEllipsis(allowedLength);
+      // 碰撞检测
+      if (!hasOverlap(this.labels, margin!)) {
+        return;
+      }
+    }
+  }
 
   /** ------------------------------自动缩略相关------------------------------------------ */
   /**

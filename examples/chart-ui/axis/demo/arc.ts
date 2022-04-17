@@ -22,7 +22,7 @@ const arc = new Arc({
     endAngle: 270,
     radius: 150,
     center: [200, 200],
-    verticalFactor: -1,
+    verticalFactor: 1,
     title: {
       content: '圆弧坐标轴',
       rotate: 0,
@@ -37,6 +37,7 @@ const arc = new Arc({
       };
     }),
     label: {
+      align: 'radial',
       autoHideTickLine: false,
     },
     tickLine: {
@@ -69,8 +70,8 @@ const arcCfg = {
   起始角: -90,
   终止角: 270,
   半径: 150,
-  标签对齐: 'normal',
-  轴线正方向: 'inner',
+  标签对齐: 'radial',
+  轴线正方向: 'outer',
 };
 const x = arcFolder.add(arcCfg, 'x', 0, 300).onChange((x) => {
   arc.update({ center: [x, y.getValue()] });

@@ -4,10 +4,9 @@ import { vec2 } from '@antv/matrix-util';
 import { deepAssign, getEllipsisText, getFont } from '../../util';
 import { Marker } from '../marker';
 import { getVerticalVector } from './utils';
-import { hasOverlap } from './overlap/is-overlap';
 import { AutoHide } from './layouts/autoHide';
 import { AutoRotate, rotateLabel } from './layouts/autoRotate';
-import { COMMON_TIME_MAP, LINEAR_DEFAULT_OPTIONS, NULL_ARROW, ORIGIN } from './constant';
+import { LINEAR_DEFAULT_OPTIONS, NULL_ARROW, ORIGIN } from './constant';
 import type { AxisLabel, AxisTitle } from './types/shape';
 import type { LinearOptions, LinearAxisStyleProps as CartesianStyleProps, AxisLineCfg, Point } from './types';
 import { AxisBase } from './base';
@@ -106,7 +105,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
   }
 
   constructor(options: LinearOptions) {
-    super(deepMix({}, Cartesian.defaultOptions, options));
+    super(deepAssign({}, Cartesian.defaultOptions, options));
     this.init();
   }
 
@@ -116,11 +115,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
   };
 
   public update(cfg: Partial<CartesianStyleProps> = {}) {
-    this.attr(deepAssign({}, this.style, cfg));
-    this.updateAxisLine();
-    // Trigger update data binding
-    this.updateTicks();
-    this.updateAxisTitle();
+    super.update(deepAssign({}, this.attributes, cfg));
   }
 
   protected getEndPoints() {
@@ -128,7 +123,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     return [startPos || [0, 0], endPos || [0, 0]];
   }
 
-  private updateAxisLine() {
+  protected updateAxisLine() {
     const [[x1, y1], [x2, y2]] = this.getEndPoints();
     const path: any = [
       ['M', x1, y1],
@@ -179,7 +174,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     }
   }
 
-  private updateAxisTitle() {
+  protected updateAxisTitle() {
     let axisTitle = this.axisGroup.querySelectorAll('[name="axis-title"]')[0] as AxisTitle;
     if (!axisTitle) {
       axisTitle = this.axisGroup.appendChild(new Text({ name: 'axis-title' })) as AxisTitle;
@@ -297,9 +292,9 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
 
       return {
         ...d,
-        ...inferStyle,
-        ...(deepAssign({}, Cartesian.defaultOptions.style.label?.style, userStyle) || {}),
-        text: formatter ? formatter(d) : d.text,
+        // should not use `deepAssign`, because `undefined` will be assign
+        ...deepMix({}, inferStyle, userStyle || {}),
+        text: formatter ? formatter(d, idx) : d.text,
         id: id(d, idx),
         [ORIGIN]: d,
       };
@@ -359,22 +354,28 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
         (update) => update.each((ele, datum) => ele.attr(datum)),
         (exit) => exit?.remove()
       );
-    // layout labels
-    if (labelCfg) {
-      const { overlapOrder = [] } = labelCfg;
-      const rotation = this.getLabelRotation();
-      if (typeof rotation === 'number') this.labels.forEach((label) => rotateLabel(label, rotation));
 
-      const autoLayout = new Map<string, Function>([
-        ['autoHide', this.autoHideLabel],
-        ['autoEllipsis', this.autoEllipsisLabel],
-        ['autoRotate', this.autoRotateLabel],
-      ]);
-      overlapOrder.forEach((type: any) => {
-        const layout = autoLayout.get(type) || (() => {});
-        layout.call(this, labels);
-      });
-    }
+    this.layoutLabels(labels);
+  }
+
+  private layoutLabels(labels: AxisLabel[]) {
+    const { label: labelCfg } = this.style;
+    if (!labelCfg) return;
+
+    // Do labels layout.
+    const { overlapOrder = [] } = labelCfg;
+    const rotation = this.getLabelRotation();
+    if (typeof rotation === 'number') this.labels.forEach((label) => rotateLabel(label, rotation));
+
+    const autoLayout = new Map<string, Function>([
+      ['autoHide', this.autoHideLabel],
+      ['autoEllipsis', this.autoEllipsisLabel],
+      ['autoRotate', this.autoRotateLabel],
+    ]);
+    overlapOrder.forEach((type: any) => {
+      const layout = autoLayout.get(type) || (() => {});
+      layout.call(this, labels);
+    });
   }
 
   /** --------- Common utils --------- */
@@ -393,28 +394,6 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
   }
 
   /** --------- Label layout strategy --------- */
-  private autoEllipsisLabel() {
-    const { label: labelCfg } = this.style;
-    if (!labelCfg || !labelCfg.autoEllipsis) return;
-
-    const { ellipsisStep, minLength, maxLength, margin } = labelCfg;
-    const font = this.labelFont;
-    const step = parseLength(ellipsisStep!, font);
-    const max = parseLength(maxLength!, font);
-    // 不限制长度
-    if (max === Infinity) return;
-    const min = parseLength(minLength!, font);
-
-    for (let allowedLength = max; allowedLength > min; allowedLength -= step) {
-      // 缩短文本
-      this.labelsEllipsis(allowedLength);
-      // 碰撞检测
-      if (!hasOverlap(this.labels, margin!)) {
-        return;
-      }
-    }
-  }
-
   private autoHideLabel() {
     const { label: labelCfg } = this.style;
     if (!labelCfg || !labelCfg.autoHide) return;
@@ -425,17 +404,6 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     window.requestAnimationFrame(() => {
       AutoHide(this.labels as AxisLabel[], this.style.label!, method);
       this.autoHideTickLine();
-    });
-  }
-
-  private autoHideTickLine() {
-    if (!this.style.label?.autoHideTickLine) return;
-
-    const idTickLines = new Map(this.tickLines.map((d) => [d.style.id, d]));
-    this.labels.forEach((label) => {
-      const tickLine = idTickLines.get(label.style.id) as Path;
-      if (label.style.visibility === 'hidden' && tickLine) tickLine.hide();
-      else tickLine.show();
     });
   }
 
