@@ -4,8 +4,9 @@ import { Cartesian } from '../../../../src/ui/axis/linear';
 import { ORIGIN } from '../../../../src/ui/axis/constant';
 import { AxisTitle } from '../../../../src/ui/axis/types/shape';
 import { createCanvas } from '../../../utils/render';
+import { delay } from '../../../utils/delay';
 
-const canvas = createCanvas(500);
+const canvas = createCanvas(500, 'svg');
 
 describe('Cartesian axis', () => {
   describe('new Cartesian({}) should create a linear axis', () => {
@@ -13,7 +14,7 @@ describe('Cartesian axis', () => {
 
     it('Cartesian axis line, ({ axisLine: {} })', () => {
       expect(b2tAxis).toBeDefined();
-      const axisLines = b2tAxis.getElementsByName('axis-line');
+      const axisLines = b2tAxis.getElementsByClassName('axis-line');
       expect(axisLines.length).toBe(1);
 
       b2tAxis.update({ startPos: [50, 450], endPos: [50, 50] });
@@ -50,10 +51,10 @@ describe('Cartesian axis', () => {
 
       // todo Should update normal in `svg` renderer
       b2tAxis.update({ ticks, axisLine: { style: { lineWidth: 0.5 } }, tickLine: { len: 6 } });
-      const tickLines = b2tAxis.getElementsByName('axis-tickLine');
+      const tickLines = b2tAxis.getElementsByClassName('axis-tickLine');
       const [[, x1, y1], [, x2, y2]] = tickLines[0].style.path;
 
-      expect(b2tAxis.getElementsByName('axis-line')[0].style.lineWidth).toBe(0.5);
+      expect(b2tAxis.getElementsByClassName('axis-line')[0].style.lineWidth).toBe(0.5);
       expect(tickLines.length).toBe(ticks.length);
       expect(x2 - x1).toBe(6);
     });
@@ -64,7 +65,6 @@ describe('Cartesian axis', () => {
     });
   });
 
-  // [todo]
   it('(subTickLine:{ count: 2 }) and ticks update', () => {
     const common = { subTickLine: { count: 2, style: { stroke: 'red', lineWidth: 1 } } };
     const tAxis = new Cartesian({
@@ -91,6 +91,12 @@ describe('Cartesian axis', () => {
     canvas.appendChild(lAxis);
     canvas.appendChild(bAxis);
     canvas.appendChild(rAxis);
+
+    const subTickLines = tAxis.querySelectorAll('.axis-subTickLine');
+    expect(subTickLines.length).toBe(2 * (ticks.length - 1));
+    expect(subTickLines[0].style.path[0]).toEqual(['M', 135.71428571428572, 100]);
+    expect(subTickLines[0].style.stroke).toBe('red');
+    expect(subTickLines[0].style.lineWidth).toBe(1);
 
     const newTicks = domain
       .map((d) => ({
@@ -161,7 +167,39 @@ describe('Cartesian axis', () => {
     const bandWidth = scale.getBandWidth();
     const ticks = domain.map((d) => ({ value: scale.map(d) + bandWidth / 2, text: d }));
 
-    it('AutoHide and AutoEllipsis', () => {
+    it('AutoHide', async () => {
+      const data = ['2020-12-28', '2020-12-29', '2020-12-30', '2020-12-31', '2021-01-01', '2021-01-02'];
+      const scale = new BandScale({ domain: data, paddingOuter: 0.1 });
+      const axis = new Cartesian({
+        style: {
+          startPos: [50, 50],
+          endPos: [400, 50],
+          ticks: data.map((d) => ({ value: scale.map(d) + scale.getBandWidth() / 2, text: d })),
+          label: {
+            type: 'text',
+            rotation: 0,
+            maxLength: 80,
+            minLength: 20,
+            autoHide: true,
+            autoEllipsis: false,
+            alignTick: true,
+            autoHideTickLine: false,
+          },
+        },
+      });
+      canvas.appendChild(axis);
+      window.requestAnimationFrame(() => {
+        const labels = axis.querySelectorAll('.axis-label');
+        expect(labels[0].style.visibility).toBe('visible');
+        expect(labels[2].style.visibility).toBe('visible');
+        expect(labels[4].style.visibility).toBe('visible');
+        expect(labels[1].style.visibility).toBe('hidden');
+        expect(labels[3].style.visibility).toBe('hidden');
+        expect(labels[5].style.visibility).toBe('hidden');
+      });
+    });
+
+    it('AutoEllipsis', async () => {
       const data = ['ABC', 'BCED', 'DEFGH', 'GHIJKM', 'KMLNOPQ', 'PQRSTVVW', 'VWXYZABC'];
       const ticks = data.map((d, idx) => {
         const step = 1 / (data.length - 1);
@@ -183,27 +221,92 @@ describe('Cartesian axis', () => {
         })
       );
 
-      axis.addEventListener(
-        'axis-label-layout-end',
-        () => {
-          expect(
-            axis.getElementsByName('axis-label').filter((d) => d.style.visibility === 'visible').length
-          ).toBeLessThan(ticks.length);
+      window.requestAnimationFrame(() => {
+        expect(
+          axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length
+        ).toBeLessThan(ticks.length);
+      });
 
-          const maxLength = (400 - 50) / ticks.length;
-          axis.update({ label: { autoHideTickLine: false, autoHide: false, autoEllipsis: true, maxLength } });
-          axis.addEventListener(
-            'axis-label-layout-end',
-            () => {
-              const labels = axis.getElementsByName('axis-label');
-              expect(labels.filter((d) => d.style.visibility === 'visible').length).toBe(ticks.length);
-              expect(labels.filter((d) => d.style.text.endsWith('...')).length).toBeGreaterThan(0);
+      await delay(10);
+
+      const maxLength = (400 - 50) / ticks.length;
+      axis.update({ label: { autoHideTickLine: false, autoHide: true, autoEllipsis: true, maxLength, minLength: 40 } });
+      window.requestAnimationFrame(() => {
+        const labels = axis.getElementsByClassName('axis-label');
+        expect(labels.filter((d) => d.style.visibility === 'visible').length).toBe(ticks.length);
+        expect(labels.filter((d) => d.style.text.endsWith('...')).length).toBeGreaterThan(0);
+      });
+
+      axis.destroy();
+      axis.remove();
+    });
+
+    it('AutoHide and AutoEllipsis', async () => {
+      const data = [
+        'ABC',
+        'BCED',
+        'DEFGH',
+        'GHIJKM',
+        'KMLN',
+        'OPQ',
+        'PQRST',
+        'VVW',
+        'VWXYZABC',
+        'AXS',
+        'SFAF',
+        'AFAFAGA',
+        'FAFA',
+        'AFAF',
+      ];
+      const ticks = data.map((d, idx) => {
+        const step = 1 / (data.length - 1);
+        return {
+          value: step * idx,
+          text: String(d),
+          id: String(idx),
+        };
+      });
+
+      const axis = canvas.appendChild(
+        new Cartesian({
+          style: {
+            startPos: [50, 60],
+            endPos: [400, 60],
+            ticks,
+            label: {
+              autoRotate: false,
+              autoEllipsis: true,
+              autoHide: false,
+              autoHideTickLine: false,
+              // 不展示 '...'
+              minLength: 14,
+              style: (d, i) => {
+                let textAlign = 'center';
+                if (i === 0) textAlign = 'start';
+                if (i === ticks.length - 1) textAlign = 'end';
+                return {
+                  fontSize: 12,
+                  textAlign: textAlign as any,
+                };
+              },
             },
-            { once: true }
-          );
-        },
-        { once: true }
+          },
+        })
       );
+      canvas.appendChild(axis);
+
+      window.requestAnimationFrame(() => {
+        expect(axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length).toBe(
+          ticks.length
+        );
+      });
+
+      axis.update({ label: { autoHide: true } });
+      window.requestAnimationFrame(() => {
+        expect(
+          axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length
+        ).toBeLessThan(ticks.length);
+      });
 
       axis.destroy();
       axis.remove();
@@ -213,6 +316,7 @@ describe('Cartesian axis', () => {
     it('Different directions of axis with label autoRotate', () => {
       const domain = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
       const scale = new BandScale({ domain });
+      const bandWidth = scale.getBandWidth();
       const ticks = domain.map((d) => ({ value: scale.map(d) + bandWidth / 2, text: d }));
       const ticks2 = domain
         .map((d) => ({
@@ -296,9 +400,9 @@ describe('Cartesian axis', () => {
         style: { startPos: [150, 150], endPos: [150, 300], verticalFactor: -1, ...quantitativeAxisOptions },
       });
       canvas.appendChild(axis);
-      const axisTitle = axis.getElementsByName('axis-title')[0] as AxisTitle;
-      const axisLabelsGroup = axis.getElementsByName('axis-labels-group')[0] as Path;
-      const axisLine = axis.getElementsByName('axis-line')[0] as Path;
+      const axisTitle = axis.getElementsByClassName('axis-title')[0] as AxisTitle;
+      const axisLabelsGroup = axis.getElementsByClassName('axisLabel-group')[0] as Path;
+      const axisLine = axis.getElementsByClassName('axis-line')[0] as Path;
 
       it(`${LABEL} Defaults to:{ textAlign: "center", textBaseline: "bottom" }`, () => {
         expect(axisTitle.style.textAlign).toBe('center');
@@ -434,9 +538,9 @@ describe('Cartesian axis', () => {
     describe('Cartesian axis orientation is right, same as axis orientation is left', () => {
       const axis = new Cartesian({ style: { startPos: [250, 150], endPos: [250, 300], ...quantitativeAxisOptions } });
       canvas.appendChild(axis);
-      const axisTitle = axis.getElementsByName('axis-title')[0] as AxisTitle;
-      const axisLabelsGroup = axis.getElementsByName('axis-labels-group')[0] as Path;
-      const axisLine = axis.getElementsByName('axis-line')[0] as Path;
+      const axisTitle = axis.getElementsByClassName('axis-title')[0] as AxisTitle;
+      const axisLabelsGroup = axis.getElementsByClassName('axisLabel-group')[0] as Path;
+      const axisLine = axis.getElementsByClassName('axis-line')[0] as Path;
 
       expect(axisTitle.style.textAlign).toBe('center');
       expect(axisTitle.style.textBaseline).toBe('bottom');
@@ -568,9 +672,9 @@ describe('Cartesian axis', () => {
     describe('Cartesian axis orientation is bottom', () => {
       const axis = new Cartesian({ style: { startPos: [50, 80], endPos: [350, 80], ...common } });
       canvas.appendChild(axis);
-      const axisTitle = axis.getElementsByName('axis-title')[0] as AxisTitle;
-      const axisLabelsGroup = axis.getElementsByName('axis-labels-group')[0] as Group;
-      const axisLine = axis.getElementsByName('axis-line')[0] as Path;
+      const axisTitle = axis.getElementsByClassName('axis-title')[0] as AxisTitle;
+      const axisLabelsGroup = axis.getElementsByClassName('axisLabel-group')[0] as Group;
+      const axisLine = axis.getElementsByClassName('axis-line')[0] as Path;
 
       it('Cartesian axis Title in left orientation. Defaults to: { textAlign: "center", textBaseline: "top" }', () => {
         expect(axisTitle.style.textAlign).toBe('center');
@@ -618,7 +722,7 @@ describe('Cartesian axis', () => {
     describe('Cartesian axis orientation is top', () => {
       const axis = new Cartesian({ style: { startPos: [50, 50], endPos: [350, 50], verticalFactor: -1, ...common } });
       canvas.appendChild(axis);
-      const axisTitle = axis.getElementsByName('axis-title')[0] as AxisTitle;
+      const axisTitle = axis.getElementsByClassName('axis-title')[0] as AxisTitle;
       expect(axisTitle.style.text).toBe('Ordinal axis');
       expect(axisTitle.style.textBaseline).toBe('bottom');
       const {

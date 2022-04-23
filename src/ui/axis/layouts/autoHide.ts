@@ -1,12 +1,15 @@
-import { intersect, hasOverlap } from '../overlap/is-overlap';
 import { AxisLabel } from '../types/shape';
+import { intersect } from '../utils/intersect';
+import { boundTest } from '../utils/helper';
 
 const methods: Record<string, (items: AxisLabel[], args: any) => AxisLabel[]> = {
   parity: (items: AxisLabel[], { seq = 2 }) =>
     items.filter((item, i) => (i % seq ? (item.style.visibility = 'hidden') : 1)),
-  greedy: (items: AxisLabel[], { margin }) => {
+  greedy: (items: AxisLabel[]) => {
     let a: AxisLabel;
-    return items.filter((b, i) => (!i || !intersect(a, b, margin) ? ((a = b), 1) : (b.style.visibility = 'hidden')));
+    return items.filter((b, i) =>
+      !i || !intersect(a.style.bounds, b.style.bounds) ? ((a = b), 1) : (b.style.visibility = 'hidden')
+    );
   },
 };
 
@@ -18,14 +21,13 @@ export const reset = (source: AxisLabel[]) => (source.forEach((item) => (item.st
  */
 export function AutoHide(labels: AxisLabel[], labelCfg: any, method = 'greedy') {
   const reduce = methods[method] || methods.greedy;
-  const { margin } = labelCfg;
 
   let seq = 2;
   let source = labels;
   const timeout = 500;
   const now = Date.now();
-  while (hasOverlap(source, margin)) {
-    source = reduce(reset(labels), { margin, seq });
+  while (boundTest(source).length) {
+    source = reduce(reset(labels), { seq });
     seq++;
     if (Date.now() - now > timeout) {
       // console.warn('layout time exceeded');

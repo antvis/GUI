@@ -1,40 +1,38 @@
-/* eslint-disable no-underscore-dangle */
-import { Group, Rect, DisplayObject, Circle, Path, Text, Ellipse, Image, Line, Polygon, Polyline, HTML } from '@antv/g';
+// @ts-nocheck
+// @ts-ignore prefer-destructuring
+import {
+  Group,
+  Rect,
+  DisplayObject,
+  IDocument,
+  BaseStyleProps as BP,
+  Circle,
+  Path,
+  Text,
+  Ellipse,
+  Image,
+  Line,
+  Polygon,
+  Polyline,
+  HTML,
+} from '@antv/g';
 
-type Element = DisplayObject & {
+export type G2Element = DisplayObject & {
   __data__?: any;
 };
 
-export function diff<T = any>(oldElements: Element[], data: T[], id: (d: T, idx: number) => unknown = (d) => d) {
-  // An array of new data
-  const enter: T[] = [];
-
-  // An array of elements to be updated
-  const update: Element[] = [];
-
-  // A Map from key to each element.
-  const keyElement = new Map(oldElements.map((d, idx) => [id(d.__data__, idx), d]));
-
-  // Diff
-  Object.entries(data).forEach(([, datum], idx) => {
-    const key = id(datum, idx);
-    if (keyElement.has(key)) {
-      const element = keyElement.get(key)!;
-      element.__data__ = datum;
-      update.push(element);
-      keyElement.delete(key);
-    } else {
-      enter.push(datum);
-    }
-  });
-  // An array to be removed
-  const exit = Array.from(keyElement.values());
-
-  return { enter, update, exit };
-}
-
+/**
+ * A simple implementation of d3-selection for @antv/g.
+ * It has the core features of d3-selection and extended ability.
+ * Every methods of selection returns new selection if elements
+ * are mutated(e.g. append, remove), otherwise return the selection itself(e.g. attr, style).
+ * @see https://github.com/d3/d3-selection
+ * @see https://github.com/antvis/g
+ * @todo Nested selections.
+ * @todo More useful functor.
+ */
 export class Selection<T = any> {
-  static registry: Record<string, new () => Element> = {
+  static registry: Record<string, new () => G2Element> = {
     g: Group,
     rect: Rect,
     circle: Circle,
@@ -48,35 +46,58 @@ export class Selection<T = any> {
     html: HTML,
   };
 
-  private _elements: Element[] = [];
+  private _elements: G2Element[];
+
+  private _parent: G2Element;
 
   private _data: T[];
 
-  private _parent: Element;
+  private _enter: Selection;
 
-  private _enter: Selection | null = null;
+  private _exit: Selection;
 
-  private _update: Selection | null = null;
+  private _update: Selection;
 
-  private _exit: Selection | null = null;
+  private _document: IDocument;
 
   constructor(
-    elements: Element[] = [],
-    data: T[] | null,
-    parent: Element,
-    selections: [Selection | null, Selection | null, Selection | null] = [null, null, null]
+    elements: G2Element[] = null,
+    data: T[] = null,
+    parent: G2Element = null,
+    document: IDocument = null,
+    selections: [Selection, Selection, Selection] = [null, null, null]
   ) {
     this._elements = elements;
-    this._data = data || [];
+    this._data = data;
     this._parent = parent;
-    [this._enter, this._update, this._exit] = selections;
+    this._document = document;
+    this._enter = selections[0];
+    this._update = selections[1];
+    this._exit = selections[2];
   }
 
-  append(node: string | ((data: T, i: number) => Element)): Selection<T> {
+  selectAll(selector: string | G2Element[]): Selection<T> {
+    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<G2Element>(selector) : selector;
+    return new Selection<T>(elements, null, this._elements[0], this._document);
+  }
+
+  /**
+   * @todo Replace with querySelector which has bug now.
+   */
+  select(selector: string | G2Element): Selection<T> {
+    const element =
+      typeof selector === 'string' ? this._parent.querySelectorAll<G2Element>(selector)[0] || null : selector;
+    return new Selection<T>([element], null, element, this._document);
+  }
+
+  append(node: string | ((data: T, i: number) => G2Element)): Selection<T> {
     const createElement = (type: string) => {
+      if (this._document) {
+        return this._document.createElement<G2Element, BP>(type, {});
+      }
       const Ctor = Selection.registry[type];
       if (Ctor) return new Ctor();
-      throw new Error(`Unknown node type: ${type}`);
+      return new Error(`Unknown node type: ${type}`);
     };
     const callback = typeof node === 'function' ? node : () => createElement(node);
 
@@ -91,7 +112,7 @@ export class Selection<T = any> {
         this._parent.appendChild(newElement);
         elements.push(newElement);
       }
-      return new Selection(elements, null, this._parent);
+      return new Selection(elements, null, this._parent, this._document);
     }
     // For non-empty selection, append new element to
     // selected element and return new selection.
@@ -102,75 +123,130 @@ export class Selection<T = any> {
       element.appendChild(newElement);
       elements.push(newElement);
     }
-    return new Selection(elements, null, elements[0]);
+    return new Selection(elements, null, elements[0], this._document);
   }
 
-  each(callback: (element: Element, datum: T, index: number) => any): Selection<T> {
-    for (let i = 0; i < this._elements.length; i++) {
-      const element = this._elements[i];
-      const datum = element.__data__;
-      callback.call(element, element, datum, i);
+  /**
+   * Bind data to elements, and produce three selection:
+   * Enter: Selection with empty elements and data to be bind to elements.
+   * Update: Selection with elements to be updated.
+   * Exit: Selection with elements to be removed.
+   */
+  data<T = any>(data: T[], id: (d: T, index: number) => any = (d) => d): Selection<T> {
+    // An array of new data.
+    const enter = [];
+
+    // An array of elements to be updated.
+    const update = [];
+
+    // A Map from key to each element.
+    const keyElement = new Map(this._elements.map((d, i) => [id(d.__data__, i), d]));
+
+    // Diff data with selection(elements with data).
+    for (let i = 0; i < data.length; i++) {
+      const datum = data[i];
+      const key = id(datum, i);
+      if (keyElement.has(key)) {
+        const element = keyElement.get(key);
+        element.__data__ = datum;
+        update.push(element);
+        keyElement.delete(key);
+      } else {
+        enter.push(datum);
+      }
     }
-    return this;
-  }
 
-  attr(key: string, value: any): Selection<T> {
-    const callback = typeof value !== 'function' ? () => value : value;
-    this.each(function doEach(d, i) {
-      // @ts-ignore
-      if (value !== undefined) this[key] = callback.call(this, d, i);
-    });
-    return this;
+    // An array of elements to be removed.
+    const exit = Array.from(keyElement.values());
+
+    // Create new selection with enter, update and exit.
+    const S: [Selection<T>, Selection<T>, Selection<T>] = [
+      new Selection<T>([], enter, this._parent, this._document),
+      new Selection<T>(update, null, this._parent, this._document),
+      new Selection<T>(exit, null, this._parent, this._document),
+    ];
+
+    return new Selection<T>(this._elements, null, this._parent, this._document, S);
   }
 
   merge(other: Selection<T>): Selection<T> {
     const elements = [...this._elements, ...other._elements];
-    return new Selection<T>(elements, null, this._parent);
+    return new Selection<T>(elements, null, this._parent, this._document);
   }
 
   /**
    * Apply callback for each selection(enter, update, exit)
    * and merge them into one selection.
    */
-  join<T>(
-    enter: (selection: Selection<T>) => Selection<T> = (d) => d,
-    update: (selection: Selection<T>) => Selection<T> = (d) => d,
-    exit: (selection: Selection<T>) => Selection<T> = (d) => d && d.remove()
+  join(
+    enter: (selection: Selection<T>) => any = (d) => d,
+    update: (selection: Selection<T>) => any = (d) => d,
+    exit: (selection: Selection<T>) => any = (d) => d.remove()
   ): Selection<T> {
-    const empty = new Selection([], [], this._parent);
-    const newEnter = enter(this._enter || empty);
-    const newUpdate = update(this._update || empty);
-    const newExit = exit(this._exit || empty);
+    const newEnter = enter(this._enter);
+    const newUpdate = update(this._update);
+    const newExit = exit(this._exit);
     return newUpdate.merge(newEnter).merge(newExit);
   }
 
   remove(): Selection<T> {
     const elements = [...this._elements];
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
+    this._elements.forEach((element) => {
       if (element.parentNode) {
         element.parentNode.removeChild(element);
         const index = elements.indexOf(element);
         elements.splice(index, 1);
       }
+    });
+    return new Selection<T>(elements, null, this._parent, this._document);
+  }
+
+  each(callback: (datum: T, index: number) => any): Selection<T> {
+    for (let i = 0; i < this._elements.length; i++) {
+      const element = this._elements[i];
+      const datum = element.__data__;
+      callback.call(element, datum, i);
     }
-    return new Selection<T>(elements, null, this._parent);
+    return this;
   }
 
-  data<T>(data: T[], id: (d: T, index: number) => unknown = (d) => d): Selection<T> {
-    const { enter, update, exit } = diff(this._elements, data, id);
-
-    // Create new selection with enter, update and exit.
-    const S: [Selection<T>, Selection<T>, Selection<T>] = [
-      new Selection<T>([], enter, this._parent),
-      new Selection<T>(update, null, this._parent),
-      new Selection<T>(exit, null, this._parent),
-    ];
-
-    return new Selection<T>(this._elements, null, this._parent, S);
+  attr(key: string, value: any): Selection<T> {
+    const callback = typeof value !== 'function' ? () => value : value;
+    this.each(function (d, i) {
+      if (value !== undefined) this[key] = callback.call(this, d, i);
+    });
+    return this;
   }
 
-  getElements() {
+  style(key: string, value: any): Selection<T> {
+    const callback = typeof value !== 'function' ? () => value : value;
+    this.each(function (d, i) {
+      if (value !== undefined) this.style[key] = callback.call(this, d, i);
+    });
+    return this;
+  }
+
+  on(event: string, handler: any) {
+    this.each(function () {
+      this.addEventListener(event, handler);
+    });
+    return this;
+  }
+
+  call(callback: (selection: Selection<T>, ...args: any[]) => any, ...args: any[]): Selection<T> {
+    callback.call(this._parent, this, ...args);
+    return this;
+  }
+
+  node(): G2Element {
+    return this._elements[0];
+  }
+
+  nodes(): G2Element[] {
     return this._elements;
   }
+}
+
+export function select<T = any>(node: Group) {
+  return new Selection<T>([node], null, node, node.ownerDocument);
 }

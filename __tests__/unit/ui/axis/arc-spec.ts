@@ -36,8 +36,8 @@ describe('Arc axis', () => {
     const arc = new Arc({ style: { center: [400, 400], radius: 60 } });
     canvas.appendChild(arc);
 
-    const axisLine = arc.getElementsByName('axis-line')[0] as Path;
-    let tickLines = arc.getElementsByName('axis-tickLine') as Path[];
+    const axisLine = arc.getElementsByClassName('axis-line')[0] as Path;
+    let tickLines = arc.getElementsByClassName('axis-tickLine') as Path[];
 
     it('Arc axis radius', () => {
       expect(arc).toBeDefined();
@@ -48,7 +48,7 @@ describe('Arc axis', () => {
         center: [150, 100],
         axisLine: { style: { lineWidth: 1 } },
       });
-      const axisLine = arc.getElementsByName('axis-line')[0] as Path;
+      const axisLine = arc.getElementsByClassName('axis-line')[0] as Path;
 
       const { min, max } = axisLine.getBounds();
 
@@ -79,7 +79,7 @@ describe('Arc axis', () => {
       const formatter = (d: any) => `hello_${d.text}`;
       arc.update({ ticks, label: { formatter, style: { fill: 'red', textAlign: 'center' } } });
 
-      const axisLabels = arc.getElementsByName('axis-label') as AxisLabel[];
+      const axisLabels = arc.getElementsByClassName('axis-label') as AxisLabel[];
       expect(axisLabels.length).toBe(ticks.length);
       expect(axisLabels.map((d) => d.style.text)).toEqual(ticks.map((d) => formatter(d)));
 
@@ -93,7 +93,7 @@ describe('Arc axis', () => {
           },
         },
       });
-      // keep previous settings
+      // Keep previous settings
       expect(label0.style.fill).toBe('red');
       expect(label0.style.textAlign).toBe('start');
       // set undefined, so that could use inferStyle
@@ -103,7 +103,7 @@ describe('Arc axis', () => {
     it('Arc axis tickLine, support ({ tickLine: { len, style: { ... } }})', () => {
       arc.update({ ticks, tickLine: { len: 6, style: { lineWidth: 2, stroke: 'black' } } });
 
-      tickLines = arc.getElementsByName('axis-tickLine') as Path[];
+      tickLines = arc.getElementsByClassName('axis-tickLine') as Path[];
       expect(tickLines.length).toBe(ticks.length);
       const tickLine0 = tickLines[0];
 
@@ -116,7 +116,7 @@ describe('Arc axis', () => {
 
     it('Arc axis subTickLine, support ({ subTickLine: { len, count, style: { ... } }})', () => {
       arc.update({ ticks, subTickLine: { len: 4, count: 2, style: { stroke: 'blue', lineWidth: 3 } } });
-      const subTickLines = arc.getElementsByName('axis-subTickLine') as Path[];
+      const subTickLines = arc.getElementsByClassName('axis-subTickLine') as Path[];
 
       expect(subTickLines.length).toBe((ticks.length - 1) * 2);
       const subTickLine0 = subTickLines[0];
@@ -160,12 +160,12 @@ describe('Arc axis', () => {
       arc2.addEventListener(
         'axis-label-layout-en',
         () => {
-          const labels = arc2.getElementsByName('axis-label');
+          const labels = arc2.getElementsByClassName('axis-label');
           const visibleLabels = labels.filter((d) => d.style.visibility === 'visible');
           const visibleTickLines = arc2
-            .getElementsByName('axis-tickLine')
+            .getElementsByClassName('axis-tickLine')
             .filter((d) => d.style.visibility === 'visible');
-          expect(visibleLabels.length).toBeLessThan(arc1.getElementsByName('axis-label').length);
+          expect(visibleLabels.length).toBeLessThan(arc1.getElementsByClassName('axis-label').length);
           expect(visibleTickLines.length).toBe(visibleLabels.length);
 
           expect(labels[0].style.visibility).toBe('visible');
@@ -179,9 +179,11 @@ describe('Arc axis', () => {
       arc2.addEventListener(
         'axis-label-layout-end',
         () => {
-          const visibleLabels = arc2.getElementsByName('axis-label').filter((d) => d.style.visibility === 'visible');
+          const visibleLabels = arc2
+            .getElementsByClassName('axis-label')
+            .filter((d) => d.style.visibility === 'visible');
           const visibleTickLines = arc2
-            .getElementsByName('axis-tickLine')
+            .getElementsByClassName('axis-tickLine')
             .filter((d) => d.style.visibility === 'visible');
           expect(visibleTickLines.length).toBe(arc2.style!.ticks!.length);
           expect(visibleTickLines.length).toBeGreaterThan(visibleLabels.length);

@@ -70,9 +70,10 @@ createAxis([50, 300], [400, 300], data8, 'text', {
   label: {
     autoHide: true,
     style: (datum, idx) => {
-      if (idx === 0) return { textAlign: 'start' };
-      if (idx === data8.length - 1) return { textAlign: 'end' };
-      return {};
+      const font = { fontSize: 12 };
+      if (idx === 0) return { ...font, textAlign: 'start' };
+      if (idx === data8.length - 1) return { ...font, textAlign: 'end' };
+      return font;
     },
   },
 });

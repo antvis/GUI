@@ -30,6 +30,8 @@ module.exports = {
     'no-useless-constructor': 'off',
     'no-unused-expressions': 'off',
     'no-dupe-class-members': 'off',
+    'prefer-destructuring': 'off',
+    'no-underscore-dangle': 'off',
     '@typescript-eslint/no-dupe-class-members': ['error'],
   },
   settings: {
