@@ -119,9 +119,9 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
     }
 
     // todo `querySelector` has bug now, use `querySelectorAll` temporary
-    let axisLinePath = this.axisGroup.querySelectorAll('[name="axis-line"]')[0] as Path;
+    let axisLinePath = this.selection.select('.axis-line').node() as Path;
     if (!axisLinePath) {
-      axisLinePath = this.axisGroup.appendChild(new Path({ name: 'axis-line' }));
+      axisLinePath = this.axisGroup.appendChild(new Path({ className: 'axis-line' }));
     }
     axisLinePath.style.path = path;
     axisLinePath.hide();
@@ -139,7 +139,7 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
     // [todo] Whether to support arc axis title.
   }
 
-  protected updateTicks() {
+  protected getTicksCfg() {
     const {
       tickLine,
       label: labelCfg,
@@ -225,40 +225,13 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
 
       if (subTickCount > 0 && idx < ticks.length - 1) {
         const step = (ticks[idx + 1].value - ticks[idx].value) / (subTickCount + 1);
-        subTickLines.push(subTickStyle(d, idx, step));
+        subTickLines.push(...subTickStyle(d, idx, step));
       }
     });
-
-    this.tickLinesGroup = this.tickLinesGroup
-      .data(tickLines, (d) => d.id)
-      .join(
-        (enter) => enter.append('path').each((ele, datum: any) => ((ele.name = 'axis-tickLine'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum as any)),
-        (exit) => exit?.remove()
-      );
-
-    this.subTickLinesGroup = this.subTickLinesGroup
-      .data(subTickLines.flat(1), (d) => d.id)
-      .join(
-        (enter) => enter.append('path').each((ele, datum) => ((ele.name = 'axis-subTickLine'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum)),
-        (exit) => exit?.remove()
-      );
-
-    this.axisLabelsGroup = this.axisLabelsGroup
-      .data(labels, (d) => d.id)
-      .join(
-        (enter) =>
-          enter
-            .append('text')
-            .each((ele, { angle = 0, ...datum }: any) => ((ele.name = 'axis-label'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum as any)),
-        (exit) => exit?.remove()
-      );
-    this.layoutLabels(labels);
+    return { tickLines, labels, subTickLines };
   }
 
-  private layoutLabels(labels: AxisLabel[]) {
+  protected layoutLabels(labels: AxisLabel[]) {
     const { label: labelCfg } = this.style;
     if (!labelCfg) return;
 

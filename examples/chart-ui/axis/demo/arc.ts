@@ -38,6 +38,7 @@ const arc = new Arc({
     }),
     label: {
       align: 'radial',
+      autoHide: true,
       autoHideTickLine: false,
     },
     tickLine: {

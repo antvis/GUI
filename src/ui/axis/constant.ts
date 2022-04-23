@@ -1,5 +1,5 @@
 import { deepMix } from '@antv/util';
-import type { AxisBaseOptions, TickDatum } from './types';
+import type { AxisBaseOptions } from './types';
 
 export const AXIS_BASE_DEFAULT_OPTIONS: AxisBaseOptions = {
   style: {

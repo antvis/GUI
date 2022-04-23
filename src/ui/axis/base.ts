@@ -1,5 +1,5 @@
 import { Group, Path } from '@antv/g';
-import { maxBy, minBy } from '@antv/util';
+import { isNil, maxBy, minBy } from '@antv/util';
 import { GUI } from '../../core/gui';
 import {
   formatTime,
@@ -16,12 +16,13 @@ import {
   toThousands,
   scale as timeScale,
   deepAssign,
+  select,
 } from '../../util';
 import { Marker } from '../marker';
 import { ORIGIN, COMMON_TIME_MAP } from './constant';
-import { hasOverlap } from './overlap/is-overlap';
-import { AxisBaseOptions, AxisBaseStyleProps, Point } from './types';
+import { AxisBaseStyleProps, Point } from './types';
 import { AxisLabel } from './types/shape';
+import { applyBounds, boundTest } from './utils/helper';
 
 // 注册轴箭头
 // ->
@@ -44,18 +45,14 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   protected axisGroup!: Group;
 
-  protected tickLinesGroup!: Selection;
-
-  protected subTickLinesGroup!: Selection;
-
-  protected axisLabelsGroup!: Selection<AxisLabel['style']>;
+  protected selection!: Selection;
 
   protected get labels(): AxisLabel[] {
-    return this.querySelectorAll('[name="axis-label"]') as AxisLabel[];
+    return (this.selection.select('.axisLabel-group').node() as Group).childNodes as AxisLabel[];
   }
 
   protected get tickLines() {
-    return this.querySelectorAll('[name="axis-tickLine"]');
+    return this.selection.selectAll('.axis-tickLine').nodes();
   }
 
   protected get labelFont() {
@@ -64,13 +61,11 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   public init() {
     this.axisGroup = this.appendChild(new Group({ name: 'axis' }));
-    this.tickLinesGroup = new Selection([], [], this.axisGroup.appendChild(new Group({ name: 'axis-tickLine-group' })));
-    this.axisLabelsGroup = new Selection([], [], this.axisGroup.appendChild(new Group({ name: 'axis-labels-group' })));
-    this.subTickLinesGroup = new Selection(
-      [],
-      [],
-      this.axisGroup.appendChild(new Group({ name: 'axis-subTickLine-group' }))
-    );
+    this.axisGroup.appendChild(new Group({ className: 'tickLine-group' }));
+    this.axisGroup.appendChild(new Group({ className: 'axisLabel-group' }));
+    this.axisGroup.appendChild(new Group({ className: 'subTickLine-group' }));
+
+    this.selection = select(this);
 
     this.update();
   }
@@ -89,13 +84,84 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   protected abstract updateAxisLine(): void;
 
-  protected abstract updateTicks(): void;
+  protected abstract getTicksCfg(): { tickLines: any[]; labels: AxisLabel[]; subTickLines: any[] };
+
+  protected abstract layoutLabels(labels: AxisLabel[]): void;
 
   protected abstract updateAxisTitle(): void;
 
   protected abstract getEndPoints(): Point[];
 
   protected abstract getLabelRotation(label?: AxisLabel): number | undefined;
+
+  protected updateTicks() {
+    const { tickLines, labels, subTickLines } = this.getTicksCfg();
+
+    this.selection
+      .select('.tickLine-group')
+      .selectAll('.axis-tickLine')
+      .data(tickLines, (d) => d.id)
+      .join(
+        (enter) =>
+          enter
+            .append('path')
+            .attr('className', 'axis-tickLine')
+            .each(function (datum) {
+              // @ts-ignore
+              this.attr(datum);
+            }),
+        (update) =>
+          update.each(function (datum) {
+            // @ts-ignore
+            this.attr(datum);
+          }),
+        (exit) => exit?.remove()
+      );
+    this.selection
+      .select('.subTickLine-group')
+      .selectAll('.axis-subTickLine')
+      .data(subTickLines, (d) => d.id)
+      .join(
+        (enter) =>
+          enter
+            .append('path')
+            .attr('className', 'axis-subTickLine')
+            .each(function (datum) {
+              // @ts-ignore
+              this.attr(datum);
+            }),
+        (update) =>
+          update.each(function (datum) {
+            // @ts-ignore
+            this.attr(datum);
+          }),
+        (exit) => exit?.remove()
+      );
+    this.selection
+      .select('.axisLabel-group')
+      .selectAll('.axis-label')
+      .data(labels, (d) => d.id)
+      .join(
+        (enter) =>
+          enter
+            .append('text')
+            .attr('className', 'axis-label')
+            .each(function (datum) {
+              // @ts-ignore
+              this.attr(datum);
+            }),
+        (update) =>
+          update.each(function (datum) {
+            // @ts-ignore
+            this.attr(datum);
+          }),
+        (exit) => exit?.remove()
+      );
+    // [TODO] 确认下，为什么需要在下一帧 bbox 计算才会正确
+    window.requestAnimationFrame(() => {
+      this.layoutLabels(labels);
+    });
+  }
 
   protected autoHideTickLine() {
     if (!this.style.label?.autoHideTickLine) return;
@@ -113,22 +179,26 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     const { label: labelCfg } = this.style;
     if (!labelCfg || !labelCfg.autoEllipsis) return;
 
-    const { ellipsisStep, minLength, maxLength, margin } = labelCfg;
+    const { ellipsisStep, minLength, maxLength } = labelCfg;
     const font = this.labelFont;
     const step = parseLength(ellipsisStep!, font);
-    const max = parseLength(maxLength!, font);
-    // [todo] Enable to ellipsis label when overlap.
+    let max = parseLength(maxLength!, font);
+    // Enable to ellipsis label when overlap.
     // 不限制长度
-    if (max === Infinity) return;
+    if (isNil(max) || max === Infinity) {
+      max = Math.max.apply(
+        null,
+        this.labels.map((d) => d.getBBox().width)
+      );
+    }
     const min = parseLength(minLength!, font);
-
-    for (let allowedLength = max; allowedLength > min; allowedLength -= step) {
-      // 缩短文本
-      this.labelsEllipsis(allowedLength);
+    let source = this.labels;
+    for (let allowedLength = max; allowedLength > min + step; allowedLength -= step) {
+      // Apply ellipsis to the labels overlaps.
+      this.labelsEllipsis(source, allowedLength);
+      source = boundTest(applyBounds(this.labels, labelCfg?.margin));
       // 碰撞检测
-      if (!hasOverlap(this.labels, margin!)) {
-        return;
-      }
+      if (source.length < 1) return;
     }
   }
 
@@ -136,10 +206,12 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
   /**
    * 缩略 labels 到指定长度内
    */
-  public labelsEllipsis(width: number) {
+  public labelsEllipsis(labels: AxisLabel[], width: number) {
     const strategy = this.getLabelEllipsisStrategy(width);
-    this.axisLabelsGroup.each((element, datum, idx) => {
-      element.attr('text', datum[ORIGIN].text ? strategy.call(this, datum[ORIGIN].text, idx) : '');
+    labels.forEach((label) => {
+      const datum = label.style[ORIGIN];
+      // @ts-ignore
+      label.attr('text', datum.text ? strategy.call(this, datum.text) : '');
     });
   }
 
@@ -153,7 +225,7 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     const { type } = this.style.label!;
     if (type === 'text') {
       const font = this.labelFont;
-      return (...args: [string, number]) => getEllipsisText(args[0], width, font);
+      return (...args: [string, number?]) => getEllipsisText(args[0], width, font);
     }
     if (type === 'number') {
       return this.getNumberSimplifyStrategy(width);
@@ -163,7 +235,7 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
       return this.getTimeSimplifyStrategy(width);
     }
     // 默认策略，不做任何处理
-    return (...args: [string, number]) => args[0];
+    return (...args: [string, number?]) => args[0];
   }
 
   /**

@@ -1,5 +1,5 @@
-import { hasOverlap } from '../overlap/is-overlap';
 import { AxisLabel } from '../types/shape';
+import { boundTest } from '../utils/helper';
 
 export function rotateLabel(label: AxisLabel, rotation: number) {
   label.setEulerAngles(rotation);
@@ -21,10 +21,10 @@ export function rotateLabel(label: AxisLabel, rotation: number) {
 }
 
 export function AutoRotate(labels: AxisLabel[], labelCfg: any) {
-  const { optionalAngles = [0, 90], margin } = labelCfg;
+  const { optionalAngles = [0, 90] } = labelCfg;
 
   for (let i = 0; i < optionalAngles.length; i++) {
     labels.forEach((label) => rotateLabel(label, optionalAngles[i]));
-    if (!hasOverlap(labels, margin)) break;
+    if (boundTest(labels).length < 1) break;
   }
 }

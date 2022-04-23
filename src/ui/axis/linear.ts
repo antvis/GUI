@@ -10,6 +10,7 @@ import { LINEAR_DEFAULT_OPTIONS, NULL_ARROW, ORIGIN } from './constant';
 import type { AxisLabel, AxisTitle } from './types/shape';
 import type { LinearOptions, LinearAxisStyleProps as CartesianStyleProps, AxisLineCfg, Point } from './types';
 import { AxisBase } from './base';
+import { applyBounds } from './utils/helper';
 
 // 注册轴箭头
 // ->
@@ -126,9 +127,9 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
       ['L', x2, y2],
     ];
     // todo `querySelector` has bug now, use `querySelectorAll` temporary
-    let axisLinePath = this.axisGroup.querySelectorAll('[name="axis-line"]')[0] as Path;
+    let axisLinePath = this.selection.select('.axis-line').node() as Path;
     if (!axisLinePath) {
-      axisLinePath = this.axisGroup.appendChild(new Path({ name: 'axis-line' }));
+      axisLinePath = this.axisGroup.appendChild(new Path({ className: 'axis-line' }));
     }
     axisLinePath.style.path = path;
     axisLinePath.hide();
@@ -171,9 +172,9 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
   }
 
   protected updateAxisTitle() {
-    let axisTitle = this.axisGroup.querySelectorAll('[name="axis-title"]')[0] as AxisTitle;
+    let axisTitle = this.selection.select('.axis-title').node() as AxisTitle;
     if (!axisTitle) {
-      axisTitle = this.axisGroup.appendChild(new Text({ name: 'axis-title' })) as AxisTitle;
+      axisTitle = this.axisGroup.appendChild(new Text({ className: 'axis-title' })) as AxisTitle;
     }
     axisTitle.hide();
 
@@ -189,7 +190,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     let [offsetX, offsetY] = [0, 0];
 
     // Infer titlePosition. todo how to process the `style` specified by user.
-    const { min, max } = (this.querySelectorAll('[name="axis-labels-group"]')[0] as Group).getBounds();
+    const { min, max } = (this.selection.select('.axisLabel-group').node() as Group).getBounds();
     const [[bx1, by1], [bx2, by2]] = [min, max];
     const { titleAnchor, offset = 0, titlePadding = 0, positionX, positionY } = this.style.title!;
     const titleAttrs: any = { x: spx, y: 0 };
@@ -249,7 +250,7 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     axisTitle.show();
   }
 
-  protected updateTicks() {
+  protected getTicksCfg() {
     const { tickLine, label: labelCfg, subTickLine, ticks = [] } = this.style;
     // todo Extract common utils
     const [[x1, y1], [x2, y2]] = this.getEndPoints();
@@ -326,35 +327,13 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
       }
       if (subTickCount > 0 && idx < ticks.length - 1) {
         const step = (ticks[idx + 1].value - ticks[idx].value) / (subTickCount + 1);
-        subTickLines.push(subTickStyle(d, idx, step));
+        subTickLines.push(...subTickStyle(d, idx, step));
       }
     });
-    this.tickLinesGroup = this.tickLinesGroup
-      .data(tickLines, (d) => d.id)
-      .join(
-        (enter) => enter.append('path').each((ele, datum) => ((ele.name = 'axis-tickLine'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum)),
-        (exit) => exit?.remove()
-      );
-    this.subTickLinesGroup = this.subTickLinesGroup
-      .data(subTickLines.flat(1), (d) => d.id)
-      .join(
-        (enter) => enter.append('path').each((ele, datum) => ((ele.name = 'axis-subTickLine'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum)),
-        (exit) => exit?.remove()
-      );
-    this.axisLabelsGroup = this.axisLabelsGroup
-      .data(labels, (d) => d.id)
-      .join(
-        (enter) => enter.append('text').each((ele, datum) => ((ele.name = 'axis-label'), ele.attr(datum))),
-        (update) => update.each((ele, datum) => ele.attr(datum)),
-        (exit) => exit?.remove()
-      );
-
-    this.layoutLabels(labels);
+    return { tickLines, labels, subTickLines };
   }
 
-  private layoutLabels(labels: AxisLabel[]) {
+  protected async layoutLabels(labels: AxisLabel[]) {
     const { label: labelCfg } = this.style;
     if (!labelCfg) return;
 
@@ -362,15 +341,14 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     const { overlapOrder = [] } = labelCfg;
     const rotation = this.getLabelRotation();
     if (typeof rotation === 'number') this.labels.forEach((label) => rotateLabel(label, rotation));
-
     const autoLayout = new Map<string, Function>([
       ['autoHide', this.autoHideLabel],
       ['autoEllipsis', this.autoEllipsisLabel],
       ['autoRotate', this.autoRotateLabel],
     ]);
-    overlapOrder.forEach((type: any) => {
+    overlapOrder.forEach(async (type: any) => {
       const layout = autoLayout.get(type) || (() => {});
-      layout.call(this, labels);
+      await layout.call(this, labels);
     });
     window.requestAnimationFrame(() => {
       // dispatch layout end events
@@ -403,16 +381,16 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
 
     const { autoHide } = labelCfg;
     const method = (typeof autoHide === 'object' && autoHide.type) || 'greedy';
-    // Do layout after rendered
-    window.requestAnimationFrame(() => {
-      AutoHide(this.labels as AxisLabel[], this.style.label!, method);
-      this.autoHideTickLine();
-    });
+    // [TODO] Do label layout async. Why should use `requestAnimationFrame` (do layout in next frame)
+    // window.requestAnimationFrame(() => {
+    AutoHide(applyBounds(this.labels, labelCfg?.margin) as AxisLabel[], this.style.label!, method);
+    this.autoHideTickLine();
+    // });
   }
 
   private autoRotateLabel() {
     if (!this.style.label?.autoRotate) return;
-    AutoRotate(this.labels, this.style.label ?? { autoRotate: false });
+    AutoRotate(applyBounds(this.labels), this.style.label ?? { autoRotate: false });
   }
 }
 
