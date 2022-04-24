@@ -6,8 +6,12 @@ import { intersect } from './intersect';
  */
 export function applyBounds(labels: AxisLabel[], margin: number[] = [0, 0, 0, 0]) {
   return labels.map((shape) => {
-    const { min, max } = shape.getLocalBounds();
     const rotation = shape.getLocalEulerAngles();
+
+    shape.setLocalEulerAngles(0);
+    const { min, max } = shape.getLocalBounds();
+    shape.setLocalEulerAngles(rotation);
+
     const [top = 0, right = 0, bottom = top, left = right] = margin;
     const [width, height] = [max[0] - min[0], max[1] - min[1]];
     const [boxWidth, boxHeight] = [left + width + right, top + height + bottom];

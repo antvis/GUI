@@ -77,7 +77,16 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     this.updateAxisLine();
     // Trigger update data binding
     this.updateTicks();
+    // [TODO] Do label layout async. Why should use `requestAnimationFrame` (do layout in next frame)
+    window.requestAnimationFrame(() => {
+      const { labels: labelsCfg } = this.getTicksCfg();
+      this.layoutLabels(labelsCfg);
+    });
     this.updateAxisTitle();
+    // Position of axis-title depending on axis-label
+    this.addEventListener('axis-label-layout-end', () => {
+      this.updateAxisTitle();
+    });
   }
 
   public clear() {}
@@ -157,10 +166,6 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
           }),
         (exit) => exit?.remove()
       );
-    // [TODO] 确认下，为什么需要在下一帧 bbox 计算才会正确
-    window.requestAnimationFrame(() => {
-      this.layoutLabels(labels);
-    });
   }
 
   protected autoHideTickLine() {
@@ -194,11 +199,11 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     const min = parseLength(minLength!, font);
     let source = this.labels;
     for (let allowedLength = max; allowedLength > min + step; allowedLength -= step) {
-      // Apply ellipsis to the labels overlaps.
-      this.labelsEllipsis(source, allowedLength);
       source = boundTest(applyBounds(this.labels, labelCfg?.margin));
       // 碰撞检测
       if (source.length < 1) return;
+      // Apply ellipsis to the labels overlaps.
+      this.labelsEllipsis(source, allowedLength);
     }
   }
 

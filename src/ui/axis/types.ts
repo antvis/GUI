@@ -95,7 +95,7 @@ export type AxisLabelCfg = {
   // 处理label重叠的优先级
   overlapOrder?: OverlapType[];
   // 标签外边距，在进行自动避免重叠时的额外间隔
-  margin?: [number, number, number, number];
+  margin?: number[];
 
   // 自动旋转范围
   // 自动旋转时，将会尝试从 min 旋转到 max
@@ -144,6 +144,11 @@ export type AxisLabelCfg = {
    * @description The minimum allowed length in pixels of axis tick labels. If string, the length of given string will be calculated.
    */
   minLength?: string | number;
+  /**
+   * @title 坐标轴垂直方向的最大限制长度
+   * @description The maximum limit length in pixels perpendicular to the axis line. Apply to the case with `rotation`
+   */
+  verticalLimitLength?: number;
 
   // 最小显示 label 数量
   minLabel?: number;
@@ -169,6 +174,8 @@ export type AxisBaseStyleProps = BaseStyleProps & {
   subTickLine?: AxisSubTickLineCfg;
   // label 和 tick 在轴线向量的位置，-1: 向量右侧， 1: 向量左侧
   verticalFactor?: -1 | 1;
+  /** 边界情况 */
+  bounds?: { x1: number; y1: number; x2: number; y2: number };
 };
 
 export type AxisBaseOptions = DisplayObjectConfig<AxisBaseStyleProps>;

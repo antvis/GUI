@@ -55,11 +55,16 @@ const linear = new Linear({
     ticks: tickData,
     label: {
       offset: 4,
-      minLength: 20,
-      maxLength: 80,
+      rotation: 28,
       autoHide: false,
-      autoEllipsis: false,
-      autoRotate: true,
+
+      // 文本发生 overlap 时，自动省略的最大、最小文本长度限制（minLength 适用于避免出现 '...' 的情形）
+      minLength: 15,
+      maxLength: 80,
+      autoEllipsis: true,
+      // 垂直轴方向的限制, 适用于存在自动旋转或者指定旋转的情况
+      verticalLimitLength: 50,
+
       optionalAngles: [20, 30, 45],
       padding: [0, 0, 0, 0],
     },
