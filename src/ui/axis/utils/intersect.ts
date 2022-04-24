@@ -1,9 +1,8 @@
-import { vec2 } from '@antv/matrix-util';
 import { get } from '@antv/util';
 
 type Vec2 = [number, number];
 type Point = { x: number; y: number };
-export type Bounds = { x1: number; y1: number; x2: number; y2: number; rotation?: number };
+export type Bounds = { x1: number; y1: number; x2: number; y2: number; rotation?: number; points?: Point[] };
 
 export type Item = {
   x: number;
@@ -14,29 +13,18 @@ export type Item = {
   visible?: boolean;
   id?: number | string;
 };
-/**
- * 定义投影对象
- */
-type Projection = { min: number; max: number };
 
-const { dot } = vec2;
+function dot(a: number[], b: number[]) {
+  return Math.abs(a[0] * b[0] + a[1] * b[1] + (a[2] || 0) * (b[2] || 0));
+}
 /**
- * @private
- * 1. 获取投影轴
+ * 1. 获取检测轴的单位向量
  */
-function getAxes(points: Point[] /** 多边形的关键点 */): Vec2[] {
-  // 目前先处理 平行矩形 的场景, 其他多边形不处理
-  if (points.length > 4) {
-    return [];
-  }
-  // 获取向量
-  const vector = (start: Point, end: Point): Vec2 => {
-    return [end.x - start.x, end.y - start.y];
-  };
-
+function getAxes(rotation: number): Vec2[] {
   // 由于 矩形的平行原理，所以只有 2 条投影轴: A -> B, B -> C
-  const AB = vector(points[0], points[1]);
-  const BC = vector(points[1], points[2]);
+  const deg = (angle: number) => (angle * 180) / Math.PI;
+  const AB = [Math.cos(deg(rotation)), Math.sin(deg(rotation))] as Vec2;
+  const BC = [-Math.sin(deg(rotation)), Math.cos(deg(rotation))] as Vec2;
 
   return [AB, BC];
 }
@@ -47,63 +35,14 @@ function getAxes(points: Point[] /** 多边形的关键点 */): Vec2[] {
  * 默认绕原点旋转
  */
 function rotateAtPoint(point: Point, deg = 0, origin = { x: 0, y: 0 }): Point {
+  if (deg === 0) return point;
+
   const { x, y } = point;
+  const r = Math.sqrt((origin.x - x) ** 2 + (origin.y - y) ** 2);
   return {
-    x: (x - origin.x) * Math.cos(-deg) + (y - origin.y) * Math.sin(-deg) + origin.x,
-    y: (origin.x - x) * Math.sin(-deg) + (y - origin.y) * Math.cos(-deg) + origin.y,
+    x: origin.x + r * Math.cos((deg / 180) * Math.PI),
+    y: origin.y + r * Math.sin((deg / 180) * Math.PI),
   };
-}
-
-/**
- * @private
- * 转化为顶点坐标数组
- *
- * @param {Object} box
- */
-function getRectPoints(box: Bounds): Point[] {
-  const points = [
-    { x: box.x1, y: box.y1 },
-    { x: box.x2, y: box.y1 },
-    { x: box.x2, y: box.y2 },
-    { x: box.x1, y: box.y2 },
-  ];
-
-  const rotation = box.rotation;
-  if (rotation) {
-    return [
-      rotateAtPoint(points[0], rotation, points[0]),
-      rotateAtPoint(points[1], rotation, points[0]),
-      rotateAtPoint(points[2], rotation, points[0]),
-      rotateAtPoint(points[3], rotation, points[0]),
-    ];
-  }
-
-  return points;
-}
-
-/**
- * @private
- * 2. 获取多边形在投影轴上的投影
- *
- * 向量的点积的其中一个几何含义是：一个向量在平行于另一个向量方向上的投影的数值乘积。
- * 由于投影轴是单位向量（长度为1），投影的长度为 x1 * x2 + y1 * y2
- */
-function getProjection(points: Point[] /** 多边形的关键点 */, axis: Vec2): Projection {
-  // 目前先处理矩形的场景
-  if (points.length > 4) {
-    return { min: 0, max: 0 };
-  }
-
-  const scalars: number[] = [];
-  points.forEach((point) => {
-    scalars.push(dot([point.x, point.y], axis));
-  });
-
-  return { min: Math.min(...scalars), max: Math.max(...scalars) };
-}
-
-function isProjectionOverlap(projection1: Projection, projection2: Projection): boolean {
-  return projection1.max > projection2.min && projection1.min < projection2.max;
 }
 
 function isValidNumber(d: number) {
@@ -121,9 +60,16 @@ export function rectIntersect(a: Bounds, b: Bounds, margin: number = 0): boolean
   return margin > Math.max(b.x1 - a.x2, a.x1 - b.x2, b.y1 - a.y2, a.y1 - b.y2);
 }
 
+function getProjectionRadius(box: Bounds, axis: Vec2, axes: Vec2[]): number {
+  const px = dot(axis, axes[0]);
+  const py = dot(axis, axes[1]);
+
+  return ((box.x2 - box.x1) / 2) * px + ((box.y2 - box.y1) / 2) * py;
+}
+
 /**
- * detect whether two shape is intersected, useful when shape is been rotated
- * 判断两个矩形是否重叠（相交和包含, 是否旋转）
+ * Detect whether two shape is intersected.
+ * Bounds of input boxes is before rotated.
  *
  * - 原理: 分离轴定律
  */
@@ -136,22 +82,25 @@ export function intersect(box1: Bounds, box2: Bounds, margin: number = 0) {
     return rectIntersect(box1, box2, margin);
   }
 
-  // 分别获取 4 个关键点
-  const rect1Points = getRectPoints(box1);
-  const rect2Points = getRectPoints(box2);
+  const c1 = rotateAtPoint({ x: (box1.x2 + box1.x1) / 2, y: (box1.y2 + box1.y1) / 2 }, box1.rotation, {
+    x: box1.x1,
+    y: box1.y1,
+  });
+  const c2 = rotateAtPoint({ x: (box2.x2 + box2.x1) / 2, y: (box2.y2 + box2.y1) / 2 }, box2.rotation, {
+    x: box2.x1,
+    y: box2.y1,
+  });
+  const centerVector = [c1.x - c2.x, c1.y - c2.y];
 
   // 获取所有投影轴
-  const axes = getAxes(rect1Points).concat(getAxes(rect2Points));
+  const axes1 = getAxes(box1.rotation || 0);
+  const axes2 = getAxes(box2.rotation || 0);
+  const axes = axes1.concat(axes2);
 
   for (let i = 0; i < axes.length; i++) {
     const axis = axes[i];
-    const projection1 = getProjection(rect1Points, axis);
-    const projection2 = getProjection(rect2Points, axis);
-
-    // 判断投影轴上的投影是否存在重叠，若检测到存在间隙则立刻退出判断，消除不必要的运算。
-    if (!isProjectionOverlap(projection1, projection2)) {
+    if (getProjectionRadius(box1, axis, axes1) + getProjectionRadius(box2, axis, axes2) <= dot(centerVector, axis))
       return false;
-    }
   }
 
   return true;

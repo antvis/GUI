@@ -1,4 +1,4 @@
-import { Group, Path, Text, CustomEvent } from '@antv/g';
+import { Group, Path, Text, CustomEvent, Rect } from '@antv/g';
 import { get, deepMix } from '@antv/util';
 import { vec2 } from '@antv/matrix-util';
 import { deepAssign, getEllipsisText, getFont } from '../../util';
@@ -333,13 +333,34 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     return { tickLines, labels, subTickLines };
   }
 
-  protected async layoutLabels(labels: AxisLabel[]) {
+  protected updateTicks() {
+    super.updateTicks();
+    const [[x1, y1], [x2, y2]] = this.getEndPoints();
+    if (this.style.label?.verticalLimitLength) {
+      this.selection.select('.axisLabel-group').style(
+        'clipPath',
+        new Rect({
+          style: {
+            // 处于被裁剪图形局部坐标系下
+            // [TODO] 具体的 dom 结构需要调整
+            x: Math.min(x1, x2) - 100,
+            y: Math.min(y1, y2),
+            width: Number.MAX_SAFE_INTEGER,
+            height: this.style.label?.verticalLimitLength || Number.MAX_SAFE_INTEGER,
+          },
+        })
+      );
+    }
+  }
+
+  protected async layoutLabels(labelsCfg: AxisLabel[]) {
     const { label: labelCfg } = this.style;
     if (!labelCfg) return;
 
     // Do labels layout.
     const { overlapOrder = [] } = labelCfg;
     const rotation = this.getLabelRotation();
+    // [TODO] 这里会导致用户设置的 textAlign 不生效，所以需要特别注意
     if (typeof rotation === 'number') this.labels.forEach((label) => rotateLabel(label, rotation));
     const autoLayout = new Map<string, Function>([
       ['autoHide', this.autoHideLabel],
@@ -348,12 +369,20 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
     ]);
     overlapOrder.forEach(async (type: any) => {
       const layout = autoLayout.get(type) || (() => {});
-      await layout.call(this, labels);
+      await layout.call(this, labelsCfg);
     });
-    window.requestAnimationFrame(() => {
-      // dispatch layout end events
-      this.dispatchEvent(new CustomEvent('axis-label-layout-end'));
-    });
+    const rotationAngle = this.labels[0]?.getEulerAngles();
+    if (rotationAngle) {
+      const fontSize = Number(this.labels[0].style.fontSize || 0);
+      // Do label truncate.
+      const limitLength =
+        // [TODO] 需要考虑字体本身的高度, 目前临时直接加
+        ((this.selection.select('.axisLabel-group').node() as Group)!.getBBox().height - fontSize * 1.5) /
+        Math.sin((rotationAngle / 180) * Math.PI);
+      this.labelsEllipsis(this.labels, limitLength);
+    }
+    // dispatch layout end events
+    this.dispatchEvent(new CustomEvent('axis-label-layout-end'));
   }
 
   /** --------- Common utils --------- */
@@ -381,11 +410,8 @@ export class Cartesian extends AxisBase<CartesianStyleProps> {
 
     const { autoHide } = labelCfg;
     const method = (typeof autoHide === 'object' && autoHide.type) || 'greedy';
-    // [TODO] Do label layout async. Why should use `requestAnimationFrame` (do layout in next frame)
-    // window.requestAnimationFrame(() => {
     AutoHide(applyBounds(this.labels, labelCfg?.margin) as AxisLabel[], this.style.label!, method);
     this.autoHideTickLine();
-    // });
   }
 
   private autoRotateLabel() {
