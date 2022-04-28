@@ -4,11 +4,7 @@ import { Text } from '../../../../src';
 import { createDiv } from '../../../utils';
 import { TEXT_INHERITABLE_PROPS } from '../../../../src/util';
 
-const renderer = new CanvasRenderer({
-  enableDirtyRectangleRenderingDebug: false,
-  enableAutoRendering: true,
-  enableDirtyRectangleRendering: true,
-});
+const renderer = new CanvasRenderer();
 
 const div = createDiv();
 
