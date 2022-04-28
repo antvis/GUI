@@ -2,7 +2,7 @@ import { get } from '@antv/util';
 
 type Vec2 = [number, number];
 type Point = { x: number; y: number };
-export type Bounds = { x1: number; y1: number; x2: number; y2: number; rotation?: number; points?: Point[] };
+export type Bounds = { x1: number; y1: number; x2: number; y2: number; rotation?: number };
 
 export type Item = {
   x: number;

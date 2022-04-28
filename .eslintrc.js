@@ -32,6 +32,7 @@ module.exports = {
     'no-dupe-class-members': 'off',
     'prefer-destructuring': 'off',
     'no-underscore-dangle': 'off',
+    'no-compare-neg-zero': 'off',
     '@typescript-eslint/no-dupe-class-members': ['error'],
   },
   settings: {
