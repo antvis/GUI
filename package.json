@@ -43,9 +43,9 @@
   ],
   "dependencies": {
     "@antv/dom-util": "^2.0.3",
-    "@antv/g": "^5.0.1",
-    "@antv/g-canvas": "^1.0.1",
-    "@antv/g-svg": "^1.0.1",
+    "@antv/g": "latest",
+    "@antv/g-canvas": "latest",
+    "@antv/g-svg": "latest",
     "@antv/matrix-util": "^3.0.4",
     "@antv/path-util": "^2.0.15",
     "@antv/scale": "^0.4.3",

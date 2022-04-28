@@ -2,6 +2,7 @@ import { DisplayObject, Rect, Line, Text } from '@antv/g';
 import { deepMix, get } from '@antv/util';
 import { Marker, MarkerStyleProps } from '../marker';
 import type { TextProps, ShapeAttrs } from '../../types';
+import { TEXT_INHERITABLE_PROPS } from '../../util';
 
 export interface IHandleCfg {
   x: number;
@@ -121,7 +122,10 @@ export class Handle extends DisplayObject<IHandleCfg> {
     const { textCfg } = this.attributes;
     return new Text({
       name: 'text',
-      style: textCfg,
+      style: {
+        ...TEXT_INHERITABLE_PROPS,
+        ...textCfg,
+      },
     });
   }
 
