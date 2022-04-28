@@ -11,7 +11,7 @@ export interface IHandleCfg {
   handleType: 'start' | 'end';
   iconCfg: (ShapeAttrs | MarkerStyleProps) & {
     size?: number;
-    radius?: number;
+    radius?: number | string;
     type: 'hide' | 'symbol' | 'default';
     orient: 'horizontal' | 'vertical';
   };

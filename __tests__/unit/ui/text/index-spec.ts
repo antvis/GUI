@@ -2,6 +2,7 @@ import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Text } from '../../../../src';
 import { createDiv } from '../../../utils';
+import { TEXT_INHERITABLE_PROPS } from '../../../../src/util';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -20,6 +21,7 @@ const canvas = new Canvas({
 
 const text = new Text({
   style: {
+    ...TEXT_INHERITABLE_PROPS,
     x: 100,
     y: 10,
     text: 'ABDPabdp\nABDASDPabdp\nABDPabdp',
@@ -84,7 +86,7 @@ describe('text', () => {
   });
   test('background', () => {
     // @ts-ignore
-    expect(text.backgroundShape.attr('stroke')).toBe('transparent');
+    expect(text.backgroundShape.attr('stroke')).toBe('');
     text.update({
       backgroundStyle: {
         lineWidth: 1,

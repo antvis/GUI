@@ -1,7 +1,7 @@
 import { Group, Path, PathCommand, Rect } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
 import { GUIOption } from 'types';
-import { TEXT_INHERITABLE_PROPS } from 'util';
+import { TEXT_INHERITABLE_PROPS } from '../../util';
 import { Text } from '../text';
 import { GUI } from '../../core/gui';
 import { SpeedControlCfg, SpeedControlOptions } from './types';
