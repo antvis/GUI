@@ -1,12 +1,14 @@
 import { deepMix } from '@antv/util';
 import { DisplayObjectConfig } from '@antv/g';
 import type { AxisBaseStyleProps } from './types';
+import { TEXT_INHERITABLE_PROPS } from '../../util/style';
 
 export const AXIS_BASE_DEFAULT_OPTIONS: DisplayObjectConfig<Omit<AxisBaseStyleProps, 'container'>> = {
   style: {
     title: {
       content: '',
       style: {
+        ...TEXT_INHERITABLE_PROPS,
         fontSize: 12,
         fill: 'black',
       },

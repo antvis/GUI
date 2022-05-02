@@ -23,7 +23,9 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
   public static tag = 'axisBase';
 
   protected axisGroup!: Group;
+
   protected selection!: Selection;
+
   protected optimizedTicks: TickDatum[] = [];
 
   protected get labels(): Text[] {
@@ -294,7 +296,7 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
           overlapFunc = overlapCfg;
         } else if (typeof overlapCfg === 'object') {
           overlapFunc = util[overlapCfg.type] || noop;
-          cfg = Object.assign({}, cfg, overlapCfg.cfg);
+          cfg = { ...cfg, ...overlapCfg.cfg };
         } else if (typeof overlapCfg === 'string') {
           overlapFunc = util[overlapCfg] || noop;
         }
