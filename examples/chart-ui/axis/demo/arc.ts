@@ -1,4 +1,4 @@
-import { Canvas } from '@antv/g';
+import { Canvas, Group } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Arc } from '@antv/gui';
 import * as dat from 'dat.gui';
@@ -18,6 +18,7 @@ const canvas = new Canvas({
 
 const arc = new Arc({
   style: {
+    container: canvas.appendChild(new Group()),
     startAngle: -90,
     endAngle: 270,
     radius: 150,
@@ -29,16 +30,18 @@ const arc = new Arc({
       position: 'center',
       offset: [0, -140],
     },
-    ticks: new Array(60).fill(0).map((tick, idx) => {
-      const step = 1 / 60;
-      return {
-        value: idx * step,
-        text: String(idx),
-      };
-    }),
+    ticks: Array(60)
+      .fill(0)
+      .map((tick, idx) => {
+        const step = 1 / 60;
+        return {
+          value: idx * step,
+          text: String(idx),
+        };
+      }),
     label: {
       align: 'radial',
-      autoHide: true,
+      // autoHide: true,
       autoHideTickLine: false,
     },
     tickLine: {

@@ -95,7 +95,6 @@ import { Linear, Arc, Helix } from '@antv/gui';
 | rotate           | <code>number</code>                                         | 范围[-90, 90] 手动指定旋转角度，配置后自动旋转失效                 | ``             |
 | autoHide         | <code>boolean</code>                                        | label 过多时隐藏部分                                               | `true`         |
 | autoHideTickLine | <code>boolean</code>                                        | 隐藏 label 时，同时隐藏掉其对应的 tickLine                         | `true`         |
-| minLabel         | <code>number</code>                                         | 最小 label 数量                                                    | ``             |
 | autoEllipsis     | <code>boolean</code>                                        | label 过长时缩略                                                   | `true`         |
 | ellipsisStep     | <code>number \| string</code>                               | 缩略步长，传入 string 时将计算其长度（下同）                       | ``             |
 | minLength        | <code>number \| string</code>                               | label 的最小长度                                                   | ``             |

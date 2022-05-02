@@ -54,18 +54,18 @@ const axis = new Linear({
     endPos: [600, 300],
     ticks: tickData,
     title: {
-      content: 'Axis title',
+      content: 'Axis Title',
     },
     label: {
       minLength: 20,
       maxLength: 80,
       autoRotate: true,
       autoHide: false,
-      autoHideTickLine: true,
       autoEllipsis: false,
       optionalAngles: [20, 30, 45],
-      margin: [0, 0, 0, 0],
-      overlapOrder: ['autoRotate', 'autoEllipsis', 'autoHide'],
+      style: {
+        textAlign: 'start',
+      },
     },
     axisLine: {
       arrow: {
@@ -84,21 +84,12 @@ canvas.appendChild(axis);
 /** -------------------------配置区域--------------------------------------- */
 window.ConfigPanel(axis, '样式', {
   'label.style.fontSize': { label: '标签字号', value: 10, type: 'number', step: 1, range: [5, 30] },
-  'label.margin': {
-    label: '标签左右间距',
-    value: '[0,0]',
-    options: [
-      { name: '[0,0]', value: [0, 0] },
-      { name: '[0,2,0,2]', value: [0, 2, 0, 2] },
-      { name: '[0,4,0,4]', value: [0, 4, 0, 4] },
-    ],
-  },
-  'label.autoRotate': { label: '自动旋转', value: true },
+  'label.style.textAlign': { label: '标签对齐方式', value: 'left', options: ['start', 'center', 'end'] },
   'label.autoEllipsis': { label: '自动省略', value: false },
-  'label.minLength': { label: '最小缩略长度', value: 20, type: 'number', step: 1, range: [20, 40] },
-  'label.maxLength': { label: '标签最大长度', value: 80, type: 'number', step: 1, range: [20, 120] },
+  'label.minLength': { label: '最小缩略长度', value: 20, type: 'number', step: 5, range: [20, 200] },
+  'label.maxLength': { label: '标签最大长度', value: 160, type: 'number', step: 5, range: [20, 200] },
+  'label.autoRotate': { label: '自动旋转', value: true },
   'label.autoHide': { label: '自动隐藏', value: false },
-  'label.autoHideTickLine': { label: '自动隐藏刻度线', value: true },
 });
 // const labelMin = labelFolder
 //   .add(labelCfg, '最少标签数量', 1, 5)

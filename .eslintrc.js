@@ -19,6 +19,7 @@ module.exports = {
     'no-sequences': 'off',
     'no-plusplus': 'off',
     'no-param-reassign': 'warn',
+    'no-restricted-syntax': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn'],
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',

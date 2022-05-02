@@ -1,4 +1,4 @@
-import { Canvas, Rect } from '@antv/g';
+import { Canvas, Rect, Group } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Linear } from '@antv/gui';
 import { Band as BandScale } from '@antv/scale';
@@ -38,19 +38,21 @@ function createAxis(startPos, endPos, tickData, type, formatter = (item) => item
   rect.appendChild(
     new Linear({
       style: {
+        container: canvas.appendChild(new Group()),
         startPos,
         endPos,
         ticks: createTickData(tickData),
         label: {
           type,
           formatter,
-          rotation: 0,
+          rotate: 0,
           maxLength: 80,
           minLength: 20,
-          autoHide: true,
-          autoEllipsis: false,
+          autoHide: false,
+          autoEllipsis: true,
           alignTick: true,
           autoHideTickLine: false,
+          margin: [0, 0, 0, 2],
         },
       },
     })
@@ -62,14 +64,8 @@ const data6 = ['2020-12-27', ...data5];
 const data7 = ['2020-12-26', ...data6];
 
 // [todo] 优化日期轴标签展示
-
-createAxis([50, 50], [400, 50], data5, 'text');
 createAxis([50, 100], [400, 100], data5, 'time');
-
-createAxis([50, 180], [400, 180], data6, 'text');
 // 日期优化展示
 createAxis([50, 230], [400, 230], data6, 'time');
-
-createAxis([50, 310], [400, 310], data7, 'text');
 // 日期优化展示，始终展示最后一个标签（全称）
 createAxis([50, 360], [400, 360], data7, 'time');

@@ -115,7 +115,11 @@
       "./jest.setup.js"
     ],
     "collectCoverageFrom": [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "!**/checkbox/**",
+      "!**/button/**",
+      "!**/breadcrumb/**",
+      "!**/(countdown|statistic|link|toolbox)/**"
     ],
     "globals": {
       "ts-jest": {
