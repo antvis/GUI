@@ -12,11 +12,11 @@ describe('Constraint Layout', () => {
     ax: undefined,
     ay: undefined,
     aw: 20,
-    ah: bounds.height,
+    ah: bounds!.height,
     bx: undefined,
     by: undefined,
     bw: undefined,
-    bh: bounds.height,
+    bh: bounds!.height,
   };
 
   const limitSize = Number.MAX_VALUE;
@@ -77,9 +77,9 @@ describe('Constraint Layout', () => {
     expect((ah = constraint.get('ay'))).toBe(bounds.bottom - ah - bh - gap);
 
     // Limit the maxHeight of bh.
-    constraint.set('bounds.height', bounds.height);
+    constraint.set('bounds.height', bounds!.height);
     constraint.addConstraint(['bh'], '<=', [0.8, 'bounds.height']);
-    expect(constraint.get('bh')).toBe(bounds.height * 0.8);
+    expect(constraint.get('bh')).toBe(bounds!.height * 0.8);
     drawRect();
   });
 });
