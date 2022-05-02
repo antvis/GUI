@@ -1,4 +1,4 @@
-import { DisplayObject } from '@antv/g';
+import { DisplayObject, Path } from '@antv/g';
 import { DegToRad } from '../util';
 import { Bounds } from './bounds';
 
@@ -99,12 +99,11 @@ export function intersect(a: DisplayObject<any>, b: DisplayObject<any>, margin?:
     intersectBoxLine(q, p[2], p[3], p[6], p[7]);
   const debug = localStorage.getItem('__debug__');
   // @ts-ignore
-  if (debug && window.canvas && window.Path) {
+  if (debug && window.canvas) {
     const draw = (points: any[], stroke = 'red') =>
       // @ts-ignore
       window.canvas.appendChild(
-        // @ts-ignore
-        new window.Path({
+        new Path({
           style: {
             lineWidth: 1,
             stroke,

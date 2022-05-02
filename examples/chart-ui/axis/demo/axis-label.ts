@@ -94,7 +94,7 @@ const arc = new Arc({
 });
 canvas.appendChild(arc);
 
-// /** -------------------------配置区域--------------------------------------- */
+/** -------------------------配置区域--------------------------------------- */
 window.ConfigPanel(linear, 'Linear axis label', {
   'label.autoEllipsis': { label: '自动省略', value: true },
   'label.minLength': { label: '最小长度', value: 10, type: 'number', step: 2, range: [14, 20] },
@@ -117,11 +117,6 @@ window.ConfigPanel(
     'label.style.fontSize': { label: '标签字体大小', value: 10, type: 'number', step: 1, range: [0, 40] },
     'label.style.fontWeight': { label: '标签字重', value: 'normal', options: ['normal', 'bold'] },
     'label.style.fill': { label: '标签字体颜色', value: '#000', type: 'color' },
-    'label.align': {
-      label: '标签与轴线对齐方式',
-      value: 'normal',
-      options: ['normal', { name: '径向', value: 'radial' }, { name: '切线方向', value: 'tangential' }],
-    },
   },
   { closed: true }
 );

@@ -76,7 +76,7 @@ const arc = new Arc({
 });
 canvas.appendChild(arc);
 
-// /** -------------------------配置区域--------------------------------------- */
+/** -------------------------配置区域--------------------------------------- */
 window.ConfigPanel(linear, 'Linear axis title', {
   'title.style.fill': { label: '轴标题填充色', value: '#416180', type: 'color' },
   'title.style.fontSize': { label: '轴标题字体大小', value: 10, type: 'number', step: 2, range: [10, 30] },
@@ -92,7 +92,7 @@ window.ConfigPanel(linear, 'Linear axis title', {
   },
   'title.titleAnchor': { label: '轴标题锚点位置', value: 'end', options: ['start', 'center', 'end'] },
   'title.titlePadding': { label: '轴标题与轴标签距离', value: 4, type: 'number', step: 0.5, range: [-10, 10] },
-  'title.offset': { label: '轴标题沿轴线偏移距离', value: 0, type: 'number', step: 0.5, range: [-20, 20] },
+  'title.style.dx': { label: '轴标题沿轴线偏移距离', value: 0, type: 'number', step: 0.5, range: [-20, 20] },
   'title.maxLength': { label: '轴标题最大长度', value: 260, type: 'number', step: 8, range: [0, 400] },
 });
 

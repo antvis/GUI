@@ -72,14 +72,14 @@ describe('Constraint Layout', () => {
     drawRect();
     let bh;
     let ah;
-    expect((bh = constraint.get('bh'))).toBe(bounds.height - 20 - gap); // bh: 168
+    expect((bh = constraint.get('bh'))).toBe(bounds.height! - 20 - gap); // bh: 168
     expect(constraint.get('by')).toBe(bounds.bottom - bh);
     expect((ah = constraint.get('ay'))).toBe(bounds.bottom - ah - bh - gap);
 
     // Limit the maxHeight of bh.
-    constraint.set('bounds.height', bounds!.height);
+    constraint.set('bounds.height', bounds.height!);
     constraint.addConstraint(['bh'], '<=', [0.8, 'bounds.height']);
-    expect(constraint.get('bh')).toBe(bounds!.height * 0.8);
+    expect(constraint.get('bh')).toBe(bounds.height! * 0.8);
     drawRect();
   });
 });

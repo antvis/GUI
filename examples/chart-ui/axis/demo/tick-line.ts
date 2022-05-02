@@ -102,23 +102,13 @@ const arc = new Arc({
 });
 canvas.appendChild(arc);
 
-// /** -------------------------配置区域--------------------------------------- */
-window.ConfigPanel(linear, '样式', {
+/** -------------------------配置区域--------------------------------------- */
+window.ConfigPanel([linear, arc], '样式', {
   'tickLine.style.stroke': { label: '刻度线颜色', value: '#416180', type: 'color' },
   'tickLine.style.lineWidth': { label: '刻度线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
   'tickLine.len': { label: '刻度线长度', value: 6, type: 'number', step: 1, range: [0, 10] },
   'subTickLine.style.stroke': { label: '子刻度线颜色', value: '#416180', type: 'color' },
   'subTickLine.style.lineWidth': { label: '子刻度线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
   'subTickLine.len': { label: '子刻度线长度', value: 4, type: 'number', step: 1, range: [0, 10] },
-  'subTickLine.count': { label: '子刻度线数量', value: 0, type: 'number', step: 1, range: [0, 4] },
-});
-
-window.ConfigPanel(arc, '样式', {
-  'tickLine.style.stroke': { label: '刻度线颜色', value: '#416180', type: 'color' },
-  'tickLine.style.lineWidth': { label: '刻度线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
-  'tickLine.len': { label: '刻度线长度', value: 6, type: 'number', step: 1, range: [0, 10] },
-  'subTickLine.style.stroke': { label: '子刻度线颜色', value: '#416180', type: 'color' },
-  'subTickLine.style.lineWidth': { label: '子刻度线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
-  'subTickLine.len': { label: '子刻度线长度', value: 4, type: 'number', step: 1, range: [0, 10] },
-  'subTickLine.count': { label: '子刻度线数量', value: 4, type: 'number', step: 1, range: [0, 8] },
+  'subTickLine.count': { label: '子刻度线数量', value: 0, type: 'number', step: 1, range: [0, 8] },
 });

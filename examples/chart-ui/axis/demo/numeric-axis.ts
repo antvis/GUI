@@ -110,23 +110,11 @@ createAxis([60, 586], [60, 436], {
   },
 });
 
-// /** -------------------------配置区域--------------------------------------- */
-window.ConfigPanel(axis1, 'Axis1: Limit title in bounds', {
+/** -------------------------配置区域--------------------------------------- */
+window.ConfigPanel([axis1, axis2], 'Limit title in bounds', {
   'title.content': {
     label: '标题文本',
     value: 'Axis title',
     options: ['Axis title', 'Quantitative Axis long long long'],
   },
 });
-window.ConfigPanel(
-  axis2,
-  'Axis2: Limit title in bounds',
-  {
-    'title.content': {
-      label: '标题文本',
-      value: 'Axis title',
-      options: ['Axis title', 'Quantitative Axis long long long long'],
-    },
-  },
-  { closed: true }
-);

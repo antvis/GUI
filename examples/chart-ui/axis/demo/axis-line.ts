@@ -34,7 +34,7 @@ const linear = new Linear({
       style: {
         fontSize: 10,
         fontWeight: 'bold',
-      }
+      },
     },
     axisLine: {
       style: {
@@ -45,12 +45,12 @@ const linear = new Linear({
       arrow: {
         start: null,
         end: null,
-      }
+      },
     },
     label: {
       style: {
-        fontSize: 10
-      }
+        fontSize: 10,
+      },
     },
   },
 });
@@ -68,7 +68,7 @@ const arc = new Arc({
       style: {
         fontSize: 10,
         fontWeight: 'bold',
-      }
+      },
     },
     axisLine: {
       style: {
@@ -79,26 +79,45 @@ const arc = new Arc({
       arrow: {
         start: null,
         end: null,
-      }
+      },
     },
     label: {
       style: {
-        fontSize: 10
-      }
+        fontSize: 10,
+      },
     },
   },
 });
 canvas.appendChild(arc);
 
-// /** -------------------------配置区域--------------------------------------- */
+/** -------------------------配置区域--------------------------------------- */
 window.ConfigPanel(linear, 'Linear axis line', {
   'axisLine.style.stroke': { label: '轴线描边色', value: '#416180', type: 'color' },
-  'axisLine.style.lineWidth': { label: '轴线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5], },
-  'axisLine.arrow.start': { label: '轴线起始箭头', value: '关闭', options: [{ name: '关闭', value: null }, { name: '开启', value: {} },] },
-  'axisLine.arrow.end': { label: '轴线终止箭头', value: '关闭', options: [{ name: '关闭', value: null }, { name: '开启', value: {} },] },
+  'axisLine.style.lineWidth': { label: '轴线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
+  'axisLine.arrow.start': {
+    label: '轴线起始箭头',
+    value: '关闭',
+    options: [
+      { name: '关闭', value: null },
+      { name: '开启', value: {} },
+    ],
+  },
+  'axisLine.arrow.end': {
+    label: '轴线终止箭头',
+    value: '关闭',
+    options: [
+      { name: '关闭', value: null },
+      { name: '开启', value: {} },
+    ],
+  },
 });
 
-window.ConfigPanel(arc, 'Arc axis line', {
-  'axisLine.style.stroke': { label: '轴线描边色', value: '#416180', type: 'color' },
-  'axisLine.style.lineWidth': { label: '轴线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5], },
-}, { closed: true });
+window.ConfigPanel(
+  arc,
+  'Arc axis line',
+  {
+    'axisLine.style.stroke': { label: '轴线描边色', value: '#416180', type: 'color' },
+    'axisLine.style.lineWidth': { label: '轴线粗细', value: 0.5, type: 'number', step: 0.5, range: [0, 5] },
+  },
+  { closed: true }
+);

@@ -16,6 +16,7 @@ window.dat = require('dat.gui');
  *   });
  */
 window.ConfigPanel = (instance, title, cfg, guiCfg) => {
+  const instances = Array.isArray(instance) ? instance : [instance];
   const $wrapper = document.getElementById('container');
   const datGUI = new dat.GUI({ autoPlace: true, closeOnTop: true, ...(guiCfg || {}) });
   $wrapper.appendChild(datGUI.domElement);
@@ -32,21 +33,21 @@ window.ConfigPanel = (instance, title, cfg, guiCfg) => {
     const range = d.range || [];
     if (d.type === 'color') {
       styleFolder.addColor(styleCfg, d.label).onChange((value) => {
-        instance.update(util.set({}, key, value));
+        instances.forEach((d) => d.update(util.set({}, key, value)));
       });
     } else if (d.type === 'number') {
       styleFolder
         .add(styleCfg, d.label, range[0], range[1])
         .step(d.step || 1)
         .onChange((value) => {
-          instance.update(util.set({}, key, value));
+          instances.forEach((d) => d.update(util.set({}, key, value)));
         });
     } else {
       const options = d.options ? d.options.map((d) => (typeof d !== 'object' ? { name: d, value: d } : d)) : [];
       const guiOptions = d.options && options.map((d) => d.name);
       styleFolder.add(styleCfg, d.label, guiOptions).onChange((value) => {
         const option = options.find((d) => d.name === value);
-        instance.update(util.set({}, key, option ? option.value : value));
+        instances.forEach((d) => d.update(util.set({}, key, option ? option.value : value)));
       });
     }
   });
