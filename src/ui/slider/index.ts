@@ -441,6 +441,7 @@ export class Slider extends GUI<SliderCfg> {
     let type!: 'hide' | 'default' | 'symbol';
     if (!show) {
       type = 'hide';
+      // @ts-ignore
       tempStyle = {
         cursor,
         x: -size / 2,
@@ -460,6 +461,7 @@ export class Slider extends GUI<SliderCfg> {
       };
     } else {
       type = 'symbol';
+      // @ts-ignore
       tempStyle = {
         ...style,
         cursor,

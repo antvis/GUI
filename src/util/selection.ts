@@ -201,35 +201,33 @@ export class Selection<T = any> {
     return new Selection<T>(elements, null, this._parent, this._document);
   }
 
-  each(callback: (datum: T, index: number) => any): Selection<T> {
+  each<E = any>(callback: (context: E & G2Element, datum: T, index: number) => any): Selection<T> {
     for (let i = 0; i < this._elements.length; i++) {
       const element = this._elements[i];
       const datum = element.__data__;
-      callback.call(element, datum, i);
+      callback(element, datum, i);
     }
     return this;
   }
 
   attr(key: string, value: any): Selection<T> {
     const callback = typeof value !== 'function' ? () => value : value;
-    this.each(function (d, i) {
-      if (value !== undefined) this[key] = callback.call(this, d, i);
+    this.each((context, d, i) => {
+      if (value !== undefined) context[key] = callback.call(context, d, i);
     });
     return this;
   }
 
   style(key: string, value: any): Selection<T> {
     const callback = typeof value !== 'function' ? () => value : value;
-    this.each(function (d, i) {
-      if (value !== undefined) this.style[key] = callback.call(this, d, i);
+    this.each((context, d, i) => {
+      if (value !== undefined) context.style[key] = callback.call(context, d, i);
     });
     return this;
   }
 
   on(event: string, handler: any) {
-    this.each(function () {
-      this.addEventListener(event, handler);
-    });
+    this.each((context) => context.addEventListener(event, handler));
     return this;
   }
 

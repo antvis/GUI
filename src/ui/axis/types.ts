@@ -1,12 +1,16 @@
-import { BaseStyleProps } from '@antv/g';
+import type { Group } from '@antv/g';
+import type { BaseStyleProps, TextStyleProps } from '@antv/g';
 import type { MarkerStyleProps } from '../marker';
 import type { DisplayObjectConfig, LineProps, ShapeAttrs, TextProps } from '../../types';
+import type { OverlapCallback } from './overlap';
 
 export type LabelType = 'text' | 'number' | 'time';
 export type Position = 'start' | 'center' | 'end';
 export type AxisType = 'linear' | 'arc' | 'helix';
 export type OverlapType = 'autoRotate' | 'autoEllipsis' | 'autoHide';
-
+export type AxisOrient = 'left' | 'right' | 'top' | 'bottom' | 'outside' | 'inside';
+// `tip` is the origin text of label.
+export type AxisTextStyleProps = TextStyleProps & { id?: string; tip?: string; rotation?: number };
 /**
  * @description tick 元数据类型: value, text?, state?, id?
  */
@@ -25,17 +29,13 @@ export type AxisTitleCfg = {
    */
   titleAnchor?: Position;
   /**
-   * The offset in pixels of the axis title along the axis line.
-   */
-  offset?: number;
-  /**
    * The padding in pixels between the axis labels and axis title.
    */
   titlePadding?: number;
   /**
    * Rotation angle of axis title.
    */
-  rotation?: number;
+  rotate?: number;
   /**
    * Custom X position of the axis title relative to the axis line, overriding the standard layout.
    */
@@ -48,15 +48,21 @@ export type AxisTitleCfg = {
    * The maximum allowed length in pixels of axis title.
    */
   maxLength?: number;
+  /**
+   * Adjust AxisTitle not out-of bounds, which is relate to the position of AxisGroup.
+   */
+  bounds?: { x1?: number; y1?: number; x2?: number; y2?: number };
   style?: Omit<TextProps, 'text'>;
+  animate?: boolean;
 };
 
 export type AxisLineCfg = {
   style?: ShapeAttrs;
   arrow?: {
-    start?: MarkerStyleProps | null;
-    end?: MarkerStyleProps | null;
+    start?: Partial<MarkerStyleProps> | null;
+    end?: Partial<MarkerStyleProps> | null;
   };
+  animate?: boolean;
 };
 
 export type AxisTickLineCfg = {
@@ -104,9 +110,9 @@ export type AxisLabelCfg = {
   // rotateStep?: number;
   /**
    * @title Auto Rotate
-   * @description The strategy to use for resolving overlap of axis labels by rotating labels.
+   * @description The strategy to use for resolving overlap of axis labels by rotating labels. Auto Rotate will adjust label align.
    */
-  autoRotate?: boolean;
+  autoRotate?: boolean | string | { type: string; cfg?: any } | OverlapCallback;
   /**
    * @description Optional angels to rotate when the autoRotate strategy is applied.
    */
@@ -114,17 +120,15 @@ export type AxisLabelCfg = {
   /**
    * Rotation degree of axis label. If specified, `autoRotate` will be ignore.
    */
-  rotation?: number;
+  rotate?: number;
   /**
    * @title Auto Hide
    * @description The strategy to use for resolving overlap of axis labels by hiding overlapped labels.
    *
    * If set to true or { type: "parity" }, a strategy of removing every other label is used (this works well for standard linear axes).
    * If set to "greedy", a linear scan of the labels is performed, removing any label that overlaps with the last visible label
-   *
-   * todo Support custom AutoHide strategy
    */
-  autoHide?: boolean | { type: 'parity' | 'greedy' };
+  autoHide?: boolean | string | { type: string; cfg?: any } | OverlapCallback;
   // 隐藏 label 时，同时隐藏掉其对应的 tickLine
   /**
    * @title Auto Hide TickLine
@@ -135,28 +139,39 @@ export type AxisLabelCfg = {
    * @title Auto Ellipsis
    * @description The strategy to use for limit the length of axis tick labels (in pixel).
    */
-  autoEllipsis?: boolean;
+  autoEllipsis?: boolean | string | { type: string; cfg?: any } | OverlapCallback;
   /**
-   * @description The maximum allowed length in pixels of axis tick labels. If string, the length of given string will be calculated.
-   */
-  maxLength?: string | number;
-  /**
-   * @description The minimum allowed length in pixels of axis tick labels. If string, the length of given string will be calculated.
+   * @description The minimum text length in pixels of axis tick labels. If string, the length of given string will be calculated.
    */
   minLength?: string | number;
   /**
-   * @title 坐标轴垂直方向的最大限制长度
-   * @description The maximum limit length in pixels perpendicular to the axis line. Apply to the case with `rotation`
+   * @description The maximum text length in pixels of axis tick labels. If string, the length of given string will be calculated.
    */
-  verticalLimitLength?: number;
+  maxLength?: string | number;
 
-  // 最小显示 label 数量
+  // 最小显示 label 数量 [todo] 是否需要保留
   minLabel?: number;
   // 缩略步长，字符串长度或数值长度
   ellipsisStep?: string | number;
+
+  /**
+   * @title Show the first tick label.
+   * @description Whether to show the label of the first tick. It is auto determined by default, it means if labels are overlapped, the first label maybe hidden.
+   */
+  showFirst?: boolean;
+  /**
+   * @title Show the last tick label.
+   * @description Whether to show the label of the last tick. It is auto determined by default, it means if labels are overlapped, the last label maybe hidden.
+   */
+  showLast?: boolean;
 };
 
 export type AxisBaseStyleProps = BaseStyleProps & {
+  /**
+   * 组件的容器. TODO make it required.
+   */
+  container: Group;
+
   type?: AxisType;
   // 标题
   title?: AxisTitleCfg;
@@ -164,7 +179,7 @@ export type AxisBaseStyleProps = BaseStyleProps & {
   axisLine?: AxisLineCfg;
   // 刻度数据
   ticks?: TickDatum[];
-  // [todo] 刻度数量阈值，超过则进行重新采样
+  // 刻度数量阈值，超过则进行重新采样
   ticksThreshold?: false | number;
   // 刻度线
   tickLine?: AxisTickLineCfg;
@@ -174,8 +189,6 @@ export type AxisBaseStyleProps = BaseStyleProps & {
   subTickLine?: AxisSubTickLineCfg;
   // label 和 tick 在轴线向量的位置，-1: 向量右侧， 1: 向量左侧
   verticalFactor?: -1 | 1;
-  /** 边界情况 */
-  bounds?: { x1: number; y1: number; x2: number; y2: number };
 };
 
 export type AxisBaseOptions = DisplayObjectConfig<AxisBaseStyleProps>;

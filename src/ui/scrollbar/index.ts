@@ -294,7 +294,7 @@ export class Scrollbar extends GUI<Required<ScrollbarCfg>> {
   private onTrackClick = (e: any) => {
     const { x, y, thumbLen } = this.attributes;
     const [top, , , left] = this.padding;
-    const basePos = this.getOrientVal([x + left, y + top]);
+    const basePos = this.getOrientVal([(x as number) + left, (y as number) + top]);
     const clickPos = this.getOrientVal(getEventPos(e)) - thumbLen / 2;
     const value = this.valueOffset(clickPos - basePos, true);
     this.setValue(value);

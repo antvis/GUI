@@ -20,6 +20,6 @@ export type {
   HelixOptions,
 };
 
-export { Cartesian as Linear } from './linear';
+export { Linear as Linear } from './linear';
 export { Arc } from './arc';
 export { Helix } from './helix';

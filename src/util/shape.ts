@@ -1,4 +1,6 @@
-import { DisplayObject } from 'types';
+import { Text, DisplayObject, TextStyleProps } from '@antv/g';
+import { defined } from './defined';
+import { select } from './selection';
 
 /**
  * 获得图形的x、y、width、height
@@ -20,4 +22,18 @@ export function getShapeSpace(shape: DisplayObject) {
     width: max[0] - min[0],
     height: max[1] - min[1],
   };
+}
+
+export function createTempText(group: DisplayObject, attrs: TextStyleProps): Text {
+  const textNode = select(group).append('text').node() as Text;
+  textNode.attr({ ...attrs, visibility: 'hidden' });
+
+  return textNode;
+}
+
+export function applyStyle<S>(shape: DisplayObject<S>, style: Partial<S>) {
+  for (const [key, value] of Object.entries(style)) {
+    // @ts-ignore
+    if (defined(value)) shape.style[key] = value;
+  }
 }

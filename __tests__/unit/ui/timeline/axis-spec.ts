@@ -18,9 +18,13 @@ const canvas = new Canvas({
   renderer,
 });
 // 2022年1月的日期数据
-const date = new Array(20).fill(undefined).map((_, id) => ({ date: new Date(2022, 0, id).toLocaleString('zh-CN') }));
+const date = Array(20)
+  .fill(undefined)
+  .map((_, id) => ({ date: new Date(2022, 0, id).toLocaleString('zh-CN') }));
 // 2021年1月的日期数据
-const date2 = new Array(15).fill(undefined).map((_, id) => ({ date: new Date(2021, 0, id).toLocaleString('zh-CN') }));
+const date2 = Array(15)
+  .fill(undefined)
+  .map((_, id) => ({ date: new Date(2021, 0, id).toLocaleString('zh-CN') }));
 describe('play axis', () => {
   test('slider', () => {
     const slideraxis = new SliderAxis({

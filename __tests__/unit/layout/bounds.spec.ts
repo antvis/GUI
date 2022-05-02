@@ -2,7 +2,7 @@ import { Bounds } from '../../../src/layout/bounds';
 
 describe('Bounds', () => {
   it('new Bounds(), getter left right top bottom width and height', () => {
-    const bounds = new Bounds(20, 20, 100, 220);
+    const bounds = new Bounds({ left: 20, top: 20, right: 100, bottom: 220 });
 
     expect(bounds.left).toBe(20);
     expect(bounds.right).toBe(100);

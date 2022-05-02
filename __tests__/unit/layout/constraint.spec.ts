@@ -6,7 +6,7 @@ import { createCanvas } from '../../utils/render';
 const canvas = createCanvas();
 
 describe('Constraint Layout', () => {
-  const bounds = new Bounds(20, 20, 100, 220);
+  const bounds = new Bounds({ left: 20, top: 20, right: 100, bottom: 220 });
 
   const vars = {
     ax: undefined,
@@ -54,7 +54,7 @@ describe('Constraint Layout', () => {
   });
 
   it('new Constraint(). A + B (vertical)', () => {
-    const bounds = new Bounds(20 + 150, 20, 100 + 150, 220);
+    const bounds = new Bounds({ left: 20 + 150, top: 20, right: 100 + 150, bottom: 220 });
     constraint.update({ ax: bounds.left, ay: bounds.top, bx: bounds.left, ah: 20, bw: bounds.width, aw: bounds.width });
 
     constraint.addConstraint(['bh', 'ah', gap], '=', bounds.height);

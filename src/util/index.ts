@@ -10,4 +10,5 @@ export * from './time';
 export * from './deep-assign';
 export * from './geometry';
 export * from './throttle';
-export * from './selections';
+export * from './selection';
+export * from './defined';

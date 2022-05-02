@@ -1,6 +1,6 @@
 import { Group, Path, PathCommand, Rect } from '@antv/g';
 import { deepMix, isFunction } from '@antv/util';
-import { GUIOption } from 'types';
+import { GUIOption } from '../../types';
 import { Text } from '../text';
 import { GUI } from '../../core/gui';
 import { SpeedControlCfg, SpeedControlOptions } from './types';
@@ -115,7 +115,7 @@ export class SpeedControl extends GUI<Required<SpeedControlCfg>> {
           path: this.linePath(3.5, 0) as PathCommand[],
         },
       });
-    this.lineShapes = new Array(5).fill(undefined).map(mapLines);
+    this.lineShapes = Array(5).fill(undefined).map(mapLines);
     this.lineShapes[0].translateLocal(0, 2);
     this.lineShapes[1].translateLocal(0, 4);
     this.lineShapes[2].translateLocal(0, 7);

@@ -22,6 +22,7 @@ export const reset = ({ size = 24, stroke = '#363636' }): DisplayObject => {
     },
   });
   // path 按照 24px 的进行绘制，然后进行缩放
+  // @ts-ignore
   path.setAttribute('origin', [0.5, 0.5]);
   path.scale(size / 24);
 

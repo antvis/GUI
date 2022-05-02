@@ -96,8 +96,12 @@ export class Constraint {
       '>=': kiwi.Operator.Ge,
     };
     const cn = new kiwi.Constraint(new kiwi.Expression(...exprs), Operator[operator], rhsExpression, strength);
-    this.solver.addConstraint(cn);
-    this.constraints.push(cn);
+    try {
+      this.solver.addConstraint(cn);
+      this.constraints.push(cn);
+    } catch (e) {
+      console.warn(e);
+    }
   }
 
   public collect(): any {
