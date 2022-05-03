@@ -124,7 +124,7 @@ describe('Utils for detect intersect', () => {
   it('intersect box and line', () => {
     const box1 = [30, 20, 50, 20, 50, 40, 30, 40];
     const box = Box(box1);
-    const drawLine = (line) =>
+    const drawLine = (line: any) =>
       canvas.appendChild(
         new Path({
           style: {

@@ -21,7 +21,7 @@ function equidistance(orient: string | null, labels: Text[], cfg?: any) {
   const parityHide = methods.parity;
   let seq = 2;
   // 浅复制
-  let source = labels.slice();
+  const source = labels.slice();
   let target = labels.slice();
   // Generally, 100 ticks cost less than 20ms. If cost time exceed, means ticks count is too large to see.
   const timeout = 200;
@@ -39,7 +39,8 @@ function equidistance(orient: string | null, labels: Text[], cfg?: any) {
     seq = Math.max(Math.floor((count * minLabelWidth) / distance), seq);
   }
 
-  let first, last;
+  let first;
+  let last;
   if (cfg?.showFirst) {
     first = source.splice(0, 1)[0];
   }
@@ -47,7 +48,7 @@ function equidistance(orient: string | null, labels: Text[], cfg?: any) {
     last = source.splice(-1, 1)[0];
     source.reverse();
   }
-  while (boundTest(filterDefined(last ? [last, ...target, first] : [first, ...target]), cfg.margin).length) {
+  while (boundTest(filterDefined(last ? [last, ...target, first] : [first, ...target]), cfg?.margin).length) {
     // 每两步，减一个 (不需要考虑保留 first)
     if (last && !first && seq % 2 === 0) {
       const rest = source.splice(0, 1);
@@ -75,7 +76,7 @@ function greedy(orient: string | null, labels: Text[], cfg?: any) {
 
   let a: Text;
   source.forEach((b, i) => {
-    if (!i || !a || !intersect(a, b)) {
+    if (!i || !a || !intersect(a, b, cfg?.margin)) {
       a = b;
     } else if (i === count - 1 && cfg?.showLast) {
       a.style.visibility = 'hidden';
@@ -87,6 +88,6 @@ function greedy(orient: string | null, labels: Text[], cfg?: any) {
 
 export default {
   getDefault: () => equidistance,
-  equidistance: equidistance,
-  greedy: greedy,
+  equidistance,
+  greedy,
 };

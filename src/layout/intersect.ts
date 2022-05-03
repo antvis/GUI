@@ -75,7 +75,7 @@ function bound(bounds: Bounds, item: DisplayObject<any>, margin = [0, 0, 0, 0]) 
     // vertical alignment
     if (b === 'middle') {
       anchorY = (y + bottom) / 2;
-    } else if (b === 'bottom') {
+    } else if (b === 'bottom' || b === 'baseline') {
       anchorY = bottom;
     }
   }

@@ -10,7 +10,6 @@ import {
   parseLength,
   getFont,
   createTempText,
-  DegToRad,
 } from '../../util';
 import { Marker } from '../marker';
 import { AxisBase } from './base';

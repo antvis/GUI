@@ -12,7 +12,7 @@ function ellipseLabels(orient: string, labels: Text[], cfg?: any) {
   const { ellipsisStep, minLength, maxLength, margin = [], labelType } = cfg;
   const font = getFont(labels[0] as Text);
   const step = parseLength(ellipsisStep!, font) || 1;
-  const min = parseLength(minLength!, font);
+  const min = parseLength(minLength!, font) || 1;
   let max = parseLength(maxLength!, font);
 
   // Enable to ellipsis label when overlap.
@@ -49,13 +49,15 @@ function ellipseLabels(orient: string, labels: Text[], cfg?: any) {
       ellipsisStrategy = (text: string) => getEllipsisText(text, allowedLength, font);
     }
     source.forEach((label, idx) => {
-      const tip = (label.style as AxisTextStyleProps).tip || '';
+      const tip = (label.style as AxisTextStyleProps).tip || label.style.text;
+      (label.style as AxisTextStyleProps).tip = tip;
       const text = ellipsisStrategy.call(null, tip, label);
       label.attr('text', text);
     });
   }
 }
 
+// [todo] Support head-ellipsis, or mid-ellipsis later.
 export default {
   getDefault: () => ellipseLabels,
   ellipsis: ellipseLabels,
