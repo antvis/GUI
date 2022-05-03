@@ -1,6 +1,6 @@
 import { Rect } from '@antv/g';
-import { intersect } from '../../../../../src/layout/intersect';
-import { createCanvas } from '../../../../utils/render';
+import { intersect, IntersectUtils } from '../../../src/layout/intersect';
+import { createCanvas } from '../../utils/render';
 
 type Box = { x1: number; y1: number; x2: number; y2: number; rotation?: number };
 
@@ -70,20 +70,6 @@ describe('Intersect', () => {
     canvas.removeChildren();
   });
 
-  it('bugs', () => {
-    const boxes = [
-      { x: 724, y: 52.5, width: 48, height: 15, left: 724, right: 772, top: 52.5, bottom: 67.5 },
-      { x: 764, y: 52.5, width: 84, height: 15, left: 764, right: 848, top: 52.5, bottom: 67.5 },
-    ];
-    const [a1, b1] = boxes.map((box) => {
-      return { x1: box.left, y1: box.top, x2: box.right, y2: box.bottom, rotation: 30 };
-    });
-
-    drawRect(a1, 'red');
-    drawRect(b1, 'green');
-    expect(intersectBox(a1, b1)).toBe(false);
-  });
-
   it('boxes with negative rotation', () => {
     const boxes = [
       { x: 14, y: 125, width: 84, height: 15, left: 14, right: 98, top: 125, bottom: 140 },
@@ -97,4 +83,31 @@ describe('Intersect', () => {
     drawRect(b1, 'lightgreen');
     expect(intersectBox(a1, b1)).toBe(false);
   });
+
+  it('bugs', () => {
+    const boxes = [
+      { x: 724, y: 52.5, width: 48, height: 15, left: 724, right: 772, top: 52.5, bottom: 67.5 },
+      { x: 764, y: 52.5, width: 84, height: 15, left: 764, right: 848, top: 52.5, bottom: 67.5 },
+    ];
+    const [a1, b1] = boxes.map((box) => {
+      return { x1: box.left, y1: box.top, x2: box.right, y2: box.bottom, rotation: 30 };
+    });
+
+    drawRect(a1, 'red');
+    drawRect(b1, 'green');
+    expect(intersectBox(a1, b1)).toBe(false);
+  });
+});
+
+describe('Utils for detect intersect', () => {
+  it('lineToLine', () => {
+    // 交叉
+    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 30, 0, 30, 50)).toBe(true);
+    // 平行
+    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 0, 40, 80, 40)).toBe(false);
+    // 延长线才交叉
+    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 0, 40, 80, 30)).toBe(false);
+  });
+
+  it('intersect box and line', () => {});
 });

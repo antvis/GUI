@@ -1,43 +1,29 @@
 import { Path, Group } from '@antv/g';
 import { Band as BandScale } from '@antv/scale';
-import { Arc, ArcAxisStyleProps, deepAssign } from '../../../../src';
+import { Arc, ArcAxisStyleProps } from '../../../../src';
 import { createCanvas } from '../../../utils/render';
 
 const canvas = createCanvas(600, 'svg');
 const domain = [
-  'A',
-  'B',
-  'C',
-  'D',
-  'E',
-  'F',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'U',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 const scale = new BandScale({ domain });
 const ticks = domain.map((d) => ({ value: scale.map(d), text: d }));
 
 const createAxis = (options: Omit<ArcAxisStyleProps, 'container'> = { radius: 10, center: [50, 50] }) => {
   const axis = new Arc({
-    style: deepAssign(
-      {
-        container: canvas.appendChild(new Group()),
-      },
-      options
-    ),
+    style: { container: canvas.appendChild(new Group()), ...options },
   });
   return axis;
 };
@@ -48,7 +34,7 @@ describe('Arc axis', () => {
     canvas.appendChild(arc);
 
     const axisLine = arc.querySelectorAll('.axis-line')[0] as Path;
-    let tickLines = arc.getElementsByClassName('axis-tick') as Path[];
+    let tickLines = arc.querySelectorAll('.axis-tick') as Path[];
 
     it('Arc axis radius', () => {
       expect(arc).toBeDefined();
@@ -88,7 +74,7 @@ describe('Arc axis', () => {
       const formatter = (d: any) => `hello_${d.text}`;
       arc.update({ ticks, label: { formatter, style: { fill: 'red', textAlign: 'center' } } });
 
-      const axisLabels = arc.getElementsByClassName('axis-label');
+      const axisLabels = arc.querySelectorAll('.axis-label');
       expect(axisLabels.length).toBe(ticks.length);
       expect(axisLabels.map((d) => d.style.text)).toEqual(ticks.map((d) => formatter(d)));
 
@@ -112,7 +98,7 @@ describe('Arc axis', () => {
     it('Arc axis tickLine, support ({ tickLine: { len, style: { ... } }})', () => {
       arc.update({ ticks, tickLine: { len: 6, style: { lineWidth: 2, stroke: 'black' } } });
 
-      tickLines = arc.getElementsByClassName('axis-tick') as Path[];
+      tickLines = arc.querySelectorAll('.axis-tick') as Path[];
       expect(tickLines.length).toBe(ticks.length);
       const tickLine0 = tickLines[0];
 
@@ -125,12 +111,12 @@ describe('Arc axis', () => {
 
     it('Arc axis subTickLine, support ({ subTickLine: { len, count, style: { ... } }})', () => {
       arc.update({ ticks, subTickLine: { len: 4, count: 2, style: { stroke: 'blue', lineWidth: 3 } } });
-      const subTickLines = arc.getElementsByClassName('axis-subtick') as Path[];
+      const subTickLines = arc.querySelectorAll('.axis-subtick') as Path[];
 
       expect(subTickLines.length).toBe(ticks.length * 2);
       const subTickLine0 = subTickLines[0];
       const { x1, y1, x2, y2 } = subTickLine0.attr() as any;
-      expect(Math.abs(+y2 - +y1)).toBeCloseTo(4, 1);
+      expect(Math.abs(+y2 - +y1)).toBeCloseTo(4, 0);
       expect(subTickLine0.style.stroke).toBe('blue');
       expect(subTickLine0.style.lineWidth).toBe(3);
     });
@@ -142,62 +128,79 @@ describe('Arc axis', () => {
   });
 
   describe('Axis label layout', () => {
-    const common = { ticks, radius: 60, label: { formatter: (d: any) => `hello_${d.text}` } };
+    const filter = (labels: any[]) => labels.filter((d) => d.style.visibility === 'visible');
 
-    const arc1 = createAxis(deepAssign({}, common, { center: [200, 140] }));
+    const arc1 = createAxis({
+      ticks,
+      radius: 60,
+      label: { formatter: (d: any) => `hello_${d.text}` },
+      center: [200, 140],
+    });
     canvas.appendChild(arc1);
 
-    const arc3 = createAxis(
-      deepAssign({}, common, { center: [200, 400], label: { align: 'tangential', autoHide: true } })
-    );
-    canvas.appendChild(arc3);
+    it('autoHide in `normal` align label', () => {
+      const arc = createAxis({
+        ticks,
+        radius: 60,
+        center: [460, 140],
+        label: {
+          formatter: (d: any) => `hello_${d.text}`,
+          autoHideTickLine: true,
+          autoHide: true,
+          autoEllipsis: false,
+          autoRotate: false,
+        },
+      });
+      canvas.appendChild(arc);
 
-    it('AutoHide in `normal` align label', () => {
-      const arc2 = createAxis(
-        deepAssign({}, common, {
-          center: [460, 140],
-          label: {
-            autoHideTickLine: true,
-            autoHide: true,
-            autoEllipsis: false,
-            autoRotate: false,
-          },
-        })
-      );
-      canvas.appendChild(arc2);
-
-      const labels = arc2.getElementsByClassName('axis-label');
-      let visibleLabels = labels.filter((d) => d.style.visibility === 'visible');
-      let visibleTickLines = arc2.getElementsByClassName('axis-tick').filter((d) => d.style.visibility === 'visible');
-      expect(visibleLabels.length).toBeLessThan(arc1.getElementsByClassName('axis-label').length);
+      const labels = arc.querySelectorAll('.axis-label');
+      let visibleLabels = filter(labels);
+      let visibleTickLines = filter(arc.querySelectorAll('.axis-tick'));
+      expect(visibleLabels.length).toBeLessThan(arc1.querySelectorAll('.axis-label').length);
       expect(visibleTickLines.length).toBe(visibleLabels.length);
 
       expect(labels[0].style.visibility).toBe('visible');
       expect(labels[1].style.visibility).toBe('hidden');
       expect(labels[2].style.visibility).toBe('visible');
 
-      arc2.update({ label: { autoHideTickLine: false } });
+      arc.update({ label: { autoHideTickLine: false } });
 
-      visibleLabels = arc2.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible');
-      visibleTickLines = arc2.getElementsByClassName('axis-tick').filter((d) => d.style.visibility === 'visible');
-      expect(visibleTickLines.length).toBe(arc2.style!.ticks!.length);
+      visibleLabels = filter(arc.querySelectorAll('.axis-label'));
+      visibleTickLines = filter(arc.querySelectorAll('.axis-tick'));
+      expect(visibleTickLines.length).toBe(arc.style!.ticks!.length);
       expect(visibleTickLines.length).toBeGreaterThan(visibleLabels.length);
+
+      arc.remove();
+      canvas.removeChild(arc);
     });
 
-    it('AutoHide in radial align', () => {
-      const arc4 = createAxis(
-        deepAssign({}, common, {
-          center: [460, 400],
-          label: {
-            align: 'radial',
-            autoHide: { type: 'greedy' },
-          },
-        })
-      );
-      canvas.appendChild(arc4);
-      expect(arc4.querySelectorAll('.axis-label').filter((d) => d.style.visibility === 'visible').length).toBe(
-        common.ticks.length
-      );
+    it('autoHide in radial align', () => {
+      const arc = createAxis({
+        ticks,
+        radius: 60,
+        center: [460, 400],
+        label: {
+          formatter: (d: any) => `hello_${d.text}`,
+          align: 'radial',
+          autoHide: { type: 'greedy' },
+        },
+      });
+      canvas.appendChild(arc);
+      expect(filter(arc.querySelectorAll('.axis-label')).length).toBe(ticks.length);
+      arc.remove();
+      canvas.removeChild(arc);
+    });
+
+    it('autoEllipsis in tangential align', () => {
+      const arc = createAxis({
+        ticks,
+        radius: 96,
+        center: [300, 300],
+        label: { align: 'tangential', autoEllipsis: true },
+      });
+      const labels = arc.querySelectorAll('.axis-label');
+      expect(filter(labels).length).toBe(ticks.length);
+      expect(labels.some((d) => d.style.text.endsWith('...'))).toBe(false);
     });
   });
 });

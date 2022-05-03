@@ -75,8 +75,8 @@ function bound(bounds: Bounds, item: DisplayObject<any>, margin = [0, 0, 0, 0]) 
     // vertical alignment
     if (b === 'middle') {
       anchorY = (y + bottom) / 2;
-    } else if (a === 'bottom') {
-      anchorX = bottom;
+    } else if (b === 'bottom') {
+      anchorY = bottom;
     }
   }
 
@@ -85,6 +85,8 @@ function bound(bounds: Bounds, item: DisplayObject<any>, margin = [0, 0, 0, 0]) 
   item.setEulerAngles(angle);
   return bounds.rotatedPoints(angle * DegToRad, anchorX, anchorY);
 }
+
+export const IntersectUtils = { lineToLine, intersectBoxLine, bound };
 
 /**
  * [todo] Enable margin to enlarge the bounding box of shape.
