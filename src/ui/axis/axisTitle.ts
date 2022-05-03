@@ -2,7 +2,16 @@ import { Group } from '@antv/g';
 import { noop } from '@antv/util';
 import { Constraint } from '../../layout/constraint';
 import { Bounds } from '../../layout/bounds';
-import { createTempText, getEllipsisText, getFont, multi, defined, Selection, DegToRad } from '../../util';
+import {
+  createTempText,
+  getEllipsisText,
+  getFont,
+  multi,
+  defined,
+  Selection,
+  DegToRad,
+  getLocalBBox,
+} from '../../util';
 import { getSign, ifLeft, ifBottom, ifX, ifTop, ifY } from './utils';
 import { AxisTitleCfg } from './types';
 
@@ -29,12 +38,14 @@ export function getAxisTitleStyle(selection: Selection, options: AxisTitleOption
   const anchorExpr = (anchor: string) => (anchor === 'start' ? 0 : anchor === 'end' ? 1 : 0.5);
   // Axis-line and axis-label-group are under the same parent node.
   const axisLineBounds = (() => {
-    return new Bounds((selection.select('.axis-line').node() as Group).getBBox());
+    // [Attention!!!] should use local position. AxisTitle is relative to axisLine and axisLabel in Local Coord System.
+    const axisLine = selection.select('.axis-line').node() as Group;
+    return new Bounds(getLocalBBox(axisLine));
   })();
   const axisLabelBounds = (() => {
-    const bbox = (selection.select('.axis-label-group').node() as Group).getBBox();
-    if (!bbox.width || !bbox.height) return axisLineBounds;
-    return new Bounds(bbox);
+    const box = getLocalBBox(selection.select('.axis-label-group').node());
+    if (!box.width || !box.height) return axisLineBounds;
+    return new Bounds(box);
   })();
 
   let x = (options.positionX || 0) + axisLineBounds.left;
@@ -80,7 +91,7 @@ export function getAxisTitleStyle(selection: Selection, options: AxisTitleOption
 
   const textNode = createTempText(selection.node(), { ...attrs, text });
   textNode.setLocalEulerAngles(angle!);
-  let bbox = textNode.getBBox();
+  const bbox = getLocalBBox(textNode);
   const font = getFont(textNode as any);
   textNode.remove();
 
@@ -105,17 +116,14 @@ export function getAxisTitleStyle(selection: Selection, options: AxisTitleOption
     const top = bounds.defined('top') ? bounds.top : undefined;
     const bottom = bounds.defined('bottom') ? bounds.bottom : undefined;
 
-    let adjusted;
     if (left !== undefined && bbox.left < left) {
       // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
       constraint.addConstraint(['x'], '=', left);
       ifHorizontalText(orient, angle, () => (attrs.textAlign = 'start'), noop);
-      adjusted = true;
     } else if (right !== undefined && bbox.right > right) {
       // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
       constraint.addConstraint(['x'], '=', right);
       ifHorizontalText(orient, angle, () => (attrs.textAlign = 'end'), noop);
-      adjusted = true;
     }
 
     if (top !== undefined && bbox.top < top) {

@@ -1,5 +1,5 @@
 import { Text } from '@antv/g';
-import { defined } from '../../../util';
+import { defined, getLocalBBox } from '../../../util';
 import { intersect } from '../../../layout/intersect';
 import { boundTest } from '../utils';
 
@@ -33,8 +33,8 @@ function equidistance(orient: string | null, labels: Text[], cfg?: any) {
       labels.map((d) => d.getBBox().width)
     ) || 1;
   if (orient === 'top' || orient === 'bottom') {
-    const minX = labels[0].getBBox().left;
-    const maxX = labels[count - 1].getBBox().right;
+    const minX = getLocalBBox(labels[0]).left;
+    const maxX = getLocalBBox(labels[count - 1]).right;
     const distance = Math.abs(maxX - minX) || 1;
     seq = Math.max(Math.floor((count * minLabelWidth) / distance), seq);
   }

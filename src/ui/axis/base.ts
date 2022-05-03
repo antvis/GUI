@@ -96,7 +96,7 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
           enter
             .append('text')
             .attr('className', 'axis-title')
-            .each<Line>((shape, datum) => applyStyle(shape, datum)),
+            .each((shape, datum) => applyStyle(shape, datum)),
         (update) =>
           update.each((shape, datum) => {
             if (animate) {
