@@ -52,9 +52,9 @@ describe('Axis title', () => {
     const drawXTitle = (attrs: any, bounds?: any) => drawTitle(attrs, bounds, selection);
     // Init.
     const group = selection.append('g').attr('className', 'container').node();
-    const startX = 20,
-      startY = 50,
-      endX = 200;
+    const startX = 20;
+    const startY = 50;
+    const endX = 200;
     group.appendChild(
       new Path({
         className: 'axis-line',
@@ -165,14 +165,16 @@ describe('Axis title', () => {
       it('specify { textAlign: "end" }, align is changed to "start" while left-hand side is out of bounds', () => {
         titleAttrs = getAxisTitleStyle(selection, {
           ...options,
-          content: options.content + options.content,
+          content: 'options.content + options.contentcontentcontent',
           bounds: bounds({}),
           style: { ...options.style, textAlign: 'end' },
         });
         const text = drawXTitle(titleAttrs);
-        expect(text.getBBox().left).toBe(bounds({}).x1);
+        expect(text.getBBox().left).toBeCloseTo(
+          Math.max(bounds({}).x1, labelGroup.getBBox().right - text.getBBox().width)
+        );
         expect(text.getBBox().right).not.toBeGreaterThan(bounds({}).x2);
-        expect(titleAttrs.textAlign).toBe('start');
+        expect(titleAttrs.textAlign).toBe('end');
       });
 
       it('specify { dx: 10 } as the offset of textShape.', () => {
@@ -227,9 +229,9 @@ describe('Axis title', () => {
     const drawYTitle = (attrs: any, bounds?: any) => drawTitle(attrs, bounds, selection);
     // Init.
     const group = selection.append('g').attr('className', 'container').node();
-    const startY = 150,
-      endY = 300,
-      startX = 50;
+    const startY = 150;
+    const endY = 300;
+    const startX = 50;
     group.appendChild(
       new Path({
         className: 'axis-line',
@@ -309,169 +311,6 @@ describe('Axis title', () => {
       const text = drawYTitle({ ...titleAttrs, text: 'hello' });
       // 居中
       expect(text.getBBox().y + text.getBBox().height / 2).toBe(axisLine.getBBox().y + axisLine.getBBox().height / 2);
-    });
-
-    describe('In y-direction, specified bounds, do not out-of bounds', () => {
-      const bounds = ({ x1 = right, x2 = right + 40, y1 = top, y2 = bottom }) => ({ x1, y1, x2, y2 });
-      const options: any = {
-        orient: 'right',
-        content: 'Axis title Axis title very long long',
-        style: { textAlign: 'center', fontSize: 12 },
-      };
-      let titleAttrs = getAxisTitleStyle(selection, options);
-
-      it('out of bounds', () => {
-        const text = drawYTitle(titleAttrs);
-        expect(text.getBBox().bottom).toBeGreaterThan(bounds({}).y2);
-      });
-
-      it('specify bounds, do not out of bounds.', () => {
-        titleAttrs = getAxisTitleStyle(selection, { ...options, bounds: bounds({}) });
-        const text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().bottom).not.toBeGreaterThan(bounds({}).y2);
-        expect(text.getBBox().top).not.toBeLessThan(bounds({}).y1);
-      });
-
-      it('specify { rotate: -90 or 270 }.', () => {
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          rotate: 270,
-          style: { ...options.style, textAlign: 'end', textBaseline: 'top' },
-        });
-        let text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().bottom).not.toBeGreaterThan(bounds({}).y2);
-        expect(text.getBBox().top).not.toBeLessThan(bounds({}).y1);
-
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          rotate: 270,
-          titleAnchor: 'start',
-          style: { ...options.style, textAlign: 'start', textBaseline: 'top' },
-        });
-        text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().bottom).not.toBeGreaterThan(bounds({}).y2);
-        expect(text.getBBox().top).not.toBeLessThan(bounds({}).y1);
-      });
-
-      it('specify { rotate: 0, titleAnchor: "start" }.', () => {
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'start',
-          rotate: 0,
-          maxLength: 40,
-          content: 'hello hello hello',
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        const text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().right).not.toBeGreaterThan(bounds({}).x2);
-      });
-
-      it('positionX, positionY should override axis-title"s position.', () => {
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          titleAnchor: 'start',
-          rotate: 0,
-          maxLength: 90,
-          positionX: 0,
-          content: '测试问题',
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        let text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().x).toBe(axisLine.getBBox().x);
-        expect(text.getBBox().width).not.toBeGreaterThan(90);
-
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'start',
-          positionY: 30,
-          content: 'Axis Title',
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().x).toBe(bounds({}).x1);
-        expect(text.getBBox().x).not.toBe(axisLine.getBBox().x);
-        expect(text.getBBox().y).toBe(axisLine.getBBox().top + 30);
-
-        // If text out-of bounds, positionY would be adjust.
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'start',
-          positionY: axisLine.getBBox().top + 30,
-          content: 'Long Long Long Long Axis Title ',
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().y).toBeGreaterThan(axisLine.getBBox().top);
-        expect(text.getBBox().y).toBeLessThan(axisLine.getBBox().top + 30);
-
-        // If want to kept positionY, should specify maxLength.
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'start',
-          positionY: axisLine.getBBox().top + 30,
-          maxLength: bounds({}).y2 - bounds({}).y1 - 30,
-          content: 'Long Long Long Long Axis Title ',
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().y).not.toBeLessThan(axisLine.getBBox().top + 30);
-      });
-
-      it('specify random rotate, should customize maxLength to limit titleShape not out-of bounds.', () => {
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'center',
-          rotate: -45,
-          titlePadding: 8,
-          maxLength: 40 / Math.cos((45 / 180) * Math.PI) - 8,
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        let text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().right).not.toBeGreaterThan(bounds({}).x2 + 0.2 /** 误差 */);
-
-        titleAttrs = getAxisTitleStyle(selection, {
-          ...options,
-          bounds: bounds({}),
-          titleAnchor: 'center',
-          rotate: -45,
-          titlePadding: 8,
-          positionY: axisLine.getBBox().top + 30,
-          maxLength: 30 / Math.cos((45 / 180) * Math.PI) - 8,
-          style: {
-            ...options.style,
-            textAlign: 'left',
-          },
-        });
-        text = drawYTitle(titleAttrs, bounds({}));
-        expect(text.getBBox().top).not.toBeLessThan(
-          bounds({}).y1 - 12 /** fontSize */ * Math.sin((45 / 180) * Math.PI)
-        );
-      });
     });
   });
 });

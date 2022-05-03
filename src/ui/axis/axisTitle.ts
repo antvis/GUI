@@ -109,38 +109,25 @@ export function getAxisTitleStyle(selection: Selection, options: AxisTitleOption
   // Bounds only support to limit the title width now.
   let bounds: Bounds | undefined;
   if (options.bounds) {
-    const { x1, y1, x2, y2 } = options.bounds;
-    bounds = new Bounds({ left: x1, top: y1, right: x2, bottom: y2 });
+    const { x1, x2 } = options.bounds;
+    bounds = new Bounds({ left: x1, right: x2 });
     const left = bounds.defined('left') ? bounds.left : undefined;
     const right = bounds.defined('right') ? bounds.right : undefined;
-    const top = bounds.defined('top') ? bounds.top : undefined;
-    const bottom = bounds.defined('bottom') ? bounds.bottom : undefined;
 
     if (left !== undefined && bbox.left < left) {
       // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
-      constraint.addConstraint(['x'], '=', left);
+      constraint.addConstraint(['x'], '>=', left);
       ifHorizontalText(orient, angle, () => (attrs.textAlign = 'start'), noop);
-    } else if (right !== undefined && bbox.right > right) {
-      // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
-      constraint.addConstraint(['x'], '=', right);
-      ifHorizontalText(orient, angle, () => (attrs.textAlign = 'end'), noop);
     }
-
-    if (top !== undefined && bbox.top < top) {
-      constraint.addConstraint(['y'], '=', top);
-      ifHorizontalText(orient, angle, noop, () => (attrs.textAlign = sin(angle * DegToRad) < 0 ? 'end' : 'start'));
-    } else if (bottom !== undefined && bbox.bottom > bottom) {
-      constraint.addConstraint(['y'], '=', bottom);
-      ifHorizontalText(orient, angle, noop, () => (attrs.textAlign = sin(angle * DegToRad) > 0 ? 'end' : 'start'));
+    if (right !== undefined && bbox.right >= right) {
+      // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
+      constraint.addConstraint(['x'], '<=', right);
+      ifHorizontalText(orient, angle, () => (attrs.textAlign = 'end'), noop);
     }
 
     if (left !== undefined && right !== undefined) {
       const ratio = abs(cos(angle * DegToRad));
       ratio > 10e-16 && constraint.addConstraint([ratio, 'width'], '<=', right - left > 0 ? right - left : 0);
-    }
-    if (bottom !== undefined && top !== undefined) {
-      const ratio = abs(sin(angle * DegToRad));
-      ratio > 10e-16 && constraint.addConstraint([ratio, 'width'], '<=', bottom - top > 0 ? bottom - top : 0);
     }
   }
   vars = constraint.collect();

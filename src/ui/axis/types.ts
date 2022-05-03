@@ -1,5 +1,4 @@
-import type { Group } from '@antv/g';
-import type { BaseStyleProps, TextStyleProps } from '@antv/g';
+import type { Group, BaseStyleProps, TextStyleProps } from '@antv/g';
 import type { MarkerStyleProps } from '../marker';
 import type { DisplayObjectConfig, LineProps, ShapeAttrs, TextProps } from '../../types';
 import type { OverlapCallback } from './overlap';
@@ -49,9 +48,9 @@ export type AxisTitleCfg = {
    */
   maxLength?: number;
   /**
-   * Adjust AxisTitle not out-of bounds, which is relate to the position of AxisGroup.
+   * Adjust AxisTitle not out-of bounds, which is relate to the position of AxisGroup. Do not support y-direction yet.
    */
-  bounds?: { x1?: number; y1?: number; x2?: number; y2?: number };
+  bounds?: { x1?: number; x2?: number };
   style?: Omit<TextProps, 'text'>;
   animate?: boolean;
 };

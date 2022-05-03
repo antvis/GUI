@@ -1,6 +1,8 @@
-import { Canvas, Group } from '@antv/g';
-import { Renderer as CanvasRenderer } from '@antv/g-svg';
-import { Linear, Arc } from '@antv/gui';
+import { Canvas, Group, Rect } from '@antv/g';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
+import { deepMix } from '@antv/util';
+import { Linear as LinearScale } from '@antv/scale';
+import { Linear } from '@antv/gui';
 
 const renderer = new CanvasRenderer({
   enableDirtyRectangleRenderingDebug: false,
@@ -15,104 +17,115 @@ const canvas = new Canvas({
   renderer,
 });
 
-const data = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// 创建一个包围盒
+const rect = new Rect({ style: { x: 0, y: 0, width: 460, height: 600, stroke: '#dfdfdf', lineWidth: 1 } });
+canvas.appendChild(rect);
 
-const step = 1 / data.length;
-const tickData = data.map((d, idx) => {
-  return { value: step * idx + step / 2, text: d, id: String(idx) };
-});
+function createTicks(domain, tickCount = 10) {
+  const linearScale = new LinearScale({ domain, range: [0, 1], tickCount, nice: true });
+  return linearScale.getTicks().map((d, idx) => {
+    return { value: linearScale.map(d), text: String(d), id: String(idx) };
+  });
+}
 
-const linear = new Linear({
-  style: {
-    container: canvas.appendChild(new Group()),
-    startPos: [20, 280],
-    endPos: [260, 280],
-    ticks: tickData,
-    label: {
-      style: {
-        fontSize: 10,
+function createAxis(startPos = [0, 0], endPos = [0, 0], options = {}) {
+  const axis = new Linear({
+    style: deepMix(
+      {
+        container: canvas.appendChild(new Group()),
+        startPos,
+        endPos,
+        title: { content: 'Quantitative Axis' },
+        axisLine: { arrow: { start: { symbol: 'axis-arrow', size: 8 } } },
       },
+      {
+        ticks: createTicks([0, 480]),
+        ...options,
+      }
+    ),
+  });
+  rect.appendChild(axis);
+
+  return axis;
+}
+
+const axis1 = createAxis([60, 174], [60, 24], {
+  verticalFactor: -1,
+  ticks: createTicks([0, 700000000], 7),
+  title: {
+    content: 'Axis title',
+    titlePadding: 2,
+    style: {
+      fontSize: 12,
+      textAlign: 'center',
+      textBaseline: 'bottom',
     },
-    title: {
-      content: 'date month',
-      titleAnchor: 'end',
-      titlePadding: 4,
-      rotate: undefined,
-      maxLength: 260,
-      style: {
-        fontSize: 10,
-        fill: 'black',
-        fontWeight: 'bold',
-      },
+    // limit x1 >= 14
+    bounds: { x1: 14 },
+  },
+  label: {
+    // maxLength: 36,
+    formatter: (tick) => {
+      return `${Number(tick.text) / 10 ** 8} 亿`;
     },
   },
 });
-canvas.appendChild(linear);
 
-const arc = new Arc({
-  style: {
-    container: canvas.appendChild(new Group()),
-    center: [200, 480],
-    radius: 100,
-    ticks: tickData.map((d, idx) => ({ ...d, value: idx * step })),
-    label: {
-      style: {
-        fontSize: 10,
-      },
+const axis2 = createAxis([60, 390], [60, 220], {
+  verticalFactor: -1,
+  ticks: createTicks([0, 7000000], 7),
+  title: {
+    content: 'Axis title',
+    titleAnchor: 'start',
+    rotate: 0,
+    // TitlePadding not work, because positionX,positionY could overwrite position.
+    positionX: 0,
+    positionY: -14,
+    style: {
+      textAlign: 'right',
     },
-    title: {
-      content: 'date (month)',
-      titleAnchor: 'end',
-      titlePadding: 4,
-      rotate: undefined,
-      maxLength: 260,
-      style: {
-        fontSize: 10,
-        fill: 'black',
-        fontWeight: 'bold',
-      },
+    // limit bounds
+    bounds: { x1: 4, x2: 60 },
+  },
+  label: {
+    maxLength: 54,
+    formatter: (tick) => {
+      return `${Number(tick.text) / 1000}K`;
     },
   },
 });
-canvas.appendChild(arc);
+createAxis([60, 586], [60, 436], {
+  verticalFactor: -1,
+  ticks: createTicks([0, 7000000], 7),
+  title: {
+    titleAnchor: 'start',
+    rotate: 0,
+    positionX: -60,
+    style: {
+      textAlign: 'left',
+      dy: -14,
+    },
+  },
+  label: {
+    maxLength: 54,
+    formatter: (tick) => {
+      return `${Number(tick.text) / 1000}K`;
+    },
+  },
+});
 
 /** -------------------------配置区域--------------------------------------- */
-window.ConfigPanel(linear, 'Linear axis title', {
-  'title.style.fill': { label: '轴标题填充色', value: '#416180', type: 'color' },
-  'title.style.fontSize': { label: '轴标题字体大小', value: 10, type: 'number', step: 2, range: [10, 30] },
-  'title.style.textAlign': {
-    label: '轴标题对齐方式',
-    value: 'auto',
-    options: [{ name: 'auto', value: undefined }, 'start', 'center', 'end'],
+window.ConfigPanel([axis1, axis2], 'Limit title in bounds', {
+  'title.titlePadding': {
+    label: '标题与标签偏移',
+    type: 'number',
+    value: 2,
+    step: 1,
+    range: [-20, 20],
   },
-  'title.style.textBaseline': {
-    label: '轴标题垂直对齐方式',
-    value: 'auto',
-    options: [{ name: 'auto', value: undefined }, 'top', 'middle', 'top'],
+  'title.content': {
+    label: '标题文本',
+    value: 'Axis title',
+    options: ['Axis title', 'Quantitative Axis long'],
   },
-  'title.titleAnchor': { label: '轴标题锚点位置', value: 'end', options: ['start', 'center', 'end'] },
-  'title.titlePadding': { label: '轴标题与轴标签距离', value: 4, type: 'number', step: 0.5, range: [-10, 10] },
-  'title.style.dx': { label: '轴标题沿轴线偏移距离', value: 0, type: 'number', step: 0.5, range: [-20, 20] },
-  'title.maxLength': { label: '轴标题最大长度', value: 260, type: 'number', step: 8, range: [0, 400] },
 });
-
-window.ConfigPanel(
-  arc,
-  'Arc axis title',
-  {
-    'title.style.fill': { label: '轴标题填充色', value: '#416180', type: 'color' },
-    'title.style.fontSize': { label: '轴标题字体大小', value: 10, type: 'number', step: 2, range: [10, 30] },
-    'title.style.textAlign': {
-      label: '轴标题对齐方式',
-      value: 'auto',
-      options: [{ name: 'auto', value: undefined }, 'start', 'center', 'end'],
-    },
-    'title.style.textBaseline': {
-      label: '轴标题垂直对齐方式',
-      value: 'auto',
-      options: [{ name: 'auto', value: undefined }, 'top', 'middle', 'top'],
-    },
-    'title.maxLength': { label: '轴标题最大长度', value: 260, type: 'number', step: 8, range: [0, 400] },
-  },
-  { closed: true }
-);
