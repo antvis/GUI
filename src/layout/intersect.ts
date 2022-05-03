@@ -6,7 +6,9 @@ import { Bounds } from './bounds';
  * Detect whether line-line collision.
  * From: https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
  */
-function lineToLine(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+function lineToLine(line1: number[], line2: number[]) {
+  const [x0, y0, x1, y1] = line1;
+  const [x2, y2, x3, y3] = line2;
   const s10x = x1 - x0;
   const s10y = y1 - y0;
   const s32x = x3 - x2;
@@ -29,17 +31,15 @@ function lineToLine(x0: number, y0: number, x1: number, y1: number, x2: number, 
   return true;
 }
 
-function intersectBoxLine(box: number[] /** 八个顶点 */, x1: number, y1: number, x2: number, y2: number): boolean {
+function intersectBoxLine(box: number[] /** 八个顶点 */, line: number[]): boolean {
   const lines = [
-    [x1, y1, x2, y2, box[0], box[1], box[2], box[3]],
-    [x1, y1, x2, y2, box[2], box[3], box[4], box[5]],
-    [x1, y1, x2, y2, box[4], box[5], box[6], box[7]],
-    [x1, y1, x2, y2, box[6], box[7], box[0], box[1]],
+    [box[0], box[1], box[2], box[3]],
+    [box[2], box[3], box[4], box[5]],
+    [box[4], box[5], box[6], box[7]],
+    [box[6], box[7], box[0], box[1]],
   ];
 
-  return lines.some((points) =>
-    lineToLine(points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7])
-  );
+  return lines.some((boxLine) => lineToLine(line, boxLine));
 }
 
 function bound(bounds: Bounds, item: DisplayObject<any>, margin = [0, 0, 0, 0]) {
@@ -88,17 +88,14 @@ function bound(bounds: Bounds, item: DisplayObject<any>, margin = [0, 0, 0, 0]) 
 
 export const IntersectUtils = { lineToLine, intersectBoxLine, bound };
 
-/**
- * [todo] Enable margin to enlarge the bounding box of shape.
- */
 export function intersect(a: DisplayObject<any>, b: DisplayObject<any>, margin?: number[]) {
   const p = bound(new Bounds(), a, margin);
   const q = bound(new Bounds(), b, margin);
   const result =
-    intersectBoxLine(q, p[0], p[1], p[2], p[3]) ||
-    intersectBoxLine(q, p[0], p[1], p[4], p[5]) ||
-    intersectBoxLine(q, p[4], p[5], p[6], p[7]) ||
-    intersectBoxLine(q, p[2], p[3], p[6], p[7]);
+    intersectBoxLine(q, [p[0], p[1], p[2], p[3]]) ||
+    intersectBoxLine(q, [p[0], p[1], p[4], p[5]]) ||
+    intersectBoxLine(q, [p[4], p[5], p[6], p[7]]) ||
+    intersectBoxLine(q, [p[2], p[3], p[6], p[7]]);
   const debug = localStorage.getItem('__debug__');
   // @ts-ignore
   if (debug && window.canvas) {

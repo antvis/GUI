@@ -1,23 +1,18 @@
 export class Bounds {
-  public x1: number;
+  private x1: number;
 
-  public y1: number;
+  private y1: number;
 
-  public x2: number;
+  private x2: number;
 
-  public y2: number;
+  private y2: number;
 
   constructor(box?: { top?: number; left?: number; right?: number; bottom?: number }) {
-    const {
-      left: x1 = +Number.MAX_VALUE,
-      top: y1 = +Number.MAX_VALUE,
-      right: x2 = -Number.MAX_VALUE,
-      bottom: y2 = -Number.MAX_VALUE,
-    } = box || {};
-    this.x1 = x1;
-    this.x2 = x2;
-    this.y1 = y1;
-    this.y2 = y2;
+    const { left: x1, top: y1, right: x2, bottom: y2 } = box || {};
+    this.x1 = x1 ?? +Number.MAX_VALUE;
+    this.x2 = x2 ?? -Number.MAX_VALUE;
+    this.y1 = y1 ?? +Number.MAX_VALUE;
+    this.y2 = y2 ?? -Number.MAX_VALUE;
   }
 
   public get left() {
@@ -74,10 +69,10 @@ export class Bounds {
     return this.clear().add(p[0], p[1]).add(p[2], p[3]).add(p[4], p[5]).add(p[6], p[7]);
   }
 
-  rotatedPoints(angle: number, x: number, y: number) {
+  rotatedPoints(radian: number, x: number, y: number) {
     const { x1, y1, x2, y2 } = this;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
+    const cos = Math.cos(radian);
+    const sin = Math.sin(radian);
     const cx = x - x * cos + y * sin;
     const cy = y - x * sin - y * cos;
     const points = [

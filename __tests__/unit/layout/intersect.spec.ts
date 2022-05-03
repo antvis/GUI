@@ -1,4 +1,5 @@
-import { Rect } from '@antv/g';
+import { Rect, Path, Text } from '@antv/g';
+import { Bounds } from '../../../src/layout/bounds';
 import { intersect, IntersectUtils } from '../../../src/layout/intersect';
 import { createCanvas } from '../../utils/render';
 
@@ -102,12 +103,91 @@ describe('Intersect', () => {
 describe('Utils for detect intersect', () => {
   it('lineToLine', () => {
     // 交叉
-    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 30, 0, 30, 50)).toBe(true);
+    expect(IntersectUtils.lineToLine([20, 20, 80, 20], [30, 0, 30, 50])).toBe(true);
     // 平行
-    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 0, 40, 80, 40)).toBe(false);
+    expect(IntersectUtils.lineToLine([20, 20, 80, 20], [0, 40, 80, 40])).toBe(false);
     // 延长线才交叉
-    expect(IntersectUtils.lineToLine(20, 20, 80, 20, 0, 40, 80, 30)).toBe(false);
+    expect(IntersectUtils.lineToLine([20, 20, 80, 20], [0, 40, 80, 30])).toBe(false);
   });
 
-  it('intersect box and line', () => {});
+  const path = (points: number[]) =>
+    [
+      ['M', points[0], points[1]],
+      ['L', points[2], points[3]],
+      ['L', points[4], points[5]],
+      ['L', points[6], points[7]],
+      ['Z'],
+    ] as any;
+  const Box = (points: number[], color = 'red', style = {}) =>
+    canvas.appendChild(new Path({ style: { fill: color, stroke: color, ...style, path: path(points) } }));
+
+  it('intersect box and line', () => {
+    const box1 = [30, 20, 50, 20, 50, 40, 30, 40];
+    const box = Box(box1);
+    const drawLine = (line) =>
+      canvas.appendChild(
+        new Path({
+          style: {
+            stroke: 'blue',
+            lineWidth: 1,
+            path: [
+              ['M', line[0], line[1]],
+              ['L', line[2], line[3]],
+            ],
+          },
+        })
+      );
+    let line = [60, 20, 60, 50];
+    // 平行
+    expect(IntersectUtils.intersectBoxLine(box1, line)).toBe(false);
+    expect(IntersectUtils.intersectBoxLine(box1, [30, 50, 60, 50])).toBe(false);
+    // 有一个相交点
+    expect(IntersectUtils.intersectBoxLine(box1, [30, 20, 20, 50])).toBe(true);
+    // 相交点偏移
+    expect(IntersectUtils.intersectBoxLine(box1, [29, 0, 20, 30])).toBe(false);
+    // 延长线才交叉
+    line = [40, 50, 50, 60];
+    expect(IntersectUtils.intersectBoxLine(box1, line)).toBe(false);
+
+    line = [30, 42, 50, 42];
+    drawLine(line);
+    // 平行
+    expect(IntersectUtils.intersectBoxLine(box1, line)).toBe(false);
+    // 箱子旋转, 相交
+    box.setEulerAngles(45);
+    // Box 是正方形，重新计算顶点
+    const { left, top, right, bottom } = box.getBBox();
+    const r = (right - left) / 2;
+    const box2 = [left, top + r, left + r, top, right, top + r, left + r, bottom];
+    expect(IntersectUtils.intersectBoxLine(box2, line)).toBe(true);
+  });
+
+  it('bound', () => {
+    const box1 = [30, 20, 50, 20, 50, 40, 30, 40];
+    const box = Box(box1);
+    box.setEulerAngles(45);
+    const points = IntersectUtils.bound(new Bounds(), box);
+    const { left, top, right, bottom } = box.getBBox();
+    const r = (right - left) / 2;
+    const box2Points = [left + r, top, left, top + r, left + r, bottom, right, top + r];
+    points.every((point, idx) => expect(point).toBeCloseTo(box2Points[idx]));
+  });
+
+  // [todo] calculate text bound when rotation.
+  it('bound Text', () => {
+    const text = canvas.appendChild(new Text({ style: { x: 50, y: 200, text: 'GUI', fontSize: 30, fill: 'red' } }));
+    const points = IntersectUtils.bound(new Bounds(), text);
+
+    Box(points, 'green', { fillOpacity: 0, lineWidth: 1 });
+    const [topX, topY, leftX, leftY, bottomX, bottomY, rightX, rightY] = points;
+    expect(text.getBBox().x).toBeCloseTo(topX);
+    expect(text.getBBox().x).toBeCloseTo(leftX);
+    expect(text.getBBox().y).toBeCloseTo(topY);
+    expect(text.getBBox().top).toBeCloseTo(rightY);
+    expect(text.getBBox().right).toBeCloseTo(rightX);
+    expect(text.getBBox().right).toBeCloseTo(bottomX);
+    // 一点小误差
+    expect(text.getBBox().bottom).toBeCloseTo(bottomY + 1.5);
+    expect(text.getBBox().bottom).toBeCloseTo(leftY + 1.5);
+  });
 });

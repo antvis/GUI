@@ -9,7 +9,7 @@ export class Constraint {
 
   private variables: Map<string, kiwi.Variable> = new Map();
 
-  private constraints: kiwi.Constraint[] = [];
+  private constraints: Map<string, kiwi.Constraint> = new Map();
 
   constructor(variables: Record<string, any> = {}) {
     Object.keys(variables).forEach((name) => {
@@ -50,6 +50,7 @@ export class Constraint {
     rhs?: string | number | [number, string],
     strength?: number
   ) {
+    const key = JSON.stringify({ ...params, operator, rhs, strength });
     const exprs = [];
     for (let i = 0; i < params.length; i++) {
       const param = params[i];
@@ -98,9 +99,23 @@ export class Constraint {
     const cn = new kiwi.Constraint(new kiwi.Expression(...exprs), Operator[operator], rhsExpression, strength);
     try {
       this.solver.addConstraint(cn);
-      this.constraints.push(cn);
+      this.constraints.set(key, cn);
     } catch (e) {
       console.warn(e);
+    }
+  }
+
+  public removeConstraint(
+    params: Array<string | number | [number, string]>,
+    operator: '=' | '<=' | '>=' = '=',
+    rhs?: string | number | [number, string],
+    strength?: number
+  ) {
+    const key = JSON.stringify({ ...params, operator, rhs, strength });
+    const constraint = this.constraints.get(key);
+    if (constraint) {
+      this.solver.removeConstraint(constraint);
+      this.constraints.delete(key);
     }
   }
 
@@ -125,13 +140,13 @@ export class Constraint {
    * Remove all constraints and update variables.
    */
   public update(vars: any) {
-    Array.from(this.constraints).forEach((cn) => this.solver.removeConstraint(cn));
+    Array.from(this.constraints.values()).forEach((cn) => this.solver.removeConstraint(cn));
     Array.from(this.variables.values()).forEach((variable) => {
       if (this.solver.hasEditVariable(variable)) this.solver.removeEditVariable(variable);
     });
     const varsName = { ...Object.fromEntries(this.variables.entries()), ...vars };
     this.variables.clear();
-    this.constraints = [];
+    this.constraints.clear();
     Object.keys(varsName).forEach((name) => this.updateVariable(name, vars[name]));
   }
 }
