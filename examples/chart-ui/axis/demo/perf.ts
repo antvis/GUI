@@ -15,37 +15,21 @@ const canvas = new Canvas({
   renderer,
 });
 
-const data = [
-  '蚂蚁技术研究院',
-  '智能资金',
-  '蚂蚁消金',
-  '合规线',
-  '战略线',
-  '商业智能线',
-  'CFO线',
-  'CTO线',
-  '投资线',
-  'GR线',
-  '社会公益及绿色发展事业群',
-  '阿里妈妈事业群',
-  'CMO线',
-  '大安全',
-  '天猫事业线',
-  '影业',
-  'OceanBase',
-  '投资基金线',
-  '阿里体育',
-  '智能科技事业群',
-];
-
-const tickData = data.map((d, idx) => {
-  const step = 1 / data.length;
-  return {
-    value: step * idx + step / 2,
-    text: d,
-    id: String(idx),
-  };
-});
+const count = 5000;
+const tickData = Array(count)
+  .fill(null)
+  .map((_, idx) => {
+    const step = 1 / count;
+    const c = Math.floor(idx / 26) + 1;
+    const b = idx % 26;
+    return {
+      value: step * idx + step / 2,
+      text: Array(Math.min(c, 5))
+        .fill(String.fromCharCode(b + 65))
+        .join(''),
+      id: String(idx),
+    };
+  });
 
 const axis = new Linear({
   style: {
@@ -56,11 +40,13 @@ const axis = new Linear({
     title: {
       content: 'Axis Title',
     },
+    ticksThreshold: 100,
     label: {
       minLength: 20,
       maxLength: 80,
-      autoRotate: true,
-      autoHide: false,
+      autoRotate: false,
+      autoHide: true,
+      // autoHide: 'greedy',
       autoEllipsis: false,
       optionalAngles: [20, 30, 45],
       style: {
@@ -88,8 +74,8 @@ window.ConfigPanel(axis, '样式', {
   'label.autoEllipsis': { label: '自动省略', value: false },
   'label.minLength': { label: '最小缩略长度', value: 20, type: 'number', step: 5, range: [20, 200] },
   'label.maxLength': { label: '标签最大长度', value: 160, type: 'number', step: 5, range: [20, 200] },
-  'label.autoRotate': { label: '自动旋转', value: true },
-  'label.autoHide': { label: '自动隐藏', value: false },
+  'label.autoRotate': { label: '自动旋转', value: false },
+  'label.autoHide': { label: '自动隐藏', value: true },
 });
 // const labelMin = labelFolder
 //   .add(labelCfg, '最少标签数量', 1, 5)
