@@ -28,16 +28,9 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   protected optimizedTicks: TickDatum[] = [];
 
-  protected get labels(): Text[] {
-    return (this.selection.select('.axis-label-group').node() as Group).childNodes as Text[];
-  }
-
-  protected get tickLines() {
-    return this.selection.selectAll('.axis-tick').nodes();
-  }
-
   protected get labelFont() {
-    return this.labels[0] && getFont(this.labels[0]);
+    const labels = (this.selection.select('.axis-label-group').node() as Group).childNodes as Text[];
+    return labels[0] && getFont(labels[0]);
   }
 
   public init() {
@@ -169,12 +162,14 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     const { ticksThreshold } = this.style;
     // Apply default id to ticks data.
     const ticks = Array.from(this.style.ticks || []).map((d, idx) => ({ id: `${idx}`, ...d }));
+    const tickCount = ticks.length;
     let optimizedTicks = ticks;
     if (typeof ticksThreshold === 'number') {
       const len = ticks.length;
       if (len > ticksThreshold) {
         const page = Math.ceil(len / ticksThreshold);
-        optimizedTicks = ticks.filter((tick, idx) => idx % page === 0);
+        // 保留最后一条
+        optimizedTicks = ticks.filter((tick, idx) => idx % page === 0 || idx === tickCount - 1);
       }
     }
     this.optimizedTicks = optimizedTicks;
@@ -309,9 +304,11 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   protected autoHideTickLine() {
     if (!this.style.label?.autoHideTickLine) return;
+    const tickLines = this.selection.selectAll('.axis-tick').nodes();
+    const labels = (this.selection.select('.axis-label-group').node() as Group).childNodes as Text[];
 
-    this.labels.forEach((label, idx) => {
-      const tickLine = this.tickLines[idx];
+    labels.forEach((label, idx) => {
+      const tickLine = tickLines[idx];
       if (!tickLine) return;
       if (label.style.visibility === 'hidden' && tickLine) tickLine.style.visibility = 'hidden';
       else tickLine.style.visibility = 'visible';
