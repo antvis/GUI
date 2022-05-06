@@ -1,4 +1,4 @@
-import { DisplayObject, Group, Text, TextStyleProps } from '@antv/g';
+import { DisplayObject, Group, Text, TextStyleProps, CustomEvent } from '@antv/g';
 import { get, min, isFunction, deepMix } from '@antv/util';
 import { applyStyle, deepAssign, defined, getShapeSpace, select, Selection, TEXT_INHERITABLE_PROPS } from '../../util';
 import { GUI } from '../../core/gui';
