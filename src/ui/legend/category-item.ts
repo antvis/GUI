@@ -3,11 +3,11 @@ import { deepMix, get, max } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { Marker } from '../marker';
 import { NAME_VALUE_RATIO } from './constant';
-import { getStateStyle, getEllipsisText, getFont, getShapeSpace, TEXT_INHERITABLE_PROPS } from '../../util';
+import { getStateStyle, getEllipsisText, getFont, getShapeSpace, TEXT_INHERITABLE_PROPS, defined } from '../../util';
 import type { DisplayObjectConfig, StyleState, ShapeAttrs } from '../../types';
 import type { CategoryItemCfg as ItemCfg, State } from './types';
 
-export interface ICategoryItemCfg extends ShapeAttrs, Required<ItemCfg> {}
+export interface ICategoryItemCfg extends ShapeAttrs, ItemCfg {}
 
 type CategoryItemOptions = DisplayObjectConfig<ICategoryItemCfg>;
 
@@ -112,8 +112,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
   }
 
   public getID() {
-    const { identify } = this.attributes;
-    return identify;
+    return this.style.id;
   }
 
   /**
@@ -152,7 +151,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
 
   protected getStyle(name: string | string[], state = this.attributes.state) {
     const style = get(this.attributes, name);
-    const stateList = state.split('-') as StyleState[];
+    const stateList = state ? (state.split('-') as StyleState[]) : [];
     return deepMix({}, ...stateList.map((s) => getStateStyle(style, s)));
   }
 
@@ -174,7 +173,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
 
     const { size: markerSize } = itemMarker as { size: number };
     // 计算图例项高度（不用getShapeSpace获得的原因是文字需要垂直居中，需要使用middle对齐）
-    const height = max([markerSize * 2, getShapeSpace(this.nameShape).height, getShapeSpace(this.valueShape).height])!;
+    const height = max([markerSize, getShapeSpace(this.nameShape).height, getShapeSpace(this.valueShape).height])!;
 
     // 计算name和value可用宽度
     const availableWidth = width - markerNameSpacing - nameValueSpacing - markerSize * 2;
@@ -189,13 +188,22 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
 
     const temp = markerSize * 2 + markerNameSpacing;
 
-    this.nameShape.attr({ text: nameText, x: temp, y: height / 2, visibility: noNameFlag ? 'hidden' : 'visible' });
+    this.nameShape.attr({
+      text: nameText,
+      x: temp,
+      y: height / 2,
+      // 不可修改
+      textBaseline: 'middle',
+      visibility: noNameFlag ? 'hidden' : 'visible',
+    });
 
     const nameTextWidth = noNameFlag ? 0 : getShapeSpace(this.nameShape).width;
     this.valueShape.attr({
       text: valueText,
       x: temp + (itemWidth ? availableNameWidth : nameTextWidth) + nameValueSpacing,
       y: height / 2,
+      // 不可修改
+      textBaseline: 'middle',
       visibility: noValueFlag ? 'hidden' : 'visible',
     });
 
@@ -206,7 +214,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
 
     // 设置背景
     this.backgroundShape.attr({
-      width: itemWidth === undefined ? this.actualWidth : itemWidth,
+      width: defined(itemWidth) ? itemWidth : this.actualWidth,
       height,
     });
   }
