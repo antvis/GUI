@@ -1,6 +1,15 @@
-import { DisplayObject, Group, Text, TextStyleProps, CustomEvent } from '@antv/g';
+import { Group, Text, TextStyleProps, CustomEvent } from '@antv/g';
 import { get, min, isFunction, deepMix } from '@antv/util';
-import { applyStyle, deepAssign, defined, getShapeSpace, select, Selection, TEXT_INHERITABLE_PROPS } from '../../util';
+import {
+  applyStyle,
+  deepAssign,
+  defined,
+  getShapeSpace,
+  normalPadding,
+  select,
+  Selection,
+  TEXT_INHERITABLE_PROPS,
+} from '../../util';
 import { GUI } from '../../core/gui';
 import type { StyleState as State } from '../../types';
 import { CategoryItem, ICategoryItemCfg } from './category-item';
@@ -247,6 +256,7 @@ export class Category extends GUI<CategoryCfg> {
     let top = p[0];
     const left = p[1] ?? top;
     if (this.titleShape) {
+      this.titleShape.setLocalPosition(top, left);
       top += this.titleShape.getBBox().height + (this.style.title?.spacing || 0);
     }
     this.itemsGroup.setLocalPosition(left, top);
@@ -271,7 +281,9 @@ export class Category extends GUI<CategoryCfg> {
     if (this.idItem.size <= 1) return;
 
     const items = Array.from(this.idItem.values());
-    const { maxWidth, spacing: [offsetX] = [0, 0], autoWrap } = this.style;
+    const { spacing: [offsetX] = [0, 0], autoWrap } = this.style;
+    const padding = normalPadding(this.style.padding);
+    const maxWidth = this.style.maxWidth && this.style.maxWidth - (padding[1] + padding[3]);
 
     // Do not need paginate.
     if (!defined(maxWidth) || maxWidth === Infinity) {
@@ -335,7 +347,10 @@ export class Category extends GUI<CategoryCfg> {
 
     const items = Array.from(this.idItem.values());
 
-    const { maxHeight, spacing: [offsetX, offsetY] = [0, 0], autoWrap } = this.style;
+    const { spacing: [offsetX, offsetY] = [0, 0], autoWrap } = this.style;
+    const padding = normalPadding(this.style.padding);
+    const maxHeight = this.style.maxHeight && this.style.maxHeight - (padding[0] + padding[2]);
+
     // Do not need paginate.
     if (!defined(maxHeight) || maxHeight === Infinity) {
       items.reduce((y, item) => {
