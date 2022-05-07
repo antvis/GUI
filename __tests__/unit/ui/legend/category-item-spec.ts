@@ -18,7 +18,7 @@ const categoryItem = new CategoryItem({
     x: 0,
     y: 0,
     state: 'default',
-    identify: '1',
+    id: '1',
     itemWidth: 100,
     maxItemWidth: 200,
     itemMarker: {
