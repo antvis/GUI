@@ -261,13 +261,14 @@ export class Category extends GUI<CategoryCfg> {
     }
     this.itemsGroup.setLocalPosition(left, top);
     if (this.paginator) {
+      const { pageWidth: w, pageHeight: h, pageNum = 1 } = this;
       this.paginator.update({
         orient,
         x: left,
         y: top,
-        pageHeight: this.pageHeight ?? Number.MAX_VALUE,
-        pageWidth: this.pageWidth ?? Number.MAX_VALUE,
-        pageNum: this.pageNum || 1,
+        pageNum,
+        pageHeight: pageNum > 1 ? h ?? Number.MAX_VALUE : Number.MAX_VALUE,
+        pageWidth: pageNum > 1 ? w ?? Number.MAX_VALUE : Number.MAX_VALUE,
       });
     }
   }

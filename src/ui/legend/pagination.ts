@@ -116,7 +116,7 @@ export class Pagination extends GUI<PaginationStyleProps> {
 
     if (!empty(pageWidth) && !empty(pageHeight)) {
       const clipPath = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
-      this.clipView.attr({ path: clipPath, x: 0, y: 0, stroke: 'red', lineWidth: 1 });
+      this.clipView.attr({ path: clipPath, x: 0, y: 0 });
       this.clipView.setLocalPosition(0, 0);
     }
   }
