@@ -299,7 +299,7 @@ export class Category extends GUI<CategoryCfg> {
     this.pageWidth = maxWidth;
     const position = this.getPaginationAttrs().button?.position || 'right';
     if (['left', 'right', 'left-right'].includes(position as any)) {
-      const paginationWidth = this.selection.select('.legend-page-navigator').node().getBBox().width;
+      const paginationWidth = this.paginator?.getBBox().width;
       this.pageWidth! -= paginationWidth;
     }
 
@@ -362,7 +362,7 @@ export class Category extends GUI<CategoryCfg> {
     this.pageHeight = maxHeight;
     const position = this.getPaginationAttrs().button?.position || 'right';
     if (['top', 'bottom', 'top-bottom'].includes(position as any)) {
-      const paginationH = this.selection.select('.legend-page-navigator').node().getBBox().height;
+      const paginationH = this.paginator?.getBBox().height;
       this.pageHeight! -= paginationH;
     }
 
