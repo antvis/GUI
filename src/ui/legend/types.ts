@@ -128,7 +128,7 @@ export type ItemValueCfg = {
 
 // 单个图例的配置
 export type CategoryItemCfg = {
-  id?: string;
+  id: string;
   itemWidth?: number;
   maxItemWidth?: number;
   state?: State;

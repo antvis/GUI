@@ -1,4 +1,4 @@
-import { Text, Rect } from '@antv/g';
+import { Text, Rect, CustomEvent } from '@antv/g';
 import { deepMix, get, max } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { Marker } from '../marker';
@@ -98,6 +98,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
     this.backgroundShape.appendChild(this.valueShape);
     this.backgroundShape.toBack();
     this.adjustLayout();
+    this.bindEvents();
   }
 
   public getState(): StyleState {
@@ -111,7 +112,7 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
     this.update({ state });
   }
 
-  public getID() {
+  public getID(): string {
     return this.style.id;
   }
 
@@ -147,7 +148,21 @@ export class CategoryItem extends GUI<ICategoryItemCfg> {
     this.adjustLayout();
   }
 
-  public clear() {}
+  public onClick() {
+    const state = this.getState();
+    if (!['selected', 'selected-active'].includes(state)) this.setState('selected-active');
+    else this.setState('default-active');
+    const evt = new CustomEvent('stateChange', {
+      detail: { value: { id: this.getID(), state: this.getState() } },
+    });
+    this.dispatchEvent(evt as any);
+  }
+
+  protected bindEvents() {
+    this.addEventListener('mouseleave', this.offHover.bind(this));
+    this.addEventListener('mousemove', this.onHover.bind(this));
+    this.addEventListener('click', this.onClick.bind(this));
+  }
 
   protected getStyle(name: string | string[], state = this.attributes.state) {
     const style = get(this.attributes, name);

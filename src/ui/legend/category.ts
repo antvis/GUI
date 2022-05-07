@@ -56,12 +56,7 @@ export class Category extends GUI<CategoryCfg> {
   }
 
   protected bindEvents() {
-    // 图例项hover事件
-    // 图例项点击事件
-    // 翻页按钮点击事件
-    this.itemsGroup.addEventListener('click', this.ItemsGroupClickEvent);
-    this.itemsGroup.addEventListener('mousemove', this.mousemoveEvent);
-    this.itemsGroup.addEventListener('mouseleave', this.mouseleaveEvent);
+    this.itemsGroup.addEventListener('stateChange', () => this.dispatchItemsChange());
   }
 
   private titleShape!: Text;
@@ -76,16 +71,21 @@ export class Category extends GUI<CategoryCfg> {
     }
   }
 
+  protected idItem: Map<string, CategoryItem> = new Map();
+
   protected drawItems() {
-    const items = this.getItemsAttrs();
-    select(this.itemsGroup)
+    const data = this.getItemsAttrs();
+    const items = select(this.itemsGroup)
       .selectAll('.legend-item')
-      .data(items)
+      .data(data)
       .join(
         (enter) => enter.append((datum) => new CategoryItem({ className: 'legend-item', style: datum })),
         (update) => update.each((shape, datum) => shape.update(datum)),
         (exit) => exit.remove()
-      );
+      )
+      .nodes() as CategoryItem[];
+
+    this.idItem = new Map(items.map((item) => [item.getID(), item]));
   }
 
   protected paginator!: Pagination;
@@ -209,14 +209,8 @@ export class Category extends GUI<CategoryCfg> {
     return cfg;
   }
 
-  /**
-   * 根据id获取item
-   */
   public getItem(id: string): CategoryItem | undefined {
-    const { items } = this;
-    return items.filter((item: CategoryItem) => {
-      return item.getID() === id;
-    })[0];
+    return this.idItem.get(id);
   }
 
   /**
@@ -231,10 +225,7 @@ export class Category extends GUI<CategoryCfg> {
    * 获得items状态列表
    */
   public getItemsStates(): { id: string; state: State }[] {
-    const { items } = this;
-    return items.map((item, idx) => {
-      return { id: item.getID() || `${idx}`, state: item.getState() };
-    });
+    return Array.from(this.idItem.entries()).map(([id, item]) => ({ id, state: item.getState() }));
   }
 
   /** 分页相关配置 */
@@ -284,14 +275,14 @@ export class Category extends GUI<CategoryCfg> {
   }
 
   private get itemHeight(): number {
-    const item = this.items[0];
+    const item = Array.from(this.idItem.values())[0];
     return item ? getShapeSpace(item).height : 0;
   }
 
   private adjustHorizontal() {
-    const items = this.items;
-    if (items.length <= 1) return;
+    if (this.idItem.size <= 1) return;
 
+    const items = Array.from(this.idItem.values());
     const { maxWidth, spacing: [offsetX] = [0, 0], autoWrap } = this.style;
 
     // Do not need paginate.
@@ -352,8 +343,9 @@ export class Category extends GUI<CategoryCfg> {
   }
 
   private adjustVertical() {
-    const items = this.items;
-    if (items.length <= 1) return;
+    if (this.idItem.size <= 1) return;
+
+    const items = Array.from(this.idItem.values());
 
     const { maxHeight, spacing: [offsetX, offsetY] = [0, 0], autoWrap } = this.style;
     // Do not need paginate.
@@ -393,48 +385,6 @@ export class Category extends GUI<CategoryCfg> {
       itemWidth
     );
   }
-
-  private get items() {
-    return this.itemsGroup.children as CategoryItem[];
-  }
-
-  private ItemsGroupClickEvent = (e: any) => {
-    const { target } = e;
-    if (target) {
-      const item = getParentItem(target as DisplayObject);
-      if (!item) return;
-      const state = item.getState();
-      if (!['selected', 'selected-active'].includes(state)) item.setState('selected-active');
-      else item.setState('default-active');
-      this.dispatchItemsChange();
-    }
-  };
-
-  private mousemoveEvent = (e: any) => {
-    const { target } = e;
-    if (target) {
-      const item = getParentItem(target as DisplayObject);
-      if (!item) {
-        this.items.forEach((item) => {
-          item.offHover();
-        });
-        return;
-      }
-      const state = item.getState();
-      if (state !== 'active') {
-        this.items.forEach((item) => {
-          item.offHover();
-        });
-        item.onHover();
-      }
-    }
-  };
-
-  private mouseleaveEvent = () => {
-    this.items.forEach((item) => {
-      item.offHover();
-    });
-  };
 
   private dispatchItemsChange() {
     const evt = new CustomEvent('valueChanged', {

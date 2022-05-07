@@ -115,6 +115,7 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
       active: {
         opacity: 1,
         fill: '#fff',
+        cursor: 'pointer',
       },
     },
     reverse: false, // 倒序放置图例
