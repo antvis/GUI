@@ -15,7 +15,7 @@ import type { StyleState as State } from '../../types';
 import { CategoryItem, ICategoryItemCfg } from './category-item';
 import type { CategoryCfg, CategoryOptions } from './types';
 import { CATEGORY_DEFAULT_OPTIONS } from './constant';
-import { Pagination, PaginationStyleProps } from './pagination';
+import { Pager, PagerStyleProps } from './pager';
 
 export type { CategoryOptions };
 
@@ -85,15 +85,15 @@ export class Category extends GUI<CategoryCfg> {
     this.idItem = new Map(items.map((item) => [item.getID(), item]));
   }
 
-  protected paginator!: Pagination;
+  protected pager!: Pager;
 
   protected drawPageNavigator() {
-    const style = this.getPaginationAttrs();
-    if (!style && this.paginator) this.paginator.remove();
-    else if (!this.paginator) {
-      this.paginator = this.appendChild(new Pagination({ className: 'legend-page-navigator', style }));
+    const style = this.getPagerAttrs();
+    if (!style && this.pager) this.pager.remove();
+    else if (!this.pager) {
+      this.pager = this.appendChild(new Pager({ className: 'legend-pager', style }));
     } else {
-      this.paginator.update(style);
+      this.pager.update(style);
     }
   }
 
@@ -116,11 +116,11 @@ export class Category extends GUI<CategoryCfg> {
     return this.itemsShapeCfg;
   }
 
-  protected getPaginationAttrs(): PaginationStyleProps {
-    const { orient, pageNavigator } = this.style;
+  protected getPagerAttrs(): PagerStyleProps {
+    const { orient, pager: pageNavigator } = this.style;
     const { pageWidth = Number.MAX_VALUE, pageHeight = Number.MAX_VALUE, pageNum = 1 } = this;
 
-    let position = pageNavigator && pageNavigator.button?.position;
+    let position = pageNavigator && pageNavigator?.position;
     if (!position) position = orient === 'horizontal' ? 'right' : 'bottom';
 
     return deepMix(
@@ -133,9 +133,7 @@ export class Category extends GUI<CategoryCfg> {
         pageWidth,
         pageHeight,
         view: this.itemsGroup,
-        button: {
-          position,
-        },
+        position,
       },
       pageNavigator
     );
@@ -260,9 +258,9 @@ export class Category extends GUI<CategoryCfg> {
       top += this.titleShape.getBBox().height + (this.style.title?.spacing || 0);
     }
     this.itemsGroup.setLocalPosition(left, top);
-    if (this.paginator) {
+    if (this.pager) {
       const { pageWidth: w, pageHeight: h, pageNum = 1 } = this;
-      this.paginator.update({
+      this.pager.update({
         orient,
         x: left,
         y: top,
@@ -298,10 +296,10 @@ export class Category extends GUI<CategoryCfg> {
 
     this.pageNum = 1;
     this.pageWidth = maxWidth;
-    const position = this.getPaginationAttrs().button?.position || 'right';
+    const position = this.getPagerAttrs()?.position || 'right';
     if (['left', 'right', 'left-right'].includes(position as any)) {
-      const paginationWidth = this.paginator?.getBBox().width;
-      this.pageWidth! -= paginationWidth;
+      const pagerWidth = this.pager?.getBBox().width;
+      this.pageWidth! -= pagerWidth;
     }
 
     if (!autoWrap) {
@@ -364,10 +362,10 @@ export class Category extends GUI<CategoryCfg> {
 
     this.pageNum = 1;
     this.pageHeight = maxHeight;
-    const position = this.getPaginationAttrs().button?.position || 'right';
+    const position = this.getPagerAttrs()?.position || 'right';
     if (['top', 'bottom', 'top-bottom'].includes(position as any)) {
-      const paginationH = this.paginator?.getBBox().height;
-      this.pageHeight! -= paginationH;
+      const pagerH = this.pager?.getBBox().height;
+      this.pageHeight! -= pagerH;
     }
 
     this.pageHeight = Math.max(this.pageHeight!, this.itemHeight!);

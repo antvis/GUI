@@ -129,7 +129,7 @@ layoutFolder.add(layoutCfg, '按钮位置', ['底部', '顶部', '左侧', '右�
     上下: 'top-bottom',
     两侧: 'left-right',
   };
-  category.update({ pageNavigator: { button: { position: buttonMap[position] } } });
+  category.update({ pager: { button: { position: buttonMap[position] } } });
 });
 layoutFolder.add(layoutCfg, '项宽', 0, 300).onChange((itemWidth) => {
   category.update({ itemWidth });

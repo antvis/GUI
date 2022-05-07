@@ -1,13 +1,12 @@
-import { DisplayObject, DisplayObjectConfig, Path } from '@antv/g';
+import { DisplayObject, DisplayObjectConfig, Path, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUI } from '../../core/gui';
-import { ShapeAttrs } from '../../types/dependency';
+import { MixAttrs, ShapeAttrs } from '../../types';
 import { select, TEXT_INHERITABLE_PROPS, Selection, measureTextWidth, defined } from '../../util';
 import { ifH } from './utils';
-import { PaginationButton } from './paginationButton';
-import { PaginationInfo } from './paginationInfo';
+import { PagerButton } from './pagerButton';
 
-type PaginationStyleProps = {
+type PagerStyleProps = {
   x?: number;
   y?: number;
   /** 待分页的对象 */
@@ -21,18 +20,22 @@ type PaginationStyleProps = {
   /** animation easing function */
   effect?: string;
   duration?: number;
+  position?: string;
   button?: {
     size?: number;
-    position?: string;
     spacing?: number;
+    style?: MixAttrs<ShapeAttrs>;
+  };
+  text?: {
     style?: ShapeAttrs;
+    formatter?: (current: string, total: string) => string;
   };
 };
-export { PaginationStyleProps };
+export { PagerStyleProps };
 
 const empty = (v: number) => v === Number.MAX_VALUE || !defined(v);
 
-export class Pagination extends GUI<PaginationStyleProps> {
+export class Pager extends GUI<PagerStyleProps> {
   public static tag = 'page-navigator';
 
   private static defaultOptions = {
@@ -46,7 +49,7 @@ export class Pagination extends GUI<PaginationStyleProps> {
       button: {
         spacing: 5,
       },
-    } as Partial<PaginationStyleProps>,
+    } as Partial<PagerStyleProps>,
   };
 
   protected selection!: Selection;
@@ -55,9 +58,9 @@ export class Pagination extends GUI<PaginationStyleProps> {
 
   protected view!: DisplayObject;
 
-  private prevButton!: PaginationButton;
+  private prevButton!: PagerButton;
 
-  private nextButton!: PaginationButton;
+  private nextButton!: PagerButton;
 
   private finishedPromise!: Promise<any> | null;
 
@@ -78,8 +81,8 @@ export class Pagination extends GUI<PaginationStyleProps> {
     return this.finishedPromise;
   }
 
-  constructor(options: DisplayObjectConfig<PaginationStyleProps>) {
-    super(deepMix({}, Pagination.defaultOptions, options));
+  constructor(options: DisplayObjectConfig<PagerStyleProps>) {
+    super(deepMix({}, Pager.defaultOptions, options));
     this.selection = select(this);
     this.init();
   }
@@ -91,8 +94,8 @@ export class Pagination extends GUI<PaginationStyleProps> {
 
   protected currPage: number = 0;
 
-  public update(cfg?: Partial<PaginationStyleProps>) {
-    this.attr(deepMix({}, Pagination.defaultOptions.style, this.attributes, cfg));
+  public update(cfg?: Partial<PagerStyleProps>) {
+    this.attr(deepMix({}, Pager.defaultOptions.style, this.attributes, cfg));
     const { view, pageWidth, pageHeight } = this.style;
     if (this.view) {
       this.view.style.clipPath = null;
@@ -123,8 +126,8 @@ export class Pagination extends GUI<PaginationStyleProps> {
 
   /** Infer by orient */
   private get btnPosition() {
-    const { orient, button } = this.style;
-    if (button?.position) return button.position;
+    const { orient, position } = this.style;
+    if (position) return position;
     return orient === 'horizontal' ? 'right' : 'bottom';
   }
 
@@ -140,14 +143,15 @@ export class Pagination extends GUI<PaginationStyleProps> {
 
   protected drawInner() {
     this.selection
-      .selectAll('.pagination-item')
+      .selectAll('.pager-item')
       .data(this.buttonStyles, (d) => d.id)
       .join(
-        (enter) => enter.append(({ Ctor, name, ...style }) => new Ctor({ className: 'pagination-item', name, style })),
-        (update) => update.each((shape, { Ctor, name, ...style }) => shape.update(style)),
+        (enter) => enter.append(({ Ctor, name, ...style }) => new Ctor({ className: 'pager-item', name, style })),
+        (update) =>
+          update.each((shape, { Ctor, name, ...style }) => (shape.update ? shape.update(style) : shape.attr(style))),
         (exit) => exit.remove()
       );
-    const [prev, next] = this.selection.selectAll('[name="pagination-button"]').nodes() as any[];
+    const [prev, next] = this.selection.selectAll('[name="pager-button"]').nodes() as any[];
     prev.addEventListener('click', this.prev.bind(this));
     this.prevButton = prev;
     next.addEventListener('click', this.next.bind(this));
@@ -155,7 +159,7 @@ export class Pagination extends GUI<PaginationStyleProps> {
   }
 
   protected get buttonStyles() {
-    const { button: buttonCfg } = this.style;
+    const { button: buttonCfg, text: textCfg } = this.style;
     let { pageWidth, pageHeight } = this.style;
     let visibility = 'visible';
     if (empty(pageWidth) || empty(pageHeight)) {
@@ -168,17 +172,22 @@ export class Pagination extends GUI<PaginationStyleProps> {
     const size = buttonCfg?.size || 16;
 
     const current = `${this.currPage}`;
-    const separator = '/';
     const total = `${this.maxPages}`;
-    const textAttrs = {
-      ...TEXT_INHERITABLE_PROPS,
-      fontSize: 12,
-      textBaseline: 'middle' as any,
-      spacing: 2,
-      fill: 'black',
-    };
-    const spacing = 2;
-    const infoWidth = measureTextWidth([current, separator, total].join(''), textAttrs) + spacing * 2;
+    const textStyle = deepMix(
+      {},
+      {
+        ...TEXT_INHERITABLE_PROPS,
+        fontSize: 12,
+        textAlign: 'center',
+        textBaseline: 'middle' as any,
+        fill: 'black',
+      },
+      textCfg?.style
+    );
+    const spacing = buttonCfg?.spacing || 0;
+    const text = textCfg?.formatter ? textCfg.formatter(current, total) : `${current} / ${total}`;
+    const infoWidth = measureTextWidth(text, textStyle);
+
     // 计算坐标位置
     let prevX = 0;
     let prevY = 0;
@@ -193,51 +202,50 @@ export class Pagination extends GUI<PaginationStyleProps> {
       prevY = y;
       nextY = y;
       infoY = pageHeight! / 2;
-      prevX = pageWidth! + (buttonCfg?.spacing || 0);
-      infoX = prevX + size + (buttonCfg?.spacing || 0);
-      nextX = infoX + Math.min(infoWidth, 40) + (buttonCfg?.spacing || 0);
+      prevX = pageWidth! + spacing;
+      infoX = prevX + size + infoWidth / 2 + spacing;
+      nextX = prevX + size + infoWidth + spacing * 2;
     } else if (this.btnPosition === 'bottom') {
-      // todo
-      prevY = pageHeight + (buttonCfg?.spacing || 0);
-      nextY = pageHeight + (buttonCfg?.spacing || 0);
-      infoY = pageHeight + size / 2 + (buttonCfg?.spacing || 0);
+      prevY = pageHeight;
+      nextY = pageHeight;
+      infoY = pageHeight + size / 2;
 
-      prevX = pageWidth / 2 - size - (buttonCfg?.spacing || 0);
-      nextX = pageWidth / 2 + size + (buttonCfg?.spacing || 0);
       infoX = pageWidth / 2;
+      prevX = infoX - size - infoWidth / 2 - spacing;
+      nextX = infoX + infoWidth / 2 + spacing;
     }
+    const btnStyle = buttonCfg?.style || {};
     return [
       {
-        Ctor: PaginationButton,
-        name: 'pagination-button',
+        Ctor: PagerButton,
+        name: 'pager-button',
         id: 'prev-button',
         marker: startMarker,
         size,
+        style: btnStyle,
         x: prevX,
         y: prevY,
         visibility,
       },
       {
-        Ctor: PaginationButton,
-        name: 'pagination-button',
+        Ctor: PagerButton,
+        name: 'pager-button',
         id: 'next-button',
         marker: endMarker,
         size,
+        style: btnStyle,
         x: nextX,
         y: nextY,
         visibility,
       },
       {
-        Ctor: PaginationInfo,
-        name: 'pagination-info',
+        Ctor: Text,
+        name: 'pager-info',
         id: 'page-info',
         x: infoX,
         y: infoY,
-        current,
-        separator,
-        total,
-        style: textAttrs,
-        spacing,
+        text,
+        ...textStyle,
         visibility,
       },
     ];

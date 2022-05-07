@@ -9,7 +9,6 @@ import type {
   PathProps,
 } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
-import type { PaginationStyleProps } from './pagination';
 
 export type State = StyleState | 'default-active' | 'selected-active';
 export type SymbolCfg = MarkerStyleProps['symbol'];
@@ -265,8 +264,20 @@ export type CategoryCfg = LegendBaseCfg & {
   autoWrap?: boolean;
   // 图例项倒序
   reverse?: boolean;
-  // 分页
-  pageNavigator?: false | PaginationStyleProps;
+  pager?:
+    | false
+    | {
+        position?: string;
+        button?: {
+          size?: number;
+          spacing?: number;
+          style?: MixAttrs<ShapeAttrs>;
+        };
+        text?: {
+          formatter?: (current: number, total: number) => string;
+          style?: ShapeAttrs;
+        };
+      };
 };
 
 export type CategoryOptions = DisplayObjectConfig<CategoryCfg>;

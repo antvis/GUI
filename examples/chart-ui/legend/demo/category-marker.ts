@@ -13,7 +13,7 @@ const canvas = new Canvas({
 
 const category = new Category({
   style: {
-    pageNavigator: {
+    pager: {
       button: {
         position: 'right',
       },
