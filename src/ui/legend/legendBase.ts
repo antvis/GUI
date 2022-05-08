@@ -83,13 +83,19 @@ export abstract class LegendBase<T extends LegendBaseCfg> extends GUI<T> {
       const { width, height } = this.titleStyleProps as HTMLStyleProps;
       box = { x: 0, y: 0, width, height };
     } else {
-      box = this.titleShape.getBBox();
+      const bounds = this.titleShape.getLocalBounds();
+      box = {
+        x: bounds.min[0],
+        y: bounds.min[1],
+        width: bounds.max[0] - bounds.min[0],
+        height: bounds.max[1] - bounds.min[1],
+      };
     }
     return {
       x: box.x,
       y: box.y,
       right: box.x + box.width,
-      bottom: box.x + box.height + (this.style.title?.spacing || 0),
+      bottom: box.y + box.height + (this.style.title?.spacing || 0),
     };
   }
 

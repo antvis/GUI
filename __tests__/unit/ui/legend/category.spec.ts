@@ -108,7 +108,7 @@ describe.only('Category legend', () => {
     expect(legendItem.getBBox().width).toBeGreaterThan(148);
     expect(legendItem.querySelector('.legend-item-name').style.text.endsWith('...')).toBeTruthy();
 
-    category.update({ items, itemWidth: 100, spacing: [0, 6] });
+    category.update({ items, itemWidth: 100, spacing: [6, 0] });
     const [, item1, item2] = category.querySelectorAll('.legend-item') as any[];
     expect(item1.getBBox().x).toBe(100 + 6);
     expect(item2.getBBox().x).toBe(200 + 12);
@@ -190,7 +190,7 @@ describe.only('Category legend', () => {
           title: { content: 'Legend title' },
           items,
           maxWidth: 280,
-          spacing: [4, 8],
+          spacing: [8, 4],
           itemBackground: {
             style: {
               active: {

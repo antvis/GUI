@@ -132,7 +132,7 @@ export class Category extends LegendBase<CategoryCfg> {
           return deepMix(
             {},
             DEFAULT_ITEM_MARKER,
-            { symbol: item.symbol, style: { default: { fill: item.color } } },
+            { symbol: item.symbol, style: { default: { fill: item.color, stroke: item.color } } },
             markerCfg
           );
         })(),
@@ -144,7 +144,7 @@ export class Category extends LegendBase<CategoryCfg> {
           const { formatter, ...itemValueCfg } = deepMix({}, { formatter: () => item.value }, itemValue);
           return { ...itemValueCfg, content: formatter(item, idx, items) };
         })(),
-        background: itemBackground,
+        background: itemBackground as any,
       };
     });
   }
@@ -197,8 +197,9 @@ export class Category extends LegendBase<CategoryCfg> {
     const { padding } = this.style;
     const p = (Array.isArray(padding) ? padding : [padding]) as number[];
     const top = this.titleShapeBBox.bottom;
-    const left = p[1] ?? p[0];
+    const left = p[1] ?? p[0] ?? 0;
     this.itemsGroup.setLocalPosition(left, top);
+
     if (this.pager) {
       const { pageWidth: w, pageHeight: h, pageNum = 1 } = this;
       this.pager.update({
@@ -222,7 +223,7 @@ export class Category extends LegendBase<CategoryCfg> {
     if (this.idItem.size <= 1) return;
 
     const items = Array.from(this.idItem.values());
-    const { spacing: [, offsetX] = [0, 0], autoWrap } = this.style;
+    const { spacing: [offsetX] = [0, 0], autoWrap } = this.style;
     const padding = normalPadding(this.style.padding);
     const maxWidth = this.style.maxWidth && this.style.maxWidth - (padding[1] + padding[3]);
 
@@ -290,7 +291,7 @@ export class Category extends LegendBase<CategoryCfg> {
 
     const items = Array.from(this.idItem.values());
 
-    const { spacing: [offsetY] = [0, 0], autoWrap } = this.style;
+    const { spacing: [, offsetY] = [0, 0], autoWrap } = this.style;
     const padding = normalPadding(this.style.padding);
     const maxHeight = this.style.maxHeight && this.style.maxHeight - (padding[0] + padding[2]);
 

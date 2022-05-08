@@ -39,7 +39,7 @@ const category = new Category({
     maxItemWidth: 180,
     itemMarker: (item, idx) => {
       return {
-        marker: [
+        symbol: [
           'diamond',
           'https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*N4ZMS7gHsUIAAAAAAAAAAABkARQnAQ',
           'https://gw.alipayobjects.com/zos/rmsportal/XuVpGqBFxXplzvLjJBZB.svg',
@@ -51,6 +51,9 @@ const category = new Category({
           },
         },
       };
+    },
+    itemName: {
+      spacing: 12,
     },
   },
 });

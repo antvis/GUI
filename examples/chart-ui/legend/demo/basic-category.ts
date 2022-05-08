@@ -7,7 +7,7 @@ const renderer = new CanvasRenderer();
 const canvas = new Canvas({
   container: 'container',
   width: 600,
-  height: 200,
+  height: 400,
   renderer,
 });
 
@@ -37,7 +37,7 @@ const items4 = [
   { name: 'series2', color: '#41d59c' },
 ];
 
-function createCategory(x, y, items, marker = 'circle', furtherOptions = {}) {
+function createCategory(x, y, items, symbol = 'circle', furtherOptions = {}) {
   canvas.appendChild(
     new Category({
       style: {
@@ -45,18 +45,12 @@ function createCategory(x, y, items, marker = 'circle', furtherOptions = {}) {
         y,
         title: { content: 'Legend title' },
         items,
-        itemMarker: ({ color }) => {
-          return {
-            size: 10,
-            marker: marker,
-            style: {
-              selected: {
-                fill: color,
-              },
-            },
-          };
+        itemMarker: {
+          size: 10,
+          symbol,
         },
-        spacing: [0, 0],
+        padding: [12, 0],
+        spacing: [8, 0],
         maxItemWidth: 160,
         ...furtherOptions,
       },
@@ -64,29 +58,23 @@ function createCategory(x, y, items, marker = 'circle', furtherOptions = {}) {
   );
 }
 
-createCategory(10, 10, items1, undefined, { maxWidth: 200 });
-createCategory(10, 50, items2, 'square');
-createCategory(10, 90, items3, undefined, {
-  itemMarker: ({ color }) => {
-    return {
-      size: 12,
-      marker: 'smooth',
-      style: {
-        default: { lineWidth: 2, fill: '#fff', stroke: '#d3d2d3' },
-        selected: { lineWidth: 2, fill: '#fff', stroke: color },
-      },
-    };
+createCategory(50, 10, items1, undefined, { maxWidth: 200 });
+createCategory(50, 60, items2, 'square');
+createCategory(50, 110, items3, undefined, {
+  itemMarker: {
+    size: 12,
+    symbol: 'smooth',
+    style: {
+      default: { lineWidth: 1, fill: 'transparent' },
+    },
   },
 });
-createCategory(10, 130, items4, undefined, {
-  itemMarker: ({ color }) => {
-    return {
-      size: 12,
-      marker: 'hvh',
-      style: {
-        default: { lineWidth: 2, fill: '#fff', stroke: '#d3d2d3' },
-        selected: { lineWidth: 2, fill: '#fff', stroke: color },
-      },
-    };
+createCategory(50, 160, items4, undefined, {
+  itemMarker: {
+    size: 10,
+    symbol: 'hvh',
+    style: {
+      default: { lineWidth: 1, fill: 'transparent' },
+    },
   },
 });
