@@ -1,14 +1,27 @@
-import { DisplayObject, DisplayObjectConfig, Path, Text } from '@antv/g';
+import { DisplayObject, DisplayObjectConfig, ElementEvent, Path, Rect, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { MixAttrs, ShapeAttrs } from '../../types';
 import { select, TEXT_INHERITABLE_PROPS, Selection, measureTextWidth, defined } from '../../util';
-import { ifH } from './utils';
 import { PagerButton } from './pagerButton';
 
-type PagerStyleProps = {
+export type PageNavigatorCfg = {
+  position?: string;
+  marker?: {
+    size?: number;
+    spacing?: number;
+    style?: MixAttrs<ShapeAttrs>;
+  };
+  text?: {
+    style?: ShapeAttrs;
+    formatter?: (current: string, total: string) => string;
+  };
+};
+
+type PageNavigatorStyleProps = PageNavigatorCfg & {
   x?: number;
   y?: number;
+  visibility?: 'visible' | 'hidden';
   /** 待分页的对象 */
   view: DisplayObject;
   orient: 'horizontal' | 'vertical';
@@ -20,41 +33,30 @@ type PagerStyleProps = {
   /** animation easing function */
   effect?: string;
   duration?: number;
-  position?: string;
-  button?: {
-    size?: number;
-    spacing?: number;
-    style?: MixAttrs<ShapeAttrs>;
-  };
-  text?: {
-    style?: ShapeAttrs;
-    formatter?: (current: string, total: string) => string;
-  };
 };
-export { PagerStyleProps };
 
 const empty = (v: number) => v === Number.MAX_VALUE || !defined(v);
+const ifH = (orient: string, a: any, b: any) => (orient === 'horizontal' ? a : b);
 
-export class Pager extends GUI<PagerStyleProps> {
+export class PageNavigator extends GUI<PageNavigatorStyleProps> {
   public static tag = 'page-navigator';
 
   private static defaultOptions = {
     style: {
       x: 0,
       y: 0,
-      effect: 'linear',
-      duration: 200,
+      effect: 'easeQuadInOut',
+      duration: 320,
       orient: 'horizontal', // 默认横向翻页
       initPageNum: 1,
-      button: {
+      marker: {
         spacing: 5,
       },
-    } as Partial<PagerStyleProps>,
+    } as Partial<PageNavigatorStyleProps>,
   };
 
-  protected selection!: Selection;
-
   protected clipView!: Path;
+  // protected maskRect!: Rect;
 
   protected view!: DisplayObject;
 
@@ -81,31 +83,50 @@ export class Pager extends GUI<PagerStyleProps> {
     return this.finishedPromise;
   }
 
-  constructor(options: DisplayObjectConfig<PagerStyleProps>) {
-    super(deepMix({}, Pager.defaultOptions, options));
-    this.selection = select(this);
+  constructor(options: DisplayObjectConfig<PageNavigatorStyleProps>) {
+    super(deepMix({}, PageNavigator.defaultOptions, options));
     this.init();
   }
 
   public init() {
     this.clipView = new Path({ className: 'clip-path', style: { x: 0, y: 0, path: [] } });
+    // this.maskRect = new Rect({
+    //   style: {
+    //     width: 0,
+    //     height: 0,
+    //     fill: '#fff',
+    //   }
+    // });
     this.update();
+
+    // this.view.addEventListener(ElementEvent.MOUNTED, () => {
+    //   this.view.parentNode?.appendChild(this.maskRect);
+    // });
   }
 
   protected currPage: number = 0;
 
-  public update(cfg?: Partial<PagerStyleProps>) {
-    this.attr(deepMix({}, Pager.defaultOptions.style, this.attributes, cfg));
-    const { view, pageWidth, pageHeight } = this.style;
-    if (this.view) {
-      this.view.style.clipPath = null;
-    }
+  public update(cfg?: Partial<PageNavigatorStyleProps>) {
+    this.attr(deepMix({}, PageNavigator.defaultOptions.style, this.attributes, cfg));
+    const { view, visibility, orient, pageWidth, pageHeight } = this.style;
+
     if (view) {
       this.currPage = this.style.initPageNum || 1;
       this.view = view;
     }
-    if (!empty(pageWidth) && !empty(pageHeight)) {
+    if (visibility === 'visible') {
       this.view.style.clipPath = this.clipView;
+      // this.maskRect.style.visibility = 'visible';
+
+      // const [x, y] = this.view.getLocalPosition();
+      // this.maskRect.style.x = ifH(orient, x + pageWidth - 4, x);
+      // this.maskRect.style.y = ifH(orient, y, y + pageHeight - 4);
+      // this.maskRect.style.height = ifH(orient, pageHeight, 4);
+      // this.maskRect.style.width = ifH(orient, 4, pageWidth);
+      // this.maskRect.style.filter = ifH(orient, 'drop-shadow(-8px 0px 4px rgba(0,0,0,0.18))', 'drop-shadow(0px -8px 4px rgba(0,0,0,0.18))');
+    } else {
+      this.view.style.clipPath = null;
+      // this.maskRect.style.visibility = 'hidden';
     }
     // 更新的时候，先取消动画
     this.getAnimations().forEach((animation) => animation.cancel());
@@ -115,9 +136,9 @@ export class Pager extends GUI<PagerStyleProps> {
   }
 
   protected updateView() {
-    const { pageWidth, pageHeight } = this.style;
+    const { pageWidth, pageHeight, visibility } = this.style;
 
-    if (!empty(pageWidth) && !empty(pageHeight)) {
+    if (visibility === 'visible') {
       const clipPath = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
       this.clipView.attr({ path: clipPath, x: 0, y: 0 });
       this.clipView.setLocalPosition(0, 0);
@@ -142,7 +163,7 @@ export class Pager extends GUI<PagerStyleProps> {
   }
 
   protected drawInner() {
-    this.selection
+    select(this)
       .selectAll('.pager-item')
       .data(this.buttonStyles, (d) => d.id)
       .join(
@@ -151,7 +172,7 @@ export class Pager extends GUI<PagerStyleProps> {
           update.each((shape, { Ctor, name, ...style }) => (shape.update ? shape.update(style) : shape.attr(style))),
         (exit) => exit.remove()
       );
-    const [prev, next] = this.selection.selectAll('[name="pager-button"]').nodes() as any[];
+    const [prev, next] = select(this).selectAll('[name="pager-button"]').nodes() as any[];
     prev.addEventListener('click', this.prev.bind(this));
     this.prevButton = prev;
     next.addEventListener('click', this.next.bind(this));
@@ -159,11 +180,9 @@ export class Pager extends GUI<PagerStyleProps> {
   }
 
   protected get buttonStyles() {
-    const { button: buttonCfg, text: textCfg } = this.style;
+    const { marker: buttonCfg, text: textCfg, visibility } = this.style;
     let { pageWidth, pageHeight } = this.style;
-    let visibility = 'visible';
     if (empty(pageWidth) || empty(pageHeight)) {
-      visibility = 'hidden';
       const assignNumber = (v: number) => (empty(v) ? 0 : v);
       pageWidth = assignNumber(pageWidth);
       pageHeight = assignNumber(pageHeight);
@@ -220,7 +239,7 @@ export class Pager extends GUI<PagerStyleProps> {
         Ctor: PagerButton,
         name: 'pager-button',
         id: 'prev-button',
-        marker: startMarker,
+        symbol: startMarker,
         size,
         style: btnStyle,
         x: prevX,
@@ -231,7 +250,7 @@ export class Pager extends GUI<PagerStyleProps> {
         Ctor: PagerButton,
         name: 'pager-button',
         id: 'next-button',
-        marker: endMarker,
+        symbol: endMarker,
         size,
         style: btnStyle,
         x: nextX,
@@ -279,8 +298,10 @@ export class Pager extends GUI<PagerStyleProps> {
   protected updateButtonState(to: number) {
     this.prevButton.update({ disabled: false });
     this.nextButton.update({ disabled: false });
+    // this.maskRect.style.visibility = 'visible';
     if (to === this.maxPages) {
       this.nextButton.update({ disabled: true });
+      // this.maskRect.style.visibility = 'hidden';
     } else if (to === 1) {
       this.prevButton.update({ disabled: true });
     }
@@ -293,6 +314,7 @@ export class Pager extends GUI<PagerStyleProps> {
       const { effect, duration, pageWidth, pageHeight, orient = 'horizontal' } = this.style;
       const sign = this.currPage < to ? -1 : 1;
       const [offsetX, offsetY] = ifH(orient, [sign * pageWidth!, 0], [0, sign * pageHeight!]);
+
       this.playState = 'running';
       this.clipView.animate(
         [{ transform: `translate(0px, 0px)` }, { transform: `translate(${-offsetX}px,${-offsetY}px)` }],

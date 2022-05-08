@@ -23,7 +23,7 @@ const categoryItem = new CategoryItem({
     maxItemWidth: 200,
     itemMarker: {
       size: 8,
-      marker: 'circle',
+      symbol: 'circle',
       spacing: 0,
       style: {
         default: {

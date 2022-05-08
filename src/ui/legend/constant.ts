@@ -1,5 +1,4 @@
 import { deepMix } from '@antv/util';
-import { TEXT_INHERITABLE_PROPS } from '../../util';
 
 export const LEGEND_BASE_DEFAULT_OPTIONS = {
   style: {
@@ -8,10 +7,8 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
     padding: 0,
     orient: 'horizontal',
     backgroundStyle: {
-      default: {
-        fill: 'white',
-        lineWidth: 0,
-      },
+      fill: 'transparent',
+      lineWidth: 0,
     },
     title: {
       content: '',
@@ -37,6 +34,25 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
   },
 };
 
+export const DEFAULT_ITEM_MARKER = {
+  symbol: 'circle',
+  size: 8,
+  style: {
+    default: {
+      fill: '#d3d2d3',
+      fillOpacity: 1,
+      lineWidth: 0,
+    },
+    selected: {
+      fill: '#d3d2d3',
+      fillOpacity: 1,
+    },
+    active: {
+      cursor: 'pointer',
+    },
+  },
+};
+
 export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS, {
   style: {
     type: 'category',
@@ -45,30 +61,14 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
     maxHeight: undefined,
     maxCols: undefined,
     maxRows: undefined,
-    spacing: [10, 10],
-    itemMarker: {
-      marker: 'circle',
-      size: 8,
-      spacing: 10,
-      style: {
-        default: {
-          fill: '#d3d2d3',
-          opacity: 1,
-          lineWidth: 0,
-        },
-        selected: {
-          fill: '#d3d2d3',
-          opacity: 1,
-        },
-        active: {},
-      },
-    },
+    spacing: [4, 8],
+    // style.textBaseline 保持居中，不可修改
     // style.textBaseline 保持居中，不可修改
     itemName: {
-      spacing: 0,
+      spacing: 4,
       style: {
         default: {
-          fill: '#d3d2d3',
+          fill: '#646464',
           fontSize: 12,
           opacity: 1,
           fontWeight: 'normal',
@@ -78,18 +78,19 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
           opacity: 1,
         },
         active: {
+          cursor: 'pointer',
+        },
+        inactive: {
+          fill: '#d3d2d3',
           opacity: 0.5,
         },
       },
-      formatter: (name: string) => name,
     },
-    // style.textBaseline 保持居中，不可修改
     itemValue: {
-      spacing: 5,
-      align: 'right',
+      spacing: 4,
       style: {
         default: {
-          fill: '#d3d2d3',
+          fill: '#646464',
           fontSize: 12,
           opacity: 1,
           fontWeight: 'normal',
@@ -99,23 +100,23 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
           opacity: 1,
         },
         active: {
+          cursor: 'pointer',
+        },
+        inactive: {
+          fill: '#d3d2d3',
           opacity: 0.5,
         },
       },
-      formatter: (name: string) => name,
     },
-    itemBackgroundStyle: {
-      default: {
-        fill: '#fff',
-      },
-      selected: {
-        opacity: 1,
-        fill: '#fff',
-      },
-      active: {
-        opacity: 1,
-        fill: '#fff',
-        cursor: 'pointer',
+    itemBackground: {
+      padding: 0,
+      style: {
+        default: {
+          fill: 'transparent',
+        },
+        active: {
+          cursor: 'pointer',
+        },
       },
     },
     reverse: false, // 倒序放置图例

@@ -9,7 +9,7 @@ type PagerButtonStyleProps = {
   x: number;
   y: number;
   size: number;
-  marker: string;
+  symbol: string;
   disabled: boolean;
   style?: MixAttrs<ShapeAttrs>;
 };
@@ -31,7 +31,6 @@ export class PagerButton extends GUI<PagerButtonStyleProps> {
   public update(cfg?: any) {
     this.attr(deepMix({}, this.attributes, cfg));
     const [rectStyle, markerStyle] = this.getStyleProps();
-
     if (!this.backgroundShape) {
       this.backgroundShape = this.appendChild(new Rect({ className: 'pager-btn-background', style: rectStyle }));
     } else {
@@ -48,7 +47,7 @@ export class PagerButton extends GUI<PagerButtonStyleProps> {
   }
 
   private getStyleProps(): [RectStyleProps, MarkerStyleProps] {
-    const { size, marker: symbol, disabled, style } = this.style;
+    const { size, symbol, disabled, style } = this.style;
     const { default: defaultStyle, disabled: disabledStyle } = deepMix(
       {},
       {
@@ -64,3 +63,16 @@ export class PagerButton extends GUI<PagerButtonStyleProps> {
     ];
   }
 }
+
+Marker.registerSymbol('left', (x: number, y: number, r: number) => {
+  return [['M', x - r, y], ['L', x + r, y - r], ['L', x + r, y + r], ['Z']];
+});
+Marker.registerSymbol('right', (x: number, y: number, r: number) => {
+  return [['M', x - r, y - r], ['L', x + r, y], ['L', x - r, y + r], ['Z']];
+});
+Marker.registerSymbol('up', (x: number, y: number, r: number) => {
+  return [['M', x - r, y + r], ['L', x, y - r], ['L', x + r, y + r], ['Z']];
+});
+Marker.registerSymbol('down', (x: number, y: number, r: number) => {
+  return [['M', x - r, y - r], ['L', x + r, y - r], ['L', x, y + r], ['Z']];
+});

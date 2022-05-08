@@ -1,4 +1,4 @@
-import { Canvas, Group } from '@antv/g';
+import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-svg';
 import { Category } from '@antv/gui';
 
@@ -12,38 +12,30 @@ const canvas = new Canvas({
 });
 
 const items1 = [
-  { id: '事例一', color: '#4982f8' },
-  { id: '事例二', color: '#41d59c' },
-  { id: '事例三', color: '#516587' },
-  { id: '事例四', color: '#f9b41b' },
-  { id: '事例五', color: '#624ef7' },
-].map(({ id, color }) => {
-  return { name: id, id, state: 'selected', color };
-});
+  { name: '事例一', color: '#4982f8' },
+  { name: '事例二', color: '#41d59c' },
+  { name: '事例三', color: '#516587' },
+  { name: '事例四', color: '#f9b41b' },
+  { name: '事例五', color: '#624ef7' },
+];
 
 const items2 = [
-  { id: '1991', color: '#4982f8' },
-  { id: '1992', color: '#41d59c' },
-  { id: '1993', color: '#516587' },
-  { id: '1994', color: '#f9b41b' },
-  { id: '1995', color: '#624ef7' },
-].map(({ id, color }) => {
-  return { value: id, id, state: 'selected', color };
-});
+  { name: '1991', color: '#4982f8' },
+  { name: '1992', color: '#41d59c' },
+  { name: '1993', color: '#516587' },
+  { name: '1994', color: '#f9b41b' },
+  { name: '1995', color: '#624ef7' },
+];
 
 const items3 = [
-  { id: 'Tokyo', color: '#4982f8' },
-  { id: 'London', color: '#41d59c' },
-].map(({ id, color }) => {
-  return { name: id, id, state: 'selected', color };
-});
+  { name: 'Tokyo', color: '#4982f8' },
+  { name: 'London', color: '#41d59c' },
+];
 
 const items4 = [
-  { id: 'series1', color: '#4982f8' },
-  { id: 'series2', color: '#41d59c' },
-].map(({ id, color }) => {
-  return { name: id, id, state: 'selected', color };
-});
+  { name: 'series1', color: '#4982f8' },
+  { name: 'series2', color: '#41d59c' },
+];
 
 function createCategory(x, y, items, marker = 'circle', furtherOptions = {}) {
   canvas.appendChild(
