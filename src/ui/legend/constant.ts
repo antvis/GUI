@@ -43,12 +43,48 @@ export const DEFAULT_ITEM_MARKER = {
       fillOpacity: 1,
       lineWidth: 0,
     },
-    selected: {
-      fill: '#d3d2d3',
-      fillOpacity: 1,
-    },
+    selected: {},
     active: {
       cursor: 'pointer',
+    },
+  },
+};
+
+export const DEFAULT_ITEM_NAME = {
+  spacing: 4,
+  style: {
+    default: {
+      fill: '#646464',
+      fontSize: 12,
+      opacity: 1,
+      fontWeight: 'normal',
+    },
+    selected: {},
+    active: {
+      cursor: 'pointer',
+    },
+    inactive: {
+      fill: '#d3d2d3',
+      opacity: 0.5,
+    },
+  },
+};
+export const DEFAULT_ITEM_VALUE = {
+  spacing: 4,
+  style: {
+    default: {
+      fill: '#646464',
+      fontSize: 12,
+      opacity: 1,
+      fontWeight: 'normal',
+    },
+    selected: {},
+    active: {
+      cursor: 'pointer',
+    },
+    inactive: {
+      fill: '#d3d2d3',
+      opacity: 0.5,
     },
   },
 };
@@ -62,44 +98,6 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
     maxCols: undefined,
     maxRows: undefined,
     spacing: [8, 2],
-    itemName: {
-      spacing: 4,
-      style: {
-        default: {
-          fill: '#646464',
-          fontSize: 12,
-          opacity: 1,
-          fontWeight: 'normal',
-        },
-        selected: {},
-        active: {
-          cursor: 'pointer',
-        },
-        inactive: {
-          fill: '#d3d2d3',
-          opacity: 0.5,
-        },
-      },
-    },
-    itemValue: {
-      spacing: 4,
-      style: {
-        default: {
-          fill: '#646464',
-          fontSize: 12,
-          opacity: 1,
-          fontWeight: 'normal',
-        },
-        selected: {},
-        active: {
-          cursor: 'pointer',
-        },
-        inactive: {
-          fill: '#d3d2d3',
-          opacity: 0.5,
-        },
-      },
-    },
     itemBackground: {
       padding: 0,
       style: {

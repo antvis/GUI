@@ -1,5 +1,6 @@
 import { DisplayObject, Group } from '@antv/g';
 import { Category } from '../../../../src/ui/legend';
+import { CategoryItem } from '../../../../src/ui/legend/category-item';
 import { createCanvas } from '../../../utils/render';
 
 const canvas = createCanvas(800, 'svg');
@@ -181,6 +182,36 @@ describe('Category legend', () => {
     expect(value2.style.fill).toBe('black');
     expect(value3.style.fill).toBe('red');
     category.destroy();
+  });
+
+  it('Category state', () => {
+    const category = canvas.appendChild(
+      new Category({ style: { items: items.map((d) => ({ ...d, state: 'selected' })) } })
+    );
+
+    const [item0] = category.querySelectorAll('.legend-item') as CategoryItem[];
+    // Inherit default style.
+    expect(item0!.querySelector('.legend-item-marker')!.style.fill).toBe(items[0].color);
+
+    // Specify selected style.
+    category.update({ itemMarker: { style: { selected: { fill: 'red' }, inactive: { fill: 'grey' } } } });
+    expect(item0!.querySelector('.legend-item-marker')!.style.fill).toBe('red');
+    item0.setState('default');
+    expect(item0!.querySelector('.legend-item-marker')!.style.fill).toBe(items[0].color);
+    item0.setState('inactive');
+    expect(item0!.querySelector('.legend-item-marker')!.style.fill).toBe('grey');
+
+    category.update({ itemName: { style: { selected: { fill: 'green' }, inactive: { fill: 'blue' } } } });
+    item0.setState('selected');
+    expect(item0!.querySelector('.legend-item-name')!.style.fill).toBe('green');
+    item0.setState('inactive');
+    expect(item0!.querySelector('.legend-item-name')!.style.fill).toBe('blue');
+
+    category.update({ itemValue: { style: { selected: { fill: 'pink' }, inactive: { fill: 'blue' } } } });
+    item0.setState('selected');
+    expect(item0!.querySelector('.legend-item-value')!.style.fill).toBe('pink');
+    item0.setState('inactive');
+    expect(item0!.querySelector('.legend-item-value')!.style.fill).toBe('blue');
   });
 
   it('Category support flipPage and autoWrap', () => {

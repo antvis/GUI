@@ -4,7 +4,7 @@ import { deepAssign, defined, getShapeSpace, normalPadding, select } from '../..
 import type { StyleState as State } from '../../types';
 import { CategoryItem } from './category-item';
 import type { CategoryCfg, CategoryOptions } from './types';
-import { CATEGORY_DEFAULT_OPTIONS, DEFAULT_ITEM_MARKER } from './constant';
+import { CATEGORY_DEFAULT_OPTIONS, DEFAULT_ITEM_MARKER, DEFAULT_ITEM_NAME, DEFAULT_ITEM_VALUE } from './constant';
 import { PageNavigator } from './pageNavigator';
 import { LegendBase } from './legendBase';
 
@@ -138,11 +138,11 @@ export class Category extends LegendBase<CategoryCfg> {
         })(),
         itemName: (() => {
           const { formatter, ...itemNameCfg } = deepMix({}, { formatter: () => item.name }, itemName);
-          return { ...itemNameCfg, content: formatter(item, idx, items) };
+          return deepMix({}, DEFAULT_ITEM_NAME, { content: formatter(item, idx, items) }, itemNameCfg);
         })(),
         itemValue: (() => {
           const { formatter, ...itemValueCfg } = deepMix({}, { formatter: () => item.value }, itemValue);
-          return { ...itemValueCfg, content: formatter(item, idx, items) };
+          return deepMix({}, DEFAULT_ITEM_VALUE, { content: formatter(item, idx, items) }, itemValueCfg);
         })(),
         background: itemBackground as any,
       };
