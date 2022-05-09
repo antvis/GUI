@@ -61,9 +61,7 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
     maxHeight: undefined,
     maxCols: undefined,
     maxRows: undefined,
-    spacing: [4, 8],
-    // style.textBaseline 保持居中，不可修改
-    // style.textBaseline 保持居中，不可修改
+    spacing: [8, 2],
     itemName: {
       spacing: 4,
       style: {
@@ -73,10 +71,7 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
           opacity: 1,
           fontWeight: 'normal',
         },
-        selected: {
-          fill: '#646464',
-          opacity: 1,
-        },
+        selected: {},
         active: {
           cursor: 'pointer',
         },
@@ -95,10 +90,7 @@ export const CATEGORY_DEFAULT_OPTIONS = deepMix({}, LEGEND_BASE_DEFAULT_OPTIONS,
           opacity: 1,
           fontWeight: 'normal',
         },
-        selected: {
-          fill: '#646464',
-          opacity: 1,
-        },
+        selected: {},
         active: {
           cursor: 'pointer',
         },

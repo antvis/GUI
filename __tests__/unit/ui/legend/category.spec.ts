@@ -4,7 +4,7 @@ import { createCanvas } from '../../../utils/render';
 
 const canvas = createCanvas(800, 'svg');
 
-describe.only('Category legend', () => {
+describe('Category legend', () => {
   const items = [
     { name: 'Chrome', value: '7.08%', color: '#5B8FF9' },
     { name: 'Firefox', value: '4.12%', color: '#61DDAA' },
@@ -216,5 +216,7 @@ describe.only('Category legend', () => {
 
     category.update({ orient: 'vertical', maxHeight: 78 });
     expect(category.querySelector('.legend-navigation')!.style.visibility).toBe('visible');
+
+    category.destroy();
   });
 });
