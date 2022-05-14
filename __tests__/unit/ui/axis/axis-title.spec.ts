@@ -170,11 +170,11 @@ describe('Axis title', () => {
           style: { ...options.style, textAlign: 'end' },
         });
         const text = drawXTitle(titleAttrs);
-        expect(text.getBBox().left).toBeCloseTo(
-          Math.max(bounds({}).x1, labelGroup.getBBox().right - text.getBBox().width)
+        expect(text.getBBox().left).not.toBeLessThan(
+          Math.min(bounds({}).x1, labelGroup.getBBox().right - text.getBBox().width)
         );
         expect(text.getBBox().right).not.toBeGreaterThan(bounds({}).x2);
-        expect(titleAttrs.textAlign).toBe('end');
+        expect(titleAttrs.textAlign).toBe('start');
       });
 
       it('specify { dx: 10 } as the offset of textShape.', () => {

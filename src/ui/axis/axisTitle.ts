@@ -117,7 +117,7 @@ export function getAxisTitleStyle(selection: Selection, options: AxisTitleOption
       }
     } else if (right !== undefined && bbox.right >= right) {
       // If out of left hand side, change `align` to left, and `x` to the `bounds.left`. Make sure it not out-of right hand side.
-      x = right - bbox.width;
+      x = right;
       ifHorizontalText(orient, angle, () => (attrs.textAlign = 'end'), noop);
       if (left !== undefined && x < left) {
         x = left;
