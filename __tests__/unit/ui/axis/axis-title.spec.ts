@@ -48,7 +48,7 @@ describe('Axis title', () => {
   }
 
   describe('x-direction', () => {
-    const selection = select(createCanvas(200, 'svg').appendChild(new Group()));
+    const selection = select(createCanvas(200).appendChild(new Group()));
     const drawXTitle = (attrs: any, bounds?: any) => drawTitle(attrs, bounds, selection);
     // Init.
     const group = selection.append('g').attr('className', 'container').node();
@@ -225,7 +225,7 @@ describe('Axis title', () => {
   });
 
   describe('y-direction', () => {
-    const selection = select(createCanvas(400, 'svg').appendChild(new Group()));
+    const selection = select(createCanvas(400).appendChild(new Group()));
     const drawYTitle = (attrs: any, bounds?: any) => drawTitle(attrs, bounds, selection);
     // Init.
     const group = selection.append('g').attr('className', 'container').node();

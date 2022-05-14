@@ -50,7 +50,6 @@
     "@antv/util": "^2.0.13",
     "csstype": "^3.0.8",
     "fecha": "^4.2.1",
-    "kiwi.js": "^1.1.3",
     "svg-path-parser": "^1.1.0"
   },
   "peerDependencies": {
@@ -138,5 +137,6 @@
     "@babel/plugin-transform-spread": "7.12.1",
     "@babel/standalone": "7.12.6",
     "remark-mdx": "1.6.22"
-  }
+  },
+  "sideEffects": true
 }
