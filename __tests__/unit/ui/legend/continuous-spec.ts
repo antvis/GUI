@@ -60,7 +60,7 @@ describe('continuous', () => {
         backgroundStyle: {
           fill: '#f3f3f3',
         },
-        handle: false,
+        handle: null,
         rail: {
           width: 280,
           height: 30,
@@ -227,7 +227,7 @@ describe('continuous', () => {
         backgroundStyle: {
           fill: 'gray',
         },
-        handle: false,
+        handle: null,
         rail: {
           width: 50,
           height: 200,
