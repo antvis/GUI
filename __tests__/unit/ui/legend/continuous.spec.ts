@@ -68,7 +68,7 @@ describe('Continuous legend', () => {
     );
   });
 
-  it('new Continuous({}) should draw a legend with size chunked rail', () => {
+  it('new Continuous({}) should draw a legend with chunked rail', () => {
     const legend = canvas.appendChild(
       new Continuous({
         style: {
@@ -76,13 +76,31 @@ describe('Continuous legend', () => {
           min: 0,
           max: 100,
           padding: [0, 0, 0, 12],
+          inset: [0, 0, 0, 12],
           title: { content: 'Title' },
+          color: [
+            '#d0e3fa',
+            '#acc7f6',
+            '#8daaf2',
+            '#6d8eea',
+            '#4d73cd',
+            '#325bb1',
+            '#5a3e75',
+            '#8c3c79',
+            '#e23455',
+            '#e7655b',
+          ],
           rail: {
             chunked: true,
             type: 'size',
+            ticks: [20, 30, 60, 80],
           },
         },
       })
+    );
+    // @ts-ignore
+    expect(legend.color).toBe(
+      'l(0) 0:#d0e3fa 0.2:#d0e3fa 0.2:#acc7f6 0.4:#acc7f6 0.4:#8daaf2 0.6:#8daaf2 0.6:#6d8eea 0.8:#6d8eea 0.8:#4d73cd 1:#4d73cd 1:#325bb1'
     );
   });
 

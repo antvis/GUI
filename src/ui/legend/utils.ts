@@ -2,76 +2,6 @@ import { Marker } from '../marker';
 import { toPrecision } from '../../util';
 
 /**
- * 梯形色板
- * @param width 完整的宽度
- * @param height 完整高度
- * @param x 起点x坐标
- * @param y 起点y坐标
- * @param start 梯形起点
- * @param end 梯形终点
- * @returns PathCommand[]
- */
-// export function createTrapezoidRailPath(
-//   width: number,
-//   height: number,
-//   x: number = 0,
-//   y: number = 0,
-//   start?: number,
-//   end?: number
-// ) {
-//   const st = isUndefined(start) ? x : start;
-//   const ed = isUndefined(end) ? x + width : end;
-//   const slope = height / width;
-
-//   return [
-//     ['M', st, height],
-//     ['L', st, slope * (width - st - x)],
-//     ['L', ed, slope * (width - ed - x)],
-//     ['L', ed, height],
-//     ['Z'],
-//   ] as PathCommand[];
-// }
-
-/**
- * 矩形色板
- * @param width 完整的宽度
- * @param height 完整高度
- * @param x 起点x坐标
- * @param y 起点y坐标
- * @param start 矩形起点
- * @param end 矩形终点
- * @returns PathCommand[]
- */
-// export function createRectRailPath(
-//   width: number,
-//   height: number,
-//   x: number = 0,
-//   y: number = 0,
-//   start?: number,
-//   end?: number
-// ) {
-//   const st = isUndefined(start) ? x : start;
-//   const ed = isUndefined(end) ? x + width : end;
-
-//   return [['M', st, height], ['L', st, 0], ['L', ed, 0], ['L', ed, height], ['Z']] as PathCommand[];
-// }
-
-// /**
-//  * 根据值转换为其在rail上的偏移量
-//  */
-// export function getValueOffset(
-//   value: number,
-//   min: number,
-//   max: number,
-//   railLen: number,
-//   reverse: boolean = false
-// ): number {
-//   // 将value映射到 startRail, endRail
-//   if (reverse) return (value / railLen) * (max - min);
-//   return toPrecision(((value - min) / (max - min)) * railLen, 2);
-// }
-
-/**
  * 将值转换至步长tick上
  */
 export function getStepValueByValue(value: number, step: number, min: number) {
@@ -206,6 +136,6 @@ export function getSafetySelections(
   return [toPrecision(startVal, precision), toPrecision(endVal, precision)];
 }
 
-export function ifHorizontal<T>(orient: string, a: T, b: T): T {
+export function ifHorizontal<T>(orient: string = 'horizontal', a: T, b: T): T {
   return orient === 'horizontal' ? a : b;
 }

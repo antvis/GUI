@@ -1,10 +1,7 @@
 import { PathStyleProps, CustomElement, DisplayObjectConfig, Path, PathCommand } from '@antv/g';
 import { deepAssign } from '../../util';
 import { DEFAULT_RAIL_CFG } from './constant';
-
-function ifH<T>(orient: 'horizontal' | 'vertical' = 'horizontal', a: T, b: T): T {
-  return orient === 'horizontal' ? a : b;
-}
+import { ifHorizontal } from './utils';
 
 type RailStyleProps = Omit<PathStyleProps, 'path'> & {
   type?: 'size' | 'color';
@@ -54,7 +51,7 @@ export class Rail extends CustomElement<RailStyleProps> {
 
   private get box() {
     const { orient, size, length } = this.style;
-    return ifH(orient, [length, size], [size, length]);
+    return ifHorizontal(orient, [length, size], [size, length]);
   }
 
   private getRailPath() {
@@ -83,10 +80,10 @@ export class Rail extends CustomElement<RailStyleProps> {
     }
     const [width, height] = this.box;
     const [st, et] = selection;
-    const x = ifH(orient, st * width, 0);
-    const y = ifH(orient, 0, st * height);
-    const w = ifH(orient, et * width, width);
-    const h = ifH(orient, height, et * height);
+    const x = ifHorizontal(orient, st * width, 0);
+    const y = ifHorizontal(orient, 0, st * height);
+    const w = ifHorizontal(orient, et * width, width);
+    const h = ifHorizontal(orient, height, et * height);
     return new Path({
       style: {
         path: [

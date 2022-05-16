@@ -16,7 +16,7 @@ export function getChunkedColor(ticks: number[], color: string[], orient: string
   const tickCount = ticks.length;
   return ticks.reduce((r, v, idx) => {
     const c = colors[idx % count];
-    return (r += ` ${idx / (tickCount - 1)}:${c} ${idx < tickCount - 1 ? `${(idx + 1) / (tickCount - 1)}:${c} ` : ''}`);
+    return (r += ` ${idx / (tickCount - 1)}:${c}${idx < tickCount - 1 ? ` ${(idx + 1) / (tickCount - 1)}:${c}` : ''}`);
   }, `l(${orient === 'horizontal' ? '0' : '270'})`);
 }
 
