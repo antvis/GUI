@@ -51,14 +51,16 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
 
   constructor(options: MarkerOptions) {
     super(deepMix({}, Marker.defaultOptions, options));
-    this.init();
   }
 
-  /**
-   * 根据 type 获取 maker shape
-   */
-  public init(): void {
+  connectedCallback() {
     this.update();
+  }
+
+  attributeChangedCallback(name: string) {
+    if (name === 'x' || name === 'y' || name === 'size' || name === 'symbol') {
+      this.update();
+    }
   }
 
   /**

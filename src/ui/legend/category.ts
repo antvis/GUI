@@ -1,6 +1,6 @@
 import { CustomEvent } from '@antv/g';
 import { min, isFunction, deepMix } from '@antv/util';
-import { deepAssign, defined, getShapeSpace, normalPadding, select } from '../../util';
+import { deepAssign, defined, getShapeSpace, normalPadding, select2update } from '../../util';
 import type { StyleState as State } from '../../types';
 import { CategoryItem } from './category-item';
 import type { CategoryCfg, CategoryOptions } from './types';
@@ -40,15 +40,7 @@ export class Category extends LegendBase<CategoryCfg> {
   }
 
   protected drawItems() {
-    const data = this.itemsShapeCfg;
-    select(this.labelsGroup)
-      .selectAll('.legend-item')
-      .data(data, (d) => d.id)
-      .join(
-        (enter) => enter.append((datum) => new CategoryItem({ className: 'legend-item', style: datum })),
-        (update) => update.each((shape, datum) => shape.update(datum)),
-        (exit) => exit.remove()
-      );
+    select2update(this.labelsGroup, 'legend-item', CategoryItem, this.itemsShapeCfg);
   }
 
   protected pager!: PageNavigator;

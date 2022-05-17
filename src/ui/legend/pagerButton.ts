@@ -17,10 +17,9 @@ type PagerButtonStyleProps = {
 export class PagerButton extends GUI<PagerButtonStyleProps> {
   constructor(options: any) {
     super(options);
-    this.init();
   }
 
-  public init() {
+  connectedCallback() {
     this.update();
   }
 

@@ -1,6 +1,6 @@
 import { TextStyleProps, DisplayObject, clamp, Text, CustomEvent } from '@antv/g';
 import { get, isUndefined, memoize } from '@antv/util';
-import { deepAssign, Selection, select, getEventPos, toPrecision, throttle } from '../../util';
+import { deepAssign, Selection, select, getEventPos, toPrecision, throttle, select2update } from '../../util';
 import {
   CONTINUOUS_DEFAULT_OPTIONS,
   DEFAULT_HANDLE_CFG,
@@ -172,14 +172,7 @@ export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
       }
     }
 
-    select(this.labelsGroup)
-      .selectAll('.legend-label')
-      .data(labels, (d) => d.id)
-      .join(
-        (enter) => enter.append((style) => new Text({ className: 'legend-label', style })),
-        (update) => update.each((shape, style) => shape.attr(style)),
-        (exit) => exit.remove()
-      );
+    select2update(this.labelsGroup, 'legend-label', Text, labels);
   }
 
   private drawHandles() {
