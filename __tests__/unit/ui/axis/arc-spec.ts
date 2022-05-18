@@ -140,7 +140,6 @@ describe('Arc axis', () => {
         center: [200, 140],
       });
       canvas.appendChild(arc1);
-
       const arc = createAxis({
         ticks,
         radius: 60,
@@ -148,9 +147,12 @@ describe('Arc axis', () => {
         label: {
           formatter: (d: any) => `hello_${d.text}`,
           autoHideTickLine: true,
-          autoHide: true,
+          autoHide: 'greedy',
           autoEllipsis: false,
           autoRotate: false,
+          style: {
+            // fontSize: 10,
+          },
         },
       });
       canvas.appendChild(arc);

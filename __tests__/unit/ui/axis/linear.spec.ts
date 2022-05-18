@@ -264,15 +264,7 @@ describe('Cartesian axis label layout', () => {
       label: { autoRotate: false, autoEllipsis: false, autoHide: true },
     });
     canvas.appendChild(axis);
-    axis.addEventListener(
-      'axis-label-layout-end',
-      () => {
-        expect(
-          axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length
-        ).toBeLessThan(ticks.length);
-      },
-      { once: true }
-    );
+
     const maxLength = (400 - 50) / ticks.length;
     axis.update({ label: { autoHideTickLine: false, autoHide: true, autoEllipsis: true, maxLength, minLength: 40 } });
     // const labels = axis.getElementsByClassName('axis-label');
@@ -331,24 +323,10 @@ describe('Cartesian axis label layout', () => {
         },
       },
     });
-    axis.addEventListener('axis-label-layout-end', () => {
-      expect(axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length).toBe(
-        ticks.length
-      );
-    });
+
     canvas.appendChild(axis);
 
     axis.update({ label: { autoHide: true } });
-    axis.addEventListener(
-      'axis-label-layout-end',
-      () => {
-        expect(
-          axis.getElementsByClassName('axis-label').filter((d) => d.style.visibility === 'visible').length
-        ).toBeLessThan(ticks.length);
-      },
-      { once: true }
-    );
-
     axis.destroy();
     axis.remove();
   });

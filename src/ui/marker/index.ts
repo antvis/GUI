@@ -57,9 +57,11 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
     this.update();
   }
 
-  attributeChangedCallback(name: string) {
+  attributeChangedCallback(name: string, oldValue: any, newValue: any) {
     if (name === 'x' || name === 'y' || name === 'size' || name === 'symbol') {
       this.update();
+    } else if (this.markerShape) {
+      this.markerShape.style[name] = newValue;
     }
   }
 
@@ -90,7 +92,7 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
   }
 
   private getStyleProps() {
-    const { symbol } = this.attributes;
+    const { symbol } = this.style;
     const markerType = parseMarker(symbol);
 
     if (['base64', 'url', 'image'].includes(markerType)) {

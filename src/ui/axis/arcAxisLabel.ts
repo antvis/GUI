@@ -94,7 +94,6 @@ export function getAxisLabels(selection: Selection, options: AxisLabelOptions) {
 
     const font = getMemoFont(selection.node(), { ...labelStyle, text: text || '' });
     const limitLength = parseLength(maxLength!, font);
-    console.log('angle:', angle);
 
     return {
       ...TEXT_INHERITABLE_PROPS,

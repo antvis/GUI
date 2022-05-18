@@ -165,7 +165,8 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
 
   protected autoHideTickLine() {
     if (!this.style.label?.autoHideTickLine) return;
-    const tickLines = this.axisTickGroup.querySelectorAll('axis-tick');
+
+    const tickLines = this.axisTickGroup.querySelectorAll('.axis-tick');
     this.labels.forEach((label, idx) => {
       const tickLine = tickLines[idx];
       if (!tickLine) return;

@@ -19,15 +19,17 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
 
   protected static defaultOptions = {
     type: Arc.tag,
-    startAngle: -90,
-    endAngle: 270,
-    center: [0, 0],
-    label: {
-      tickPadding: 2,
-      style: {},
-      align: 'normal',
+    style: {
+      startAngle: -90,
+      endAngle: 270,
+      center: [0, 0],
+      label: {
+        tickPadding: 2,
+        style: {},
+        align: 'normal',
+      },
+      ...AXIS_BASE_DEFAULT_OPTIONS.style,
     },
-    ...AXIS_BASE_DEFAULT_OPTIONS,
   };
 
   protected get axisPosition() {
@@ -39,7 +41,7 @@ export class Arc extends AxisBase<ArcAxisStyleProps> {
   }
 
   public update(cfg: Partial<ArcAxisStyleProps> = {}) {
-    super.update(deepAssign({}, Arc.defaultOptions, this.attributes, cfg));
+    super.update(deepAssign({}, Arc.defaultOptions.style, this.attributes, cfg));
   }
 
   protected getLinePath() {

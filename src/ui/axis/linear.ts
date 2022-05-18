@@ -60,9 +60,11 @@ export class Linear extends AxisBase<LinearAxisStyleProps> {
 
   protected static defaultOptions = {
     type: Linear.tag,
-    startPos: [0, 0],
-    endPos: [0, 0],
-    ...AXIS_BASE_DEFAULT_OPTIONS,
+    style: {
+      startPos: [0, 0],
+      endPos: [0, 0],
+      ...AXIS_BASE_DEFAULT_OPTIONS.style,
+    },
   };
 
   protected get axisPosition() {
@@ -75,7 +77,7 @@ export class Linear extends AxisBase<LinearAxisStyleProps> {
   }
 
   public update(cfg: Partial<LinearAxisStyleProps> = {}) {
-    super.update(deepAssign({}, Linear.defaultOptions, this.attributes, cfg));
+    super.update(deepAssign({}, Linear.defaultOptions.style, this.attributes, cfg));
   }
 
   protected getEndPoints() {
