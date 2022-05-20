@@ -162,7 +162,7 @@ export type AxisLabelCfg = {
 export type AxisBaseStyleProps = {
   type?: AxisType;
   title?: AxisTitleCfg;
-  axisLine?: AxisLineCfg;
+  axisLine?: AxisLineCfg | null;
   ticks?: TickDatum[];
   ticksThreshold?: false | number;
   tickLine?: AxisTickLineCfg;

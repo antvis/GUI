@@ -1,6 +1,6 @@
 import { deepMix, isFunction, isNumber } from '@antv/util';
 import { GUIOption } from 'types';
-import { AABB, DisplayObject, Rect } from '@antv/g';
+import { AABB, DisplayObject, ElementEvent, Rect } from '@antv/g';
 import { GUI } from '../../core/gui';
 import { Checkbox, CheckboxOptions } from '../checkbox';
 import type { CellAxisCfg, LayoutRowData, SliderAxisCfg, SpeedControlCfg, TimelineCfg, TimelineOptions } from './types';
@@ -9,6 +9,7 @@ import { SliderAxis } from './slider-axis';
 import { SpeedControl } from './speedcontrol';
 import { Button, ButtonCfg } from '../button';
 import { FunctionalSymbol, Marker } from '../marker';
+import { maybeAppend, applyStyle } from '../../util';
 
 export type { TimelineOptions };
 
@@ -158,22 +159,18 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
 
   constructor(options: TimelineOptions) {
     super(deepMix({}, Timeline.defaultOptions, options));
-    this.init();
   }
 
-  public init() {
-    this.createControl();
-    this.createAxis();
-    this.layout();
+  connectedCallback() {
+    this.update({});
     this.bindCustomEvents();
-    // this.drawBB(this.playBtn);
-    // this.cellAxis && this.drawBB(this.cellAxis.cellBackground);
   }
 
   public update(cfg: Partial<Required<TimelineCfg>>): void {
     this.attr(deepMix({}, this.attributes, cfg));
-    this.clear();
-    this.init();
+    this.createControl();
+    this.createAxis();
+    setTimeout(() => this.layout(), 0);
     this.played = false;
   }
 
@@ -434,19 +431,16 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       if (this.played) this.playListener();
       isFunction(onSingleTimeChange) && onSingleTimeChange(single);
     };
-    this.singleTimeCheckbox = new Checkbox({
-      ...options,
-      ...{
-        style: {
-          checked: single,
-          label: {
-            text: '单一时间',
-          },
-          onChange: singleListener,
-        },
-      },
-    });
-    this.appendChild(this.singleTimeCheckbox);
+    this.singleTimeCheckbox = maybeAppend(
+      this,
+      '.single-checkbox',
+      () => new Checkbox({ style: { label: { text: '单一时间' } } })
+    )
+      .attr('className', 'single-checkbox')
+      .call((selection) => {
+        (selection.node() as any).update({ checked: single, onChange: singleListener });
+      })
+      .node() as Checkbox;
   }
 
   private createSpeedControl(cfg: Omit<SpeedControlCfg, 'onSpeedChange'> | undefined) {
@@ -462,11 +456,11 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
       }
     };
     this.speedControl = new SpeedControl({
-      style: { ...cfg, width: 35, onSpeedChange: speedListener },
+      style: { ...cfg, onSpeedChange: speedListener },
     });
     const { speeds } = this.speedControl.attributes;
     const currIdx = speeds.findIndex((val) => val === speed);
-    currIdx !== -1 && this.speedControl.update({ currentSpeedIdx: currIdx });
+    currIdx !== -1 && this.speedControl.update({ initialSpeedIdx: currIdx });
     this.appendChild(this.speedControl);
   }
 
@@ -618,7 +612,6 @@ export class Timeline extends GUI<Required<TimelineCfg>> {
     }
 
     let accumulatedWidth = 0;
-
     existShapes.forEach((data) => {
       data.shape.setAttribute('x', accumulatedWidth);
       accumulatedWidth += isNumber(data.width) ? data.width : 0;

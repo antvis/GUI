@@ -1,4 +1,4 @@
-import { Circle, Rect, RectStyleProps, CustomEvent, Animation, Group } from '@antv/g';
+import { Circle, Rect, RectStyleProps, CustomEvent, Animation } from '@antv/g';
 import { clamp, deepMix, isFunction } from '@antv/util';
 import { GUIOption } from 'types';
 import { GUI } from '../../core/gui';
@@ -8,7 +8,7 @@ import { createTickData } from './util';
 import { Poptip } from '../poptip';
 
 export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
-  public static tag = 'slideraxis';
+  public static tag = 'slider-axis';
 
   public static defaultOptions: GUIOption<Omit<SliderAxisCfg, 'selection'>> = {
     type: SliderAxis.tag,
@@ -23,13 +23,15 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
       single: false,
       tickCfg: {
         verticalFactor: -1,
-        axisLine: undefined,
+        axisLine: null,
         label: {
           autoRotate: false,
-          rotate: 0,
+          autoHide: true,
+          autoHideTickLine: false,
           autoEllipsis: true,
-          tickPadding: 15,
+          minLength: 60,
           alignTick: true,
+          rotate: 0,
           style: {
             fontSize: 10,
             fill: 'rgba(0,0,0,0.45)',
@@ -116,16 +118,11 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   constructor(options: SliderAxisOptions) {
     super(deepMix({}, SliderAxis.defaultOptions, options));
-    this.init();
   }
 
-  public init(): void {
+  connectedCallback() {
     this.initSelection();
-    this.initMinLength();
-    this.initTimeIndexMap();
-    this.createTicks();
-    this.createBackground();
-    this.createSelection();
+    this.update({});
     this.bindEvents();
   }
 
@@ -138,7 +135,6 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
     this.createTicks();
     this.createBackground();
     this.createSelection();
-    this.bindEvents();
   }
 
   public clear(): void {
@@ -148,7 +144,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   private initSelection() {
     const { selection, timeData, single } = this.attributes;
-    if (selection === undefined) {
+    if (!selection) {
       single
         ? this.setAttribute('selection', [timeData[0].date])
         : this.setAttribute('selection', [timeData[0].date, timeData[timeData.length - 1].date]);
@@ -162,7 +158,7 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
   }
 
   public increase(distance: number) {
-    const { single, timeData, selection, onSelectionChange } = this.attributes;
+    const { single, timeData, selection = [], onSelectionChange } = this.attributes;
     if (single || selection.length !== 2) return;
     const currStartIdx = this.timeIndexMap.get(selection[0]) as number;
     const endIdx = this.timeIndexMap.get(selection[1] as string) as number;
@@ -179,8 +175,16 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
   // 动画，向后增长一步
   public increaseStepWithAnimation() {
-    const { single, timeData, selection, onSelectionChange, dataPerStep, duration, length, backgroundStyle } =
-      this.attributes;
+    const {
+      single,
+      timeData,
+      selection = [],
+      onSelectionChange,
+      dataPerStep,
+      duration,
+      length,
+      backgroundStyle,
+    } = this.attributes;
     if (single || selection.length !== 2) {
       console.error('单一时间不支持increase播放模式');
       return;
@@ -231,10 +235,10 @@ export class SliderAxis extends GUI<Required<SliderAxisCfg>> {
 
     let nearestTimeDataId = Math.round((startHandleX / this.actualLength) * (timeData.length - 1));
     nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
-    newSelection[0] = timeData[nearestTimeDataId].date;
+    newSelection[0] = timeData[nearestTimeDataId]?.date;
     nearestTimeDataId = Math.round((endHandleX / this.actualLength) * (timeData.length - 1));
     nearestTimeDataId = nearestTimeDataId < 0 ? 0 : nearestTimeDataId;
-    newSelection[1] = timeData[nearestTimeDataId].date;
+    newSelection[1] = timeData[nearestTimeDataId]?.date;
     return newSelection;
   }
 

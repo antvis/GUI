@@ -1,4 +1,4 @@
-import { DisplayObject, DisplayObjectConfig } from '@antv/g';
+import { DisplayObject, DisplayObjectConfig, TextStyleProps } from '@antv/g';
 import { CircleProps, MixAttrs, RectProps } from 'types';
 import { LinearOptions, LinearAxisStyleProps } from '../axis';
 import { TextCfg } from '../text';
@@ -149,6 +149,11 @@ type Orient = {
   controlButtonAlign: 'normal' | 'left' | 'right';
 };
 export type SpeedControlCfg = {
+  width?: number;
+  height?: number;
+  lineStroke?: string;
+  markerSize?: number;
+  markerFill?: string;
   /**
    * @title 可调节的速度
    * @description 配置可调节的速度，建议配置范围在 5 个区间，如: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
@@ -160,30 +165,10 @@ export type SpeedControlCfg = {
    */
   onSpeedChange?: (speedIdx: number) => void;
   /**
-   * @title   x
-   * @description x坐标
-   */
-  x?: number;
-  /**
-   * @title   y
-   * @description y坐标
-   */
-  y?: number;
-  /**
-   * @title   width
-   * @description 宽度
-   */
-  width?: number;
-  /**
-   * @title   height
-   * @description 高
-   */
-  height?: number;
-  /**
    * @title   label
    * @description label配置
    */
-  label?: Omit<TextCfg, 'text' | 'width'>;
+  labelStyle?: Omit<TextStyleProps, 'text'>;
   /**
    * @title   spacing
    * @description label与按钮的间隔
@@ -193,7 +178,7 @@ export type SpeedControlCfg = {
    * @title        currentSpeed
    * @description 当前选择的时间下标
    */
-  currentSpeedIdx?: number;
+  initialSpeedIdx?: number;
 };
 
 export type SpeedControlOptions = DisplayObjectConfig<SpeedControlCfg>;

@@ -1,5 +1,4 @@
 // @ts-nocheck
-// @ts-ignore prefer-destructuring
 import {
   Group,
   Rect,
@@ -272,6 +271,7 @@ export function select2update(
 }
 
 export function applyStyle(selection: Selection, style: Record<string, keyof any>) {
+  if (!style) return;
   for (const [key, value] of Object.entries(style)) {
     selection.style(key, value);
   }
