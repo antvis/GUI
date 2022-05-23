@@ -160,11 +160,6 @@ export type SpeedControlCfg = {
    */
   speeds?: number[];
   /**
-   * @title   速度变化回调函数
-   * @description 监听速度变化的回调函数
-   */
-  onSpeedChange?: (speedIdx: number) => void;
-  /**
    * @title   label
    * @description label配置
    */
@@ -221,7 +216,7 @@ type Controls =
        * @title 倍速调节器
        * @description 倍速调节器设置。设置为 null 时，不展示倍速调节器
        */
-      speedControl?: Omit<SpeedControlCfg, 'onSpeedChange'> | false;
+      speedControl?: SpeedControlCfg | false;
     };
 
 export type TimelineCfg = {
@@ -313,11 +308,6 @@ export type TimelineCfg = {
    * @description 监听前进的回调函数
    */
   onForward?: () => void;
-  /**
-   * @title   速度变化回调函数
-   * @description 监听速度变化的回调函数
-   */
-  onSpeedChange?: (speed: number) => void;
   /**
    * @title  单一时间设置变化回调函数
    * @description 监听单一时间设置的回调函数

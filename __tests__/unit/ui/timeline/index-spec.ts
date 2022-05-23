@@ -1,4 +1,4 @@
-import { Canvas, DisplayObject } from '@antv/g';
+import { DisplayObject } from '@antv/g';
 import { createCanvas } from '../../../utils/render';
 import { Timeline } from '../../../../src/ui/timeline';
 
@@ -42,7 +42,7 @@ describe('timeline layout cell', () => {
     // expect((cellAxis?.backgroundVerticalCenter as number) - getVerticalCenter(singleTimeCheckbox)).toBeCloseTo(0, 4);
     // expect(cellAxis?.cellBackground.style.fill).toBe('#FFAA22');
   });
-  test('normal', () => {
+  test.only('normal', () => {
     const timeline = new Timeline({
       style: {
         x: 10,

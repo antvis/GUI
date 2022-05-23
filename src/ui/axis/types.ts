@@ -165,8 +165,8 @@ export type AxisBaseStyleProps = {
   axisLine?: AxisLineCfg | null;
   ticks?: TickDatum[];
   ticksThreshold?: false | number;
-  tickLine?: AxisTickLineCfg;
-  label?: AxisLabelCfg;
+  tickLine?: AxisTickLineCfg | null;
+  label?: AxisLabelCfg | null;
   subTickLine?: AxisSubTickLineCfg;
   verticalFactor?: -1 | 1;
 };
