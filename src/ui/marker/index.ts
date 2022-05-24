@@ -161,7 +161,7 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
   }
 }
 
-// Point 组件
+/** Shapes for Point Geometry */
 Marker.registerSymbol('cross', cross);
 Marker.registerSymbol('hyphen', hyphen);
 Marker.registerSymbol('line', line);
