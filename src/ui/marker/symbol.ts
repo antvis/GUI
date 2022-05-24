@@ -1,13 +1,16 @@
+/** -- 可闭合图形 ------------------------------------------------------------------------------- */
+
 /**
  * 圆形
  */
 export function circle(x: number, y: number, r: number) {
-  return [
-    ['M', x - r, y],
-    ['A', r, r, 0, 1, 0, x + r, y],
-    ['A', r, r, 0, 1, 0, x - r, y],
-  ];
+  return [['M', x - r, y], ['A', r, r, 0, 1, 0, x + r, y], ['A', r, r, 0, 1, 0, x - r, y], ['Z']];
 }
+
+/**
+ * cname circle to point
+ */
+export const point = circle;
 
 /**
  * 正方形
@@ -39,8 +42,33 @@ export function triangleDown(x: number, y: number, r: number) {
   return [['M', x - r, y - diffY], ['L', x + r, y - diffY], ['L', x, y + diffY], ['Z']];
 }
 
-/** -----------------------------LineSymbols-------------------------------------------- */
+/**
+ * 六边形
+ */
+export function hexagon(x: number, y: number, r: number) {
+  const diffX = (r / 2) * Math.sqrt(3);
+  return [
+    ['M', x, y - r],
+    ['L', x + diffX, y - r / 2],
+    ['L', x + diffX, y + r / 2],
+    ['L', x, y + r],
+    ['L', x - diffX, y + r / 2],
+    ['L', x - diffX, y - r / 2],
+    ['Z'],
+  ];
+}
 
+/**
+ * 横向的 ⏳
+ */
+export function bowtie(x: number, y: number, r: number) {
+  const diffY = r - 1.5;
+  return [['M', x - r, y - diffY], ['L', x + r, y + diffY], ['L', x + r, y - diffY], ['L', x - r, y + diffY], ['Z']];
+}
+
+/** -- 非闭合图形 ------------------------------------------------------------------------------- */
+
+/** 竖线 */
 export function line(x: number, y: number, r: number) {
   return [
     ['M', x - r, y],
@@ -48,6 +76,49 @@ export function line(x: number, y: number, r: number) {
   ];
 }
 
+/** X 型 */
+export function cross(x: number, y: number, r: number) {
+  return [
+    ['M', x - r, y - r],
+    ['L', x + r, y + r],
+    ['M', x + r, y - r],
+    ['L', x - r, y + r],
+  ];
+}
+
+/** 工字型 */
+export function tick(x: number, y: number, r: number) {
+  return [
+    ['M', x - r / 2, y - r],
+    ['L', x + r / 2, y - r],
+    ['M', x, y - r],
+    ['L', x, y + r],
+    ['M', x - r / 2, y + r],
+    ['L', x + r / 2, y + r],
+  ];
+}
+
+/** 加号 */
+export function plus(x: number, y: number, r: number) {
+  return [
+    ['M', x - r, y],
+    ['L', x + r, y],
+    ['M', x, y - r],
+    ['L', x, y + r],
+  ];
+}
+
+/** 横线 */
+export function hyphen(x: number, y: number, r: number) {
+  return [
+    ['M', x - r, y],
+    ['L', x + r, y],
+  ];
+}
+
+/** -- 用于图例的 marker ------------------------------------------------------------------------------- */
+
+/** 虚线 */
 export function dot(x: number, y: number, r: number) {
   return [
     ['M', x - r, y],
@@ -55,12 +126,7 @@ export function dot(x: number, y: number, r: number) {
   ];
 }
 
-export function dash(x: number, y: number, r: number) {
-  return [
-    ['M', x - r, y],
-    ['L', x + r, y],
-  ];
-}
+export const dash = dot;
 
 export function smooth(x: number, y: number, r: number) {
   return [
