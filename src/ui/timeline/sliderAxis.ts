@@ -13,6 +13,7 @@ import {
 } from './axisBase';
 
 export type SliderAxisStyleProps = AxisStyleProps & {
+  size?: number;
   lineStyle?: {
     stroke?: string;
     strokeOpacity?: number;
@@ -29,6 +30,7 @@ export type SliderAxisStyleProps = AxisStyleProps & {
 };
 
 export const DEFAULT_STYLE = deepMix({}, BASE_DEFAULT_STYLE, {
+  size: 8,
   handleStyle: {
     r: 5,
     stroke: '#8AADF3',

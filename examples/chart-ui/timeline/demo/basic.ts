@@ -32,6 +32,7 @@ const timeline = new Timeline({
     height: 80,
     data: TIME_DATA(),
     selection: [0, 2],
+    padding: [4, 0],
     length: 280,
   },
 });
@@ -47,6 +48,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 120 } })).appendC
       height: 80,
       data: TIME_DATA(),
       selection: [0, 2],
+      padding: [4, 0],
       length: 280,
       label: { position: -1 },
     },
@@ -60,6 +62,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 210 } })).appendC
       height: 40,
       data: TIME_DATA(),
       selection: [0, 2],
+      padding: [4, 0],
       length: 280,
       controlPosition: 'right',
       label: { position: -1 },
@@ -75,6 +78,26 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 280 } })).appendC
       height: 40,
       data: TIME_DATA(),
       selection: [0, 2],
+      padding: [4, 0],
+      length: 280,
+      controlPosition: 'left',
+      label: { position: -1 },
+      loop: true,
+      autoPlay: true,
+      playMode: 'increase',
+    },
+  })
+);
+
+canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 60, x: 500, y: 30 } })).appendChild(
+  new Timeline({
+    style: {
+      orient: 'vertical',
+      width: 40,
+      height: 400,
+      data: TIME_DATA(),
+      selection: [0, 2],
+      padding: [4, 0],
       length: 280,
       controlPosition: 'left',
       label: { position: -1 },
@@ -89,6 +112,42 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 360 } })).appendC
     style: {
       width: 400,
       height: 40,
+      data: TIME_DATA(20),
+      type: 'cell',
+      selection: [0, 2],
+      length: 280,
+      controlPosition: 'left',
+      label: { position: -1 },
+      loop: true,
+      playMode: 'increase',
+    },
+  })
+);
+
+canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 440 } })).appendChild(
+  new Timeline({
+    style: {
+      width: 400,
+      height: 40,
+      data: TIME_DATA(20),
+      type: 'cell',
+      selection: [0, 2],
+      length: 280,
+      controlPosition: 'left',
+      label: { position: 1 },
+      loop: true,
+      playMode: 'increase',
+      autoPlay: true,
+    },
+  })
+);
+
+canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 60, x: 500, y: 360 } })).appendChild(
+  new Timeline({
+    style: {
+      orient: 'vertical',
+      width: 40,
+      height: 400,
       data: TIME_DATA(20),
       type: 'cell',
       selection: [0, 2],

@@ -81,7 +81,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
 
   protected render() {
     const style: Required<CellAxisStyleProps> = deepMix({}, DEFAULT_STYLE, this.attributes);
-
+    const { cellSize } = style;
     const [xName, yName, widthName, heightName] = this.ifH(
       ['x', 'y', 'width', 'height'],
       ['y', 'x', 'height', 'width']
@@ -91,7 +91,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       .style('x', 0)
       .style('y', 0)
       .style(widthName, style.length)
-      .style(heightName, style.cellSize + this.padding)
+      .style(heightName, cellSize + this.padding)
       .call(applyStyle, style.backgroundStyle)
       .node();
 
@@ -102,7 +102,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
         [xName]: scale.map(idx),
         [yName]: this.padding / 2,
         [widthName]: bandWidth - style.cellGap,
-        [heightName]: style.cellSize,
+        [heightName]: cellSize,
         ...style.cellStyle,
       };
     }) as RectStyleProps[];
@@ -166,6 +166,14 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       text: tick.date,
     }));
     const { position: verticalFactor = -1, ...axisLabelCfg } = style.label || {};
+    const y = verticalFactor === -1 ? -4 : this.padding + cellSize + 4;
+    let startPos: any = [padding, y];
+    let endPos: any = [padding + axisLength, y];
+    if (this.orient === 'vertical') {
+      startPos = [startPos[1], startPos[0]];
+      endPos = [endPos[1], endPos[0]];
+    }
+
     maybeAppend(
       bg,
       '.slider-axis',
@@ -176,11 +184,8 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
         })
     ).call((selection) =>
       (selection.node() as Linear).update({
-        startPos: [this.ifH(padding, verticalFactor * style.size), this.ifH(verticalFactor * style.size, padding)],
-        endPos: [
-          this.ifH(padding + axisLength, verticalFactor * style.size),
-          this.ifH(verticalFactor * style.size, padding + axisLength),
-        ],
+        startPos,
+        endPos,
         ticks,
         verticalFactor,
         tickLine: style.label === null ? null : {},

@@ -8,7 +8,6 @@ export type AxisStyleProps = {
   y?: number;
   timeData: TimeData[];
   length?: number;
-  size?: number;
   orient?: string;
   selection?: [number, number] | number;
   selectionStyle?: {
@@ -33,7 +32,6 @@ export const DEFAULT_STYLE: AxisStyleProps = {
   y: 0,
   timeData: [],
   length: 120,
-  size: 8,
   orient: 'horizontal',
   selection: 0,
   selectionStyle: {

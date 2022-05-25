@@ -1,6 +1,6 @@
-import { CustomElement, DisplayObjectConfig } from '@antv/g';
+import { CustomElement, DisplayObjectConfig, Group } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { maybeAppend, select } from '../../util';
+import { maybeAppend, normalPadding, select } from '../../util';
 import { Button, ButtonStyleProps } from './button';
 import { TimeData } from './types';
 import { SliderAxis, SliderAxisStyleProps } from './sliderAxis';
@@ -8,12 +8,16 @@ import { CellAxis } from './cellAxis';
 import { SpeedControl } from './speedcontrol';
 import { AxisStyleProps } from './axisBase';
 
+type Axis = SliderAxis | CellAxis;
+
 type TimelineStyleProps = {
   x?: number;
   y?: number;
   data: TimeData[];
   width?: number;
   height?: number;
+  padding?: number | number[];
+  orient?: 'horizontal' | 'vertical';
   selection?: number | [number, number];
   type?: 'slider' | 'cell';
   singleModeControl?: any | null;
@@ -46,6 +50,7 @@ const DEFAULT_STYLE: TimelineStyleProps = {
   width: 500,
   height: 40,
   selection: [0, 0],
+  orient: 'horizontal',
   singleModeControl: {},
   speedControl: {},
   speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
@@ -111,7 +116,13 @@ const DEFAULT_MARKER_STYLE = {
   },
 };
 
-function layoutControl(position: string, width: number, cfg: TimelineStyleProps) {
+function layoutControl(
+  position: string,
+  length: number,
+  cfg: TimelineStyleProps
+): {
+  [k: string]: any;
+} {
   const axisLabelPosition = cfg.label?.position || -1;
   const axisSize = cfg.axisSize!;
   // todo. infer by label fontSize, whether show tickLine.
@@ -125,11 +136,12 @@ function layoutControl(position: string, width: number, cfg: TimelineStyleProps)
   if (position === 'bottom') {
     return {
       axisY,
+      // axisX:
       paddingLeft: 20,
       paddingRight: 20,
-      playBtnX: width / 2,
+      playBtnX: length / 2,
       playBtnY: axisLabelHeight + axisSize + 10 + playBtnSize / 2,
-      speedControlX: width - (speedControlWidth + 4),
+      speedControlX: length - (speedControlWidth + 4),
       speedControlY: axisLabelHeight + axisSize + 6,
     };
   }
@@ -141,7 +153,7 @@ function layoutControl(position: string, width: number, cfg: TimelineStyleProps)
       paddingRight: 56,
       playBtnX: 16 + playBtnSize,
       playBtnY: axisY,
-      speedControlX: width - speedControlWidth,
+      speedControlX: length - speedControlWidth,
       speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
     };
   }
@@ -150,9 +162,9 @@ function layoutControl(position: string, width: number, cfg: TimelineStyleProps)
     axisY,
     paddingLeft: 20,
     paddingRight: 102,
-    playBtnX: width - 28 - (speedControlWidth + 8),
+    playBtnX: length - 28 - (speedControlWidth + 8),
     playBtnY: axisY,
-    speedControlX: width - (speedControlWidth + 8),
+    speedControlX: length - (speedControlWidth + 8),
     speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
   };
 }
@@ -177,6 +189,14 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
   }
 
   private render() {
+    const [pt = 0, pr = 0, , pl = pr] = normalPadding(this.style.padding);
+
+    const container = maybeAppend(this, '.container', 'g')
+      .attr('className', 'container')
+      .style('x', pl)
+      .style('y', pt)
+      .node();
+
     const { data: timeData, speeds = [] } = this.style;
     const { axisY, playBtnX, playBtnY, paddingLeft, paddingRight, speedControlX, speedControlY } = layoutControl(
       this.style.controlPosition!,
@@ -184,10 +204,10 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       this.style
     );
 
-    this.renderAxis();
+    this.renderAxis(container);
 
-    maybeAppend(this, '.speed-control', () => new SpeedControl({}))
-      .attr('className', 'speed-control')
+    maybeAppend(container, '.timeline-speed-control', () => new SpeedControl({}))
+      .attr('className', 'timeline-speed-control')
       .call((selection) => {
         (selection.node() as SpeedControl).update({
           x: speedControlX,
@@ -199,8 +219,8 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
     const stopButtonSize = this.style.controlButton?.playBtn?.size || 10;
     const offset = stopButtonSize / 2 + DEFAULT_MARKER_STYLE.size / 2 + 8;
-    maybeAppend(this, '.btn-prev', () => new Button({}))
-      .attr('className', 'btn-prev')
+    maybeAppend(container, '.timeline-prev-btn', () => new Button({}))
+      .attr('className', 'timeline-prev-btn')
       .call((selection) => {
         (selection.node() as Button).update({
           ...DEFAULT_MARKER_STYLE,
@@ -210,8 +230,8 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
         });
       });
 
-    maybeAppend(this, '.btn-play', () => new Button({}))
-      .attr('className', 'btn-play')
+    maybeAppend(container, '.timeline-play-btn', () => new Button({}))
+      .attr('className', 'timeline-play-btn')
       .call((selection) => {
         (selection.node() as Button).update({
           ...(this.style.controlButton?.playBtn || {}),
@@ -222,8 +242,8 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
         });
       });
 
-    maybeAppend(this, '.btn-next', () => new Button({}))
-      .attr('className', 'btn-next')
+    maybeAppend(container, '.timeline-next-btn', () => new Button({}))
+      .attr('className', 'timeline-next-btn')
       .call((selection) => {
         (selection.node() as Button).update({
           ...DEFAULT_MARKER_STYLE,
@@ -232,18 +252,24 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           symbol: 'timeline-next-button',
         });
       });
+
+    if (this.style.autoPlay) {
+      if (!this.playing) {
+        this.playing = true;
+
+        (select(this).select('.timeline-axis').node() as Axis).play();
+        const playStopBtn = select(this).select('.timeline-play-btn').node() as Button;
+        playStopBtn.update({ symbol: 'timeline-play-button' });
+      }
+    }
   }
 
-  private renderAxis() {
-    const { data: timeData, type } = this.style;
-    const { axisY, paddingLeft, paddingRight } = layoutControl(
-      this.style.controlPosition!,
-      this.style.width!,
-      this.style
-    );
+  private renderAxis(container: Group) {
+    const { data: timeData, type, width, height } = this.style;
+    const length = this.style.orient! === 'vertical' ? height : width;
+    const { axisY, paddingLeft, paddingRight } = layoutControl(this.style.controlPosition!, length!, this.style);
 
-    type Axis = SliderAxis | CellAxis;
-    let axis = select(this).select('.timeline-axis').node() as Axis | undefined;
+    let axis = select(container).select('.timeline-axis').node() as Axis | undefined;
     const Ctor = type === 'cell' ? CellAxis : SliderAxis;
     // @ts-ignore
     if (axis && axis.tag !== `${type}-axis`) {
@@ -252,14 +278,20 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       axis = undefined;
     }
 
-    axis = maybeAppend(this, '.timeline-axis', () => new Ctor({ style: { timeData, selection: this.style.selection } }))
+    axis = maybeAppend(
+      container,
+      '.timeline-axis',
+      () => new Ctor({ style: { timeData, selection: this.style.selection } })
+    )
       .attr('className', 'timeline-axis')
       .call((selection) =>
         (selection.node() as Axis).update({
           x: paddingLeft,
           y: axisY,
           timeData,
-          length: this.style.width! - (paddingLeft + paddingRight),
+          orient: this.style.orient!,
+          length: length! - (paddingLeft + paddingRight),
+          // @ts-ignore
           size: this.style.axisSize!,
           // @ts-ignore
           lineStyle: this.style.lineStyle,
@@ -280,7 +312,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
   private bindEvents() {
     const axis = select(this).select('.timeline-axis').node() as SliderAxis;
-    const playStopBtn = select(this).select('.btn-play').node() as Button;
+    const playStopBtn = select(this).select('.timeline-play-btn').node() as Button;
     select(playStopBtn).on('mousedown', (evt: any) => {
       if (this.playing) {
         this.playing = false;
@@ -304,10 +336,10 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     });
 
     select(this)
-      .select('.btn-prev')
+      .select('.timeline-prev-btn')
       .on('mousedown', () => axis.prev());
     select(this)
-      .select('.btn-next')
+      .select('.timeline-next-btn')
       .on('mousedown', () => axis.next());
   }
 }
