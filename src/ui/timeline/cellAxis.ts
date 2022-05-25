@@ -9,33 +9,16 @@ import {
   DEFAULT_AXIS_STYLE,
   DEFAULT_STYLE as BASE_DEFAULT_STYLE,
   normalSelection,
-} from './axisBase';
+} from './playAxis';
 
-type CellAxisStyleProps = AxisStyleProps & {
-  backgroundStyle?: {
-    fill?: string;
-    fillOpacity?: number;
-  };
-  cellSize?: number;
-  cellGap?: number;
-  cellStyle?: {
-    fill?: string;
-    fillOpacity?: number;
-    radius?: number;
-  };
-  selectionStyle?: {
-    fill?: string;
-    fillOpacity?: number;
-    radius?: number;
-  };
-};
+type CellAxisStyleProps = AxisStyleProps & {};
 
 const DEFAULT_STYLE: CellAxisStyleProps = deepMix({}, BASE_DEFAULT_STYLE, {
   backgroundStyle: {
     fill: '#416180',
     fillOpacity: 0.05,
   },
-  cellSize: 16,
+  size: 16,
   cellGap: 2,
   cellStyle: {
     fill: '#416180',
@@ -81,7 +64,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
 
   protected render() {
     const style: Required<CellAxisStyleProps> = deepMix({}, DEFAULT_STYLE, this.attributes);
-    const { cellSize } = style;
+    const { size: cellSize } = style;
     const [xName, yName, widthName, heightName] = this.ifH(
       ['x', 'y', 'width', 'height'],
       ['y', 'x', 'height', 'width']
@@ -97,7 +80,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
 
     const scale = this.getCellScale();
     const bandWidth = scale.getBandWidth();
-    const cells = style.timeData.map((_, idx: number) => {
+    const cells = style.data.map((_, idx: number) => {
       return {
         [xName]: scale.map(idx),
         [yName]: this.padding / 2,
@@ -160,8 +143,8 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
 
     const padding = this.padding;
     const axisLength = style.length - this.padding * 2 + style.cellGap;
-    const tickScale = getScale(style.timeData, [0, axisLength]);
-    const ticks = style.timeData.map((tick, idx) => ({
+    const tickScale = getScale(style.data, [0, axisLength]);
+    const ticks = style.data.map((tick, idx) => ({
       value: (tickScale.map(idx) + (bandWidth - style.cellGap) / 2) / axisLength,
       text: tick.date,
     }));
@@ -201,7 +184,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
   private getCellScale() {
     const cellGap = this.style.cellGap || DEFAULT_STYLE.cellGap;
     const length = this.style.length || DEFAULT_STYLE.length;
-    return getScale(this.style.timeData, [this.padding, length! - this.padding + cellGap!]);
+    return getScale(this.style.data, [this.padding, length! - this.padding + cellGap!]);
   }
 
   private dragSelection() {

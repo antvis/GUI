@@ -1,38 +1,12 @@
-import { CustomEvent, DisplayObjectConfig, TextStyleProps } from '@antv/g';
+import { CustomElement, CustomEvent, DisplayObjectConfig, PathCommand } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUIOption } from '../../types';
 import { applyStyle, maybeAppend, select } from '../../util';
-import { GUI } from '../../core/gui';
-import { formatter } from './util';
+import { SpeedControlStyleProps } from './types';
 
-type SpeedControlStyleProps = {
+type StyleProps = SpeedControlStyleProps & {
   x?: number;
   y?: number;
-
-  // Size of SpeedPath is equal to [size, size * 2], size of marker is equal to size / 2.
-  size?: number;
-  lineStroke?: string;
-  markerFill?: string;
-  /**
-   * @title 可调节的速度
-   * @description 配置可调节的速度，建议配置范围在 5 个区间，如: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
-   */
-  speeds?: number[];
-  /**
-   * @title   label
-   * @description label配置
-   */
-  labelStyle?: Omit<TextStyleProps, 'text'>;
-  /**
-   * @title   spacing
-   * @description label与按钮的间隔
-   */
-  spacing?: number;
-  /**
-   * @title        currentSpeed
-   * @description 当前选择的时间下标
-   */
-  initialSpeedIdx?: number;
 };
 
 function getOffsetByIndex(index: number, height: number): number {
@@ -40,17 +14,19 @@ function getOffsetByIndex(index: number, height: number): number {
   return (OFFSET[index] / 11.66) * height;
 }
 
-export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
+const formatter = (number: number = 0, fractionDigits = 1, suffix = 'x') =>
+  `${number.toFixed(fractionDigits)}${suffix}`;
+
+export class SpeedControl extends CustomElement<StyleProps> {
   public static tag = 'speed-control';
 
-  private static defaultOptions: GUIOption<SpeedControlStyleProps> = {
+  private static defaultOptions: GUIOption<StyleProps> = {
     type: SpeedControl.tag,
     style: {
       size: 8,
       lineStroke: '#bfbfbf',
       markerFill: '#8c8c8c',
-      speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
-      initialSpeedIdx: 0,
+      speeds: [1.0, 2.0, 3.0, 4.0, 5.0] as number[],
       spacing: 1,
       labelStyle: {
         fontFamily: 'sans-serif',
@@ -63,7 +39,7 @@ export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
     },
   };
 
-  constructor(options: DisplayObjectConfig<SpeedControlStyleProps>) {
+  constructor(options: DisplayObjectConfig<StyleProps>) {
     super(deepMix({}, SpeedControl.defaultOptions, options));
   }
 
@@ -72,14 +48,20 @@ export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
     this.bindEvents();
   }
 
-  public update(cfg: Partial<SpeedControlStyleProps> = {}): void {
+  public update(cfg: Partial<StyleProps> = {}): void {
     this.attr(deepMix({}, this.attributes, cfg));
     this.render();
   }
 
+  private get styles(): Required<SpeedControlStyleProps> {
+    return deepMix({}, SpeedControl.defaultOptions.style, this.attributes);
+  }
+
   private render() {
-    const { initialSpeedIdx, size, markerFill, lineStroke, speeds } = this.style;
+    const { initialSpeed, size, markerFill, lineStroke, speeds, labelStyle: label, spacing } = this.styles;
     const markerSize = size / 2;
+    let initialSpeedIdx = speeds.indexOf(initialSpeed);
+    if (initialSpeedIdx === -1) initialSpeedIdx = 0;
     const y = getOffsetByIndex(initialSpeedIdx, size * 2);
     const r = markerSize * Math.tan(Math.PI / 6) * 2;
 
@@ -99,19 +81,17 @@ export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
       .style('fill', 'transparent')
       .node();
 
-    const path = speeds.reduce((arr, _, idx) => {
+    const path = speeds.reduce((arr: PathCommand[], _: any, idx: number) => {
       const offset = getOffsetByIndex(idx, size * 2);
       arr.push(['M', 0, offset], ['L', size, offset]);
       return arr;
-    }, [] as any);
+    }, [] as PathCommand[]);
 
     maybeAppend(group, '.speed-path', 'path')
       .attr('className', 'speed-path')
       .style('stroke', lineStroke)
       .style('path', path)
       .style('lineWidth', 1);
-
-    const { labelStyle: label, spacing } = this.attributes;
 
     maybeAppend(this, '.speed-label', 'text')
       .attr('className', 'speed-label')
@@ -129,14 +109,14 @@ export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
   }
 
   private listener(evt: any) {
-    const { speeds, size } = this.style;
+    const { speeds, size } = this.styles;
     const height = size * 2;
     const lineGroup = this.querySelector('.line-group')! as any;
     const speedText = select(this).select('.speed-label').node();
     const speedMarker = select(this).select('.speed-marker').node();
     if (evt.currentTarget === lineGroup) {
       const diff = evt.y - lineGroup.getBBox().y;
-      const idx = speeds.findIndex((_, idx) => {
+      const idx = speeds.findIndex((_: any, idx: number) => {
         const offset = getOffsetByIndex(idx, height);
         const offset0 = getOffsetByIndex(idx - 1, height);
         const offset1 = getOffsetByIndex(idx + 1, height);

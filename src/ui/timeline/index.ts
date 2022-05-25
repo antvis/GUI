@@ -1,47 +1,32 @@
 import { CustomElement, DisplayObjectConfig, Group } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { maybeAppend, normalPadding, select } from '../../util';
-import { Button, ButtonStyleProps } from './button';
-import { TimeData } from './types';
-import { SliderAxis, SliderAxisStyleProps } from './sliderAxis';
+import { Button } from './button';
+import { TimelineStyleProps } from './types';
+import { SliderAxis } from './sliderAxis';
 import { CellAxis } from './cellAxis';
 import { SpeedControl } from './speedcontrol';
-import { AxisStyleProps } from './axisBase';
 
-type Axis = SliderAxis | CellAxis;
-
-type TimelineStyleProps = {
-  x?: number;
-  y?: number;
-  data: TimeData[];
-  width?: number;
-  height?: number;
-  padding?: number | number[];
-  orient?: 'horizontal' | 'vertical';
-  selection?: number | [number, number];
-  type?: 'slider' | 'cell';
-  singleModeControl?: any | null;
-  speedControl?: any | null;
-  speeds?: [number, number, number, number, number];
-  controlPosition?: 'bottom' | 'left' | 'right';
-  controlButton?: {
-    prevBtn?: any | null;
-    playBtn?: Omit<ButtonStyleProps, 'x' | 'y'> | null;
-    nextBtn?: any | null;
-  } | null;
-  axisSize?: number;
-  selectionStyle?: AxisStyleProps['selectionStyle'];
-  lineStyle?: SliderAxisStyleProps['lineStyle'];
-  handleStyle?: SliderAxisStyleProps['handleStyle'];
-  label?: SliderAxisStyleProps['label'];
-  loop?: boolean;
-  playInterval?: number;
-  autoPlay?: boolean;
-  singleMode?: boolean;
-  playMode?: 'increase' | 'fixed';
-};
+type PlayAxis = SliderAxis | CellAxis;
 
 export type TimelineOptions = DisplayObjectConfig<TimelineStyleProps>;
+
+const DEFAULT_BUTTON_STYLE = {
+  margin: [2, 4],
+  markerStyle: {
+    default: {
+      stroke: '#bfbfbf',
+    },
+    active: {
+      stroke: '#3471F9',
+    },
+  },
+  backgroundStyle: {
+    default: {
+      fill: 'transparent',
+    },
+  },
+};
 
 const DEFAULT_STYLE: TimelineStyleProps = {
   x: 0,
@@ -52,13 +37,28 @@ const DEFAULT_STYLE: TimelineStyleProps = {
   selection: [0, 0],
   orient: 'horizontal',
   singleModeControl: {},
-  speedControl: {},
-  speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
+  speedControl: {
+    speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
+  },
   controlPosition: 'bottom',
   controlButton: {
+    spacing: 14,
+    prevBtn: {
+      ...DEFAULT_BUTTON_STYLE,
+      symbol: 'timeline-prev-btn',
+      padding: 0,
+      size: 8,
+    },
+    nextBtn: {
+      ...DEFAULT_BUTTON_STYLE,
+      symbol: 'timeline-next-btn',
+      padding: 0,
+      size: 8,
+    },
     playBtn: {
-      padding: 4,
-      size: 12,
+      margin: 4,
+      padding: 0,
+      size: 20,
       symbol: '',
       markerStyle: {
         default: {
@@ -68,7 +68,6 @@ const DEFAULT_STYLE: TimelineStyleProps = {
         active: {
           stroke: '#3471F9',
           fill: '#3471F9',
-          cursor: 'pointer',
         },
       },
       backgroundStyle: {
@@ -81,39 +80,16 @@ const DEFAULT_STYLE: TimelineStyleProps = {
         active: {
           fill: 'rgba(52, 113, 249, 0.1)',
           stroke: '#3471F9',
-          cursor: 'pointer',
         },
       },
     },
   },
-  loop: false,
-  autoPlay: false,
+  playAxis: {
+    label: { position: 1 },
+    loop: false,
+  },
   playInterval: 2000,
-  axisSize: 8,
-  label: {
-    position: 1,
-  },
-};
-
-const DEFAULT_MARKER_STYLE = {
-  symbol: '',
-  size: 8,
-  padding: [2, 4],
-  markerStyle: {
-    default: {
-      stroke: '#bfbfbf',
-      cursor: 'pointer' as any,
-    },
-    active: {
-      stroke: '#3471F9',
-    },
-  },
-  backgroundStyle: {
-    default: {
-      fill: 'transparent',
-      cursor: 'pointer' as any,
-    },
-  },
+  autoPlay: false,
 };
 
 function layoutControl(
@@ -123,11 +99,14 @@ function layoutControl(
 ): {
   [k: string]: any;
 } {
-  const axisLabelPosition = cfg.label?.position || -1;
-  const axisSize = cfg.axisSize!;
+  const axisLabelPosition = cfg.playAxis?.label?.position || -1;
+  const axisSize = cfg.playAxis?.size || 8;
   // todo. infer by label fontSize, whether show tickLine.
-  const axisLabelHeight = cfg.label === null ? 0 : 20;
-  const playBtnSize = cfg.controlButton?.playBtn?.size!;
+  const axisLabelHeight = cfg.playAxis?.label === null ? 0 : 20;
+  const playButtonSize = cfg.controlButton?.playBtn?.size || 0;
+  const prevButtonSize = cfg.controlButton?.prevBtn?.size || 0;
+  const nextButtonSize = cfg.controlButton?.nextBtn?.size || 0;
+  const buttonSpacing = cfg.controlButton?.spacing || 0;
   const speedControlSize = 8;
   // Default 32px.
   const speedControlWidth = 32;
@@ -140,18 +119,18 @@ function layoutControl(
       paddingLeft: 20,
       paddingRight: 20,
       playBtnX: length / 2,
-      playBtnY: axisLabelHeight + axisSize + 10 + playBtnSize / 2,
+      playBtnY: axisLabelHeight + axisSize + 4 + playButtonSize / 2,
       speedControlX: length - (speedControlWidth + 4),
-      speedControlY: axisLabelHeight + axisSize + 6,
+      speedControlY: axisLabelHeight + axisSize + 4,
     };
   }
   if (position === 'left') {
     return {
       axisY,
 
-      paddingLeft: 62,
-      paddingRight: 56,
-      playBtnX: 16 + playBtnSize,
+      paddingLeft: prevButtonSize + playButtonSize + nextButtonSize + buttonSpacing * 2 + 12,
+      paddingRight: speedControlWidth + 12,
+      playBtnX: prevButtonSize + buttonSpacing + playButtonSize / 2,
       playBtnY: axisY,
       speedControlX: length - speedControlWidth,
       speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
@@ -161,10 +140,10 @@ function layoutControl(
   return {
     axisY,
     paddingLeft: 20,
-    paddingRight: 102,
-    playBtnX: length - 28 - (speedControlWidth + 8),
+    paddingRight: 12 + (prevButtonSize + playButtonSize + nextButtonSize + buttonSpacing * 2) + (speedControlWidth + 8),
+    playBtnX: length - (playButtonSize / 2 + buttonSpacing + nextButtonSize) - (speedControlWidth + 8),
     playBtnY: axisY,
-    speedControlX: length - (speedControlWidth + 8),
+    speedControlX: length - speedControlWidth,
     speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
   };
 }
@@ -172,10 +151,13 @@ function layoutControl(
 export class Timeline extends CustomElement<TimelineStyleProps> {
   private speed = 1;
 
+  private singleMode = false;
+
   private playing = false;
 
   constructor(options: DisplayObjectConfig<TimelineStyleProps>) {
     super(deepMix({}, { style: DEFAULT_STYLE }, options));
+    this.singleMode = this.style.singleMode || false;
   }
 
   connectedCallback() {
@@ -185,11 +167,19 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
   public update(cfg: Partial<TimelineStyleProps> = {}) {
     this.attr(deepMix({}, this.attributes, cfg));
+    if (cfg.singleMode !== undefined) {
+      this.singleMode = cfg.singleMode;
+    }
+
     this.render();
   }
 
+  private get styles(): Required<TimelineStyleProps> {
+    return deepMix({}, DEFAULT_STYLE, this.attributes);
+  }
+
   private render() {
-    const [pt = 0, pr = 0, , pl = pr] = normalPadding(this.style.padding);
+    const [pt = 0, pr = 0, , pl = pr] = normalPadding(this.styles.padding);
 
     const container = maybeAppend(this, '.container', 'g')
       .attr('className', 'container')
@@ -197,34 +187,92 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       .style('y', pt)
       .node();
 
-    const { data: timeData, speeds = [] } = this.style;
-    const { axisY, playBtnX, playBtnY, paddingLeft, paddingRight, speedControlX, speedControlY } = layoutControl(
-      this.style.controlPosition!,
-      this.style.width!,
-      this.style
-    );
-
     this.renderAxis(container);
 
+    const { controlPosition, speedControl, width } = this.styles;
+    const { speedControlX, speedControlY } = layoutControl(controlPosition, width, this.styles);
     maybeAppend(container, '.timeline-speed-control', () => new SpeedControl({}))
       .attr('className', 'timeline-speed-control')
       .call((selection) => {
+        if (speedControl === null) {
+          selection.remove();
+          return;
+        }
         (selection.node() as SpeedControl).update({
           x: speedControlX,
           y: speedControlY,
-          speeds,
-          initialSpeedIdx: (speeds as any)!.indexOf(this.speed),
+          ...this.style.speedControl,
+          initialSpeed: this.speed,
         });
       });
 
-    const stopButtonSize = this.style.controlButton?.playBtn?.size || 10;
-    const offset = stopButtonSize / 2 + DEFAULT_MARKER_STYLE.size / 2 + 8;
+    this.renderControlButton(container);
+  }
+
+  private renderAxis(container: Group) {
+    const { data: timeData, type, width, height, controlPosition } = this.styles;
+    const length = this.style.orient! === 'vertical' ? height : width;
+    const { axisY, paddingLeft, paddingRight } = layoutControl(controlPosition!, length!, this.style);
+
+    let axis = select(container).select('.timeline-axis').node() as PlayAxis | undefined;
+    const Ctor = type === 'cell' ? CellAxis : SliderAxis;
+    // @ts-ignore
+    if (axis && axis.tag !== `${type}-axis`) {
+      axis.remove();
+      this.removeChild(axis);
+    }
+
+    axis = maybeAppend(
+      container,
+      '.timeline-axis',
+      () => new Ctor({ style: { data: timeData, selection: this.style.selection } })
+    )
+      .attr('className', 'timeline-axis')
+      .call((selection) =>
+        (selection.node() as PlayAxis).update({
+          x: paddingLeft,
+          y: axisY,
+          data: timeData,
+          orient: this.style.orient!,
+          length: length! - (paddingLeft + paddingRight),
+          playInterval: this.style.playInterval! / this.speed,
+          singleMode: this.singleMode,
+          ...(this.style.playAxis || {}),
+        })
+      )
+      .node() as PlayAxis;
+    if (String(this.style.selection) !== String(axis.style.selection)) {
+      axis.update({ selection: this.style.selection });
+    }
+    console.log('paddingRight:', controlPosition, paddingRight, length!, axis.style.length);
+  }
+
+  private renderControlButton(container: Group) {
+    const { playBtnX, playBtnY } = layoutControl(this.style.controlPosition!, this.style.width!, this.style);
+
+    const { controlButton } = this.styles;
+    const spacing = controlButton?.spacing || 0;
+    const buttonSize = controlButton?.playBtn?.size || 0;
+    const prevButtonSize = controlButton?.prevBtn?.size || 0;
+    const nextButtonSize = controlButton?.nextBtn?.size || 0;
+
+    const showPrevButton = controlButton === null ? false : controlButton.prevBtn !== null;
+    const showNextButton = controlButton === null ? false : controlButton.nextBtn !== null;
+    const showPlayButton = controlButton === null ? false : controlButton.playBtn !== null;
+
+    const prevBtnOffset = buttonSize / 2 + prevButtonSize / 2 + spacing;
+    const nextBtnOffset = buttonSize / 2 + nextButtonSize / 2 + spacing;
+
     maybeAppend(container, '.timeline-prev-btn', () => new Button({}))
       .attr('className', 'timeline-prev-btn')
       .call((selection) => {
+        if (!showPrevButton) {
+          selection.remove();
+          return;
+        }
         (selection.node() as Button).update({
-          ...DEFAULT_MARKER_STYLE,
-          x: playBtnX - offset,
+          ...(this.style.controlButton?.prevBtn || {}),
+          x: playBtnX - prevBtnOffset,
           y: playBtnY,
           symbol: 'timeline-prev-button',
         });
@@ -233,9 +281,12 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     maybeAppend(container, '.timeline-play-btn', () => new Button({}))
       .attr('className', 'timeline-play-btn')
       .call((selection) => {
+        if (!showPlayButton) {
+          selection.remove();
+          return;
+        }
         (selection.node() as Button).update({
           ...(this.style.controlButton?.playBtn || {}),
-          size: stopButtonSize,
           x: playBtnX,
           y: playBtnY,
           symbol: !this.playing ? 'timeline-stop-button' : 'timeline-play-button',
@@ -245,9 +296,13 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     maybeAppend(container, '.timeline-next-btn', () => new Button({}))
       .attr('className', 'timeline-next-btn')
       .call((selection) => {
+        if (!showNextButton) {
+          selection.remove();
+          return;
+        }
         (selection.node() as Button).update({
-          ...DEFAULT_MARKER_STYLE,
-          x: playBtnX + offset,
+          ...(this.style.controlButton?.nextBtn || {}),
+          x: playBtnX + nextBtnOffset,
           y: playBtnY,
           symbol: 'timeline-next-button',
         });
@@ -257,77 +312,36 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       if (!this.playing) {
         this.playing = true;
 
-        (select(this).select('.timeline-axis').node() as Axis).play();
-        const playStopBtn = select(this).select('.timeline-play-btn').node() as Button;
-        playStopBtn.update({ symbol: 'timeline-play-button' });
+        select(this)
+          .select('.timeline-axis')
+          .call((selection) => (selection.node() as PlayAxis)?.play());
+        select(this)
+          .select('.timeline-play-btn')
+          .call((selection) => (selection.node() as Button)?.update({ symbol: 'timeline-play-button' }));
       }
-    }
-  }
-
-  private renderAxis(container: Group) {
-    const { data: timeData, type, width, height } = this.style;
-    const length = this.style.orient! === 'vertical' ? height : width;
-    const { axisY, paddingLeft, paddingRight } = layoutControl(this.style.controlPosition!, length!, this.style);
-
-    let axis = select(container).select('.timeline-axis').node() as Axis | undefined;
-    const Ctor = type === 'cell' ? CellAxis : SliderAxis;
-    // @ts-ignore
-    if (axis && axis.tag !== `${type}-axis`) {
-      axis.remove();
-      this.removeChild(axis);
-      axis = undefined;
-    }
-
-    axis = maybeAppend(
-      container,
-      '.timeline-axis',
-      () => new Ctor({ style: { timeData, selection: this.style.selection } })
-    )
-      .attr('className', 'timeline-axis')
-      .call((selection) =>
-        (selection.node() as Axis).update({
-          x: paddingLeft,
-          y: axisY,
-          timeData,
-          orient: this.style.orient!,
-          length: length! - (paddingLeft + paddingRight),
-          // @ts-ignore
-          size: this.style.axisSize!,
-          // @ts-ignore
-          lineStyle: this.style.lineStyle,
-          selectionStyle: this.style.selectionStyle || undefined,
-          label: this.style.label,
-          handleStyle: this.style.handleStyle,
-          loop: this.style.loop,
-          singleMode: this.style.singleMode,
-          playMode: this.style.playMode,
-          playInterval: this.style.playInterval! / this.speed,
-        })
-      )
-      .node() as Axis;
-    if (String(this.style.selection) !== String(axis.style.selection)) {
-      axis.update({ selection: this.style.selection });
     }
   }
 
   private bindEvents() {
     const axis = select(this).select('.timeline-axis').node() as SliderAxis;
     const playStopBtn = select(this).select('.timeline-play-btn').node() as Button;
-    select(playStopBtn).on('mousedown', (evt: any) => {
-      if (this.playing) {
-        this.playing = false;
-        axis.stop();
-        playStopBtn.update({ symbol: 'timeline-stop-button' });
-      } else {
-        this.playing = true;
-        axis.play();
-        playStopBtn.update({ symbol: 'timeline-play-button' });
-      }
-    });
+    if (playStopBtn) {
+      select(playStopBtn).on('mousedown', (evt: any) => {
+        if (this.playing) {
+          this.playing = false;
+          axis.stop();
+          playStopBtn.update({ symbol: 'timeline-stop-button' });
+        } else {
+          this.playing = true;
+          axis.play();
+          playStopBtn.update({ symbol: 'timeline-play-button' });
+        }
+      });
+    }
 
     select(this).on('timelineStopped', () => {
       this.playing = false;
-      playStopBtn.update({ symbol: 'timeline-stop-button' });
+      playStopBtn?.update({ symbol: 'timeline-stop-button' });
     });
 
     select(this).on('speedChanged', (evt: any) => {

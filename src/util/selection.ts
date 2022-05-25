@@ -203,8 +203,10 @@ export class Selection<T = any> {
   each(callback: (datum: T, index: number) => any): Selection<T> {
     for (let i = 0; i < this._elements.length; i++) {
       const element = this._elements[i];
-      const datum = element.__data__;
-      callback.call(element, datum, i);
+      if (element) {
+        const datum = element.__data__;
+        callback.call(element, datum, i);
+      }
     }
     return this;
   }

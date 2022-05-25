@@ -33,7 +33,6 @@ const timeline = new Timeline({
     data: TIME_DATA(),
     selection: [0, 2],
     padding: [4, 0],
-    length: 280,
   },
 });
 rect.appendChild(timeline);
@@ -49,8 +48,9 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 120 } })).appendC
       data: TIME_DATA(),
       selection: [0, 2],
       padding: [4, 0],
-      length: 280,
-      label: { position: -1 },
+      playAxis: {
+        label: { position: -1 },
+      },
     },
   })
 );
@@ -63,10 +63,11 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 210 } })).appendC
       data: TIME_DATA(),
       selection: [0, 2],
       padding: [4, 0],
-      length: 280,
       controlPosition: 'right',
-      label: { position: -1 },
-      singleMode: true,
+      playAxis: {
+        label: { position: -1 },
+        singleMode: true,
+      },
     },
   })
 );
@@ -79,12 +80,13 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 280 } })).appendC
       data: TIME_DATA(),
       selection: [0, 2],
       padding: [4, 0],
-      length: 280,
       controlPosition: 'left',
-      label: { position: -1 },
-      loop: true,
       autoPlay: true,
-      playMode: 'increase',
+      playAxis: {
+        label: { position: -1 },
+        loop: true,
+        playMode: 'increase',
+      },
     },
   })
 );
@@ -98,11 +100,12 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 60, x: 
       data: TIME_DATA(),
       selection: [0, 2],
       padding: [4, 0],
-      length: 280,
       controlPosition: 'left',
-      label: { position: -1 },
-      loop: true,
-      playMode: 'increase',
+      playAxis: {
+        label: { position: -1 },
+        loop: true,
+        playMode: 'increase',
+      },
     },
   })
 );
@@ -115,11 +118,12 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 360 } })).appendC
       data: TIME_DATA(20),
       type: 'cell',
       selection: [0, 2],
-      length: 280,
       controlPosition: 'left',
-      label: { position: -1 },
-      loop: true,
-      playMode: 'increase',
+      playAxis: {
+        label: { position: -1 },
+        loop: true,
+        playMode: 'increase',
+      },
     },
   })
 );
@@ -132,11 +136,12 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 440 } })).appendC
       data: TIME_DATA(20),
       type: 'cell',
       selection: [0, 2],
-      length: 280,
       controlPosition: 'left',
-      label: { position: 1 },
-      loop: true,
-      playMode: 'increase',
+      playAxis: {
+        label: { position: 1 },
+        loop: true,
+        playMode: 'increase',
+      },
       autoPlay: true,
     },
   })
@@ -151,11 +156,15 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 60, x: 
       data: TIME_DATA(20),
       type: 'cell',
       selection: [0, 2],
-      length: 280,
       controlPosition: 'left',
-      label: { position: -1 },
-      loop: true,
-      playMode: 'increase',
+
+      controlButton: null,
+      speedControl: null,
+      playAxis: {
+        label: { position: -1 },
+        loop: true,
+        playMode: 'increase',
+      },
     },
   })
 );

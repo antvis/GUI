@@ -1,27 +1,18 @@
-import { CustomElement, DisplayObjectConfig, Path, PathStyleProps, RectStyleProps } from '@antv/g';
+import { CustomElement, DisplayObjectConfig } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { applyStyle, maybeAppend, normalPadding, select } from '../../util';
+import { ControlButtonStyleProps } from './types';
 
-export type ButtonStyleProps = {
+export type ButtonStyleProps = ControlButtonStyleProps & {
   x?: number;
   y?: number;
-  symbol: string;
-  // means the size of marker, button size is equal to [size + padding[1] + padding[3], size + padding[0] + padding[2]]
-  size: number;
-  padding?: number | number[];
-  backgroundStyle?: {
-    default?: Omit<RectStyleProps, 'x' | 'y' | 'width' | 'height'>;
-    active?: Omit<RectStyleProps, 'x' | 'y' | 'width' | 'height'>;
-  };
-  markerStyle?: {
-    default?: Omit<PathStyleProps, 'path'>;
-    active?: Omit<PathStyleProps, 'path'>;
-  };
 };
 
 const SymbolPool = new Map();
 
 export class Button extends CustomElement<ButtonStyleProps> {
+  private active: boolean = false;
+
   constructor(options: DisplayObjectConfig<ButtonStyleProps>) {
     super(options);
   }
@@ -38,34 +29,52 @@ export class Button extends CustomElement<ButtonStyleProps> {
 
   private render() {
     const { size = 8, symbol, markerStyle, backgroundStyle } = this.style;
-    const r = (size as number) / 2;
+    const [mt, mr, mb, ml] = normalPadding(this.style.margin);
     const [pt, pr, pb, pl] = normalPadding(this.style.padding);
+
+    const rx = (size - pr - pl) / 2;
+    const ry = (size - pt - pb) / 2;
+
+    maybeAppend(this, '.container', 'rect')
+      .attr('className', 'container')
+      .style('x', -(rx + pl + ml))
+      .style('y', -(ry + pt + mt))
+      .style('width', size + mr + ml)
+      .style('height', size + mt + mb)
+      .style('fill', 'transparent')
+      .style('cursor', 'pointer')
+      .style('zIndex', 1);
+
     maybeAppend(this, '.background', 'rect')
       .attr('className', 'background')
-      .style('x', -(r + pl))
-      .style('y', -(r + pt))
-      .style('width', size + pl + pr)
-      .style('height', size + pt + pb)
-      .call(applyStyle, backgroundStyle?.default);
+      .style('x', -(rx + pl))
+      .style('y', -(ry + pt))
+      .style('width', size)
+      .style('height', size)
+      .call(applyStyle, this.active ? backgroundStyle?.active : backgroundStyle?.default);
 
     const symbolFn = typeof symbol === 'function' ? symbol : SymbolPool.get(symbol);
     maybeAppend(this, '.marker-symbol', 'path')
       .attr('className', 'marker-symbol')
       .style('x', 0)
       .style('y', 0)
-      .style('path', symbolFn?.(0, 0, r))
-      .call(applyStyle, markerStyle?.default);
+      .style('path', symbolFn?.(0, 0, Math.min(rx, ry)))
+      .call(applyStyle, this.active ? markerStyle?.active : markerStyle?.default);
   }
 
   private bindEvents() {
+    const container = select(this).select('.container');
     const marker = select(this).select('.marker-symbol');
     const background = select(this).select('.background');
 
-    background.on('mousemove', () => {
+    container.on('pointerup', () => (this.active = true));
+    container.on('pointermove', () => {
+      this.active = true;
       applyStyle(marker, this.style.markerStyle?.active as any);
       applyStyle(background, this.style.backgroundStyle?.active as any);
     });
-    background.on('mouseout', () => {
+    container.on('pointerout', () => {
+      this.active = false;
       applyStyle(marker, this.style.markerStyle?.default as any);
       applyStyle(background, this.style.backgroundStyle?.default as any);
     });

@@ -1,36 +1,21 @@
 import { CustomElement, CustomEvent } from '@antv/g';
 import { deepMix, isNil } from '@antv/util';
-import { AxisLabelCfg } from '../axis/types';
-import { TimeData } from './types';
+import { PlayAxisStyleProps, TimeData } from './types';
 
-export type AxisStyleProps = {
+export type AxisStyleProps = PlayAxisStyleProps & {
   x?: number;
   y?: number;
-  timeData: TimeData[];
+  data: TimeData[];
   length?: number;
   orient?: string;
-  selection?: [number, number] | number;
-  selectionStyle?: {
-    fill?: string;
-    fillOpacity?: number;
-    cursor?: string;
-  };
-
-  label?: {
-    position?: -1 | 1;
-    // todo. Do not typing definition inference.
-    style?: AxisLabelCfg['style'];
-  } | null;
-  loop?: boolean;
-  playInterval?: number; // ms
   singleMode?: boolean;
-  playMode?: 'increase' | 'fixed';
+  playInterval?: number; // ms
 };
 
 export const DEFAULT_STYLE: AxisStyleProps = {
   x: 0,
   y: 0,
-  timeData: [],
+  data: [],
   length: 120,
   orient: 'horizontal',
   selection: 0,
@@ -98,7 +83,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
   }
 
   public play() {
-    const { timeData, loop, singleMode, playMode } = this.style;
+    const { data: timeData, loop, singleMode, playMode } = this.style;
     const maxLength = timeData.length;
     let { playInterval } = this.style;
     if (isNil(playInterval)) {
@@ -150,7 +135,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
 
   public prev() {
     const [s1, s2] = this.selection;
-    const max = this.style.timeData.length;
+    const max = this.style.data.length;
     if (max && this.style.singleMode) {
       this.setSelection({ start: (s1 - 1 + max) % max, end: (s1 - 1 + max) % max });
       return;
@@ -164,7 +149,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
 
   public next() {
     const [s1, s2] = this.selection;
-    const max = this.style.timeData.length;
+    const max = this.style.data.length;
     if (max && this.style.singleMode) {
       this.setSelection({ start: (s1 + 1) % max, end: (s1 + 1) % max });
       return;
