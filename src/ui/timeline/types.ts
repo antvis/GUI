@@ -1,7 +1,6 @@
 import { DisplayObject, DisplayObjectConfig, TextStyleProps } from '@antv/g';
 import { CircleProps, MixAttrs, RectProps } from 'types';
 import { LinearOptions, LinearAxisStyleProps } from '../axis';
-import { TextCfg } from '../text';
 import { ButtonCfg } from '../button';
 import { CheckboxOptions } from '../checkbox';
 

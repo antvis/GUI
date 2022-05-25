@@ -4,7 +4,9 @@ import { maybeAppend, select } from '../../util';
 import { Button, ButtonStyleProps } from './button';
 import { TimeData } from './types';
 import { SliderAxis, SliderAxisStyleProps } from './sliderAxis';
+import { CellAxis } from './cellAxis';
 import { SpeedControl } from './speedcontrol';
+import { AxisStyleProps } from './axisBase';
 
 type TimelineStyleProps = {
   x?: number;
@@ -13,6 +15,7 @@ type TimelineStyleProps = {
   width?: number;
   height?: number;
   selection?: number | [number, number];
+  type?: 'slider' | 'cell';
   singleModeControl?: any | null;
   speedControl?: any | null;
   speeds?: [number, number, number, number, number];
@@ -23,13 +26,15 @@ type TimelineStyleProps = {
     nextBtn?: any | null;
   } | null;
   axisSize?: number;
+  selectionStyle?: AxisStyleProps['selectionStyle'];
   lineStyle?: SliderAxisStyleProps['lineStyle'];
-  selectionStyle?: SliderAxisStyleProps['selectionStyle'];
   handleStyle?: SliderAxisStyleProps['handleStyle'];
   label?: SliderAxisStyleProps['label'];
   loop?: boolean;
   playInterval?: number;
   autoPlay?: boolean;
+  singleMode?: boolean;
+  playMode?: 'increase' | 'fixed';
 };
 
 export type TimelineOptions = DisplayObjectConfig<TimelineStyleProps>;
@@ -123,9 +128,9 @@ function layoutControl(position: string, width: number, cfg: TimelineStyleProps)
       paddingLeft: 20,
       paddingRight: 20,
       playBtnX: width / 2,
-      playBtnY: axisLabelHeight + axisSize + 8 + playBtnSize / 2,
-      speedControlX: width - (speedControlWidth + 20),
-      speedControlY: axisLabelHeight + axisSize + 4,
+      playBtnY: axisLabelHeight + axisSize + 10 + playBtnSize / 2,
+      speedControlX: width - (speedControlWidth + 4),
+      speedControlY: axisLabelHeight + axisSize + 6,
     };
   }
   if (position === 'left') {
@@ -136,7 +141,7 @@ function layoutControl(position: string, width: number, cfg: TimelineStyleProps)
       paddingRight: 56,
       playBtnX: 16 + playBtnSize,
       playBtnY: axisY,
-      speedControlX: width - (speedControlWidth + 8),
+      speedControlX: width - speedControlWidth,
       speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
     };
   }
@@ -178,31 +183,8 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       this.style.width!,
       this.style
     );
-    const axis = maybeAppend(
-      this,
-      '.timeline-axis',
-      () => new SliderAxis({ style: { timeData, selection: this.style.selection } })
-    )
-      .attr('className', 'timeline-axis')
-      .call((selection) =>
-        (selection.node() as SliderAxis).update({
-          x: paddingLeft,
-          y: axisY,
-          timeData,
-          length: this.style.width! - (paddingLeft + paddingRight),
-          size: this.style.axisSize!,
-          lineStyle: this.style.lineStyle,
-          selectionStyle: this.style.selectionStyle,
-          handleStyle: this.style.handleStyle,
-          label: this.style.label,
-          loop: this.style.loop,
-          playInterval: this.style.playInterval! / this.speed,
-        })
-      )
-      .node() as SliderAxis;
-    if (String(this.style.selection) !== String(axis.style.selection)) {
-      axis.update({ selection: this.style.selection });
-    }
+
+    this.renderAxis();
 
     maybeAppend(this, '.speed-control', () => new SpeedControl({}))
       .attr('className', 'speed-control')
@@ -250,6 +232,50 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           symbol: 'timeline-next-button',
         });
       });
+  }
+
+  private renderAxis() {
+    const { data: timeData, type } = this.style;
+    const { axisY, paddingLeft, paddingRight } = layoutControl(
+      this.style.controlPosition!,
+      this.style.width!,
+      this.style
+    );
+
+    type Axis = SliderAxis | CellAxis;
+    let axis = select(this).select('.timeline-axis').node() as Axis | undefined;
+    const Ctor = type === 'cell' ? CellAxis : SliderAxis;
+    // @ts-ignore
+    if (axis && axis.tag !== `${type}-axis`) {
+      axis.remove();
+      this.removeChild(axis);
+      axis = undefined;
+    }
+
+    axis = maybeAppend(this, '.timeline-axis', () => new Ctor({ style: { timeData, selection: this.style.selection } }))
+      .attr('className', 'timeline-axis')
+      .call((selection) =>
+        (selection.node() as Axis).update({
+          x: paddingLeft,
+          y: axisY,
+          timeData,
+          length: this.style.width! - (paddingLeft + paddingRight),
+          size: this.style.axisSize!,
+          // @ts-ignore
+          lineStyle: this.style.lineStyle,
+          selectionStyle: this.style.selectionStyle || undefined,
+          label: this.style.label,
+          handleStyle: this.style.handleStyle,
+          loop: this.style.loop,
+          singleMode: this.style.singleMode,
+          playMode: this.style.playMode,
+          playInterval: this.style.playInterval! / this.speed,
+        })
+      )
+      .node() as Axis;
+    if (String(this.style.selection) !== String(axis.style.selection)) {
+      axis.update({ selection: this.style.selection });
+    }
   }
 
   private bindEvents() {

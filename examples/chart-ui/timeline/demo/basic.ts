@@ -15,22 +15,22 @@ const canvas = new Canvas({
 const rectStyle = { width: 400, height: 60, stroke: '#d9d9d9', lineWidth: 1 };
 const rect = canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 40 } }));
 
-export const TIME_DATA = (() => {
+export const TIME_DATA = (count = 10) => {
   const scale = new Time({
-    tickCount: 10,
-    range: [0, 10],
+    tickCount: count,
+    range: [0, count],
     domain: [new Date(2000, 0, 1), new Date(2000, 0, 2)],
   });
   const formatter = scale.getFormatter();
 
   return scale.getTicks().map((d: any) => ({ date: formatter(d) }));
-})();
+};
 
 const timeline = new Timeline({
   style: {
     width: 400,
     height: 80,
-    data: TIME_DATA,
+    data: TIME_DATA(),
     selection: [0, 2],
     length: 280,
   },
@@ -45,7 +45,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 120 } })).appendC
     style: {
       width: 400,
       height: 80,
-      data: TIME_DATA,
+      data: TIME_DATA(),
       selection: [0, 2],
       length: 280,
       label: { position: -1 },
@@ -58,11 +58,12 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 210 } })).appendC
     style: {
       width: 400,
       height: 40,
-      data: TIME_DATA,
+      data: TIME_DATA(),
       selection: [0, 2],
       length: 280,
       controlPosition: 'right',
       label: { position: -1 },
+      singleMode: true,
     },
   })
 );
@@ -72,12 +73,30 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 280 } })).appendC
     style: {
       width: 400,
       height: 40,
-      data: TIME_DATA,
+      data: TIME_DATA(),
       selection: [0, 2],
       length: 280,
       controlPosition: 'left',
       label: { position: -1 },
       loop: true,
+      playMode: 'increase',
+    },
+  })
+);
+
+canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 360 } })).appendChild(
+  new Timeline({
+    style: {
+      width: 400,
+      height: 40,
+      data: TIME_DATA(20),
+      type: 'cell',
+      selection: [0, 2],
+      length: 280,
+      controlPosition: 'left',
+      label: { position: -1 },
+      loop: true,
+      playMode: 'increase',
     },
   })
 );

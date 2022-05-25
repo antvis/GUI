@@ -122,32 +122,35 @@ export class SpeedControl extends GUI<Required<SpeedControlStyleProps>> {
   }
 
   private bindEvents() {
+    const lineGroup = this.querySelector('.line-group')! as any;
+    lineGroup.addEventListener('pointerdown', (evt: any) => this.listener(evt));
+    // Only for mobile.
+    lineGroup.addEventListener('touchmove', (evt: any) => this.listener(evt));
+  }
+
+  private listener(evt: any) {
     const { speeds, size } = this.style;
     const height = size * 2;
     const lineGroup = this.querySelector('.line-group')! as any;
     const speedText = select(this).select('.speed-label').node();
     const speedMarker = select(this).select('.speed-marker').node();
-    function listener(evt: any) {
-      if (evt.currentTarget === lineGroup) {
-        const diff = evt.y - lineGroup.getBBox().y;
-        const idx = speeds.findIndex((_, idx) => {
-          const offset = getOffsetByIndex(idx, height);
-          const offset0 = getOffsetByIndex(idx - 1, height);
-          const offset1 = getOffsetByIndex(idx + 1, height);
+    if (evt.currentTarget === lineGroup) {
+      const diff = evt.y - lineGroup.getBBox().y;
+      const idx = speeds.findIndex((_, idx) => {
+        const offset = getOffsetByIndex(idx, height);
+        const offset0 = getOffsetByIndex(idx - 1, height);
+        const offset1 = getOffsetByIndex(idx + 1, height);
 
-          if (idx === 0) return diff < offset + (getOffsetByIndex(1, height) - offset) / 2;
-          if (idx === speeds.length - 1) return diff > offset - (offset - offset0) / 2;
+        if (idx === 0) return diff < offset + (getOffsetByIndex(1, height) - offset) / 2;
+        if (idx === speeds.length - 1) return diff > offset - (offset - offset0) / 2;
 
-          const range = [offset - (offset - offset0) / 2, offset + (offset1 - offset) / 2];
-          return diff >= range[0] && diff < range[1];
-        });
-        if (idx === -1) return;
-        speedText.setAttribute('text', formatter(speeds[idx]));
-        speedMarker.setLocalPosition(0, getOffsetByIndex(idx, height) - size / 4);
-        this.dispatchEvent(new CustomEvent('speedChanged', { detail: { speed: speeds[idx] } }));
-      }
+        const range = [offset - (offset - offset0) / 2, offset + (offset1 - offset) / 2];
+        return diff >= range[0] && diff < range[1];
+      });
+      if (idx === -1) return;
+      speedText.setAttribute('text', formatter(speeds[idx]));
+      speedMarker.setLocalPosition(0, getOffsetByIndex(idx, height) - size / 4);
+      this.dispatchEvent(new CustomEvent('speedChanged', { detail: { speed: speeds[idx] } }));
     }
-    lineGroup.addEventListener('mousedown', (evt: any) => listener.bind(this, evt));
-    lineGroup.addEventListener('touchmove', (evt: any) => listener.bind(this, evt));
   }
 }
