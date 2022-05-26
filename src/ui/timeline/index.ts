@@ -1,150 +1,135 @@
 import { CustomElement, DisplayObjectConfig, Group } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, isNull } from '@antv/util';
 import { maybeAppend, normalPadding, select } from '../../util';
 import { Button } from './button';
-import { TimelineStyleProps } from './types';
 import { SliderAxis } from './sliderAxis';
 import { CellAxis } from './cellAxis';
 import { SpeedControl } from './speedcontrol';
-
-type PlayAxis = SliderAxis | CellAxis;
+import { Checkbox } from './checkbox';
+import { DEFAULT_TIMELINE_STYLE } from './constants';
+import type { TimelineStyleProps, PlayAxisStyleProps } from './types';
 
 export type TimelineOptions = DisplayObjectConfig<TimelineStyleProps>;
 
-const DEFAULT_BUTTON_STYLE = {
-  margin: [2, 4],
-  markerStyle: {
-    default: {
-      stroke: '#bfbfbf',
-    },
-    active: {
-      stroke: '#3471F9',
-    },
-  },
-  backgroundStyle: {
-    default: {
-      fill: 'transparent',
-    },
-  },
+type PlayAxis = SliderAxis | CellAxis;
+type BBox = { x: number; y: number; length?: number; size?: number };
+type Layout = {
+  axis: BBox;
+  playBtn: BBox;
+  prevBtn: BBox;
+  nextBtn: BBox;
+  speedControl: BBox;
+  singleModeControl: BBox;
 };
 
-const DEFAULT_STYLE: TimelineStyleProps = {
-  x: 0,
-  y: 0,
-  data: [],
-  width: 500,
-  height: 40,
-  selection: [0, 0],
-  orient: 'horizontal',
-  singleModeControl: {},
-  speedControl: {
-    speeds: [1.0, 2.0, 3.0, 4.0, 5.0],
-  },
-  controlPosition: 'bottom',
-  controlButton: {
-    spacing: 14,
-    prevBtn: {
-      ...DEFAULT_BUTTON_STYLE,
-      symbol: 'timeline-prev-btn',
-      padding: 0,
-      size: 8,
-    },
-    nextBtn: {
-      ...DEFAULT_BUTTON_STYLE,
-      symbol: 'timeline-next-btn',
-      padding: 0,
-      size: 8,
-    },
-    playBtn: {
-      margin: 4,
-      padding: 0,
-      size: 20,
-      symbol: '',
-      markerStyle: {
-        default: {
-          stroke: '#bfbfbf',
-          fill: '#bfbfbf',
-        },
-        active: {
-          stroke: '#3471F9',
-          fill: '#3471F9',
-        },
-      },
-      backgroundStyle: {
-        default: {
-          stroke: '#bfbfbf',
-          lineWidth: 1,
-          radius: 10,
-          fill: '#F7F7F7',
-        },
-        active: {
-          fill: 'rgba(52, 113, 249, 0.1)',
-          stroke: '#3471F9',
-        },
-      },
-    },
-  },
-  playAxis: {
-    label: { position: 1 },
-    loop: false,
-  },
-  playInterval: 2000,
-  autoPlay: false,
-};
+function getAxisLabelHeight(options: PlayAxisStyleProps | null | undefined): number {
+  const cfg: Required<PlayAxisStyleProps['label']> = deepMix({}, DEFAULT_TIMELINE_STYLE.playAxis, options).label;
+  if (!cfg) return 0;
 
-function layoutControl(
-  position: string,
-  length: number,
-  cfg: TimelineStyleProps
-): {
-  [k: string]: any;
-} {
-  const axisLabelPosition = cfg.playAxis?.label?.position || -1;
-  const axisSize = cfg.playAxis?.size || 8;
-  // todo. infer by label fontSize, whether show tickLine.
-  const axisLabelHeight = cfg.playAxis?.label === null ? 0 : 20;
-  const playButtonSize = cfg.controlButton?.playBtn?.size || 0;
-  const prevButtonSize = cfg.controlButton?.prevBtn?.size || 0;
-  const nextButtonSize = cfg.controlButton?.nextBtn?.size || 0;
-  const buttonSpacing = cfg.controlButton?.spacing || 0;
-  const speedControlSize = 8;
-  // Default 32px.
-  const speedControlWidth = 32;
-  const axisY = (axisLabelPosition === -1 ? axisLabelHeight : 0) + axisSize / 2;
+  return (cfg.tickLine?.len || 0) + (cfg.tickPadding || 0) + (Number(cfg.style.fontSize) || 0) + 2;
+}
+
+function layoutControl(position: string, length: number, props: TimelineStyleProps): Layout {
+  const cfg: Required<TimelineStyleProps> = deepMix({}, DEFAULT_TIMELINE_STYLE, props);
+  const { type, playAxis, controlButton, speedControl, singleModeControl } = cfg;
+  const axisLabelPosition = playAxis?.label?.position || -1;
+  const axisCellSpacing = playAxis?.spacing ?? (CellAxis.defaultOptions?.style?.spacing || 0);
+  let axisSize =
+    playAxis?.size ||
+    (type === 'cell' ? CellAxis.defaultOptions?.style?.size : SliderAxis.defaultOptions?.style?.size) ||
+    4;
+  axisSize += type === 'cell' ? axisCellSpacing : 0;
+  const [axisPt, axisPr, axisPb, axisPl] = normalPadding(playAxis?.appendPadding);
+
+  const buttonGap = controlButton?.spacing || 0;
+  const playButtonSize = isNull(controlButton) || isNull(controlButton?.playBtn) ? 0 : controlButton?.playBtn?.size!;
+  const prevButtonSize = isNull(controlButton) || isNull(controlButton?.prevBtn) ? 0 : controlButton?.prevBtn?.size!;
+  const nextButtonSize = isNull(controlButton) || isNull(controlButton?.nextBtn) ? 0 : controlButton?.nextBtn?.size!;
+  const prevButtonOffset = playButtonSize / 2 + prevButtonSize / 2 + buttonGap;
+  const nextButtonOffset = playButtonSize / 2 + nextButtonSize / 2 + buttonGap;
+  const controlsWidth = prevButtonSize + playButtonSize + nextButtonSize + buttonGap * 3;
+  const speedControlMarkerSize = speedControl === null ? 0 : speedControl?.markerSize!;
+  const speedControlSize = speedControlMarkerSize * 2;
+  const speedControlWidth = speedControl === null ? 0 : speedControl?.width!;
+  const speedControlHeight = speedControlSize * 2 + speedControlMarkerSize / 2;
+  const singleControlWidth = singleModeControl === null ? 0 : singleModeControl?.width!;
+  const singleControlSize = singleModeControl === null ? 0 : singleModeControl?.size! + 2; /** lineWidth of stroke. */
+
+  if (cfg.orient === 'vertical') {
+    // Remain 30px for placing axis label.
+    const centerX = axisPl + (axisLabelPosition === -1 ? 30 : 0);
+    const axisX = centerX + (type === 'cell' ? 0 : axisSize / 2);
+    const buttonX = centerX + axisSize / 2;
+
+    const singleModeControlY = length - singleControlSize;
+    const speedControlY = singleModeControlY - 4 - speedControlHeight;
+    const nextButtonY = speedControlY - buttonGap - nextButtonSize / 2;
+    const playBtnY = prevButtonSize + buttonGap + playButtonSize / 2;
+    const axisY = playBtnY + playButtonSize / 2 + buttonGap + axisPt;
+    const axisEndY = nextButtonY - buttonGap - nextButtonSize / 2 - axisPb;
+    const axisLength = axisEndY - axisY;
+
+    return {
+      axis: { x: axisX, y: axisY, length: axisLength },
+      prevBtn: { x: buttonX, y: prevButtonSize / 2, size: prevButtonSize },
+      playBtn: { x: buttonX, y: playBtnY, size: playButtonSize },
+      nextBtn: { x: buttonX, y: nextButtonY, size: nextButtonSize },
+      speedControl: { x: centerX - speedControlWidth / 2, y: speedControlY, size: speedControlWidth },
+      singleModeControl: { x: 0, y: singleModeControlY },
+    };
+  }
+
+  const singleControlX = length - singleControlWidth;
+  const speedControlX = singleControlX - 8 - speedControlWidth;
+  const axisLabelHeight = getAxisLabelHeight(playAxis);
+  const axisY = (axisLabelPosition === -1 ? axisLabelHeight : 0) + (type === 'cell' ? 0 : axisSize / 2) + axisPt;
 
   if (position === 'bottom') {
+    const playBtnX = length / 2;
+    const playBtnY = axisLabelHeight + axisSize + 4 + playButtonSize / 2 + axisPb;
+    const speedControlY = axisLabelHeight + axisSize + 4;
     return {
-      axisY,
-      // axisX:
-      paddingLeft: 20,
-      paddingRight: 20,
-      playBtnX: length / 2,
-      playBtnY: axisLabelHeight + axisSize + 4 + playButtonSize / 2,
-      speedControlX: length - (speedControlWidth + 4),
-      speedControlY: axisLabelHeight + axisSize + 4,
+      axis: { x: axisPl, y: axisY, length: length - (axisPl + axisPr) },
+      playBtn: { x: playBtnX, y: playBtnY, size: playButtonSize },
+      prevBtn: { x: playBtnX - prevButtonOffset, y: playBtnY, size: prevButtonSize },
+      nextBtn: { x: playBtnX + nextButtonOffset, y: playBtnY, size: nextButtonSize },
+      // SpeedControl align playAxis.
+      speedControl: { x: speedControlX, y: speedControlY, size: speedControlWidth },
+      singleModeControl: { x: singleControlX, y: speedControlY + speedControlSize - singleControlSize / 2 },
     };
   }
+
+  const axisLength = length - (axisPl + axisPr) - (controlsWidth + speedControlWidth + 8 + singleControlWidth + 8);
+  const playBtnY = type === 'cell' ? axisY + axisSize / 2 : axisY;
+  // PlayButton and speedControl is middle align.
+  const speedControlY = playBtnY - speedControlHeight / 2;
   if (position === 'left') {
+    const prevBtnX = prevButtonSize / 2;
+    const playBtnX = prevBtnX + prevButtonOffset;
+    const nextBtnX = playBtnX + nextButtonOffset;
+    const axisX = nextBtnX + nextButtonSize / 2 + axisPl;
+    const axisLength = speedControlX - axisPr - axisX;
     return {
-      axisY,
-
-      paddingLeft: prevButtonSize + playButtonSize + nextButtonSize + buttonSpacing * 2 + 12,
-      paddingRight: speedControlWidth + 12,
-      playBtnX: prevButtonSize + buttonSpacing + playButtonSize / 2,
-      playBtnY: axisY,
-      speedControlX: length - speedControlWidth,
-      speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
+      axis: { x: axisX, y: axisY, length: axisLength },
+      prevBtn: { x: prevBtnX, y: playBtnY, size: prevButtonSize },
+      playBtn: { x: playBtnX, y: playBtnY, size: playButtonSize },
+      nextBtn: { x: nextBtnX, y: playBtnY, size: nextButtonSize },
+      speedControl: { x: speedControlX, y: speedControlY, size: speedControlWidth },
+      singleModeControl: { x: singleControlX, y: speedControlY + speedControlSize - singleControlSize / 2 },
     };
   }
 
+  const nextBtnX = speedControlX - (nextButtonSize / 2 + buttonGap);
+  const playBtnX = nextBtnX - nextButtonOffset;
+  const prevBtnX = playBtnX - prevButtonOffset;
+  const axisX = axisPl;
   return {
-    axisY,
-    paddingLeft: 20,
-    paddingRight: 12 + (prevButtonSize + playButtonSize + nextButtonSize + buttonSpacing * 2) + (speedControlWidth + 8),
-    playBtnX: length - (playButtonSize / 2 + buttonSpacing + nextButtonSize) - (speedControlWidth + 8),
-    playBtnY: axisY,
-    speedControlX: length - speedControlWidth,
-    speedControlY: axisLabelPosition === -1 ? axisY - speedControlSize * 2 + axisSize / 2 : 0,
+    axis: { x: axisX, y: axisY, length: prevBtnX - prevButtonSize / 2 - axisPr - axisX },
+    playBtn: { x: playBtnX, y: playBtnY, size: playButtonSize },
+    prevBtn: { x: prevBtnX, y: playBtnY, size: prevButtonSize },
+    nextBtn: { x: nextBtnX, y: playBtnY, size: nextButtonSize },
+    speedControl: { x: speedControlX, y: speedControlY, size: speedControlWidth },
+    singleModeControl: { x: singleControlX, y: speedControlY + speedControlSize - singleControlSize / 2 },
   };
 }
 
@@ -156,7 +141,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
   private playing = false;
 
   constructor(options: DisplayObjectConfig<TimelineStyleProps>) {
-    super(deepMix({}, { style: DEFAULT_STYLE }, options));
+    super(deepMix({}, { style: DEFAULT_TIMELINE_STYLE }, options));
     this.singleMode = this.style.singleMode || false;
   }
 
@@ -175,11 +160,12 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
   }
 
   private get styles(): Required<TimelineStyleProps> {
-    return deepMix({}, DEFAULT_STYLE, this.attributes);
+    return deepMix({}, DEFAULT_TIMELINE_STYLE, this.attributes);
   }
 
   private render() {
-    const [pt = 0, pr = 0, , pl = pr] = normalPadding(this.styles.padding);
+    const { width, height, controlPosition, speedControl, singleModeControl } = this.styles;
+    const [pt = 0, pr = 0, pb, pl = pr] = normalPadding(this.styles.padding);
 
     const container = maybeAppend(this, '.container', 'g')
       .attr('className', 'container')
@@ -187,10 +173,12 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       .style('y', pt)
       .node();
 
-    this.renderAxis(container);
+    const length = this.style.orient! === 'vertical' ? height - (pt + pb) : width - (pl + pr);
+    const layout = layoutControl(controlPosition, length, this.styles);
 
-    const { controlPosition, speedControl, width } = this.styles;
-    const { speedControlX, speedControlY } = layoutControl(controlPosition, width, this.styles);
+    this.renderAxis(container, layout);
+    this.renderControlButton(container, layout);
+
     maybeAppend(container, '.timeline-speed-control', () => new SpeedControl({}))
       .attr('className', 'timeline-speed-control')
       .call((selection) => {
@@ -199,20 +187,26 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           return;
         }
         (selection.node() as SpeedControl).update({
-          x: speedControlX,
-          y: speedControlY,
-          ...this.style.speedControl,
+          x: layout.speedControl.x,
+          y: layout.speedControl.y,
+          ...speedControl,
           initialSpeed: this.speed,
         });
       });
 
-    this.renderControlButton(container);
+    maybeAppend(container, '.timeline-single-checkbox', () => new Checkbox({}))
+      .attr('className', 'timeline-single-checkbox')
+      .call((selection) => {
+        (selection.node() as Checkbox).update({
+          x: layout.singleModeControl.x,
+          y: layout.singleModeControl.y,
+          ...singleModeControl,
+        });
+      });
   }
 
-  private renderAxis(container: Group) {
-    const { data: timeData, type, width, height, controlPosition } = this.styles;
-    const length = this.style.orient! === 'vertical' ? height : width;
-    const { axisY, paddingLeft, paddingRight } = layoutControl(controlPosition!, length!, this.style);
+  private renderAxis(container: Group, layout: Layout) {
+    const { data: timeData, type } = this.styles;
 
     let axis = select(container).select('.timeline-axis').node() as PlayAxis | undefined;
     const Ctor = type === 'cell' ? CellAxis : SliderAxis;
@@ -221,7 +215,6 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       axis.remove();
       this.removeChild(axis);
     }
-
     axis = maybeAppend(
       container,
       '.timeline-axis',
@@ -230,11 +223,11 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       .attr('className', 'timeline-axis')
       .call((selection) =>
         (selection.node() as PlayAxis).update({
-          x: paddingLeft,
-          y: axisY,
+          x: layout.axis.x,
+          y: layout.axis.y,
+          length: layout.axis.length,
           data: timeData,
           orient: this.style.orient!,
-          length: length! - (paddingLeft + paddingRight),
           playInterval: this.style.playInterval! / this.speed,
           singleMode: this.singleMode,
           ...(this.style.playAxis || {}),
@@ -244,51 +237,50 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     if (String(this.style.selection) !== String(axis.style.selection)) {
       axis.update({ selection: this.style.selection });
     }
-    console.log('paddingRight:', controlPosition, paddingRight, length!, axis.style.length);
   }
 
-  private renderControlButton(container: Group) {
-    const { playBtnX, playBtnY } = layoutControl(this.style.controlPosition!, this.style.width!, this.style);
-
-    const { controlButton } = this.styles;
-    const spacing = controlButton?.spacing || 0;
-    const buttonSize = controlButton?.playBtn?.size || 0;
-    const prevButtonSize = controlButton?.prevBtn?.size || 0;
-    const nextButtonSize = controlButton?.nextBtn?.size || 0;
-
-    const showPrevButton = controlButton === null ? false : controlButton.prevBtn !== null;
-    const showNextButton = controlButton === null ? false : controlButton.nextBtn !== null;
-    const showPlayButton = controlButton === null ? false : controlButton.playBtn !== null;
-
-    const prevBtnOffset = buttonSize / 2 + prevButtonSize / 2 + spacing;
-    const nextBtnOffset = buttonSize / 2 + nextButtonSize / 2 + spacing;
-
+  private renderControlButton(container: Group, layout: Layout) {
+    const playButtonSize = layout.playBtn.size || 0;
+    const prevButtonSize = layout.prevBtn.size || 0;
+    const nextButtonSize = layout.nextBtn?.size || 0;
     maybeAppend(container, '.timeline-prev-btn', () => new Button({}))
       .attr('className', 'timeline-prev-btn')
       .call((selection) => {
-        if (!showPrevButton) {
+        if (!prevButtonSize) {
           selection.remove();
+
           return;
         }
         (selection.node() as Button).update({
           ...(this.style.controlButton?.prevBtn || {}),
-          x: playBtnX - prevBtnOffset,
-          y: playBtnY,
+          x: layout.prevBtn.x,
+          y: layout.prevBtn.y,
+          size: prevButtonSize,
           symbol: 'timeline-prev-button',
+        });
+        (selection.node() as Button).update({
+          markerStyle: {
+            transformOrigin: 'center',
+            transform: this.style.orient === 'vertical' ? 'rotate(90deg)' : '',
+          },
         });
       });
 
     maybeAppend(container, '.timeline-play-btn', () => new Button({}))
       .attr('className', 'timeline-play-btn')
       .call((selection) => {
-        if (!showPlayButton) {
+        if (!playButtonSize) {
           selection.remove();
           return;
         }
         (selection.node() as Button).update({
+          backgroundStyle: { radius: (layout.playBtn.size || 0) / 2 },
+        });
+        (selection.node() as Button).update({
           ...(this.style.controlButton?.playBtn || {}),
-          x: playBtnX,
-          y: playBtnY,
+          x: layout.playBtn.x,
+          y: layout.playBtn.y,
+          size: playButtonSize,
           symbol: !this.playing ? 'timeline-stop-button' : 'timeline-play-button',
         });
       });
@@ -296,15 +288,22 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     maybeAppend(container, '.timeline-next-btn', () => new Button({}))
       .attr('className', 'timeline-next-btn')
       .call((selection) => {
-        if (!showNextButton) {
+        if (!nextButtonSize) {
           selection.remove();
           return;
         }
         (selection.node() as Button).update({
           ...(this.style.controlButton?.nextBtn || {}),
-          x: playBtnX + nextBtnOffset,
-          y: playBtnY,
+          x: layout.nextBtn.x,
+          y: layout.nextBtn.y,
+          size: nextButtonSize,
           symbol: 'timeline-next-button',
+        });
+        (selection.node() as Button).update({
+          markerStyle: {
+            transformOrigin: 'center',
+            transform: this.style.orient === 'vertical' ? 'rotate(90deg)' : '',
+          },
         });
       });
 

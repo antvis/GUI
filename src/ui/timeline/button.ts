@@ -1,5 +1,5 @@
 import { CustomElement, DisplayObjectConfig } from '@antv/g';
-import { deepMix } from '@antv/util';
+import { deepMix, omit } from '@antv/util';
 import { applyStyle, maybeAppend, normalPadding, select } from '../../util';
 import { ControlButtonStyleProps } from './types';
 
@@ -45,21 +45,25 @@ export class Button extends CustomElement<ButtonStyleProps> {
       .style('cursor', 'pointer')
       .style('zIndex', 1);
 
+    const { active: bgActiveStyle, ...bgStyles } = backgroundStyle || {};
     maybeAppend(this, '.background', 'rect')
       .attr('className', 'background')
       .style('x', -(rx + pl))
       .style('y', -(ry + pt))
       .style('width', size)
       .style('height', size)
-      .call(applyStyle, this.active ? backgroundStyle?.active : backgroundStyle?.default);
+      .call(applyStyle, bgStyles)
+      .call(applyStyle, this.active ? bgActiveStyle : {});
 
     const symbolFn = typeof symbol === 'function' ? symbol : SymbolPool.get(symbol);
+    const { active: markerActiveStyle, ...markerStyles } = markerStyle || {};
     maybeAppend(this, '.marker-symbol', 'path')
       .attr('className', 'marker-symbol')
       .style('x', 0)
       .style('y', 0)
       .style('path', symbolFn?.(0, 0, Math.min(rx, ry)))
-      .call(applyStyle, this.active ? markerStyle?.active : markerStyle?.default);
+      .call(applyStyle, markerStyles)
+      .call(applyStyle, this.active ? markerActiveStyle : {});
   }
 
   private bindEvents() {
@@ -75,8 +79,8 @@ export class Button extends CustomElement<ButtonStyleProps> {
     });
     container.on('pointerout', () => {
       this.active = false;
-      applyStyle(marker, this.style.markerStyle?.default as any);
-      applyStyle(background, this.style.backgroundStyle?.default as any);
+      applyStyle(marker, omit(this.style.markerStyle || {}, ['active']) as any);
+      applyStyle(background, omit(this.style.backgroundStyle || {}, ['active']) as any);
     });
   }
 }

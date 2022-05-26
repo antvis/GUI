@@ -1,5 +1,6 @@
 import { CustomElement, CustomEvent } from '@antv/g';
 import { deepMix, isNil } from '@antv/util';
+import { DEFAULT_TIMELINE_STYLE } from './constants';
 import { PlayAxisStyleProps, TimeData } from './types';
 
 export type AxisStyleProps = PlayAxisStyleProps & {
@@ -12,48 +13,35 @@ export type AxisStyleProps = PlayAxisStyleProps & {
   playInterval?: number; // ms
 };
 
-export const DEFAULT_STYLE: AxisStyleProps = {
-  x: 0,
-  y: 0,
-  data: [],
-  length: 120,
-  orient: 'horizontal',
-  selection: 0,
-  selectionStyle: {
-    fill: '#5B8FF9',
-    fillOpacity: 1,
-  },
-  label: {
-    position: -1,
-    style: {
-      fillOpacity: 1,
+export const DEFAULT_STYLE: AxisStyleProps = deepMix(
+  {},
+  {
+    x: 0,
+    y: 0,
+    data: [],
+    length: 120,
+    orient: 'horizontal',
+    selection: 0,
+    selectionStyle: {
+      fill: '#5B8FF9',
+      fillOpacity: 0.15,
     },
+    loop: false,
+    playInterval: 1000,
   },
-  loop: false,
-  playInterval: 1000,
-};
+  DEFAULT_TIMELINE_STYLE.playAxis
+);
 
-export const DEFAULT_AXIS_STYLE = {
+export const DEFAULT_AXIS_CFG = {
   axisLine: null,
   label: {
     autoRotate: false,
+    rotate: 0,
     autoHide: true,
     autoHideTickLine: false,
     autoEllipsis: true,
     minLength: 60,
     alignTick: true,
-    rotate: 0,
-    style: {
-      fontSize: 10,
-      fill: 'rgba(0,0,0,0.45)',
-    },
-  },
-  tickLine: {
-    len: 4,
-    style: {
-      stroke: 'rgba(0,0,0,0.25)',
-      lineWidth: 1,
-    },
   },
 };
 

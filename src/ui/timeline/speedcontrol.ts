@@ -1,7 +1,7 @@
 import { CustomElement, CustomEvent, DisplayObjectConfig, PathCommand } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { GUIOption } from '../../types';
 import { applyStyle, maybeAppend, select } from '../../util';
+import { DEFAULT_TIMELINE_STYLE } from './constants';
 import { SpeedControlStyleProps } from './types';
 
 type StyleProps = SpeedControlStyleProps & {
@@ -17,26 +17,18 @@ function getOffsetByIndex(index: number, height: number): number {
 const formatter = (number: number = 0, fractionDigits = 1, suffix = 'x') =>
   `${number.toFixed(fractionDigits)}${suffix}`;
 
+const DEFAULT_STYLE = deepMix({}, DEFAULT_TIMELINE_STYLE.speedControl, {
+  lineStroke: '#bfbfbf',
+  markerFill: '#8c8c8c',
+  spacing: 1,
+});
+
 export class SpeedControl extends CustomElement<StyleProps> {
   public static tag = 'speed-control';
 
-  private static defaultOptions: GUIOption<StyleProps> = {
+  public static defaultOptions: DisplayObjectConfig<StyleProps> = {
     type: SpeedControl.tag,
-    style: {
-      size: 8,
-      lineStroke: '#bfbfbf',
-      markerFill: '#8c8c8c',
-      speeds: [1.0, 2.0, 3.0, 4.0, 5.0] as number[],
-      spacing: 1,
-      labelStyle: {
-        fontFamily: 'sans-serif',
-        fill: 'rgba(0,0,0,0.45)',
-        fontStyle: 'normal',
-        fontWeight: 500,
-        fontSize: 10,
-        textBaseline: 'alphabetic',
-      },
-    },
+    style: DEFAULT_STYLE,
   };
 
   constructor(options: DisplayObjectConfig<StyleProps>) {
@@ -58,10 +50,10 @@ export class SpeedControl extends CustomElement<StyleProps> {
   }
 
   private render() {
-    const { initialSpeed, size, markerFill, lineStroke, speeds, labelStyle: label, spacing } = this.styles;
-    const markerSize = size / 2;
+    const { initialSpeed, markerSize, markerFill, lineStroke, speeds, labelStyle: label, spacing } = this.styles;
     let initialSpeedIdx = speeds.indexOf(initialSpeed);
     if (initialSpeedIdx === -1) initialSpeedIdx = 0;
+    const size = markerSize * 2;
     const y = getOffsetByIndex(initialSpeedIdx, size * 2);
     const r = markerSize * Math.tan(Math.PI / 6) * 2;
 
@@ -96,7 +88,7 @@ export class SpeedControl extends CustomElement<StyleProps> {
     maybeAppend(this, '.speed-label', 'text')
       .attr('className', 'speed-label')
       .style('x', x + size + spacing)
-      .style('y', size * 2 + 1)
+      .style('y', 2)
       .style('text', formatter(speeds[initialSpeedIdx]))
       .call(applyStyle, label);
   }
@@ -109,8 +101,8 @@ export class SpeedControl extends CustomElement<StyleProps> {
   }
 
   private listener(evt: any) {
-    const { speeds, size } = this.styles;
-    const height = size * 2;
+    const { speeds, markerSize } = this.styles;
+    const height = markerSize * 2 * 2;
     const lineGroup = this.querySelector('.line-group')! as any;
     const speedText = select(this).select('.speed-label').node();
     const speedMarker = select(this).select('.speed-marker').node();
@@ -129,7 +121,7 @@ export class SpeedControl extends CustomElement<StyleProps> {
       });
       if (idx === -1) return;
       speedText.setAttribute('text', formatter(speeds[idx]));
-      speedMarker.setLocalPosition(0, getOffsetByIndex(idx, height) - size / 4);
+      speedMarker.setLocalPosition(0, getOffsetByIndex(idx, height) - height / 8);
       this.dispatchEvent(new CustomEvent('speedChanged', { detail: { speed: speeds[idx] } }));
     }
   }

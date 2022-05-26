@@ -7,31 +7,12 @@ import { Linear } from '../axis';
 import {
   AxisBase,
   AxisStyleProps,
-  DEFAULT_AXIS_STYLE,
+  DEFAULT_AXIS_CFG,
   DEFAULT_STYLE as BASE_DEFAULT_STYLE,
   normalSelection,
 } from './playAxis';
 
-export const DEFAULT_STYLE = deepMix({}, BASE_DEFAULT_STYLE, {
-  size: 8,
-  handleStyle: {
-    r: 5,
-    stroke: '#8AADF3',
-    lineWidth: 1,
-    fill: '#fff',
-    fillOpacity: 1,
-    strokeOpacity: 1,
-    cursor: 'ew-resize',
-  },
-  backgroundStyle: {
-    fill: '#416180',
-    fillOpacity: 0.1,
-  },
-  selectionStyle: {
-    fillOpacity: 0.3,
-    cursor: 'grabbing',
-  },
-} as AxisStyleProps);
+type SliderAxisOptions = DisplayObjectConfig<AxisStyleProps> & { tag?: string };
 
 function getScale(data: any[], range: number[]) {
   return new PointScale({
@@ -54,8 +35,31 @@ function getPositionByIndex(index: number, totalLength: number, data: any[]) {
 }
 
 export class SliderAxis extends AxisBase<AxisStyleProps> {
-  constructor(options: DisplayObjectConfig<AxisStyleProps>) {
-    super(deepMix({}, { tag: 'slider-axis', style: DEFAULT_STYLE }, options));
+  public static defaultOptions: SliderAxisOptions = {
+    tag: 'slider-axis',
+    style: deepMix({}, BASE_DEFAULT_STYLE, {
+      size: 3,
+      handleStyle: {
+        r: 5,
+        stroke: '#8AADF3',
+        strokeOpacity: 0.75,
+        lineWidth: 1,
+        fill: '#fff',
+        fillOpacity: 1,
+        cursor: 'ew-resize',
+      },
+      backgroundStyle: {
+        fill: '#416180',
+        fillOpacity: 0.1,
+      },
+      selectionStyle: {
+        cursor: 'grabbing',
+      },
+    }),
+  };
+
+  constructor(options: SliderAxisOptions) {
+    super(deepMix({}, SliderAxis.defaultOptions, options));
     this.selection = normalSelection(this.style.selection, this.style.singleMode);
   }
 
@@ -87,9 +91,13 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     this.dispatchEvent(new CustomEvent('timelineChanged', { detail: { selection: this.selection } }));
   }
 
+  private get styles(): Required<AxisStyleProps> {
+    return deepMix({}, SliderAxis.defaultOptions.style, this.attributes);
+  }
+
   protected render() {
-    const style: Required<AxisStyleProps> = deepMix({}, DEFAULT_STYLE, this.attributes);
-    const [width, height] = this.ifH([style.length, style.size], [style.size, style.length]);
+    const styles = this.styles;
+    const [width, height] = this.ifH([styles.length, styles.size], [styles.size, styles.length]);
 
     const bg = maybeAppend(this, '.slider-background', 'line')
       .attr('className', 'slider-background')
@@ -97,13 +105,13 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       .style('y1', 0)
       .style('x2', this.ifH(width, 0))
       .style('y2', this.ifH(0, height))
-      .style('lineWidth', style.size)
+      .style('lineWidth', styles.size)
       .style('lineCap', 'round')
-      .style('stroke', style.backgroundStyle?.fill)
-      .style('strokeOpacity', style.backgroundStyle?.fillOpacity)
+      .style('stroke', styles.backgroundStyle?.fill)
+      .style('strokeOpacity', styles.backgroundStyle?.fillOpacity)
       .node();
 
-    const tickScale = getScale(style.data, [0, 1]);
+    const tickScale = getScale(styles.data, [0, 1]);
     const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d)) as number[];
     const x1 = this.ifH(st * width, 0);
     const x2 = this.ifH(et * width, 0);
@@ -116,28 +124,28 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       .style('y1', y1)
       .style('x2', x2)
       .style('y2', y2)
-      .style('lineWidth', style.size)
+      .style('lineWidth', styles.size)
       .style('lineCap', 'round')
-      .style('stroke', style.selectionStyle?.fill)
-      .style('strokeOpacity', style.selectionStyle?.fillOpacity)
-      .style('visibility', style.singleMode ? 'hidden' : 'visible')
-      .call(applyStyle, style.selectionStyle);
+      .style('stroke', styles.selectionStyle?.fill)
+      .style('strokeOpacity', styles.selectionStyle?.fillOpacity)
+      .style('visibility', styles.singleMode ? 'hidden' : 'visible')
+      .call(applyStyle, styles.selectionStyle);
 
     maybeAppend(bg, '.slider-start-handle', 'circle')
       .attr('className', 'slider-start-handle')
       .style('cx', x1)
       .style('cy', y1)
-      .call(applyStyle, style.handleStyle);
+      .call(applyStyle, styles.handleStyle);
 
     maybeAppend(bg, '.slider-end-handle', 'circle')
       .attr('className', 'slider-end-handle')
       .style('cx', x2)
       .style('cy', y2)
-      .style('visibility', style.singleMode ? 'hidden' : 'visible')
-      .call(applyStyle, style.handleStyle);
+      .style('visibility', styles.singleMode ? 'hidden' : 'visible')
+      .call(applyStyle, styles.handleStyle);
 
-    const ticks = style.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.date }));
-    const { position: verticalFactor = -1, ...axisLabelCfg } = style.label || {};
+    const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.date }));
+    const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
     maybeAppend(
       bg,
@@ -145,19 +153,19 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       () =>
         new Linear({
           className: 'slider-axis',
-          style: DEFAULT_AXIS_STYLE,
+          style: DEFAULT_AXIS_CFG,
         })
     ).call((selection) =>
       (selection.node() as Linear).update({
-        startPos: [verticalFactor * this.ifH(0, width), verticalFactor * this.ifH(height, 0)],
+        startPos: [verticalFactor * this.ifH(0, width + 2), verticalFactor * this.ifH(height + 2, 0)],
         endPos: [
-          this.ifH(width, 0) + verticalFactor * this.ifH(0, width),
-          this.ifH(0, height) + verticalFactor * this.ifH(height, 0),
+          this.ifH(width, 0) + verticalFactor * this.ifH(0, width + 2),
+          this.ifH(0, height) + verticalFactor * this.ifH(height + 2, 0),
         ],
         ticks,
         verticalFactor,
-        tickLine: style.label === null ? null : {},
-        label: style.label === null ? null : axisLabelCfg,
+        tickLine: styles.label === null ? null : tickLineCfg,
+        label: styles.label === null ? null : axisLabelCfg,
       })
     );
   }
@@ -220,7 +228,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
 
     const onDragMove = (event: any) => {
       if (dragging) {
-        const length = this.style.length || DEFAULT_STYLE.length!;
+        const length = this.styles.length!;
         const shape = select(this).select(`.slider-${type}-handle`).node();
         const offset = this.ifH(event.x - lastPosition[0], event.y - lastPosition[1]);
         const position = shape.getLocalPosition();
@@ -278,7 +286,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     };
     const onDragMove = (event: any) => {
       if (dragging) {
-        const length = this.style.length || DEFAULT_STYLE.length!;
+        const length = this.styles.length!;
         const offset = this.ifH(event.x - lastPosition[0], event.y - lastPosition[1]);
         const [cx0, cy0] = startHandle.getLocalPosition();
         const [cx1, cy1] = endHandle.getLocalPosition();

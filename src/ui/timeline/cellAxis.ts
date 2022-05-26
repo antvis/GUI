@@ -6,31 +6,13 @@ import { applyStyle, maybeAppend, select } from '../../util';
 import {
   AxisBase,
   AxisStyleProps,
-  DEFAULT_AXIS_STYLE,
+  DEFAULT_AXIS_CFG,
   DEFAULT_STYLE as BASE_DEFAULT_STYLE,
   normalSelection,
 } from './playAxis';
 
 type CellAxisStyleProps = AxisStyleProps & {};
-
-const DEFAULT_STYLE: CellAxisStyleProps = deepMix({}, BASE_DEFAULT_STYLE, {
-  backgroundStyle: {
-    fill: '#416180',
-    fillOpacity: 0.05,
-  },
-  size: 16,
-  cellGap: 2,
-  cellStyle: {
-    fill: '#416180',
-    fillOpacity: 0.1,
-  },
-  selectionStyle: {
-    fillOpacity: 0.45,
-  },
-  label: {
-    autoHideTickLine: true,
-  },
-});
+type CellAxisOptions = DisplayObjectConfig<CellAxisStyleProps> & { tag?: string };
 
 function getScale(data: any[], range: [number, number]) {
   return new BandScale({
@@ -42,17 +24,41 @@ function getScale(data: any[], range: [number, number]) {
 }
 
 export class CellAxis extends AxisBase<CellAxisStyleProps> {
-  // Cell padding is equal to [padding/2,padding,padding/2,padding]
-  private padding = 4;
+  public static defaultOptions: CellAxisOptions = {
+    tag: 'cell-axis',
+    style: deepMix({}, BASE_DEFAULT_STYLE, {
+      backgroundStyle: {
+        fill: '#416180',
+        fillOpacity: 0.05,
+      },
+      size: 16,
+      spacing: 4,
+      cellGap: 2,
+      cellStyle: {
+        fill: '#416180',
+        fillOpacity: 0.1,
+      },
+      selectionStyle: {
+        fillOpacity: 0.45,
+      },
+      label: {
+        autoHideTickLine: true,
+      },
+    }),
+  };
 
-  constructor(options: DisplayObjectConfig<CellAxisStyleProps>) {
-    super(deepMix({}, { tag: 'cell-axis', style: DEFAULT_STYLE }, options));
+  constructor(options: CellAxisOptions) {
+    super(deepMix({}, CellAxis.defaultOptions, options));
     this.selection = normalSelection(this.style.selection, this.style.singleMode);
   }
 
   connectedCallback() {
     this.render();
     this.bindEvents();
+  }
+
+  private get styles(): Required<CellAxisStyleProps> {
+    return deepMix({}, CellAxis.defaultOptions.style, this.attributes);
   }
 
   protected setSelection(newSelection: { start?: number | undefined; end?: number | undefined }): void {
@@ -63,8 +69,9 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
   }
 
   protected render() {
-    const style: Required<CellAxisStyleProps> = deepMix({}, DEFAULT_STYLE, this.attributes);
-    const { size: cellSize } = style;
+    const style = this.styles;
+    const cellSize = style.size;
+    const spacing = style.spacing;
     const [xName, yName, widthName, heightName] = this.ifH(
       ['x', 'y', 'width', 'height'],
       ['y', 'x', 'height', 'width']
@@ -74,7 +81,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       .style('x', 0)
       .style('y', 0)
       .style(widthName, style.length)
-      .style(heightName, cellSize + this.padding)
+      .style(heightName, cellSize + spacing)
       .call(applyStyle, style.backgroundStyle)
       .node();
 
@@ -83,7 +90,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
     const cells = style.data.map((_, idx: number) => {
       return {
         [xName]: scale.map(idx),
-        [yName]: this.padding / 2,
+        [yName]: spacing / 2,
         [widthName]: bandWidth - style.cellGap,
         [heightName]: cellSize,
         ...style.cellStyle,
@@ -141,17 +148,16 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
         (exit) => exit.remove()
       );
 
-    const padding = this.padding;
-    const axisLength = style.length - this.padding * 2 + style.cellGap;
+    const axisLength = style.length - style.spacing * 2 + style.cellGap;
     const tickScale = getScale(style.data, [0, axisLength]);
     const ticks = style.data.map((tick, idx) => ({
       value: (tickScale.map(idx) + (bandWidth - style.cellGap) / 2) / axisLength,
       text: tick.date,
     }));
-    const { position: verticalFactor = -1, ...axisLabelCfg } = style.label || {};
-    const y = verticalFactor === -1 ? -4 : this.padding + cellSize + 4;
-    let startPos: any = [padding, y];
-    let endPos: any = [padding + axisLength, y];
+    const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = style.label || {};
+    const y = verticalFactor === -1 ? -2 : style.spacing + cellSize + 2;
+    let startPos: any = [style.spacing, y];
+    let endPos: any = [spacing + axisLength, y];
     if (this.orient === 'vertical') {
       startPos = [startPos[1], startPos[0]];
       endPos = [endPos[1], endPos[0]];
@@ -163,7 +169,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       () =>
         new Linear({
           className: 'slider-axis',
-          style: DEFAULT_AXIS_STYLE,
+          style: DEFAULT_AXIS_CFG,
         })
     ).call((selection) =>
       (selection.node() as Linear).update({
@@ -171,7 +177,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
         endPos,
         ticks,
         verticalFactor,
-        tickLine: style.label === null ? null : {},
+        tickLine: style.label === null ? null : tickLineCfg,
         label: style.label === null ? null : axisLabelCfg,
       })
     );
@@ -182,9 +188,10 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
   }
 
   private getCellScale() {
-    const cellGap = this.style.cellGap || DEFAULT_STYLE.cellGap;
-    const length = this.style.length || DEFAULT_STYLE.length;
-    return getScale(this.style.data, [this.padding, length! - this.padding + cellGap!]);
+    const cellGap = this.styles.cellGap!;
+    const length = this.styles.length!;
+    const spacing = this.styles.spacing!;
+    return getScale(this.style.data, [spacing, length! - spacing + cellGap!]);
   }
 
   private dragSelection() {
@@ -193,11 +200,11 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
     let dragging = false; // 拖拽状态
     let firstPosition: number | undefined; // 保存首次位置
 
-    const padding = this.padding;
+    const padding = this.styles.spacing;
     const mapPositionToIndex = (pos: number) => {
       const [x0, y0] = selection.node().getPosition();
       const offset = this.ifH(x0 + 4, y0 + padding);
-      const cellGap = this.style.cellGap || DEFAULT_STYLE.cellGap;
+      const cellGap = this.styles.cellGap!;
       const scale = this.getCellScale();
       const step = scale.getStep();
       return Math.floor((pos - offset + cellGap!) / step);
