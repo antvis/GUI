@@ -46,7 +46,6 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
         lineWidth: 1,
         fill: '#fff',
         fillOpacity: 1,
-        cursor: 'ew-resize',
       },
       backgroundStyle: {
         fill: '#416180',
@@ -77,15 +76,16 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     };
     const { data = [] } = this.style;
 
+    const posName = this.ifH('cx', 'cy');
     const startHandle = select(this).select('.slider-start-handle').node();
     if (startIndex !== undefined) {
-      const cx = getPositionByIndex(startIndex, this.style.length!, data);
-      startHandle.animate([{ cx: startHandle.style.cx }, { cx }], animationOptions);
+      const pos = getPositionByIndex(startIndex, this.style.length!, data);
+      startHandle.animate([{ [posName]: startHandle.style[posName] }, { [posName]: pos }], animationOptions);
     }
     if (endIndex !== undefined) {
       const endHandle = select(this).select('.slider-end-handle').node();
-      const cx1 = getPositionByIndex(endIndex, this.style.length!, data);
-      endHandle.animate([{ cx: endHandle.style.cx }, { cx: cx1 }], animationOptions);
+      const pos1 = getPositionByIndex(endIndex, this.style.length!, data);
+      endHandle.animate([{ [posName]: endHandle.style[posName] }, { [posName]: pos1 }], animationOptions);
     }
     this.selection = [startIndex ?? this.selection[0], endIndex ?? this.selection[1]];
     this.dispatchEvent(new CustomEvent('timelineChanged', { detail: { selection: this.selection } }));
@@ -217,9 +217,14 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       firstPosition = undefined;
       const [startIndex, endIndex] = this.selection;
       if (type === 'start') {
-        this.setSelection({ [type]: clamp(startIndex + interval, 0, endIndex) });
+        this.setSelection({ start: clamp(startIndex + interval, 0, endIndex) });
       } else {
-        this.setSelection({ [type]: clamp(endIndex + interval, startIndex, this.style.data.length - 1) });
+        const max = this.style.data.length - 1;
+        if (startIndex === max) {
+          this.setSelection({ start: endIndex + interval, end: endIndex + interval });
+        } else {
+          this.setSelection({ end: clamp(endIndex + interval, startIndex, max) });
+        }
       }
       if (this.playTimer) {
         this.play();

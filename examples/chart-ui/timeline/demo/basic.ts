@@ -115,6 +115,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, height: 320, width: 80, x: 
         spacing: 4,
         playBtn: { size: 16 },
       },
+      autoPlay: true,
       playAxis: {
         appendPadding: [4, 0],
         label: { position: -1 },
@@ -185,10 +186,15 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 80, x: 
       selection: [0, 2],
       controlPosition: 'left',
       padding: [4, 0],
-      controlButton: null,
+      singleModeControl: null,
       speedControl: null,
+      autoPlay: true,
+      controlButton: {
+        spacing: 4,
+        playBtn: { size: 16 },
+      },
       playAxis: {
-        appendPadding: [0, 0, 8, 0],
+        appendPadding: [2, 0],
         label: { position: -1 },
         loop: true,
         playMode: 'increase',

@@ -197,6 +197,10 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     maybeAppend(container, '.timeline-single-checkbox', () => new Checkbox({}))
       .attr('className', 'timeline-single-checkbox')
       .call((selection) => {
+        if (singleModeControl === null) {
+          selection.remove();
+          return;
+        }
         (selection.node() as Checkbox).update({
           x: layout.singleModeControl.x,
           y: layout.singleModeControl.y,
@@ -221,7 +225,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
       () => new Ctor({ style: { data: timeData, selection: this.style.selection } })
     )
       .attr('className', 'timeline-axis')
-      .call((selection) =>
+      .call((selection) => {
         (selection.node() as PlayAxis).update({
           x: layout.axis.x,
           y: layout.axis.y,
@@ -231,8 +235,13 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           playInterval: this.style.playInterval! / this.speed,
           singleMode: this.singleMode,
           ...(this.style.playAxis || {}),
-        })
-      )
+        });
+        (selection.node() as PlayAxis).update({
+          handleStyle: {
+            cursor: this.style.orient === 'vertical' ? 'ns-resize' : 'ew-resize',
+          },
+        });
+      })
       .node() as PlayAxis;
     if (String(this.style.selection) !== String(axis.style.selection)) {
       axis.update({ selection: this.style.selection });
