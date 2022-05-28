@@ -54,14 +54,15 @@ export type PlayAxisStyleProps = {
 
 export type SpeedControlStyleProps = {
   width?: number;
-  lineStroke?: string;
   // Size of marker is equal to size, and size of SpeedPath is equal to [size*2, size * 4],
   markerSize?: number;
   markerFill?: string;
-  // Require 5 speeds, like: [1.0, 2.0, 3.0, 4.0, 5.0], [0.5, 1.0, 1.5, 2.0, 2.5]
+  // Require 5 speeds, like: [1, 2, 3, 4, 5], [0.5, 1, 1.5, 2, 2.5]
   speeds?: number[];
   initialSpeed?: number;
+  lineStyle?: Omit<PathStyleProps, 'path'>;
   labelStyle?: Omit<TextStyleProps, 'text'>;
+  formatter?: (v: number) => string;
   // Spacing distance between label and speedControl button.
   spacing?: number;
 };
@@ -70,9 +71,9 @@ type ButtonBackgroundStyle = Omit<RectStyleProps, 'x' | 'y' | 'width' | 'height'
 type ButtonMarkerStyle = Omit<PathStyleProps, 'path'>;
 
 export type ControlButtonStyleProps = {
-  symbol: string;
   // The size of marker is equal to [size - padding[1] - padding[3], size - padding[0] - padding[2]]
   size: number;
+  symbol?: string;
   // Used to enlarge the hot area of button.
   margin?: number | number[];
   padding?: number | number[];
@@ -88,9 +89,9 @@ export type CheckboxStyleProps = {
   size?: number;
   active?: boolean;
   buttonStyle?: ButtonBackgroundStyle & { active?: ButtonBackgroundStyle };
-  symbol: {
-    active: {
-      stroke: string;
+  symbol?: {
+    active?: {
+      stroke?: string;
     };
   };
   labelStyle?: Omit<TextStyleProps, 'x' | 'y'>;

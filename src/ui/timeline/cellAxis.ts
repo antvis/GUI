@@ -64,7 +64,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
   protected setSelection(newSelection: { start?: number | undefined; end?: number | undefined }): void {
     const [s0, e0] = this.selection;
     this.selection = normalSelection([newSelection.start ?? s0, newSelection.end ?? e0], this.style.singleMode);
-    this.dispatchEvent(new CustomEvent('timelineChanged', { detail: { selection: this.selection } }));
+    this.dispatchEvent(new CustomEvent('selectionChanged', { detail: { selection: this.selection } }));
     this.render();
   }
 

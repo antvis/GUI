@@ -4,10 +4,11 @@ import { maybeAppend, normalPadding, select } from '../../util';
 import { Button } from './button';
 import { SliderAxis } from './sliderAxis';
 import { CellAxis } from './cellAxis';
-import { SpeedControl } from './speedcontrol';
+import { SpeedControl } from './speedControl';
 import { Checkbox } from './checkbox';
 import { DEFAULT_TIMELINE_STYLE } from './constants';
 import type { TimelineStyleProps, PlayAxisStyleProps } from './types';
+import { normalSelection } from './playAxis';
 
 export type TimelineOptions = DisplayObjectConfig<TimelineStyleProps>;
 
@@ -85,8 +86,8 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
 
   if (position === 'bottom') {
     const playBtnX = length / 2;
-    const playBtnY = axisLabelHeight + axisSize + 4 + playButtonSize / 2 + axisPb;
-    const speedControlY = axisLabelHeight + axisSize + 4;
+    const playBtnY = axisY + axisLabelHeight + axisSize + playButtonSize / 2 + axisPb;
+    const speedControlY = axisY + axisLabelHeight + axisSize + axisPb;
     return {
       axis: { x: axisPl, y: axisY, length: length - (axisPl + axisPr) },
       playBtn: { x: playBtnX, y: playBtnY, size: playButtonSize },
@@ -100,7 +101,7 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
 
   const playBtnY = type === 'cell' ? axisY + axisSize / 2 : axisY;
   // PlayButton and speedControl is middle align.
-  const speedControlY = playBtnY - speedControlHeight / 2;
+  const speedControlY = axisLabelPosition === 1 ? axisY + speedControlMarkerSize / 2 : axisY - speedControlHeight;
   if (position === 'left') {
     const prevBtnX = prevButtonSize / 2;
     const playBtnX = prevBtnX + prevButtonOffset;
@@ -138,9 +139,12 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
   private playing = false;
 
+  private selection: [number, number] = [0, 0];
+
   constructor(options: DisplayObjectConfig<TimelineStyleProps>) {
     super(deepMix({}, { style: DEFAULT_TIMELINE_STYLE }, options));
     this.singleMode = this.style.singleMode || false;
+    this.selection = normalSelection(this.style.selection, this.singleMode);
   }
 
   connectedCallback() {
@@ -152,6 +156,9 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     this.attr(deepMix({}, this.attributes, cfg));
     if (cfg.singleMode !== undefined) {
       this.singleMode = cfg.singleMode;
+    }
+    if (cfg.selection) {
+      this.selection = normalSelection(cfg.selection, this.singleMode);
     }
 
     this.render();
@@ -192,8 +199,8 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
         });
       });
 
-    maybeAppend(container, '.timeline-single-checkbox', () => new Checkbox({}))
-      .attr('className', 'timeline-single-checkbox')
+    maybeAppend(container, '.timeline-single-control', () => new Checkbox({}))
+      .attr('className', 'timeline-single-control')
       .call((selection) => {
         if (singleModeControl === null) {
           selection.remove();
@@ -226,7 +233,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           y: layout.axis.y,
           length: layout.axis.length,
           data: timeData,
-          selection: this.style.selection,
+          selection: this.selection,
           orient: this.style.orient!,
           playInterval: this.style.playInterval! / this.speed,
           singleMode: this.singleMode,
@@ -333,7 +340,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     const axis = select(this).select('.timeline-axis').node() as SliderAxis;
     const playStopBtn = select(this).select('.timeline-play-btn').node() as Button;
     if (playStopBtn) {
-      select(playStopBtn).on('mousedown', (evt: any) => {
+      select(playStopBtn).on('pointerdown', (evt: any) => {
         if (this.playing) {
           this.playing = false;
           axis.stop();
@@ -358,14 +365,19 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
     select(this)
       .select('.timeline-prev-btn')
-      .on('mousedown', () => axis.prev());
+      .on('pointerdown', () => axis.prev());
     select(this)
       .select('.timeline-next-btn')
-      .on('mousedown', () => axis.next());
+      .on('pointerdown', () => axis.next());
 
     select(this).on('singleModeChanged', (evt: any) => {
       this.singleMode = evt.detail.active;
+      this.selection = normalSelection(this.selection, this.singleMode);
       this.render();
+    });
+
+    select(this).on('selectionChanged', (evt: any) => {
+      this.selection = evt.detail.selection;
     });
   }
 }

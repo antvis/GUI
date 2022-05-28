@@ -14,13 +14,13 @@ function getOffsetByIndex(index: number, height: number): number {
   return (OFFSET[index] / 11.66) * height;
 }
 
-const formatter = (number: number = 0, fractionDigits = 1, suffix = 'x') =>
-  `${number.toFixed(fractionDigits)}${suffix}`;
-
 const DEFAULT_STYLE = deepMix({}, DEFAULT_TIMELINE_STYLE.speedControl, {
-  lineStroke: '#bfbfbf',
   markerFill: '#8c8c8c',
   spacing: 1,
+  lineStyle: {
+    stroke: '#bfbfbf',
+    lineWidth: 1,
+  },
 });
 
 export class SpeedControl extends CustomElement<StyleProps> {
@@ -50,7 +50,16 @@ export class SpeedControl extends CustomElement<StyleProps> {
   }
 
   private render() {
-    const { initialSpeed, markerSize, markerFill, lineStroke, speeds, labelStyle: label, spacing } = this.styles;
+    const {
+      initialSpeed,
+      markerSize,
+      markerFill,
+      lineStyle,
+      speeds,
+      labelStyle: label,
+      spacing,
+      formatter = (v) => `${v}`,
+    } = this.styles;
     let initialSpeedIdx = speeds.indexOf(initialSpeed);
     if (initialSpeedIdx === -1) initialSpeedIdx = 0;
     const size = markerSize * 2;
@@ -81,9 +90,8 @@ export class SpeedControl extends CustomElement<StyleProps> {
 
     maybeAppend(group, '.speed-path', 'path')
       .attr('className', 'speed-path')
-      .style('stroke', lineStroke)
       .style('path', path)
-      .style('lineWidth', 1);
+      .call(applyStyle, lineStyle);
 
     maybeAppend(this, '.speed-label', 'text')
       .attr('className', 'speed-label')
@@ -95,13 +103,13 @@ export class SpeedControl extends CustomElement<StyleProps> {
 
   private bindEvents() {
     const lineGroup = this.querySelector('.line-group')! as any;
-    lineGroup.addEventListener('pointerdown', (evt: any) => this.listener(evt));
+    lineGroup.addEventListener('pointerdown', (evt: any) => this.onClick(evt));
     // Only for mobile.
-    lineGroup.addEventListener('touchmove', (evt: any) => this.listener(evt));
+    lineGroup.addEventListener('touchmove', (evt: any) => this.onClick(evt));
   }
 
-  private listener(evt: any) {
-    const { speeds, markerSize } = this.styles;
+  private onClick(evt: any) {
+    const { speeds, markerSize, formatter = (v) => `${v}` } = this.styles;
     const height = markerSize * 2 * 2;
     const lineGroup = this.querySelector('.line-group')! as any;
     const speedText = select(this).select('.speed-label').node();

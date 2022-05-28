@@ -42,6 +42,7 @@ export const DEFAULT_TIMELINE_STYLE: TimelineStyleProps = {
       fontSize: 10,
       textBaseline: 'top',
     },
+    formatter: (value: number) => `${value.toFixed(1)}x`,
   },
   controlPosition: 'bottom',
   controlButton: {
@@ -83,7 +84,7 @@ export const DEFAULT_TIMELINE_STYLE: TimelineStyleProps = {
     },
   },
   playAxis: {
-    appendPadding: [0, 8],
+    appendPadding: [2, 8],
     handleStyle: {
       r: 3,
       lineWidth: 1,

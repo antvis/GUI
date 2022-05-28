@@ -1,6 +1,5 @@
 import { CustomElement, CustomEvent } from '@antv/g';
 import { deepMix, isNil } from '@antv/util';
-import { select } from '../../util';
 import { DEFAULT_TIMELINE_STYLE } from './constants';
 import { PlayAxisStyleProps, TimeData } from './types';
 
@@ -42,12 +41,12 @@ export const DEFAULT_AXIS_CFG = {
     autoHide: true,
     autoHideTickLine: false,
     autoEllipsis: true,
-    minLength: 60,
+    minLength: 50,
     alignTick: true,
   },
 };
 
-export function normalSelection(selection: number | number[] = [], singleMode?: boolean) {
+export function normalSelection(selection: number | number[] = [], singleMode?: boolean): [number, number] {
   const [s1 = 0, s2 = s1] = Array.of(selection).flat() as number[];
   return singleMode ? [s1, s1] : [s1, s2];
 }
@@ -55,12 +54,15 @@ export function normalSelection(selection: number | number[] = [], singleMode?: 
 export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extends CustomElement<T> {
   protected playTimer?: any;
 
-  protected selection: number[] = [0, 0];
+  protected selection: [number, number] = [0, 0];
 
   public update(cfg: Partial<AxisStyleProps> = {}) {
     const newAttrs = deepMix({}, this.attributes, cfg);
     if (cfg.selection) {
       this.selection = normalSelection(cfg.selection, newAttrs.singleMode);
+    }
+    if (cfg.singleMode) {
+      this.selection = normalSelection(newAttrs.selection, cfg.singleMode);
     }
     const playing = this.playTimer;
     playing && this.stop();
@@ -114,36 +116,48 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
     clearInterval(this.playTimer);
     this.playTimer = undefined;
     if (dispatchEvent) {
-      this.dispatchEvent(new CustomEvent('timelineStopped', {}));
+      this.dispatchEvent(new CustomEvent('timelineStopped', { selection: this.selection }));
     }
   }
 
   public prev() {
     const [s1, s2] = this.selection;
     const max = this.style.data.length;
+    let start;
+    let end;
     if (max && this.style.singleMode) {
-      this.setSelection({ start: (s1 - 1 + max) % max, end: (s1 - 1 + max) % max });
-      return;
-    }
-    if (s1 === 0) {
-      this.setSelection({ start: max - (s2 - s1) - 1, end: max - 1 });
+      start = (s1 - 1 + max) % max;
+      end = (s1 - 1 + max) % max;
+    } else if (s1 === 0) {
+      start = max - (s2 - s1) - 1;
+      end = max - 1;
     } else {
-      this.setSelection({ start: s1 - 1, end: s2 - 1 });
+      start = s1 - 1;
+      end = s2 - 1;
     }
+    this.setSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
   }
 
   public next() {
     const [s1, s2] = this.selection;
     const max = this.style.data.length;
+    let start;
+    let end;
     if (max && this.style.singleMode) {
-      this.setSelection({ start: (s1 + 1) % max, end: (s1 + 1) % max });
-      return;
-    }
-    if (s2 === max - 1) {
-      this.setSelection({ start: 0, end: s2 - s1 });
+      start = (s1 + 1) % max;
+      end = (s1 + 1) % max;
+    } else if (s2 === max - 1) {
+      start = 0;
+      end = s2 - s1;
     } else {
-      this.setSelection({ start: s1 + 1, end: s2 + 1 });
+      start = s1 + 1;
+      end = s2 + 1;
     }
+    this.setSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
+  }
+
+  public getSelection(): [number, number] {
+    return this.selection;
   }
 
   protected abstract render(): void;

@@ -1,6 +1,6 @@
 import { Canvas, Rect } from '@antv/g';
 import { Time } from '@antv/scale';
-import { Renderer as CanvasRenderer } from '@antv/g-svg';
+import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Timeline } from '@antv/gui';
 
 const renderer = new CanvasRenderer();

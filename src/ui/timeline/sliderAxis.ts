@@ -18,7 +18,8 @@ function getScale(data: any[], range: number[]) {
   return new PointScale({
     domain: data.map((_, idx) => idx),
     range,
-    padding: 0,
+    // todo, 是否开放配置
+    padding: 0.1,
   });
 }
 
@@ -44,7 +45,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       tag: 'slider-axis',
       size: 3,
       handleStyle: {
-        r: 5,
+        r: 3,
         stroke: '#8AADF3',
         strokeOpacity: 0.75,
         lineWidth: 1,
@@ -71,14 +72,19 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     this.bindEvents();
   }
 
+  private get styles(): Required<AxisStyleProps> {
+    return deepMix({}, SliderAxis.defaultOptions.style, this.attributes);
+  }
+
   protected setSelection(newSelection: { start?: number; end?: number }) {
     const { start: startIndex, end: endIndex } = newSelection;
+    const { data = [], playInterval } = this.styles;
+
     const animationOptions = {
-      duration: this.style.playInterval! / 2,
+      duration: playInterval! / 2,
       easing: 'cubic-bezier(0.250, 0.460, 0.450, 0.940)', // 缓动函数
       fill: 'both' as any,
     };
-    const { data = [] } = this.style;
 
     const posName = this.ifH('cx', 'cy');
     const startHandle = select(this).select('.slider-start-handle').node();
@@ -98,11 +104,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       );
     }
     this.selection = [startIndex ?? this.selection[0], endIndex ?? this.selection[1]];
-    this.dispatchEvent(new CustomEvent('timelineChanged', { detail: { selection: this.selection } }));
-  }
-
-  private get styles(): Required<AxisStyleProps> {
-    return deepMix({}, SliderAxis.defaultOptions.style, this.attributes);
+    this.dispatchEvent(new CustomEvent('selectionChanged', { detail: { selection: this.selection } }));
   }
 
   protected render() {
@@ -161,26 +163,20 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.date }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
-    maybeAppend(
-      bg,
-      '.slider-axis',
-      () =>
-        new Linear({
-          className: 'slider-axis',
-          style: DEFAULT_AXIS_CFG,
+    maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
+      (selection.node() as Linear).update(
+        deepMix({}, DEFAULT_AXIS_CFG, {
+          startPos: [verticalFactor * this.ifH(0, width + 2), verticalFactor * this.ifH(height + 2, 0)],
+          endPos: [
+            this.ifH(width, 0) + verticalFactor * this.ifH(0, width + 2),
+            this.ifH(0, height) + verticalFactor * this.ifH(height + 2, 0),
+          ],
+          ticks,
+          verticalFactor,
+          tickLine: styles.label === null ? null : tickLineCfg,
+          label: styles.label === null ? null : axisLabelCfg,
         })
-    ).call((selection) =>
-      (selection.node() as Linear).update({
-        startPos: [verticalFactor * this.ifH(0, width + 2), verticalFactor * this.ifH(height + 2, 0)],
-        endPos: [
-          this.ifH(width, 0) + verticalFactor * this.ifH(0, width + 2),
-          this.ifH(0, height) + verticalFactor * this.ifH(height + 2, 0),
-        ],
-        ticks,
-        verticalFactor,
-        tickLine: styles.label === null ? null : tickLineCfg,
-        label: styles.label === null ? null : axisLabelCfg,
-      })
+      )
     );
   }
 

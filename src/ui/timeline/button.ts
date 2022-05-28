@@ -8,7 +8,39 @@ export type ButtonStyleProps = ControlButtonStyleProps & {
   y?: number;
 };
 
-const SymbolPool = new Map();
+export const SymbolPool = new Map();
+
+SymbolPool.set('timeline-prev-button', (x: number, y: number, r: number) => {
+  return [
+    ['M', x + r, y + r],
+    ['L', x, y],
+    ['L', x + r, y - r],
+    ['M', x, y + r],
+    ['L', x - r, y],
+    ['L', x, y - r],
+  ];
+});
+SymbolPool.set('timeline-next-button', (x: number, y: number, r: number) => {
+  return [
+    ['M', x, y + r],
+    ['L', x + r, y],
+    ['L', x, y - r],
+    ['M', x - r, y + r],
+    ['L', x, y],
+    ['L', x - r, y - r],
+  ];
+});
+SymbolPool.set('timeline-play-button', (x: number, y: number, r: number) => {
+  return [
+    ['M', x + 2, y + 3],
+    ['L', x + 2, y - 3],
+    ['M', x - 2, y + 3],
+    ['L', x - 2, y - 3],
+  ];
+});
+SymbolPool.set('timeline-stop-button', (x: number, y: number, r: number) => {
+  return [['M', x + 3, y], ['L', x - 1.5, y - 1.5 * Math.sqrt(3)], ['L', x - 1.5, y + 1.5 * Math.sqrt(3)], ['Z']];
+});
 
 export class Button extends CustomElement<ButtonStyleProps> {
   private active: boolean = false;
@@ -57,8 +89,8 @@ export class Button extends CustomElement<ButtonStyleProps> {
 
     const symbolFn = typeof symbol === 'function' ? symbol : SymbolPool.get(symbol);
     const { active: markerActiveStyle, ...markerStyles } = markerStyle || {};
-    maybeAppend(this, '.marker-symbol', 'path')
-      .attr('className', 'marker-symbol')
+    maybeAppend(this, '.marker', 'path')
+      .attr('className', 'marker')
       .style('x', 0)
       .style('y', 0)
       .style('path', symbolFn?.(0, 0, Math.min(rx, ry)))
@@ -67,52 +99,19 @@ export class Button extends CustomElement<ButtonStyleProps> {
   }
 
   private bindEvents() {
-    const container = select(this).select('.container');
-    const marker = select(this).select('.marker-symbol');
+    const marker = select(this).select('.marker');
     const background = select(this).select('.background');
 
-    container.on('pointerup', () => (this.active = true));
-    container.on('pointermove', () => {
+    select(this).on('pointerup', () => (this.active = true));
+    select(this).on('pointermove', () => {
       this.active = true;
       applyStyle(marker, this.style.markerStyle?.active as any);
       applyStyle(background, this.style.backgroundStyle?.active as any);
     });
-    container.on('pointerout', () => {
+    select(this).on('pointerout', () => {
       this.active = false;
       applyStyle(marker, omit(this.style.markerStyle || {}, ['active']) as any);
       applyStyle(background, omit(this.style.backgroundStyle || {}, ['active']) as any);
     });
   }
 }
-
-SymbolPool.set('timeline-prev-button', (x: number, y: number, r: number) => {
-  return [
-    ['M', x + r, y + r],
-    ['L', x, y],
-    ['L', x + r, y - r],
-    ['M', x, y + r],
-    ['L', x - r, y],
-    ['L', x, y - r],
-  ];
-});
-SymbolPool.set('timeline-next-button', (x: number, y: number, r: number) => {
-  return [
-    ['M', x, y + r],
-    ['L', x + r, y],
-    ['L', x, y - r],
-    ['M', x - r, y + r],
-    ['L', x, y],
-    ['L', x - r, y - r],
-  ];
-});
-SymbolPool.set('timeline-play-button', (x: number, y: number, r: number) => {
-  return [
-    ['M', x + 2, y + 3],
-    ['L', x + 2, y - 3],
-    ['M', x - 2, y + 3],
-    ['L', x - 2, y - 3],
-  ];
-});
-SymbolPool.set('timeline-stop-button', (x: number, y: number, r: number) => {
-  return [['M', x + 3, y], ['L', x - 1.5, y - 1.5 * Math.sqrt(3)], ['L', x - 1.5, y + 1.5 * Math.sqrt(3)], ['Z']];
-});
