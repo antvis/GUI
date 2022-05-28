@@ -76,14 +76,12 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
     if (isNil(playInterval)) {
       playInterval = DEFAULT_STYLE.playInterval;
     }
-
     if (this.playTimer) clearInterval(this.playTimer);
     this.playTimer = setInterval(() => {
       if (!loop && this.selection[1] >= maxLength - 1) {
         this.stop(true);
         return;
       }
-
       if (singleMode) {
         // do something
         const currentIndex = (this.selection[0] + 1) % maxLength;
@@ -166,5 +164,6 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
   public destroy() {
     super.destroy();
     if (this.playTimer) clearInterval(this.playTimer);
+    this.playTimer = undefined;
   }
 }

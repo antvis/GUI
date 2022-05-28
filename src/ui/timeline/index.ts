@@ -309,17 +309,23 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
         });
       });
 
-    if (this.style.autoPlay) {
-      if (!this.playing) {
-        this.playing = true;
-
-        select(this)
-          .select('.timeline-axis')
-          .call((selection) => (selection.node() as PlayAxis)?.play());
-        select(this)
-          .select('.timeline-play-btn')
-          .call((selection) => (selection.node() as Button)?.update({ symbol: 'timeline-play-button' }));
-      }
+    if (this.style.autoPlay && !this.playing) {
+      this.playing = true;
+      select(this)
+        .select('.timeline-axis')
+        .call((selection) => (selection.node() as PlayAxis)?.play());
+      select(this)
+        .select('.timeline-play-btn')
+        .call((selection) => (selection.node() as Button)?.update({ symbol: 'timeline-play-button' }));
+    }
+    if (!this.style.autoPlay && this.playing) {
+      this.playing = false;
+      select(this)
+        .select('.timeline-axis')
+        .call((selection) => (selection.node() as PlayAxis)?.stop());
+      select(this)
+        .select('.timeline-play-btn')
+        .call((selection) => (selection.node() as Button)?.update({ symbol: 'timeline-stop-button' }));
     }
   }
 
