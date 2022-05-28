@@ -12,7 +12,7 @@ import {
 } from './playAxis';
 
 type CellAxisStyleProps = AxisStyleProps & {};
-type CellAxisOptions = DisplayObjectConfig<CellAxisStyleProps> & { tag?: string };
+type CellAxisOptions = DisplayObjectConfig<CellAxisStyleProps>;
 
 function getScale(data: any[], range: [number, number]) {
   return new BandScale({
@@ -25,8 +25,8 @@ function getScale(data: any[], range: [number, number]) {
 
 export class CellAxis extends AxisBase<CellAxisStyleProps> {
   public static defaultOptions: CellAxisOptions = {
-    tag: 'cell-axis',
     style: deepMix({}, BASE_DEFAULT_STYLE, {
+      tag: 'cell-axis',
       backgroundStyle: {
         fill: '#416180',
         fillOpacity: 0.05,

@@ -47,7 +47,6 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
   const nextButtonSize = isNull(controlButton) || isNull(controlButton?.nextBtn) ? 0 : controlButton?.nextBtn?.size!;
   const prevButtonOffset = playButtonSize / 2 + prevButtonSize / 2 + buttonGap;
   const nextButtonOffset = playButtonSize / 2 + nextButtonSize / 2 + buttonGap;
-  const controlsWidth = prevButtonSize + playButtonSize + nextButtonSize + buttonGap * 3;
   const speedControlMarkerSize = speedControl === null ? 0 : speedControl?.markerSize!;
   const speedControlSize = speedControlMarkerSize * 2;
   const speedControlWidth = speedControl === null ? 0 : speedControl?.width!;
@@ -99,7 +98,6 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
     };
   }
 
-  const axisLength = length - (axisPl + axisPr) - (controlsWidth + speedControlWidth + 8 + singleControlWidth + 8);
   const playBtnY = type === 'cell' ? axisY + axisSize / 2 : axisY;
   // PlayButton and speedControl is middle align.
   const speedControlY = playBtnY - speedControlHeight / 2;
@@ -205,25 +203,22 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           x: layout.singleModeControl.x,
           y: layout.singleModeControl.y,
           ...singleModeControl,
+          active: this.singleMode,
         });
       });
   }
 
   private renderAxis(container: Group, layout: Layout) {
-    const { data: timeData, type } = this.styles;
+    const { data: timeData } = this.styles;
+    const type = this.styles.type || 'slider';
 
     let axis = select(container).select('.timeline-axis').node() as PlayAxis | undefined;
     const Ctor = type === 'cell' ? CellAxis : SliderAxis;
-    // @ts-ignore
-    if (axis && axis.tag !== `${type}-axis`) {
+    if (axis && axis.style.tag !== `${type}-axis`) {
       axis.remove();
       this.removeChild(axis);
     }
-    axis = maybeAppend(
-      container,
-      '.timeline-axis',
-      () => new Ctor({ style: { data: timeData, selection: this.style.selection } })
-    )
+    axis = maybeAppend(container, '.timeline-axis', () => new Ctor({}))
       .attr('className', 'timeline-axis')
       .call((selection) => {
         (selection.node() as PlayAxis).update({
@@ -231,6 +226,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
           y: layout.axis.y,
           length: layout.axis.length,
           data: timeData,
+          selection: this.style.selection,
           orient: this.style.orient!,
           playInterval: this.style.playInterval! / this.speed,
           singleMode: this.singleMode,
@@ -243,9 +239,6 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
         });
       })
       .node() as PlayAxis;
-    if (String(this.style.selection) !== String(axis.style.selection)) {
-      axis.update({ selection: this.style.selection });
-    }
   }
 
   private renderControlButton(container: Group, layout: Layout) {
@@ -363,5 +356,10 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
     select(this)
       .select('.timeline-next-btn')
       .on('mousedown', () => axis.next());
+
+    select(this).on('singleModeChanged', (evt: any) => {
+      this.singleMode = evt.detail.active;
+      (select(this).select('.timeline-single-checkbox').node() as Checkbox).update({ active: evt.detail.active });
+    });
   }
 }

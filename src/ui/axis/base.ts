@@ -43,7 +43,6 @@ export abstract class AxisBase<T extends AxisBaseStyleProps = AxisBaseStyleProps
     this.update();
   }
 
-  @timer('Total cost')
   public update(cfg: Partial<AxisBaseStyleProps> = {}) {
     // @ts-ignore
     this.attr(cfg);

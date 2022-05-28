@@ -86,6 +86,13 @@ export type ControlButtonStyleProps = {
 
 export type CheckboxStyleProps = {
   size?: number;
+  active?: boolean;
+  buttonStyle?: ButtonBackgroundStyle & { active?: ButtonBackgroundStyle };
+  symbol: {
+    active: {
+      stroke: string;
+    };
+  };
   labelStyle?: Omit<TextStyleProps, 'x' | 'y'>;
 };
 
@@ -99,6 +106,7 @@ export type TimelineStyleProps = {
   orient?: 'horizontal' | 'vertical';
   selection?: number | [number, number];
   type?: 'slider' | 'cell';
+  singleMode?: boolean;
   singleModeControl?: (CheckboxStyleProps & { width?: number }) | null;
   speedControl?: SpeedControlStyleProps | null;
   controlPosition?: 'bottom' | 'left' | 'right';
@@ -115,5 +123,4 @@ export type TimelineStyleProps = {
   };
   playInterval?: number;
   autoPlay?: boolean;
-  singleMode?: boolean;
 };

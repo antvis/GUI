@@ -1,5 +1,6 @@
 import { CustomElement, CustomEvent } from '@antv/g';
 import { deepMix, isNil } from '@antv/util';
+import { select } from '../../util';
 import { DEFAULT_TIMELINE_STYLE } from './constants';
 import { PlayAxisStyleProps, TimeData } from './types';
 
@@ -11,6 +12,7 @@ export type AxisStyleProps = PlayAxisStyleProps & {
   orient?: string;
   singleMode?: boolean;
   playInterval?: number; // ms
+  tag?: string;
 };
 
 export const DEFAULT_STYLE: AxisStyleProps = deepMix(
@@ -61,13 +63,10 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
       this.selection = normalSelection(cfg.selection, newAttrs.singleMode);
     }
     const playing = this.playTimer;
-    this.stop();
+    playing && this.stop();
     this.attr(newAttrs);
     this.render();
-
-    if (playing) {
-      this.play();
-    }
+    playing && this.play();
   }
 
   public play() {

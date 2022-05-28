@@ -1,4 +1,4 @@
-import { ElementEvent, Line, CustomEvent } from '@antv/g';
+import { ElementEvent, Line, CustomEvent, Animation } from '@antv/g';
 import type { DisplayObjectConfig } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale } from '@antv/scale';
@@ -12,7 +12,7 @@ import {
   normalSelection,
 } from './playAxis';
 
-type SliderAxisOptions = DisplayObjectConfig<AxisStyleProps> & { tag?: string };
+type SliderAxisOptions = DisplayObjectConfig<AxisStyleProps>;
 
 function getScale(data: any[], range: number[]) {
   return new PointScale({
@@ -35,9 +35,13 @@ function getPositionByIndex(index: number, totalLength: number, data: any[]) {
 }
 
 export class SliderAxis extends AxisBase<AxisStyleProps> {
+  private startHandleAnimation: Animation | null = null;
+
+  private endHandleAnimation: Animation | null = null;
+
   public static defaultOptions: SliderAxisOptions = {
-    tag: 'slider-axis',
     style: deepMix({}, BASE_DEFAULT_STYLE, {
+      tag: 'slider-axis',
       size: 3,
       handleStyle: {
         r: 5,
@@ -80,12 +84,18 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     const startHandle = select(this).select('.slider-start-handle').node();
     if (startIndex !== undefined) {
       const pos = getPositionByIndex(startIndex, this.style.length!, data);
-      startHandle.animate([{ [posName]: startHandle.style[posName] }, { [posName]: pos }], animationOptions);
+      this.startHandleAnimation = startHandle.animate(
+        [{ [posName]: startHandle.style[posName] }, { [posName]: pos }],
+        animationOptions
+      );
     }
     if (endIndex !== undefined) {
       const endHandle = select(this).select('.slider-end-handle').node();
       const pos1 = getPositionByIndex(endIndex, this.style.length!, data);
-      endHandle.animate([{ [posName]: endHandle.style[posName] }, { [posName]: pos1 }], animationOptions);
+      this.endHandleAnimation = endHandle.animate(
+        [{ [posName]: endHandle.style[posName] }, { [posName]: pos1 }],
+        animationOptions
+      );
     }
     this.selection = [startIndex ?? this.selection[0], endIndex ?? this.selection[1]];
     this.dispatchEvent(new CustomEvent('timelineChanged', { detail: { selection: this.selection } }));
@@ -131,18 +141,22 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       .style('visibility', styles.singleMode ? 'hidden' : 'visible')
       .call(applyStyle, styles.selectionStyle);
 
+    if (this.startHandleAnimation?.playState === 'running') this.startHandleAnimation.pause();
     maybeAppend(bg, '.slider-start-handle', 'circle')
       .attr('className', 'slider-start-handle')
       .style('cx', x1)
       .style('cy', y1)
       .call(applyStyle, styles.handleStyle);
+    if (this.startHandleAnimation?.playState === 'paused') this.startHandleAnimation.play();
 
+    if (this.endHandleAnimation?.playState === 'running') this.endHandleAnimation.pause();
     maybeAppend(bg, '.slider-end-handle', 'circle')
       .attr('className', 'slider-end-handle')
       .style('cx', x2)
       .style('cy', y2)
       .style('visibility', styles.singleMode ? 'hidden' : 'visible')
       .call(applyStyle, styles.handleStyle);
+    if (this.endHandleAnimation?.playState === 'paused') this.endHandleAnimation.play();
 
     const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.date }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
