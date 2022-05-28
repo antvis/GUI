@@ -47,6 +47,7 @@ export class Checkbox extends CustomElement<StyleProps> {
         fill: '#000',
         fillOpacity: 0.65,
       },
+      cursor: 'pointer',
     },
   };
 
@@ -76,16 +77,17 @@ export class Checkbox extends CustomElement<StyleProps> {
     const { size, buttonStyle, labelStyle, symbol } = this.styles;
     const { active: activeStyle, ...buttonStyles } = buttonStyle;
 
-    maybeAppend(this, '.button', 'rect')
+    const button = maybeAppend(this, '.button', 'rect')
       .attr('className', 'button')
       .style('x', 0)
       .style('y', 0)
       .style('width', size)
       .style('height', size)
       .call(applyStyle, buttonStyles)
-      .call(applyStyle, this.active ? activeStyle : {});
+      .call(applyStyle, this.active ? activeStyle : {})
+      .node();
 
-    maybeAppend(this, '.symbol', 'path')
+    maybeAppend(button, '.symbol', 'path')
       .attr('className', 'symbol')
       .style('x', size / 2)
       .style('y', size / 2)
@@ -93,6 +95,7 @@ export class Checkbox extends CustomElement<StyleProps> {
       .style('lineWidth', 1)
       .style('lineCap', 'round')
       .style('stroke', 'transparent')
+      .style('cursor', 'pointer')
       .call(applyStyle, this.active ? symbol?.active : {});
 
     maybeAppend(this, '.label', 'text')

@@ -359,7 +359,7 @@ export class Timeline extends CustomElement<TimelineStyleProps> {
 
     select(this).on('singleModeChanged', (evt: any) => {
       this.singleMode = evt.detail.active;
-      (select(this).select('.timeline-single-checkbox').node() as Checkbox).update({ active: evt.detail.active });
+      this.render();
     });
   }
 }

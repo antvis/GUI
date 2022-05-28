@@ -230,15 +230,19 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       const interval = getOffsetIntervalByOffsetDistance(offset, this.style.length!, this.style.data);
       firstPosition = undefined;
       const [startIndex, endIndex] = this.selection;
+      const max = this.style.data.length - 1;
       if (type === 'start') {
-        this.setSelection({ start: clamp(startIndex + interval, 0, endIndex) });
-      } else {
-        const max = this.style.data.length - 1;
-        if (startIndex === max) {
-          this.setSelection({ start: endIndex + interval, end: endIndex + interval });
+        if (startIndex === endIndex && interval > 0) {
+          const start = clamp(0, startIndex + interval, max);
+          this.setSelection({ start, end: start });
         } else {
-          this.setSelection({ end: clamp(endIndex + interval, startIndex, max) });
+          this.setSelection({ start: clamp(startIndex + interval, 0, endIndex) });
         }
+      } else if (startIndex === endIndex && interval < 0) {
+        const end = clamp(0, endIndex + interval, max);
+        this.setSelection({ start: end, end });
+      } else {
+        this.setSelection({ end: clamp(endIndex + interval, startIndex, max) });
       }
       if (this.playTimer) {
         this.play();
