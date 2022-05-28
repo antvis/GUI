@@ -172,8 +172,8 @@ describe('Timeline', () => {
     axis.addEventListener('timelineStopped', (evt: any) => {
       expect(evt.detail.selection).toEqual([7, 9]);
       axis.update({ selection: [0, 0], singleMode: true });
-      const nextButton = timeline.querySelector('.timeline-next-btn')!;
-      const prevButton = timeline.querySelector('.timeline-prev-btn')!;
+      const nextButton = timeline.querySelector('.timeline-next-btn')! as any;
+      const prevButton = timeline.querySelector('.timeline-prev-btn')! as any;
       nextButton.emit('pointerdown', {});
       expect(axis.getSelection()).toEqual([1, 1]);
       nextButton.emit('pointerdown', {});
