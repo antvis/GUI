@@ -83,8 +83,9 @@ export const DEFAULT_TIMELINE_STYLE: TimelineStyleProps = {
       },
     },
   },
+  padding: [0, 8],
   playAxis: {
-    appendPadding: [2, 8],
+    appendPadding: [4, 0],
     handleStyle: {
       r: 3,
       lineWidth: 1,

@@ -86,8 +86,8 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
 
   if (position === 'bottom') {
     const playBtnX = length / 2;
-    const playBtnY = axisY + axisLabelHeight + axisSize + playButtonSize / 2 + axisPb;
-    const speedControlY = axisY + axisLabelHeight + axisSize + axisPb;
+    const playBtnY = axisY + (axisLabelPosition === 1 ? axisLabelHeight : 0) + axisSize + playButtonSize / 2 + axisPb;
+    const speedControlY = axisY + (axisLabelPosition === 1 ? axisLabelHeight : 0) + axisSize + axisPb;
     return {
       axis: { x: axisPl, y: axisY, length: length - (axisPl + axisPr) },
       playBtn: { x: playBtnX, y: playBtnY, size: playButtonSize },
@@ -101,7 +101,10 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
 
   const playBtnY = type === 'cell' ? axisY + axisSize / 2 : axisY;
   // PlayButton and speedControl is middle align.
-  const speedControlY = axisLabelPosition === 1 ? axisY + speedControlMarkerSize / 2 : axisY - speedControlHeight;
+  let speedControlY = axisLabelPosition === 1 ? axisY + speedControlMarkerSize / 2 : axisY - speedControlHeight;
+  if (type === 'cell' && axisLabelPosition === -1) {
+    speedControlY = axisLabelHeight + axisSize - speedControlHeight;
+  }
   if (position === 'left') {
     const prevBtnX = prevButtonSize / 2;
     const playBtnX = prevBtnX + prevButtonOffset;

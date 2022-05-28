@@ -32,7 +32,7 @@ const timeline = new Timeline({
     height: 80,
     data: TIME_DATA(),
     selection: [0, 2],
-    padding: [4, 10, 4, 8],
+    padding: [4, 20, 4, 16],
   },
 });
 rect.appendChild(timeline);
@@ -47,7 +47,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 120 } })).appendC
       height: 80,
       data: TIME_DATA(),
       selection: [0, 2],
-      padding: [4, 12, 4, 8],
+      padding: [4, 20, 4, 16],
       playAxis: {
         label: { position: -1 },
       },
@@ -62,13 +62,14 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 210 } })).appendC
       height: 40,
       data: TIME_DATA(),
       selection: [0, 2],
-      padding: [4, 4, 4, 8],
+      padding: [4, 4, 4, 16],
       controlPosition: 'right',
       controlButton: {
         spacing: 6,
         playBtn: { size: 16 },
       },
       playAxis: {
+        appendPadding: [4, 8, 4, 0],
         label: { position: -1 },
         singleMode: true,
       },
@@ -100,7 +101,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 280 } })).appendC
   })
 );
 
-canvas.appendChild(new Rect({ style: { ...rectStyle, height: 320, width: 80, x: 460, y: 30 } })).appendChild(
+canvas.appendChild(new Rect({ style: { ...rectStyle, height: 320, width: 80, x: 460, y: 40 } })).appendChild(
   new Timeline({
     style: {
       x: 14,
@@ -117,7 +118,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, height: 320, width: 80, x: 
       },
       autoPlay: true,
       playAxis: {
-        appendPadding: [4, 0],
+        appendPadding: [4, 8],
         label: { position: -1 },
         loop: true,
         playMode: 'increase',
@@ -141,6 +142,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 360 } })).appendC
       },
       padding: [2, 4],
       playAxis: {
+        appendPadding: [0, 8],
         label: { position: -1 },
         loop: true,
         playMode: 'increase',
@@ -164,7 +166,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 440 } })).appendC
       },
       padding: 4,
       playAxis: {
-        appendPadding: [0, 4],
+        appendPadding: [0, 8],
         label: { position: 1 },
         loop: true,
         playMode: 'increase',
@@ -174,7 +176,7 @@ canvas.appendChild(new Rect({ style: { ...rectStyle, x: 40, y: 440 } })).appendC
   })
 );
 
-canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 80, x: 540, y: 360 } })).appendChild(
+canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 80, x: 560, y: 40 } })).appendChild(
   new Timeline({
     style: {
       x: 14,

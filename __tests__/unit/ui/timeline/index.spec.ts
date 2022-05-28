@@ -1,11 +1,13 @@
-import { Group } from '@antv/g';
+import { Group, Rect } from '@antv/g';
 import { Timeline } from '../../../../src/ui/timeline';
 import { AxisBase } from '../../../../src/ui/timeline/playAxis';
 import { SpeedControl } from '../../../../src/ui/timeline/speedControl';
 import { createCanvas } from '../../../utils/render';
-import { TIME_DATA } from './data';
+import { TIME_DATA, generateTimeData } from './data';
 
 const canvas = createCanvas(750, undefined, true);
+const rectStyle = { width: 400, height: 50, stroke: '#d9d9d9', lineWidth: 1 };
+
 describe('Timeline', () => {
   it('new Timeline({...}) returns a slider timeline by default.', () => {
     const timeline = new Timeline({
@@ -87,7 +89,7 @@ describe('Timeline', () => {
     const timeline = new Timeline({
       style: {
         x: 20,
-        y: 240,
+        y: 210,
         width: 490,
         data: TIME_DATA,
         padding: [10, 0, 10, 10],
@@ -211,5 +213,112 @@ describe('Timeline', () => {
     expect(container.childNodes.length).toBe(3);
 
     timeline.destroy();
+  });
+
+  it('new Timeline({...})', () => {
+    canvas.appendChild(new Rect({ style: { ...rectStyle, x: 30, y: 270, height: 44 } })).appendChild(
+      new Timeline({
+        style: {
+          width: 400,
+          height: 40,
+          data: generateTimeData(20),
+          type: 'cell',
+          selection: [0, 2],
+          controlPosition: 'left',
+          controlButton: {
+            spacing: 6,
+            playBtn: { size: 16 },
+          },
+          padding: [2, 4],
+          playAxis: {
+            appendPadding: [0, 8],
+            label: { position: -1 },
+            // loop: true,
+            playMode: 'increase',
+          },
+        },
+      })
+    );
+  });
+
+  it('new Timeline({...})', () => {
+    canvas.appendChild(new Rect({ style: { ...rectStyle, x: 30, y: 330, height: 36 } })).appendChild(
+      new Timeline({
+        style: {
+          width: 400,
+          height: 40,
+          data: generateTimeData(20),
+          selection: [0, 2],
+          padding: [4],
+          playAxis: {
+            appendPadding: [0, 16, 0, 8],
+            label: { position: -1 },
+            // loop: true,
+            playMode: 'increase',
+          },
+          controlPosition: 'left',
+          controlButton: {
+            spacing: 6,
+            playBtn: { size: 16 },
+          },
+          autoPlay: true,
+        },
+      })
+    );
+  });
+
+  it('new Timeline({...})', () => {
+    canvas.appendChild(new Rect({ style: { ...rectStyle, x: 30, y: 390 } })).appendChild(
+      new Timeline({
+        style: {
+          width: 400,
+          height: 40,
+          data: generateTimeData(20),
+          selection: [0, 2],
+          padding: [4, 4, 4, 16],
+          controlPosition: 'right',
+          controlButton: {
+            spacing: 6,
+            playBtn: { size: 16 },
+          },
+          singleMode: true,
+          playAxis: {
+            appendPadding: [4, 8, 4, 0],
+            label: { position: -1 },
+          },
+        },
+      })
+    );
+  });
+
+  it('new Timeline({...})', () => {
+    canvas.appendChild(new Rect({ style: { ...rectStyle, height: 400, width: 80, x: 540, y: 30 } })).appendChild(
+      new Timeline({
+        style: {
+          x: 14,
+          orient: 'vertical',
+          width: 40,
+          height: 400,
+          data: generateTimeData(20),
+          type: 'cell',
+          selection: [0, 2],
+          controlPosition: 'left',
+          padding: [4, 0],
+          // singleModeControl: null,
+          speedControl: null,
+          autoPlay: true,
+          controlButton: {
+            spacing: 4,
+            playBtn: { size: 16 },
+          },
+          playAxis: {
+            appendPadding: [2, 0],
+            label: { position: -1 },
+            // loop: true,
+            playMode: 'increase',
+          },
+        },
+      })
+    );
   });
 });
