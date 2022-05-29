@@ -1,140 +1,150 @@
-import { DisplayObject, Rect, Line, Text } from '@antv/g';
-import { deepMix, get } from '@antv/util';
+import { CustomElement, TextStyleProps, DisplayObjectConfig } from '@antv/g';
+import { deepMix, get, omit } from '@antv/util';
 import { Marker, MarkerStyleProps } from '../marker';
-import type { TextProps, ShapeAttrs } from '../../types';
-import { TEXT_INHERITABLE_PROPS } from '../../util';
+import { applyStyle, maybeAppend, select } from '../../util';
 
-export interface IHandleCfg {
-  x: number;
-  y: number;
-  zIndex: number;
-  handleType: 'start' | 'end';
-  iconCfg: (ShapeAttrs | MarkerStyleProps) & {
-    size?: number;
-    radius?: number | string;
-    type: 'hide' | 'symbol' | 'default';
-    orient: 'horizontal' | 'vertical';
+export type HandleStyleProps = {
+  x?: number;
+  y?: number;
+  align: 'start' | 'end';
+  orient?: 'horizontal' | 'vertical';
+  markerStyle?: Partial<MarkerStyleProps> & {
+    active?: {
+      fill?: string;
+      fillOpacity?: number;
+      stroke?: string;
+      strokeOpacity?: number;
+    };
   };
-  textCfg: TextProps;
-}
+  textStyle?: Omit<TextStyleProps, 'x' | 'y'>;
+};
 
-export class Handle extends DisplayObject<IHandleCfg> {
-  private iconShape: Rect | Marker;
+Marker.registerSymbol('slider-handle', (x: number, y: number, r: number) => {
+  const width = r * 2;
+  const height = width * 2.4;
 
-  private textShape: Text;
+  return [
+    ['M', x - width / 2, y - height / 2],
+    ['L', x + width / 2, y - height / 2],
+    ['L', x + width / 2, y + height / 2],
+    ['L', x - width / 2, y + height / 2],
+    ['Z'],
+    ['M', x - width / 6, y - height / 5],
+    ['L', x - width / 6, y + height / 5],
+    ['M', x + width / 6, y - height / 5],
+    ['L', x + width / 6, y + height / 5],
+  ];
+});
 
-  constructor({ style, ...rest }: Partial<DisplayObject<IHandleCfg>>) {
-    super({ type: 'handle', style, ...rest });
-    this.iconShape = this.createHandleIcon();
-    this.appendChild(this.iconShape);
-    this.textShape = this.createHandleText();
-    this.appendChild(this.textShape);
-    this.setHandleIconRotation();
+Marker.registerSymbol('simple-slider-handle', (x: number, y: number, r: number) => {
+  const width = r * 2;
+  const height = width * 2;
+
+  const circleR = 1.5;
+  return [
+    ['M', x, y - height / 2 + circleR],
+    ['L', x, y + height / 2 - circleR],
+    ['M', x, y - height / 2 - circleR],
+    ['A', circleR, circleR, 0, 1, 1, x, y - height / 2 + circleR],
+    ['A', circleR, circleR, 0, 1, 1, x, y - height / 2 - circleR],
+    ['Z'],
+    ['M', x, y + height / 2 - circleR],
+    ['A', circleR, circleR, 0, 1, 1, x, y + height / 2 + circleR],
+    ['A', circleR, circleR, 0, 1, 1, x, y + height / 2 - circleR],
+    ['Z'],
+  ];
+});
+
+export class Handle extends CustomElement<HandleStyleProps> {
+  public static defaultOptions = {
+    style: {
+      markerStyle: {
+        size: 12,
+        symbol: 'slider-handle',
+        fill: '#F7F7F7',
+        stroke: '#BFBFBF',
+        strokeOpacity: 0.75,
+        lineWidth: 1,
+        fillOpacity: 1,
+        active: {
+          fill: '#FFF',
+        },
+      },
+      textStyle: {
+        text: '',
+        fontSize: 10,
+        textBaseline: 'middle',
+        fill: '#000',
+        fillOpacity: 0.65,
+      },
+    },
+  };
+
+  constructor(options: DisplayObjectConfig<HandleStyleProps>) {
+    super(deepMix({}, Handle.defaultOptions, options));
   }
 
-  public setHandle({ x, y }: { x: number; y: number }) {
-    this.attr({ x, y });
-  }
-
-  public setHandleText({ x, y, text }: { x: number; y: number; text: string }) {
-    this.textShape.attr({ x, y, text });
-  }
-
-  public getIcon() {
-    return this.iconShape;
+  connectedCallback() {
+    this.render();
+    this.bindEvents();
   }
 
   public getType() {
     return get(this.attributes, 'handleType');
   }
 
-  public update(cfg: Partial<IHandleCfg>) {
+  public update(cfg: Partial<HandleStyleProps>) {
     this.attr(deepMix({}, this.attributes, cfg));
-    const { iconCfg, textCfg } = cfg;
-    if (iconCfg) {
-      this.updateIconShape();
-    }
-    if (textCfg) {
-      this.textShape.attr({ ...textCfg });
-    }
+    this.render();
   }
 
-  private updateIconShape() {
-    this.removeChild(this.iconShape, true);
-    this.iconShape = this.createHandleIcon();
-    this.appendChild(this.iconShape);
-    this.setHandleIconRotation();
+  private get styles(): Required<HandleStyleProps> {
+    return deepMix({}, Handle.defaultOptions.style, this.attributes);
   }
 
-  /**
-   * 创建默认手柄图标
-   */
-  private createDefaultIcon() {
-    const {
-      iconCfg: { size, radius, ...rest },
-    } = this.attributes;
-    // 默认手柄
-    const width = size!;
-    const height = width * 2.4;
+  private render() {
+    const { markerStyle, textStyle, align, orient } = this.styles;
+    let width = Number(markerStyle.size) || 10;
+    let height = 2.4 * width;
+    [width, height] = orient === 'vertical' ? [height, width] : [width, height];
 
-    // 创建默认图形
-    const defaultHandle = new Rect({
-      name: 'icon',
-      style: {
-        width,
-        height,
-        x: -width / 2,
-        y: -height / 2,
-        radius: radius ?? width / 4,
-        ...rest,
-      },
-    });
-    const { stroke, lineWidth } = rest;
-    const X1 = (1 / 3) * width;
-    const X2 = (2 / 3) * width;
-    const Y1 = (1 / 4) * height;
-    const Y2 = (3 / 4) * height;
-    const createLine = (x1: number, y1: number, x2: number, y2: number) => {
-      return new Line({
-        name: 'line',
-        style: { x1, y1, x2, y2, stroke, lineWidth },
+    maybeAppend(this, '.handle-marker', () => new Marker({}))
+      .attr('className', 'handle-marker')
+      .call((selection) => {
+        (selection.node() as Marker).update({
+          size: width,
+          transformOrigin: 'center',
+          transform: orient === 'vertical' ? 'rotate(90deg)' : '',
+          lineCap: 'round',
+          ...omit(markerStyle, ['active']),
+        });
       });
-    };
-    defaultHandle.appendChild(createLine(X1, Y1, X1, Y2));
-    defaultHandle.appendChild(createLine(X2, Y1, X2, Y2));
-    defaultHandle.setOrigin(width / 2, height / 2);
-    return defaultHandle;
+
+    let textAlign = 'center';
+    let textBaseline = align === 'start' ? 'bottom' : 'top';
+    if (orient !== 'vertical') {
+      textAlign = align === 'start' ? 'end' : 'start';
+      textBaseline = 'middle';
+    }
+
+    maybeAppend(this, '.handle-label', 'text')
+      .attr('className', 'handle-label')
+      .call(applyStyle, textStyle)
+      .style('x', orient === 'vertical' ? 0 : (align === 'start' ? -1 : 1) * (width / 2 + 4))
+      .style('y', orient === 'vertical' ? (align === 'start' ? -1 : 1) * (height / 2 + 4) : 0)
+      .style('textAlign', textAlign)
+      .style('textBaseline', textBaseline);
   }
 
-  private createHandleIcon() {
-    const { type, orient, ...style } = get(this.attributes, ['iconCfg']);
-    if (type === 'hide') {
-      return new Rect({ style, name: 'icon' });
-    }
-    if (type === 'symbol') {
-      return new Marker({ style, name: 'icon' });
-    }
-    // type === 'default'
-    return this.createDefaultIcon();
-  }
-
-  private createHandleText() {
-    const { textCfg } = this.attributes;
-    return new Text({
-      name: 'text',
-      style: {
-        ...TEXT_INHERITABLE_PROPS,
-        ...textCfg,
-      },
+  private bindEvents() {
+    const marker = select(this).select('.handle-marker').node() as Marker;
+    select(marker).on('mouseenter', () => {
+      const { active: activeStyle } = this.styles.markerStyle;
+      marker.attr(activeStyle || {});
     });
-  }
-
-  private setHandleIconRotation() {
-    const orient = get(this.attributes, ['iconCfg', 'orient']);
-    if (orient === 'vertical') {
-      this.iconShape.setLocalEulerAngles(90);
-    } else {
-      this.iconShape.setLocalEulerAngles(0);
-    }
+    select(marker).on('mouseleave', () => {
+      const { size, active: activeStyle, ...markerStyle } = this.styles.markerStyle;
+      marker.attr(markerStyle);
+    });
   }
 }

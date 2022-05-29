@@ -1,641 +1,373 @@
-import type { Cursor } from '@antv/g';
-import { Rect, Text, CustomEvent, Group } from '@antv/g';
-import { deepMix, get } from '@antv/util';
-import { GUI } from '../../core/gui';
-import { Handle } from './handle';
+import { ElementEvent, Line, CustomEvent, Rect, TextStyleProps, Text } from '@antv/g';
+import type { DisplayObjectConfig } from '@antv/g';
+import { clamp, deepMix } from '@antv/util';
+import { Point as PointScale } from '@antv/scale';
+import { applyStyle, maybeAppend, normalPadding, select, Selection, throttle } from '../../util';
+import { Linear } from '../axis';
 import { Sparkline } from '../sparkline';
-import {
-  toPrecision,
-  getShapeSpace,
-  getEventPos,
-  getStateStyle,
-  normalPadding,
-  TEXT_INHERITABLE_PROPS,
-} from '../../util';
-import type { MarkerStyleProps } from '../marker';
-import type { SparklineCfg } from '../sparkline';
-import type { IHandleCfg } from './handle';
-import type { ShapeAttrs, RectProps } from '../../types';
-import type { SliderCfg, SliderOptions, HandleCfg, Pair } from './types';
+import { AxisBase, AxisStyleProps, DEFAULT_AXIS_CFG, normalSelection } from '../timeline/playAxis';
+import { DEFAULT_TIMELINE_STYLE } from '../timeline/constants';
+import { Handle } from './handle';
 
-export type { SliderCfg, SliderOptions };
+type HandleStyle = {
+  fill?: string;
+  fillOpacity?: number;
+  stroke?: string;
+  strokeOpacity?: number;
+  lineWidth?: number;
+};
+type StyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'> & {
+  sparkline?: {
+    padding?: number | number[];
+    fields?: string[];
+    // todo 补充更多配置
+  };
+  startHandleSize?: number;
+  endHandleSize?: number;
+  startHandleIcon?: string | ((x: number, y: number, r: number) => string);
+  endHandleIcon?: string | ((x: number, y: number, r: number) => string);
+  handleStyle?: HandleStyle & {
+    size?: number;
+    symbol?: string | ((x: number, y: number, r: number) => string);
+    active?: HandleStyle;
+  };
+  textStyle?: Omit<TextStyleProps, 'x' | 'y' | 'text'>;
+};
+type SliderOptions = DisplayObjectConfig<StyleProps> & {};
 
-type HandleType = 'start' | 'end';
-type HandleName = 'startHandle' | 'endHandle';
-interface IBackgroundStyleCfg extends ShapeAttrs {
-  lineWidth: number;
+function getScale(data: any[], range: number[]) {
+  return new PointScale({
+    domain: data.map((_, idx) => idx),
+    range,
+    padding: 0,
+  });
 }
 
-export class Slider extends GUI<SliderCfg> {
-  public static tag = 'slider';
+function getIndexByPosition(offset: number, totalLength: number, data: any[]) {
+  const scale = getScale(data, [0, totalLength]);
+  const step = scale.getStep();
+  const round = offset > 0 ? Math.ceil : Math.floor;
+  return step > 0 ? round(offset / step) : 0;
+}
 
-  private static defaultOptions = {
-    type: Slider.tag,
-    style: {
-      orient: 'horizontal',
-      values: [0, 1],
-      names: ['', ''] as Pair<string>,
-      min: 0,
-      max: 1,
-      width: 200,
-      height: 20,
-      sparkline: {
-        padding: [1, 1, 1, 1],
-      },
-      padding: [0, 0, 0, 0],
-      backgroundStyle: {
-        default: {
-          fill: '#416180',
-          fillOpacity: 0.05,
-        },
-      },
+export class Slider extends AxisBase<StyleProps> {
+  public static defaultOptions: SliderOptions = {
+    style: deepMix({}, DEFAULT_TIMELINE_STYLE.playAxis, {
+      tag: 'slider-axis',
+      size: 3,
+      data: [],
+      selection: [0, 0],
       selectionStyle: {
-        default: {
-          fill: '#5B8FF9',
-          opacity: 0.15,
-        },
-        active: {
-          fill: '#ccdaf5',
-        },
+        fill: '#5B8FF9',
+        fillOpacity: 0.15,
+        cursor: 'grabbing' as any,
       },
-      handle: {
-        show: true,
-        formatter: (val: string, value: number) => val,
-        spacing: 10,
-        textStyle: {
-          ...TEXT_INHERITABLE_PROPS,
-          fill: '#000',
-          fillOpacity: 0.45,
-          fontSize: 12,
-          textAlign: 'center',
-          textBaseline: 'middle',
-        },
-        handleStyle: {
-          stroke: '#bfbfbf',
-          fill: '#fff',
-          lineWidth: 1,
-          radius: 2,
-        },
+      handleStyle: {},
+      backgroundStyle: {
+        fill: '#416180',
+        fillOpacity: 0.1,
       },
-    } as SliderCfg,
+      sparkline: { padding: [4, 0] },
+    }),
   };
-
-  /**
-   * 层级关系
-   * backgroundShape
-   *  |- sparklineShape
-   *  |- selectionShape
-   *       |- startHandle
-   *           |- handleIcon
-   *           |- handleText
-   *       |- endHandle
-   *           |- handleIcon
-   *           |- handleText
-   */
-
-  public get values() {
-    return this.getAttribute('values') as Pair<number>;
-  }
-
-  public set values(values: SliderCfg['values']) {
-    this.setAttribute('values', this.getSafetyValues(values));
-  }
-
-  public get names() {
-    return this.getAttribute('names') as [string, string];
-  }
-
-  public set names(names: SliderCfg['names']) {
-    this.setAttribute('names', names);
-  }
-
-  // 背景、滑道
-  private backgroundShape!: Rect;
-
-  // 迷你图
-  private sparklineShape!: Sparkline;
-
-  private foregroundGroup!: Group;
-
-  // 前景、选区
-  private selectionShape!: Rect;
-
-  // 开始滑块
-  private startHandle!: Handle;
-
-  // 结束滑块
-  private endHandle!: Handle;
-
-  /**
-   * 选区开始的位置
-   */
-  private selectionStartPos: number;
-
-  /**
-   * 选区宽度
-   */
-  private selectionWidth: number;
-
-  /**
-   * 记录上一次鼠标事件所在坐标
-   */
-  private prevPos: number;
-
-  /**
-   * drag事件当前选中的对象
-   */
-  private target: string;
-
-  private get backgroundShapeCfg() {
-    return {
-      cursor: 'crosshair' as Cursor,
-      zIndex: 0,
-      ...this.availableSpace,
-      ...this.getStyle('backgroundStyle'),
-    };
-  }
-
-  private get sparklineShapeCfg() {
-    const { orient, sparkline } = this.attributes;
-    // 暂时只在水平模式下绘制
-    // if (orient !== 'horizontal') {
-    //   return {
-    //     data: [[]],
-    //   };
-    // }
-    const { padding, ...args } = sparkline!;
-    const [top, right, bottom, left] = normalPadding(padding!);
-    const { width, height } = this.availableSpace;
-    const { lineWidth: bkgLW = 0 } = this.getStyle('backgroundStyle') as IBackgroundStyleCfg;
-    return {
-      x: bkgLW / 2 + left,
-      y: bkgLW / 2 + top,
-      ...args,
-      zIndex: 0,
-      width: width - bkgLW - left - right,
-      height: height - bkgLW - top - bottom,
-    } as SparklineCfg;
-  }
-
-  private get availableSpace() {
-    const { padding, width, height } = this.attributes as {
-      padding: number[];
-      width: number;
-      height: number;
-    };
-    const [top, right, bottom, left] = normalPadding(padding);
-    return {
-      x: left,
-      y: top,
-      width: width - (left + right),
-      height: height - (top + bottom),
-    };
-  }
-
-  private get selectionShapeCfg() {
-    return { cursor: 'move' as Cursor, zIndex: 2, ...this.calcMask(), ...this.getStyle('selectionStyle') };
-  }
 
   constructor(options: SliderOptions) {
     super(deepMix({}, Slider.defaultOptions, options));
-    this.initShape();
-
-    this.selectionStartPos = 0;
-    this.selectionWidth = 0;
-    this.prevPos = 0;
-    this.target = '';
-
-    this.init();
+    this.selection = normalSelection(this.style.selection);
   }
 
-  attributeChangedCallback<Key extends keyof SliderCfg>(name: Key, oldValue: SliderCfg[Key], newValue: SliderCfg[Key]) {
-    if (name in ['names', 'values']) {
-      this.setHandle();
-    }
-  }
-
-  public getValues() {
-    return this.values;
-  }
-
-  public setValues(values: SliderCfg['values']) {
-    this.values = values;
-  }
-
-  public getNames() {
-    return this.names;
-  }
-
-  public setNames(names: SliderCfg['names']) {
-    this.names = names;
-  }
-
-  public init() {
+  connectedCallback() {
+    this.render();
     this.bindEvents();
   }
 
-  public initShape() {
-    this.backgroundShape = new Rect({
-      name: 'background',
-      style: this.backgroundShapeCfg,
-    });
-    this.appendChild(this.backgroundShape);
-
-    this.sparklineShape = new Sparkline({
-      name: 'sparkline',
-      style: this.sparklineShapeCfg,
-    });
-    this.backgroundShape.appendChild(this.sparklineShape);
-
-    this.foregroundGroup = new Group({ name: 'foreground' });
-    this.backgroundShape.appendChild(this.foregroundGroup);
-
-    this.selectionShape = new Rect({
-      name: 'selection',
-      style: this.selectionShapeCfg,
-    });
-    this.foregroundGroup.appendChild(this.selectionShape);
-
-    this.startHandle = this.createHandle('start');
-    this.foregroundGroup.appendChild(this.startHandle);
-
-    this.endHandle = this.createHandle('end');
-    this.foregroundGroup.appendChild(this.endHandle);
+  private get styles(): Required<StyleProps> {
+    return deepMix({}, Slider.defaultOptions.style, this.attributes);
   }
 
-  /**
-   * 组件的更新
-   */
-  public update(cfg: Partial<SliderCfg>) {
-    this.attr(deepMix({}, this.attributes, cfg));
+  protected updateSelection() {
+    const originValue = this.selection;
 
-    this.backgroundShape.attr(this.backgroundShapeCfg);
-    this.sparklineShape.update(this.sparklineShapeCfg);
-    this.selectionShape.attr(this.selectionShapeCfg);
+    const startHandle = select(this).select(`.slider-start-handle`).node();
+    const endHandle = select(this).select(`.slider-end-handle`).node() || startHandle;
+    const handlePosition = this.ifH([startHandle.style.x, endHandle.style.x], [startHandle.style.y, endHandle.style.y]);
+    const start = getIndexByPosition(handlePosition[0], this.styles.length!, this.style.data);
+    const end = getIndexByPosition(handlePosition[1], this.styles.length!, this.style.data);
+    this.selection = [start ?? originValue[0], end ?? originValue[1]];
 
-    this.startHandle.update(this.getHandleShapeCfg('start'));
-    this.endHandle.update(this.getHandleShapeCfg('end'));
+    this.emitEvent('selectionChanged', { originValue, value: this.selection });
   }
 
-  /**
-   * 组件的清除
-   */
-  public clear() {}
+  protected render() {
+    const {
+      sparkline,
+      length,
+      size,
+      backgroundStyle,
+      data,
+      textStyle,
+      handleStyle,
+      startHandleIcon,
+      endHandleIcon,
+      startHandleSize,
+      endHandleSize,
+      ...styles
+    } = this.styles;
+    const [width, height] = this.ifH([length, size], [size, length]);
 
-  /**
-   * 获得安全的Values
-   */
-  private getSafetyValues(values = this.getValues(), precision = 4): Pair<number> {
-    const { min, max } = this.attributes as { min: number; max: number };
-    const [prevStart, prevEnd] = this.getValues();
-    let [startVal, endVal] = values || [prevStart, prevEnd];
-    const range = endVal - startVal;
-    // 交换startVal endVal
-    if (startVal > endVal) {
-      [startVal, endVal] = [endVal, startVal];
-    }
-    // 超出范围就全选
-    if (range > max - min) {
-      return [min, max];
-    }
+    const [widthName, heightName] = this.ifH(['width', 'height'], ['height', 'width']);
+    const bg = maybeAppend(this, '.slider-background', 'rect')
+      .attr('className', 'slider-background')
+      .style('x', 0)
+      .style('y', 0)
+      .style(widthName, width)
+      .style(heightName, height)
+      .call(applyStyle, backgroundStyle)
+      .node();
 
-    if (startVal < min) {
-      if (prevStart === min && prevEnd === endVal) {
-        return [min, endVal];
-      }
-      return [min, range + min];
-    }
-    if (endVal > max) {
-      if (prevEnd === max && prevStart === startVal) {
-        return [startVal, max];
-      }
-      return [max - range, max];
-    }
+    const [top, right, bottom, left] = normalPadding(sparkline?.padding!);
+    const sparklineData = (sparkline?.fields || []).map((field) => data.map((d) => d[field] ?? null));
+    maybeAppend(bg, '.slider-sparkline', () => new Sparkline({}))
+      .attr('className', 'slider-sparkline')
+      .call((selection) => {
+        (selection.node() as Sparkline).update({
+          x: left,
+          y: top,
+          width: width - left - right,
+          height: height - top - bottom,
+          data: sparklineData,
+        });
+      });
 
-    // 保留小数
-    return [toPrecision(startVal, precision), toPrecision(endVal, precision)];
-  }
+    const tickScale = getScale(data, [0, 1]);
+    const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d)) as number[];
+    const x1 = this.ifH(st * width, 0);
+    const x2 = this.ifH(et * width, width);
+    const y1 = this.ifH(0, st * height);
+    const y2 = this.ifH(height, et * height);
 
-  /**
-   * 获取style
-   * @param name style名
-   * @param isActive 是否是active style
-   * @returns ShapeCfg
-   */
-  private getStyle(name: string | string[], state: 'default' | 'active' = 'default', handleType?: HandleType) {
-    if (handleType) return this.getHandleCfg(handleType);
-    return getStateStyle(get(this.attributes, name), state, true) as RectProps;
-  }
+    maybeAppend(bg, '.slider-selection', 'rect')
+      .attr('className', 'slider-selection')
+      .style('x', x1)
+      .style('y', y1)
+      .style(widthName, x2 - x1)
+      .style(heightName, y2 - y1)
+      .call(applyStyle, styles.selectionStyle);
 
-  /**
-   * 计算蒙板坐标和宽高
-   * 默认用来计算前景位置大小
-   */
-  private calcMask(values?: Pair<number>) {
-    const [start, end] = this.getSafetyValues(values);
-    const { width, height } = this.availableSpace;
+    const { size: handleSize = 10, symbol, ...handleStyles } = handleStyle;
+    maybeAppend(bg, '.slider-start-handle', () => new Handle({}))
+      .attr('className', 'slider-start-handle')
+      .style('x', x1)
+      .style('y', (y1 + y2) / 2)
+      .style('cursor', this.ifH('ew-resize', 'ns-resize'))
+      .call((selection) => {
+        (selection.node() as Handle).update({
+          align: 'start',
+          markerStyle: { ...handleStyles, size: startHandleSize ?? handleSize, symbol: symbol ?? startHandleIcon },
+          textStyle: { ...textStyle, text: data[this.selection[0]]?.date || '' },
+        });
+      });
 
-    return this.getOrientVal([
-      {
-        y: 0,
-        height,
-        x: start * width,
-        width: (end - start) * width,
-      },
-      {
-        x: 0,
-        width,
-        y: start * height,
-        height: (end - start) * height,
-      },
-    ]);
-  }
+    maybeAppend(bg, '.slider-end-handle', () => new Handle({}))
+      .attr('className', 'slider-end-handle')
+      .style('x', x2)
+      .style('y', (y1 + y2) / 2)
+      .style('cursor', this.ifH('ew-resize', 'ns-resize'))
+      .call((selection) => {
+        (selection.node() as Handle).update({
+          align: 'end',
+          markerStyle: { ...handleStyles, size: endHandleSize ?? handleSize, symbol: symbol ?? endHandleIcon },
+          textStyle: { ...textStyle, text: data[this.selection[1]]?.date || '' },
+        });
+      });
 
-  /**
-   * 计算手柄的x y
-   */
-  private calcHandlePosition(handleType: HandleType) {
-    const { width, height } = this.availableSpace;
-    const [stVal, endVal] = this.getSafetyValues();
-    const L = (handleType === 'start' ? stVal : endVal) * this.getOrientVal([width, height]);
-    return {
-      x: this.getOrientVal([L, width / 2]),
-      y: this.getOrientVal([height / 2, L]),
-    };
-  }
+    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick?.date || '' }));
+    const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
-  /**
-   * 设置选区
-   * 1. 设置前景大小及位置
-   * 2. 设置手柄位置
-   * 3. 更新文本位置
-   */
-  private setHandle() {
-    this.selectionShape.attr(this.calcMask());
-    (['start', 'end'] as HandleType[]).forEach((handleType) => {
-      const handle = this[`${handleType}Handle` as HandleName];
-      handle.setHandle(this.calcHandlePosition(handleType));
-      handle.setHandleText(this.calcHandleText(handleType));
-    });
-  }
-
-  /**
-   * 计算手柄应当处于的位置
-   * @param name 手柄文字
-   * @param handleType start手柄还是end手柄
-   * @returns
-   */
-  private calcHandleText(handleType: HandleType) {
-    const { orient, names } = this.attributes;
-    const { spacing, formatter, textStyle } = this.getHandleCfg(handleType);
-    const size = this.getHandleSize(handleType);
-    const values = this.getSafetyValues();
-
-    // 相对于获取两端可用空间
-    const { width: iW, height: iH } = this.availableSpace;
-    const { x: fX, y: fY, width: fW, height: fH } = this.calcMask();
-
-    const [name, value] = handleType === 'start' ? [names[0], values[0]] : [names[1], values[1]];
-    const formattedText = formatter(name, value);
-    const temp = new Text({
-      style: {
-        ...textStyle,
-        text: formattedText,
-      },
-    });
-    // 文字包围盒的宽高
-    const { width: textWidth, height: textHeight } = getShapeSpace(temp);
-    temp.destroy();
-
-    let x = 0;
-    let y = 0;
-    const R = size / 2;
-    if (orient === 'horizontal') {
-      const sh = spacing + R;
-      const _ = sh + textWidth / 2;
-      if (handleType === 'start') {
-        const left = fX - sh - textWidth;
-        x = left > 0 ? -_ : _;
-      } else {
-        x = iW - fX - fW - sh > textWidth ? _ : -_;
-      }
-    } else {
-      const _ = spacing + R;
-      if (handleType === 'start') {
-        y = fY - R > textHeight ? -_ : _;
-      } else {
-        y = iH - fY - fH - R > textHeight ? _ : -_;
-      }
-    }
-    return { x, y, text: formattedText };
-  }
-
-  private getHandleTextShapeCfg(handleType: HandleType) {
-    const handleCfg = this.getHandleCfg(handleType);
-    const { textStyle } = handleCfg;
-    return {
-      ...textStyle,
-      ...this.calcHandleText(handleType),
-    };
-  }
-
-  private getHandleIconShapeCfg(handleType: HandleType): IHandleCfg['iconCfg'] {
-    const { height: H, orient } = this.attributes as Required<Pick<SliderCfg, 'height' | 'orient'>>;
-    const handleCfg = this.getHandleCfg(handleType);
-    const { show, handleIcon, handleStyle: style } = handleCfg;
-    const cursor = this.getOrientVal(['ew-resize', 'ns-resize']) as Cursor;
-    const size = this.getHandleSize(handleType);
-    let tempStyle!: Omit<IHandleCfg['iconCfg'], 'type' | 'orient'>;
-    let type!: 'hide' | 'default' | 'symbol';
-    if (!show) {
-      type = 'hide';
-      // @ts-ignore
-      tempStyle = {
-        cursor,
-        x: -size / 2,
-        y: -H / 2,
-        height: H,
-        width: size,
-        opacity: 0,
-        fill: 'red',
-      } as RectProps;
-    }
-    if (!handleIcon) {
-      type = 'default';
-      tempStyle = {
-        ...style,
-        cursor,
-        size,
-      };
-    } else {
-      type = 'symbol';
-      // @ts-ignore
-      tempStyle = {
-        ...style,
-        cursor,
-        size,
-        symbol: handleIcon,
-      } as MarkerStyleProps;
-    }
-
-    return {
-      orient,
-      type,
-      ...tempStyle,
-    };
-  }
-
-  private getHandleShapeCfg(handleType: HandleType): IHandleCfg {
-    return {
-      handleType,
-      zIndex: 3,
-      ...this.calcHandlePosition(handleType),
-      iconCfg: this.getHandleIconShapeCfg(handleType),
-      textCfg: this.getHandleTextShapeCfg(handleType),
-    };
-  }
-
-  /**
-   * 创建手柄
-   */
-  private createHandle(handleType: HandleType) {
-    return new Handle({
-      name: `handle`,
-      style: this.getHandleShapeCfg(handleType) as any,
-    });
-  }
-
-  private getHandleCfg(handleType: HandleType): Required<HandleCfg> {
-    const { start, end, ...rest } = get(this.attributes, 'handle');
-    let handleCfg = {};
-    if (handleType === 'start') {
-      handleCfg = start;
-    } else if (handleType === 'end') {
-      handleCfg = end;
-    }
-    return deepMix({}, rest, handleCfg);
-  }
-
-  private getHandleSize(handleType: HandleType) {
-    const { size } = this.getHandleCfg(handleType);
-    if (size) return size;
-    // 没设置 size 的话，高度就取 height + 4 高度，手柄宽度是高度的 1/ 2.4
-    const { width, height } = this.attributes;
-    return Math.floor((this.getOrientVal([height!, width!]) + 4) / 2.4);
-  }
-
-  private getOrientVal<T>([x, y]: Pair<T>): T {
-    const { orient } = this.attributes;
-    return orient === 'horizontal' ? x : y;
-  }
-
-  private setValuesOffset(stOffset: number, endOffset: number = 0) {
-    const [oldStartVal, oldEndVal] = this.getValues();
-    const newValue = [oldStartVal + stOffset, oldEndVal + endOffset].sort() as Pair<number>;
-    this.setValues(newValue);
-    this.onValueChanged([oldStartVal, oldEndVal]);
-  }
-
-  private getRatio(val: number) {
-    const { width, height } = this.availableSpace;
-    return val / this.getOrientVal([width, height]);
+    maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
+      (selection.node() as Linear).update(
+        deepMix({}, DEFAULT_AXIS_CFG, {
+          startPos: [verticalFactor * this.ifH(0, width + 6), verticalFactor * this.ifH(height + 6, 0)],
+          endPos: [
+            this.ifH(width, 0) + verticalFactor * this.ifH(0, width + 6),
+            this.ifH(0, height) + verticalFactor * this.ifH(height + 6, 0),
+          ],
+          ticks,
+          verticalFactor,
+          tickLine: styles.label === null ? null : tickLineCfg,
+          label: styles.label === null ? null : axisLabelCfg,
+        })
+      )
+    );
   }
 
   private bindEvents() {
-    const selection = this.selectionShape;
-    // 选区drag事件
-    selection.addEventListener('mousedown', this.onDragStart('selection'));
-    selection.addEventListener('touchstart', this.onDragStart('selection'));
-    // 选区hover事件
-    selection.addEventListener('mouseenter', this.onSelectionMouseenter);
-    selection.addEventListener('mouseleave', this.onSelectionMouseleave);
+    const target = select(this).select('.slider-background');
 
-    const exceptHandleText = (target: EventTarget | null) => {
-      return target && (target as Handle).name !== 'text';
-    };
+    this.dragHandle(target, 'start');
+    this.dragHandle(target, 'end');
+    this.dragSelection(target);
 
-    [this.startHandle, this.endHandle].forEach((handle) => {
-      const handleType = handle.getType();
-      handle.addEventListener('mousedown', (e: any) => {
-        const { target } = e;
-        exceptHandleText(target) && this.onDragStart(handleType)(e);
-      });
-      handle.addEventListener('touchstart', (e: any) => {
-        const { target } = e;
-        exceptHandleText(target) && this.onDragStart(handleType)(e);
-      });
+    const selection = target.select('.slider-selection').node() as Rect;
+    const startHandle = target.select('.slider-start-handle').node() as Handle;
+    const endHandle = target.select('.slider-end-handle').node() as Handle;
+    startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, newValue, prevValue }: any) => {
+      if (attrName === 'x') {
+        const value = parseFloat(newValue) || 0;
+        selection.style.x = value;
+        selection.style.width = Number(endHandle.style.x) - selection.style.x;
+        this.dodgeText(startHandle, 'start');
+      }
+      if (attrName === 'y') {
+        const value = parseFloat(newValue) || 0;
+        selection.style.y = value;
+        selection.style.height = Number(endHandle.style.y) - selection.style.y;
+      }
     });
-
-    // Drag and brush
-    this.backgroundShape.addEventListener('mousedown', this.onDragStart('background'));
-    this.backgroundShape.addEventListener('touchstart', this.onDragStart('background'));
+    endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, newValue, prevValue }: any) => {
+      const value = parseFloat(newValue) || 0;
+      if (attrName === 'x') {
+        selection.style.width = value - Number(startHandle.style.x);
+        this.dodgeText(endHandle, 'end');
+      }
+      if (attrName === 'y') {
+        selection.style.height = value - Number(startHandle.style.y);
+      }
+    });
   }
 
-  private onSelectionMouseenter = () => {
-    this.selectionShape.attr(this.getStyle('selectionStyle') as RectProps);
-  };
-
-  private onSelectionMouseleave = () => {
-    this.selectionShape.attr(this.getStyle('selectionStyle') as RectProps);
-  };
-
-  private onDragStart = (target: string) => (e: any) => {
-    e.stopPropagation();
-    this.target = target;
-    this.prevPos = this.getOrientVal(getEventPos(e));
-    const { x, y } = this.availableSpace;
-    const { x: X, y: Y } = this.attributes;
-    this.selectionStartPos = this.getRatio(this.prevPos - this.getOrientVal([x, y]) - this.getOrientVal([X!, Y!]));
-    this.selectionWidth = 0;
-    this.addEventListener('mousemove', this.onDragging);
-    this.addEventListener('touchmove', this.onDragging);
-    document.addEventListener('mouseup', this.onDragEnd);
-    document.addEventListener('touchend', this.onDragEnd);
-  };
-
-  private onDragging = (e: any) => {
-    e.stopPropagation();
-    const currPos = this.getOrientVal(getEventPos(e));
-    const _ = currPos - this.prevPos;
-    if (!_) return;
-    const dVal = this.getRatio(_);
-
-    switch (this.target) {
-      case 'start':
-        this.setValuesOffset(dVal);
-        break;
-      case 'end':
-        this.setValuesOffset(0, dVal);
-        break;
-      case 'selection':
-        this.setValuesOffset(dVal, dVal);
-        break;
-      case 'background':
-        // 绘制蒙板
-        this.selectionWidth += dVal;
-        this.setValues([this.selectionStartPos, this.selectionStartPos + this.selectionWidth].sort() as Pair<number>);
-        break;
-      default:
-        break;
+  private dodgeText(shape: Handle, type: 'start' | 'end') {
+    const text = this.styles.data[this.selection[type === 'start' ? 0 : 1]]?.date || '';
+    if (shape.style.textStyle?.text !== text) {
+      shape.update({ textStyle: { text } });
     }
 
-    this.prevPos = currPos;
-  };
+    const textShape = shape.childNodes.find((node) => node.nodeName === 'text') as Text;
+    if (!textShape) return;
+    const [x, y] = shape!.getLocalPosition();
+    const [hw, hh] = textShape.getLocalBounds().halfExtents;
+    if (type === 'start') {
+      // todo consider padding and marker size.
+      if (this.ifH(x - hw * 2 - 8, y - hh * 2 - 8) < 0) {
+        shape.style.align !== 'end' && shape.update({ align: 'end' });
+      } else if (shape.style.align !== 'start') {
+        shape.update({ align: 'start' });
+      }
+      return;
+    }
+    // todo consider padding and marker size.
+    if (this.ifH(x + hw * 2, y + hh * 2) > this.styles.length) {
+      shape.style.align !== 'start' && shape.update({ align: 'start' });
+    } else if (shape.style.align !== 'end') {
+      shape.update({ align: 'end' });
+    }
+  }
 
-  private onDragEnd = () => {
-    this.removeEventListener('mousemove', this.onDragging);
-    this.removeEventListener('mousemove', this.onDragging);
-    document.removeEventListener('mouseup', this.onDragEnd);
-    document.removeEventListener('touchend', this.onDragEnd);
-  };
+  private dragHandle(selection: Selection, type: 'start' | 'end') {
+    const shape = selection.select(`.slider-${type}-handle`).node();
+    const startHandle = selection.select(`.slider-start-handle`).node();
+    const endHandle = selection.select(`.slider-end-handle`).node();
 
-  private onValueChanged = (oldValue: [number, number]) => {
-    const evt = new CustomEvent('valueChanged', {
-      detail: {
-        oldValue,
-        value: this.getValues(),
-      },
-    });
-    this.dispatchEvent(evt);
-  };
+    let dragging = false; // 拖拽状态
+    let lastPosition: number; // 保存上次位置
+    const onDragStart = (event: any) => {
+      if (this.playTimer) clearInterval(this.playTimer);
+      dragging = true;
+      lastPosition = this.ifH(event.x, event.y);
+    };
+    const onDragEnd = (event: any) => {
+      if (!dragging) return;
+      dragging = false;
+      this.updateSelection();
+      if (this.playTimer) this.play();
+    };
+    const onDragMove = (event: any) => {
+      if (dragging) {
+        const length = this.styles.length!;
+        const offset = this.ifH(event.x, event.y) - lastPosition;
+        const position = shape.getLocalPosition();
+        if (this.orient === 'vertical') {
+          shape.style.y = clamp(position[1] + offset, 0, length);
+          if (type === 'start') {
+            endHandle.style.y = Math.max(endHandle.style.y, shape.style.y);
+          } else if (type === 'end') {
+            startHandle.style.y = Math.min(startHandle.style.y, shape.style.y);
+          }
+        } else {
+          shape.style.x = clamp(position[0] + offset, 0, length);
+          if (type === 'start') {
+            endHandle.style.x = Math.max(endHandle.style.x, shape.style.x);
+          } else if (type === 'end') {
+            startHandle.style.x = Math.min(startHandle.style.x, shape.style.x);
+          }
+        }
+        lastPosition = this.ifH(event.x, event.y);
+      }
+    };
+
+    // events for drag start
+    select(shape).on('pointerdown', onDragStart.bind(this));
+    selection
+      // events for drag end
+      .on('pointerup', onDragEnd)
+      // events for drag move
+      .on('pointermove', onDragMove)
+      .on('mouseupoutside', onDragEnd)
+      .on('touchendoutside', onDragEnd);
+  }
+
+  private dragSelection(selection: Selection) {
+    const shape = selection.select('.slider-selection').node() as Line;
+    const startHandle = selection.select('.slider-start-handle').node();
+    const endHandle = selection.select('.slider-end-handle').node();
+
+    let dragging = false; // 拖拽状态
+    let lastPosition: any; // 保存上次位置
+    const onDragStart = (event: any) => {
+      if (this.playTimer) clearInterval(this.playTimer);
+      if (event.target === shape) {
+        dragging = true;
+        lastPosition = [event.x, event.y];
+      }
+    };
+    const onDragEnd = (event: any) => {
+      if (!dragging) return;
+      dragging = false;
+      if (this.playTimer) this.play();
+    };
+    const onDragMove = (event: any) => {
+      if (dragging) {
+        const length = this.styles.length!;
+        const offset = this.ifH(event.x - lastPosition[0], event.y - lastPosition[1]);
+        const [x0, y0] = startHandle.getLocalPosition();
+        const [x1, y1] = endHandle.getLocalPosition();
+        if (this.orient === 'vertical') {
+          const height = y1 - y0;
+          startHandle.style.y = clamp(y0 + offset, 0, length - height);
+          endHandle.style.y = startHandle.style.y + height;
+        } else {
+          const width = x1 - x0;
+          startHandle.style.x = clamp(x0 + offset, 0, length - width);
+          endHandle.style.x = clamp(startHandle.style.x + width, startHandle.style.x, length);
+        }
+        this.updateSelection();
+        lastPosition = [event.x, event.y];
+      }
+    };
+
+    selection
+      // events for drag start
+      .on('pointerdown', onDragStart.bind(this))
+      // events for drag end
+      .on('pointerup', onDragEnd.bind(this))
+      // events for drag move
+      .on('pointermove', onDragMove.bind(this))
+      .on('mouseupoutside', onDragEnd.bind(this))
+      .on('touchendoutside', onDragEnd.bind(this));
+  }
+
+  @throttle(50)
+  protected emitEvent(eventName: string, detail: any) {
+    this.dispatchEvent(new CustomEvent(eventName, { detail }));
+  }
 }

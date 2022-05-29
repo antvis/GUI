@@ -1,4 +1,4 @@
-import { PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
+import { Cursor, PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
 import { AxisTickLineCfg } from '../axis/types';
 
 export type TimeData = {
@@ -12,7 +12,7 @@ export type PlayAxisStyleProps = {
   selectionStyle?: {
     fill?: string;
     fillOpacity?: number;
-    cursor?: string;
+    cursor?: Cursor;
   };
   backgroundStyle?: {
     fill?: string;
@@ -34,7 +34,7 @@ export type PlayAxisStyleProps = {
     lineWidth?: number;
     stroke?: string;
     strokeOpacity?: number;
-    cursor?: string;
+    cursor?: Cursor;
   };
 
   // Only for CellAxis.

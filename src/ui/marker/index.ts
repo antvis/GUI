@@ -78,7 +78,7 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
   }
 
   attributeChangedCallback(name: string, oldValue: any, newValue: any) {
-    if (name === 'x' || name === 'y' || name === 'size' || name === 'symbol') {
+    if (name === 'x' || name === 'y' || name === 'size' || name === 'symbol' || name === 'lineCap') {
       this.update();
     } else if (this.markerShape) {
       this.markerShape.style[name] = newValue;
@@ -135,7 +135,7 @@ export class Marker extends GUI<Required<MarkerStyleProps>> {
 
   // symbol marker
   private getMarkerSymbolShapeCfg(): PathStyleProps {
-    const { x = 0, y = 0, size = 0, symbol, ...args } = this.attributes;
+    const { size = 0, symbol, transform, ...args } = this.attributes;
     const r = (size as number) / 2;
     const symbolFn = isFunction(symbol) ? symbol : Marker.MARKER_SYMBOL_MAP.get(symbol);
     const path = symbolFn?.(0, 0, r) as PathCommand[];

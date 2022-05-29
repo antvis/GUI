@@ -87,7 +87,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
       if (singleMode) {
         // do something
         const currentIndex = (this.selection[0] + 1) % maxLength;
-        this.setSelection({ start: currentIndex, end: currentIndex });
+        this.updateSelection({ start: currentIndex, end: currentIndex });
         return;
       }
 
@@ -108,7 +108,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
         }
         endIndex = (endIndex + 1) % maxLength;
       }
-      this.setSelection({ start: startIndex, end: endIndex });
+      this.updateSelection({ start: startIndex, end: endIndex });
     }, playInterval);
   }
 
@@ -135,7 +135,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
       start = s1 - 1;
       end = s2 - 1;
     }
-    this.setSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
+    this.updateSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
   }
 
   public next() {
@@ -153,7 +153,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
       start = s1 + 1;
       end = s2 + 1;
     }
-    this.setSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
+    this.updateSelection({ start: start ?? this.selection[0], end: end ?? this.selection[1] });
   }
 
   public getSelection(): [number, number] {
@@ -162,7 +162,7 @@ export abstract class AxisBase<T extends AxisStyleProps = AxisStyleProps> extend
 
   protected abstract render(): void;
 
-  protected abstract setSelection(newSelection: { start?: number; end?: number }): void;
+  protected abstract updateSelection(newSelection: { start?: number; end?: number }): void;
 
   protected get orient() {
     return this.style.orient || 'horizontal';

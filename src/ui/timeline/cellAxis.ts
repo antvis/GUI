@@ -61,7 +61,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
     return deepMix({}, CellAxis.defaultOptions.style, this.attributes);
   }
 
-  protected setSelection(newSelection: { start?: number | undefined; end?: number | undefined }): void {
+  protected updateSelection(newSelection: { start?: number | undefined; end?: number | undefined }): void {
     const [s0, e0] = this.selection;
     this.selection = normalSelection([newSelection.start ?? s0, newSelection.end ?? e0], this.style.singleMode);
     this.dispatchEvent(new CustomEvent('selectionChanged', { detail: { selection: this.selection } }));
@@ -218,7 +218,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       firstPosition = this.ifH(event.x, event.y);
 
       const pos = mapPositionToIndex(firstPosition!);
-      this.setSelection({ start: pos, end: pos });
+      this.updateSelection({ start: pos, end: pos });
     };
 
     const dragMove = (event: any) => {
@@ -227,7 +227,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       const idx0 = firstPosition ? mapPositionToIndex(firstPosition!) : idx1;
       const [start, end] = idx0 < idx1 ? [idx0, idx1] : [idx1, idx0];
 
-      this.setSelection({ start, end });
+      this.updateSelection({ start, end });
     };
 
     const dragEnd = () => {

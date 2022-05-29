@@ -76,7 +76,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     return deepMix({}, SliderAxis.defaultOptions.style, this.attributes);
   }
 
-  protected setSelection(newSelection: { start?: number; end?: number }) {
+  protected updateSelection(newSelection: { start?: number; end?: number }) {
     const { start: startIndex, end: endIndex } = newSelection;
     const { data = [], playInterval } = this.styles;
 
@@ -230,15 +230,15 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       if (type === 'start') {
         if (startIndex === endIndex && interval > 0) {
           const start = clamp(0, startIndex + interval, max);
-          this.setSelection({ start, end: start });
+          this.updateSelection({ start, end: start });
         } else {
-          this.setSelection({ start: clamp(startIndex + interval, 0, endIndex) });
+          this.updateSelection({ start: clamp(startIndex + interval, 0, endIndex) });
         }
       } else if (startIndex === endIndex && interval < 0) {
         const end = clamp(0, endIndex + interval, max);
-        this.setSelection({ start: end, end });
+        this.updateSelection({ start: end, end });
       } else {
-        this.setSelection({ end: clamp(endIndex + interval, startIndex, max) });
+        this.updateSelection({ end: clamp(endIndex + interval, startIndex, max) });
       }
       if (this.playTimer) {
         this.play();
@@ -297,7 +297,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       firstPosition = undefined;
       const range = this.selection[1] - this.selection[0];
       const endIndex = clamp(this.selection[1] + moveInterval, range, this.style.data.length - 1);
-      this.setSelection({ start: endIndex - range, end: endIndex });
+      this.updateSelection({ start: endIndex - range, end: endIndex });
 
       if (this.playTimer) {
         this.play();
@@ -324,15 +324,12 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
 
     selection
       // events for drag start
-      .on('mousedown', onDragStart.bind(this))
-      .on('touchstart', onDragStart.bind(this))
+      .on('pointerdown', onDragStart.bind(this))
       // events for drag end
-      .on('mouseup', onDragEnd.bind(this))
+      .on('pointerup', onDragEnd.bind(this))
       .on('mouseupoutside', onDragEnd.bind(this))
-      .on('touchend', onDragEnd.bind(this))
       .on('touchendoutside', onDragEnd.bind(this))
       // events for drag move
-      .on('mousemove', onDragMove.bind(this))
-      .on('touchmove', onDragMove.bind(this));
+      .on('pointermove', onDragMove.bind(this));
   }
 }
