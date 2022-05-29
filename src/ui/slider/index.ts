@@ -1,7 +1,7 @@
 import { ElementEvent, Line, CustomEvent, TextStyleProps } from '@antv/g';
 import type { DisplayObjectConfig } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
-import { Point as PointScale } from '@antv/scale';
+import { Point as PointScale, Band as BandScale } from '@antv/scale';
 import { applyStyle, maybeAppend, normalPadding, select, Selection } from '../../util';
 import { Linear } from '../axis';
 import { Sparkline, SparklineCfg } from '../sparkline';
@@ -35,16 +35,21 @@ type StyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'> & {
 };
 type SliderOptions = DisplayObjectConfig<StyleProps> & {};
 
-function getScale(data: any[], range: number[]) {
-  return new PointScale({
+function getScale(data: any[], range: number[], type?: string) {
+  const Scale = type === 'column' ? BandScale : PointScale;
+  return new Scale({
     domain: data.map((_, idx) => idx),
     range,
     padding: 0,
   });
 }
 
-function getIndexByPosition(offset: number, totalLength: number, data: any[]) {
-  const scale = getScale(data, [0, totalLength]);
+function getIndexByPosition(offset: number, totalLength: number, data: any[], type?: string) {
+  const scale = getScale(data, [0, totalLength], type);
+  const bandWidth = scale.getBandWidth?.() || 0;
+  if (bandWidth) {
+    return Math.floor(offset / bandWidth);
+  }
   const step = scale.getStep();
   const round = offset > 0 ? Math.ceil : Math.floor;
   return step > 0 ? round(offset / step) : 0;
@@ -88,12 +93,14 @@ export class Slider extends AxisBase<StyleProps> {
   protected updateSelection() {
     const originValue = this.selection;
 
+    const length = this.styles.length!;
     const startHandle = select(this).select(`.slider-start-handle`).node();
     const endHandle = select(this).select(`.slider-end-handle`).node() || startHandle;
     const handlePosition = this.ifH([startHandle.style.x, endHandle.style.x], [startHandle.style.y, endHandle.style.y]);
-    const start = getIndexByPosition(handlePosition[0], this.styles.length!, this.style.data);
-    const end = getIndexByPosition(handlePosition[1], this.styles.length!, this.style.data);
+    const start = getIndexByPosition(handlePosition[0], length, this.style.data, this.style.sparkline?.type);
+    const end = getIndexByPosition(handlePosition[1], length!, this.style.data, this.style.sparkline?.type);
     this.selection = [start ?? originValue[0], end ?? originValue[1]];
+
     this.adjustLabel();
     this.emitEvent('selectionChanged', { originValue, value: this.selection });
   }
@@ -143,8 +150,9 @@ export class Slider extends AxisBase<StyleProps> {
         });
       });
 
-    const tickScale = getScale(data, [0, 1]);
-    const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d)) as number[];
+    const tickScale = getScale(data, [0, 1], sparklineCfg.type);
+    const bandWidth = tickScale.getBandWidth?.() || 0;
+    const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d) + bandWidth / 2) as number[];
     const x1 = this.ifH(st * width, width / 2);
     const x2 = this.ifH(et * width, width / 2);
     const y1 = this.ifH(height / 2, st * height);
@@ -190,7 +198,7 @@ export class Slider extends AxisBase<StyleProps> {
         });
       });
 
-    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick?.name || '' }));
+    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx) + bandWidth / 2, text: tick?.name || '' }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
     maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
