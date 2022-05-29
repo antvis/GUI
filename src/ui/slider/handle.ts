@@ -17,7 +17,7 @@ export type HandleStyleProps = {
       strokeOpacity?: number;
     };
   };
-  textStyle?: Omit<TextStyleProps, 'x' | 'y'>;
+  textStyle?: Partial<Omit<TextStyleProps, 'x' | 'y'>>;
 };
 
 Marker.registerSymbol('slider-handle', (x: number, y: number, r: number) => {

@@ -1,59 +1,47 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
+import { Time } from '@antv/scale';
 import { Slider } from '@antv/gui';
-import * as dat from 'dat.gui';
 
 const renderer = new CanvasRenderer();
 
 const canvas = new Canvas({
   container: 'container',
-  width: 600,
-  height: 300,
+  width: 400,
+  height: 500,
   renderer,
 });
 
+const generateTimeData = (count = 20) => {
+  const scale = new Time({
+    tickCount: count,
+    range: [0, count],
+    utc: true,
+    domain: [new Date(2000, 0, 1), new Date(2000, 3, 1)],
+  });
+  const formatter = scale.getFormatter();
+
+  return scale.getTicks().map((d) => ({ value: formatter(d), val1: Math.random() * 100, val2: Math.random() * 100 }));
+};
+const data = generateTimeData(40);
 const slider = new Slider({
   style: {
-    x: 50,
-    y: 50,
-    width: 400,
-    height: 20,
-    values: [0.3, 0.7],
-    names: ['leftVal', 'rightVal'],
-    sparkline: {
-      data: [
-        [1, 3, 2, -4, 1, 3, 2, -4],
-        [5, 1, 5, -8, 5, 1, 5, -8],
-      ],
-      // lineStyle: {
-      //   stroke: 'rgba(197,197,197,0.85)'
-      // },
+    x: 20,
+    y: 30,
+    data,
+    length: 324,
+    size: 20,
+    selection: [4, 16],
+    handleStyle: {
+      size: 10,
     },
-  },
-});
-
-const slider2 = new Slider({
-  style: {
-    x: 50,
-    y: 150,
-    width: 400,
-    height: 20,
-    values: [0.3, 0.7],
-    names: ['leftVal', 'rightVal'],
     sparkline: {
-      data: new Array(30).fill(0).map(() => 0.5 + Math.random()),
-      lineStyle: {
-        lineWidth: 0,
-      },
-      areaStyle: {
-        fill: 'rgba(197,197,197,0.85)',
-      },
+      fields: ['val1', 'val2'],
     },
   },
 });
 
 canvas.appendChild(slider);
-canvas.appendChild(slider2);
 
 /** -------------------------配置区域--------------------------------------- */
 const $wrapper = document.getElementById('container');
@@ -64,26 +52,27 @@ const sliderFolder = cfg.addFolder('Slider边距');
 sliderFolder.open();
 const sliderCfg = { 左间距: 0, 右间距: 0, 上间距: 0, 下间距: 0 };
 
-const sliderLeft = sliderFolder.add(sliderCfg, '左间距', 0, 10).onChange((value) => {
-  slider.update({
-    padding: [sliderTop.getValue(), sliderRight.getValue(), sliderBottom.getValue(), value],
-  });
-});
-const sliderRight = sliderFolder.add(sliderCfg, '右间距', 0, 10).onChange((value) => {
-  slider.update({
-    padding: [sliderTop.getValue(), value, sliderBottom.getValue(), sliderLeft.getValue()],
-  });
-});
-const sliderTop = sliderFolder.add(sliderCfg, '上间距', 0, 10).onChange((value) => {
-  slider.update({
-    padding: [value, sliderRight.getValue(), sliderBottom.getValue(), sliderLeft.getValue()],
-  });
-});
-const sliderBottom = sliderFolder.add(sliderCfg, '下间距', 0, 10).onChange((value) => {
-  slider.update({
-    padding: [sliderTop.getValue(), sliderRight.getValue(), value, sliderLeft.getValue()],
-  });
-});
+// todo
+// const sliderLeft = sliderFolder.add(sliderCfg, '左间距', 0, 10).onChange((value) => {
+//   slider.update({
+//     padding: [sliderTop.getValue(), sliderRight.getValue(), sliderBottom.getValue(), value],
+//   });
+// });
+// const sliderRight = sliderFolder.add(sliderCfg, '右间距', 0, 10).onChange((value) => {
+//   slider.update({
+//     padding: [sliderTop.getValue(), value, sliderBottom.getValue(), sliderLeft.getValue()],
+//   });
+// });
+// const sliderTop = sliderFolder.add(sliderCfg, '上间距', 0, 10).onChange((value) => {
+//   slider.update({
+//     padding: [value, sliderRight.getValue(), sliderBottom.getValue(), sliderLeft.getValue()],
+//   });
+// });
+// const sliderBottom = sliderFolder.add(sliderCfg, '下间距', 0, 10).onChange((value) => {
+//   slider.update({
+//     padding: [sliderTop.getValue(), sliderRight.getValue(), value, sliderLeft.getValue()],
+//   });
+// });
 
 const sparklineFolder = cfg.addFolder('Sparkline边距');
 sparklineFolder.open();

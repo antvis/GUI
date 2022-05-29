@@ -1,64 +1,37 @@
-import type { ShapeAttrs, DisplayObjectConfig, TextProps, MixAttrs, RectProps } from '../../types';
-import type { MarkerStyleProps } from '../marker';
+import type { TextStyleProps } from '@antv/g';
+import type { DisplayObjectConfig } from '../../types';
+import type { AxisStyleProps } from '../timeline/playAxis';
 import type { SparklineCfg } from '../sparkline/types';
 
 export type Pair<T> = [T, T];
 
-export type HandleCfg = {
-  /**
-   * 是否显示Handle
-   */
-  show?: boolean;
-  /**
-   * 大小
-   */
-  size?: number;
-  /**
-   * 文本格式化
-   */
-  formatter?: (name: string, value: number) => string;
-  /**
-   * 文字样式
-   */
-  textStyle?: TextProps;
-  /**
-   * 文字与手柄的间隔
-   */
-  spacing?: number;
-  /**
-   * 手柄图标
-   */
-  handleIcon?: MarkerStyleProps['symbol'] | string;
-  /**
-   * 手柄图标样式
-   */
-  handleStyle?: ShapeAttrs & { radius?: number };
+type HandleStyle = {
+  fill?: string;
+  fillOpacity?: number;
+  stroke?: string;
+  strokeOpacity?: number;
+  lineWidth?: number;
 };
 
-export type SliderCfg = {
+export type SliderStyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'> & {
   x?: number;
   y?: number;
-  orient?: 'vertical' | 'horizontal';
-  values: Pair<number>;
-  names: Pair<string>;
-  min?: number;
-  max?: number;
-  width?: number;
-  height?: number;
-  padding?: number | number[];
-  backgroundStyle?: MixAttrs<ShapeAttrs>;
-  selectionStyle?: MixAttrs<RectProps>;
-  handle?:
-    | HandleCfg
-    | {
-        start: HandleCfg;
-        end: HandleCfg;
-      };
-
-  /**
-   * 缩略图数据及其配置
-   */
-  sparkline?: { padding?: number[] } & SparklineCfg;
+  type?: 'date' | 'category' | 'linear';
+  sparkline?: Partial<Omit<SparklineCfg, 'data' | 'width' | 'height' | 'x' | 'y'>> & {
+    padding?: number | number[];
+    fields?: string[];
+  };
+  startHandleSize?: number;
+  endHandleSize?: number;
+  startHandleIcon?: string | ((x: number, y: number, r: number) => string);
+  endHandleIcon?: string | ((x: number, y: number, r: number) => string);
+  handleStyle?: HandleStyle & {
+    size?: number;
+    symbol?: string | ((x: number, y: number, r: number) => string);
+    active?: HandleStyle;
+  };
+  textStyle?: Omit<TextStyleProps, 'x' | 'y' | 'text'>;
+  formatter?: (v: any, index: number) => string;
 };
 
-export type SliderOptions = DisplayObjectConfig<SliderCfg>;
+export type SliderOptions = DisplayObjectConfig<SliderStyleProps>;

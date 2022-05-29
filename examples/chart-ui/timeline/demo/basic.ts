@@ -23,7 +23,7 @@ const TIME_DATA = (count = 10) => {
   });
   const formatter = scale.getFormatter();
 
-  return scale.getTicks().map((d: any) => ({ date: formatter(d) }));
+  return scale.getTicks().map((d: any) => ({ value: formatter(d) }));
 };
 
 const timeline = new Timeline({

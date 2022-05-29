@@ -1,9 +1,8 @@
 import { Slider } from '../../../../src/ui/slider';
 import { createCanvas } from '../../../utils/render';
-import { generateTimeData } from '../timeline/data';
+import { generateTimeData, TIME_DATA } from '../timeline/data';
 
 const canvas = createCanvas(750, undefined, true);
-
 const timeData = generateTimeData(40).map((d) => ({ ...d, val1: Math.random() * 100, val2: Math.random() * 80 }));
 
 describe('Slider', () => {
@@ -93,7 +92,7 @@ describe('Slider', () => {
         y: 30,
         orient: 'vertical',
         data: timeData,
-        length: 270,
+        length: 240,
         size: 20,
         selection: [4, 16],
         handleStyle: {
@@ -108,7 +107,7 @@ describe('Slider', () => {
     canvas.appendChild(slider);
   });
 
-  it('new Slider({...}) returns a', () => {
+  it('new Slider({...}) returns a slider with category data', () => {
     const data = [
       {
         name: 'London',
@@ -164,7 +163,7 @@ describe('Slider', () => {
       style: {
         x: 60,
         y: 240,
-        data: data.map((d) => ({ ...d, name: d['月份'] })),
+        data: data.map((d) => ({ ...d, value: d['月份'] })),
         length: 524,
         size: 20,
         selection: [4, 5],
@@ -174,10 +173,54 @@ describe('Slider', () => {
         sparkline: {
           type: 'column',
           isGroup: true,
+          barPadding: 0.05,
           fields: ['London_月均降雨量', 'Berlin_月均降雨量'],
           fillOpacity: 1,
           padding: 0,
         },
+      },
+    });
+
+    canvas.appendChild(slider);
+  });
+
+  it('new Slider({...}) returns a slider with linear data', () => {
+    const slider = new Slider({
+      style: {
+        x: 60,
+        y: 330,
+        data: TIME_DATA.map((d) => ({ ...d, value: Math.random() * 100 })),
+        length: 524,
+        size: 20,
+        selection: [0.1, 0.3],
+        handleStyle: {
+          size: 12,
+        },
+        formatter: (v) => (typeof v === 'number' ? v.toFixed(0) : String(v)),
+        label: null,
+      },
+    });
+
+    canvas.appendChild(slider);
+    slider.addEventListener('selectionChanged', (evt: any) => {
+      console.log('selectionChanged', evt.detail.originValue, evt.detail.value);
+    });
+  });
+
+  it('new Slider({...}) returns a slider with linear data', () => {
+    const slider = new Slider({
+      style: {
+        x: 630,
+        y: 300,
+        orient: 'vertical',
+        data: TIME_DATA.map((d) => ({ ...d, value: Math.random() * 100 })),
+        length: 224,
+        size: 20,
+        selection: [0.1, 0.3],
+        handleStyle: {
+          size: 12,
+        },
+        formatter: (v) => (typeof v === 'number' ? v.toFixed(0) : String(v)),
       },
     });
 

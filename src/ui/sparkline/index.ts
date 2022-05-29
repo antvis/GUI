@@ -92,7 +92,7 @@ export class Sparkline extends GUI<SparklineCfg> {
     const { areaStyle, isStack, lineStyle, smooth } = this.attributes;
     const { width } = this.containerCfg;
     const { data } = this;
-    if (data[0].length === 0) return { lines: [], areas: [] };
+    if (data[0]?.length === 0) return { lines: [], areas: [] };
     const { x, y } = this.scales as { x: Linear; y: Linear };
     // 线条Path
     const lines = dataToLines(data, { type: 'line', x, y });
@@ -228,7 +228,7 @@ export class Sparkline extends GUI<SparklineCfg> {
    * 根据数据生成scale
    */
   private createScales(data: number[][]) {
-    const { type, isGroup, barPadding, nice = true, minValue, maxValue } = this.attributes;
+    const { type, isGroup, barPadding = 0, nice = true, minValue, maxValue } = this.attributes;
     const { width, height } = this.containerCfg;
     const [minVal, maxVal] = getRange(data);
     return {
@@ -236,13 +236,14 @@ export class Sparkline extends GUI<SparklineCfg> {
       x:
         type === 'line'
           ? new Linear({
-              domain: [0, data[0].length - 1],
+              domain: [0, (data[0] || []).length - 1],
               range: [0, width],
             })
           : new Band({
-              domain: data[0].map((val, idx) => idx),
+              domain: (data[0] || []).map((val, idx) => idx),
               range: [0, width],
               paddingInner: isGroup ? barPadding : 0,
+              paddingOuter: isGroup ? barPadding : 0,
             }),
       y: new Linear({
         domain: [minValue ?? minVal, maxValue ?? maxVal],

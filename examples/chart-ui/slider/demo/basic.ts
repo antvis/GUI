@@ -21,7 +21,7 @@ const generateTimeData = (count = 20) => {
   });
   const formatter = scale.getFormatter();
 
-  return scale.getTicks().map((d) => ({ date: formatter(d), val1: Math.random() * 100, val2: Math.random() * 100 }));
+  return scale.getTicks().map((d) => ({ value: formatter(d), val1: Math.random() * 100, val2: Math.random() * 100 }));
 };
 const data = generateTimeData(40);
 const horizontalSlider = new Slider({

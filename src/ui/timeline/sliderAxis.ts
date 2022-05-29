@@ -160,7 +160,7 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
       .call(applyStyle, styles.handleStyle);
     if (this.endHandleAnimation?.playState === 'paused') this.endHandleAnimation.play();
 
-    const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.name }));
+    const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.value }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
     maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>

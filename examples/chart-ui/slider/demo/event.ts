@@ -15,13 +15,14 @@ const canvas = new Canvas({
 const slider = new Slider({
   style: {
     x: 50,
-    y: 10,
-    width: 400,
-    height: 20,
-    values: [0.3, 0.7],
-    names: ['2020-08-25', '2020-09-12'],
-    handle: {
-      size: 13,
+    y: 100,
+    length: 324,
+    size: 20,
+    selection: [0.3, 0.7],
+    data: [{ value: 0 }, { value: 100 }],
+    formatter: (v) => (typeof v === 'number' ? v.toFixed(0) : String(v)),
+    handleStyle: {
+      size: 10,
     },
   },
 });
@@ -29,14 +30,14 @@ const slider = new Slider({
 canvas.appendChild(slider);
 
 slider.addEventListener(
-  'valueChanged',
+  'selectionChanged',
   ({
     detail: {
       value: [stVal, endVal],
     },
   }) => {
-    startValue.setValue(stVal);
-    endValue.setValue(endVal);
+    startValue.setValue(stVal * 100);
+    endValue.setValue(endVal * 100);
   }
 );
 
@@ -45,17 +46,17 @@ const $wrapper = document.getElementById('container');
 const cfg = new dat.GUI({ autoPlace: false });
 $wrapper.appendChild(cfg.domElement);
 const sliderCfg = {
-  起始值: 0.3,
-  结束值: 0.7,
+  起始值: 30,
+  结束值: 70,
 };
 
-const startValue = cfg.add(sliderCfg, '起始值', 0, 1).onChange((value) => {
+const startValue = cfg.add(sliderCfg, '起始值', 0, 100).onChange((value) => {
   const endVal = endValue.getValue();
   const val = value > endVal ? endVal : value;
-  slider.update({ values: [val, endVal] });
+  slider.update({ selections: [val, endVal] });
 });
-const endValue = cfg.add(sliderCfg, '结束值', 0, 1).onChange((value) => {
+const endValue = cfg.add(sliderCfg, '结束值', 0, 100).onChange((value) => {
   const stVal = startValue.getValue();
   const val = value < stVal ? stVal : value;
-  slider.update({ values: [stVal, val] });
+  slider.update({ selections: [stVal, val] });
 });

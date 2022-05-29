@@ -1,61 +1,49 @@
-import { ElementEvent, Line, CustomEvent, TextStyleProps } from '@antv/g';
-import type { DisplayObjectConfig } from '@antv/g';
+import { ElementEvent, Line, CustomEvent, isNil } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
-import { Point as PointScale, Band as BandScale } from '@antv/scale';
+import { Point as PointScale, Band as BandScale, Linear as LinearScale } from '@antv/scale';
 import { applyStyle, maybeAppend, normalPadding, select, Selection } from '../../util';
 import { Linear } from '../axis';
-import { Sparkline, SparklineCfg } from '../sparkline';
-import { AxisBase, AxisStyleProps, DEFAULT_AXIS_CFG, normalSelection } from '../timeline/playAxis';
+import { Sparkline } from '../sparkline';
+import { AxisBase, DEFAULT_AXIS_CFG, normalSelection } from '../timeline/playAxis';
 import { DEFAULT_TIMELINE_STYLE } from '../timeline/constants';
 import { Handle } from './handle';
+import { SliderStyleProps, SliderOptions } from './types';
 
-type HandleStyle = {
-  fill?: string;
-  fillOpacity?: number;
-  stroke?: string;
-  strokeOpacity?: number;
-  lineWidth?: number;
-};
-type StyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'> & {
-  sparkline?: Partial<SparklineCfg> & {
-    padding?: number | number[];
-    fields?: string[];
-    // todo 补充更多配置
-  };
-  startHandleSize?: number;
-  endHandleSize?: number;
-  startHandleIcon?: string | ((x: number, y: number, r: number) => string);
-  endHandleIcon?: string | ((x: number, y: number, r: number) => string);
-  handleStyle?: HandleStyle & {
-    size?: number;
-    symbol?: string | ((x: number, y: number, r: number) => string);
-    active?: HandleStyle;
-  };
-  textStyle?: Omit<TextStyleProps, 'x' | 'y' | 'text'>;
-};
-type SliderOptions = DisplayObjectConfig<StyleProps> & {};
+export type { SliderOptions };
 
-function getScale(data: any[], range: number[], type?: string) {
-  const Scale = type === 'column' ? BandScale : PointScale;
+function getScale(data: any[], range: number[], type: 'date' | 'category' | 'linear' = 'category') {
+  if (type === 'linear') {
+    const numbers = data.map((d) => d.value);
+    return new LinearScale({
+      domain: [Math.min.apply(null, numbers), Math.max.apply(null, numbers)],
+      range,
+      nice: true,
+    });
+  }
+  const Scale = type === 'category' ? BandScale : PointScale;
   return new Scale({
     domain: data.map((_, idx) => idx),
     range,
-    padding: 0,
+    paddingInner: 0,
+    paddingOuter: 0,
   });
 }
 
-function getIndexByPosition(offset: number, totalLength: number, data: any[], type?: string) {
+function getIndexByPosition(offset: number, totalLength: number, data: any[], type: 'date' | 'category' | 'linear') {
+  if (type === 'linear') {
+    return offset / totalLength;
+  }
   const scale = getScale(data, [0, totalLength], type);
-  const bandWidth = scale.getBandWidth?.() || 0;
+  const bandWidth = (scale as BandScale).getBandWidth?.() || 0;
   if (bandWidth) {
     return Math.floor(offset / bandWidth);
   }
-  const step = scale.getStep();
+  const step = (scale as PointScale).getStep();
   const round = offset > 0 ? Math.ceil : Math.floor;
   return step > 0 ? round(offset / step) : 0;
 }
 
-export class Slider extends AxisBase<StyleProps> {
+export class Slider extends AxisBase<SliderStyleProps> {
   public static defaultOptions: SliderOptions = {
     style: deepMix({}, DEFAULT_TIMELINE_STYLE.playAxis, {
       tag: 'slider-axis',
@@ -86,8 +74,16 @@ export class Slider extends AxisBase<StyleProps> {
     this.bindEvents();
   }
 
-  private get styles(): Required<StyleProps> {
+  private get styles(): Required<SliderStyleProps> {
     return deepMix({}, Slider.defaultOptions.style, this.attributes);
+  }
+
+  private get type(): 'date' | 'category' | 'linear' {
+    if (!this.style.type) {
+      // todo 补充 date 类型的匹配
+      return typeof this.style.data[0]?.value === 'number' ? 'linear' : 'category';
+    }
+    return this.style.type;
   }
 
   protected updateSelection() {
@@ -97,11 +93,11 @@ export class Slider extends AxisBase<StyleProps> {
     const startHandle = select(this).select(`.slider-start-handle`).node();
     const endHandle = select(this).select(`.slider-end-handle`).node() || startHandle;
     const handlePosition = this.ifH([startHandle.style.x, endHandle.style.x], [startHandle.style.y, endHandle.style.y]);
-    const start = getIndexByPosition(handlePosition[0], length, this.style.data, this.style.sparkline?.type);
-    const end = getIndexByPosition(handlePosition[1], length!, this.style.data, this.style.sparkline?.type);
+    const start = getIndexByPosition(handlePosition[0], length, this.style.data, this.type);
+    const end = getIndexByPosition(handlePosition[1], length!, this.style.data, this.type);
     this.selection = [start ?? originValue[0], end ?? originValue[1]];
 
-    this.adjustLabel();
+    this.adjustText();
     this.emitEvent('selectionChanged', { originValue, value: this.selection });
   }
 
@@ -134,11 +130,18 @@ export class Slider extends AxisBase<StyleProps> {
 
     const { padding, fields = [], ...sparklineCfg } = sparkline || {};
     const [top, right, bottom, left] = normalPadding(padding!);
-    const sparklineData = (fields || []).map((field) => data.map((d) => d[field] ?? null));
+    // todo 优化 Sparkline 兼容 null 数据
+    const sparklineData = (fields || []).map((field) => data.map((d) => d[field]).filter((d) => !isNil(d)));
     maybeAppend(bg, '.slider-sparkline', () => new Sparkline({}))
       .attr('className', 'slider-sparkline')
       .call((selection) => {
+        if (sparklineData.flat()?.length === 0) {
+          bg.removeChild(selection.node());
+          selection.node().remove();
+          return;
+        }
         (selection.node() as Sparkline).update({
+          ...sparklineCfg,
           width: length - left - right,
           height: size - top - bottom,
           data: sparklineData,
@@ -146,13 +149,15 @@ export class Slider extends AxisBase<StyleProps> {
             `rotate(0deg) translate(${left},${top})`,
             `rotate(90deg) translate(${left},-${size - top})`
           ),
-          ...sparklineCfg,
         });
       });
 
-    const tickScale = getScale(data, [0, 1], sparklineCfg.type);
-    const bandWidth = tickScale.getBandWidth?.() || 0;
-    const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d) + bandWidth / 2) as number[];
+    const tickScale = getScale(data, [0, 1], this.type);
+    const bandWidth = (tickScale as BandScale).getBandWidth?.() || 0;
+    const [st = 0, et = st] = this.selection.map((d) => {
+      if (this.type === 'linear') return d;
+      return tickScale.map(d) + bandWidth / 2;
+    }) as number[];
     const x1 = this.ifH(st * width, width / 2);
     const x2 = this.ifH(et * width, width / 2);
     const y1 = this.ifH(height / 2, st * height);
@@ -179,7 +184,7 @@ export class Slider extends AxisBase<StyleProps> {
           align: 'start',
           orient: orient as any,
           markerStyle: { ...handleStyles, size: startHandleSize ?? handleSize, symbol: symbol ?? startHandleIcon },
-          textStyle: { ...textStyle, text: data[this.selection[0]]?.name || '' },
+          textStyle,
           max: length,
         });
       });
@@ -193,12 +198,24 @@ export class Slider extends AxisBase<StyleProps> {
           align: 'end',
           orient: orient as any,
           markerStyle: { ...handleStyles, size: endHandleSize ?? handleSize, symbol: symbol ?? endHandleIcon },
-          textStyle: { ...textStyle, text: data[this.selection[1]]?.name || '' },
+          textStyle,
           max: length,
         });
       });
+    this.adjustText();
 
-    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx) + bandWidth / 2, text: tick?.name || '' }));
+    let ticks: any[] = [];
+    if ((tickScale as LinearScale).getTicks?.()) {
+      ticks = (tickScale as LinearScale).getTicks?.().map((value) => ({
+        value: tickScale.map(value),
+        text: String(value),
+      }));
+    } else {
+      ticks = data.map((tick, idx) => ({
+        value: tickScale.map(idx) + bandWidth / 2,
+        text: String(tick?.value || ''),
+      }));
+    }
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
     maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
@@ -240,11 +257,22 @@ export class Slider extends AxisBase<StyleProps> {
     });
   }
 
-  private adjustLabel() {
+  private adjustText() {
+    const formatter = this.style.formatter || ((v: any) => String(v));
     const startHandle = select(this).select('.slider-start-handle').node() as Handle;
     const endHandle = select(this).select('.slider-end-handle').node() as Handle;
-    const text0 = this.styles.data[this.selection[0]]?.name || '';
-    const text1 = this.styles.data[this.selection[1]]?.name || '';
+    let text0;
+    let text1;
+    const data = this.styles.data;
+    const [s0, s1] = this.selection;
+    if (this.type === 'linear') {
+      const scale = getScale(data, [0, 1], 'linear');
+      text0 = formatter(scale.invert(s0) || s0, 0);
+      text1 = formatter(scale.invert(s1) || s1, 1);
+    } else {
+      text0 = formatter(data[s0]?.value || '', 0);
+      text1 = formatter(data[s1]?.value || '', 1);
+    }
     if (startHandle.style.textStyle?.text !== text0) {
       startHandle.update({ textStyle: { text: text0 } });
     }

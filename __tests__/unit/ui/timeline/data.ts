@@ -8,7 +8,7 @@ export const TIME_DATA = (() => {
   });
   const formatter = scale.getFormatter();
 
-  return scale.getTicks().map((d: any) => ({ name: formatter(d) }));
+  return scale.getTicks().map((d: any) => ({ value: formatter(d) }));
 })();
 
 export const generateTimeData = (count = 20) => {
@@ -20,5 +20,5 @@ export const generateTimeData = (count = 20) => {
   });
   const formatter = scale.getFormatter();
 
-  return scale.getTicks().map((d: any) => ({ name: formatter(d) }));
+  return scale.getTicks().map((d: any) => ({ value: formatter(d) }));
 };

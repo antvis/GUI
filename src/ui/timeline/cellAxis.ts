@@ -152,7 +152,7 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
     const tickScale = getScale(style.data, [0, axisLength]);
     const ticks = style.data.map((tick, idx) => ({
       value: (tickScale.map(idx) + (bandWidth - style.cellGap) / 2) / axisLength,
-      text: tick.name,
+      text: tick.value,
     }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = style.label || {};
     const y = verticalFactor === -1 ? -2 : style.spacing + cellSize + 2;
