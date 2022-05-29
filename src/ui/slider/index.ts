@@ -1,4 +1,4 @@
-import { ElementEvent, Line, CustomEvent, Rect, TextStyleProps, Text } from '@antv/g';
+import { ElementEvent, Line, CustomEvent, TextStyleProps } from '@antv/g';
 import type { DisplayObjectConfig } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale } from '@antv/scale';
@@ -94,7 +94,6 @@ export class Slider extends AxisBase<StyleProps> {
     const start = getIndexByPosition(handlePosition[0], this.styles.length!, this.style.data);
     const end = getIndexByPosition(handlePosition[1], this.styles.length!, this.style.data);
     this.selection = [start ?? originValue[0], end ?? originValue[1]];
-
     this.emitEvent('selectionChanged', { originValue, value: this.selection });
   }
 
@@ -111,17 +110,17 @@ export class Slider extends AxisBase<StyleProps> {
       endHandleIcon,
       startHandleSize,
       endHandleSize,
+      orient,
       ...styles
     } = this.styles;
     const [width, height] = this.ifH([length, size], [size, length]);
 
-    const [widthName, heightName] = this.ifH(['width', 'height'], ['height', 'width']);
     const bg = maybeAppend(this, '.slider-background', 'rect')
       .attr('className', 'slider-background')
       .style('x', 0)
       .style('y', 0)
-      .style(widthName, width)
-      .style(heightName, height)
+      .style('width', width)
+      .style('height', height)
       .call(applyStyle, backgroundStyle)
       .node();
 
@@ -131,53 +130,60 @@ export class Slider extends AxisBase<StyleProps> {
       .attr('className', 'slider-sparkline')
       .call((selection) => {
         (selection.node() as Sparkline).update({
-          x: left,
-          y: top,
-          width: width - left - right,
-          height: height - top - bottom,
+          width: length - left - right,
+          height: size - top - bottom,
           data: sparklineData,
+          transform: this.ifH(
+            `rotate(0deg) translate(${left},${top})`,
+            `rotate(90deg) translate(${left},-${size - top})`
+          ),
         });
       });
 
     const tickScale = getScale(data, [0, 1]);
     const [st = 0, et = st] = this.selection.map((d) => tickScale.map(d)) as number[];
-    const x1 = this.ifH(st * width, 0);
-    const x2 = this.ifH(et * width, width);
-    const y1 = this.ifH(0, st * height);
-    const y2 = this.ifH(height, et * height);
+    const x1 = this.ifH(st * width, width / 2);
+    const x2 = this.ifH(et * width, width / 2);
+    const y1 = this.ifH(height / 2, st * height);
+    const y2 = this.ifH(height / 2, et * height);
 
-    maybeAppend(bg, '.slider-selection', 'rect')
+    maybeAppend(bg, '.slider-selection', 'line')
       .attr('className', 'slider-selection')
-      .style('x', x1)
-      .style('y', y1)
-      .style(widthName, x2 - x1)
-      .style(heightName, y2 - y1)
+      .style('x1', x1)
+      .style('y1', y1)
+      .style('x2', x2)
+      .style('y2', y2)
+      .style('lineWidth', this.ifH(height, width))
+      .style('stroke', styles.selectionStyle.fill)
+      .style('strokeOpacity', styles.selectionStyle.fillOpacity)
       .call(applyStyle, styles.selectionStyle);
 
     const { size: handleSize = 10, symbol, ...handleStyles } = handleStyle;
-    maybeAppend(bg, '.slider-start-handle', () => new Handle({}))
-      .attr('className', 'slider-start-handle')
+    maybeAppend(bg, '.slider-start-handle', () => new Handle({ className: 'slider-start-handle' }))
       .style('x', x1)
       .style('y', (y1 + y2) / 2)
       .style('cursor', this.ifH('ew-resize', 'ns-resize'))
       .call((selection) => {
         (selection.node() as Handle).update({
           align: 'start',
+          orient: orient as any,
           markerStyle: { ...handleStyles, size: startHandleSize ?? handleSize, symbol: symbol ?? startHandleIcon },
           textStyle: { ...textStyle, text: data[this.selection[0]]?.date || '' },
+          max: length,
         });
       });
 
-    maybeAppend(bg, '.slider-end-handle', () => new Handle({}))
-      .attr('className', 'slider-end-handle')
+    maybeAppend(bg, '.slider-end-handle', () => new Handle({ className: 'slider-end-handle' }))
       .style('x', x2)
       .style('y', (y1 + y2) / 2)
       .style('cursor', this.ifH('ew-resize', 'ns-resize'))
       .call((selection) => {
         (selection.node() as Handle).update({
           align: 'end',
+          orient: orient as any,
           markerStyle: { ...handleStyles, size: endHandleSize ?? handleSize, symbol: symbol ?? endHandleIcon },
           textStyle: { ...textStyle, text: data[this.selection[1]]?.date || '' },
+          max: length,
         });
       });
 
@@ -208,58 +214,27 @@ export class Slider extends AxisBase<StyleProps> {
     this.dragHandle(target, 'end');
     this.dragSelection(target);
 
-    const selection = target.select('.slider-selection').node() as Rect;
+    const selection = target.select('.slider-selection').node() as Line;
     const startHandle = target.select('.slider-start-handle').node() as Handle;
     const endHandle = target.select('.slider-end-handle').node() as Handle;
-    startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, newValue, prevValue }: any) => {
-      if (attrName === 'x') {
-        const value = parseFloat(newValue) || 0;
-        selection.style.x = value;
-        selection.style.width = Number(endHandle.style.x) - selection.style.x;
-        this.dodgeText(startHandle, 'start');
-      }
-      if (attrName === 'y') {
-        const value = parseFloat(newValue) || 0;
-        selection.style.y = value;
-        selection.style.height = Number(endHandle.style.y) - selection.style.y;
+    startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, target }: any) => {
+      if (attrName === 'x' || attrName === 'y') {
+        selection.style[attrName === 'x' ? 'x1' : 'y1'] = Number(startHandle.style.x);
+        this.adjustLabel(startHandle, 'start');
       }
     });
-    endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, newValue, prevValue }: any) => {
-      const value = parseFloat(newValue) || 0;
-      if (attrName === 'x') {
-        selection.style.width = value - Number(startHandle.style.x);
-        this.dodgeText(endHandle, 'end');
-      }
-      if (attrName === 'y') {
-        selection.style.height = value - Number(startHandle.style.y);
+    endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName }: any) => {
+      if (attrName === 'x' || attrName === 'y') {
+        selection.style[attrName === 'x' ? 'x2' : 'y2'] = Number(endHandle.style.x);
+        this.adjustLabel(endHandle, 'end');
       }
     });
   }
 
-  private dodgeText(shape: Handle, type: 'start' | 'end') {
+  private adjustLabel(shape: Handle, type: 'start' | 'end') {
     const text = this.styles.data[this.selection[type === 'start' ? 0 : 1]]?.date || '';
     if (shape.style.textStyle?.text !== text) {
       shape.update({ textStyle: { text } });
-    }
-
-    const textShape = shape.childNodes.find((node) => node.nodeName === 'text') as Text;
-    if (!textShape) return;
-    const [x, y] = shape!.getLocalPosition();
-    const [hw, hh] = textShape.getLocalBounds().halfExtents;
-    if (type === 'start') {
-      // todo consider padding and marker size.
-      if (this.ifH(x - hw * 2 - 8, y - hh * 2 - 8) < 0) {
-        shape.style.align !== 'end' && shape.update({ align: 'end' });
-      } else if (shape.style.align !== 'start') {
-        shape.update({ align: 'start' });
-      }
-      return;
-    }
-    // todo consider padding and marker size.
-    if (this.ifH(x + hw * 2, y + hh * 2) > this.styles.length) {
-      shape.style.align !== 'start' && shape.update({ align: 'start' });
-    } else if (shape.style.align !== 'end') {
-      shape.update({ align: 'end' });
     }
   }
 
@@ -278,7 +253,6 @@ export class Slider extends AxisBase<StyleProps> {
     const onDragEnd = (event: any) => {
       if (!dragging) return;
       dragging = false;
-      this.updateSelection();
       if (this.playTimer) this.play();
     };
     const onDragMove = (event: any) => {
@@ -301,6 +275,7 @@ export class Slider extends AxisBase<StyleProps> {
             startHandle.style.x = Math.min(startHandle.style.x, shape.style.x);
           }
         }
+        this.updateSelection();
         lastPosition = this.ifH(event.x, event.y);
       }
     };

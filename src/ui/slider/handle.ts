@@ -1,4 +1,4 @@
-import { CustomElement, TextStyleProps, DisplayObjectConfig } from '@antv/g';
+import { CustomElement, TextStyleProps, DisplayObjectConfig, ElementEvent, Text } from '@antv/g';
 import { deepMix, get, omit } from '@antv/util';
 import { Marker, MarkerStyleProps } from '../marker';
 import { applyStyle, maybeAppend, select } from '../../util';
@@ -8,6 +8,7 @@ export type HandleStyleProps = {
   y?: number;
   align: 'start' | 'end';
   orient?: 'horizontal' | 'vertical';
+  max?: number;
   markerStyle?: Partial<MarkerStyleProps> & {
     active?: {
       fill?: string;
@@ -104,9 +105,7 @@ export class Handle extends CustomElement<HandleStyleProps> {
 
   private render() {
     const { markerStyle, textStyle, align, orient } = this.styles;
-    let width = Number(markerStyle.size) || 10;
-    let height = 2.4 * width;
-    [width, height] = orient === 'vertical' ? [height, width] : [width, height];
+    const width = Number(markerStyle.size) || 10;
 
     maybeAppend(this, '.handle-marker', () => new Marker({}))
       .attr('className', 'handle-marker')
@@ -114,7 +113,7 @@ export class Handle extends CustomElement<HandleStyleProps> {
         (selection.node() as Marker).update({
           size: width,
           transformOrigin: 'center',
-          transform: orient === 'vertical' ? 'rotate(90deg)' : '',
+          transform: orient === 'vertical' ? 'rotate(45deg)' : '',
           lineCap: 'round',
           ...omit(markerStyle, ['active']),
         });
@@ -123,21 +122,22 @@ export class Handle extends CustomElement<HandleStyleProps> {
     let textAlign = 'center';
     let textBaseline = align === 'start' ? 'bottom' : 'top';
     if (orient !== 'vertical') {
-      textAlign = align === 'start' ? 'end' : 'start';
+      textAlign = align === 'start' ? 'right' : 'left';
       textBaseline = 'middle';
     }
-
+    const offset = width / 2 + 4;
     maybeAppend(this, '.handle-label', 'text')
       .attr('className', 'handle-label')
       .call(applyStyle, textStyle)
-      .style('x', orient === 'vertical' ? 0 : (align === 'start' ? -1 : 1) * (width / 2 + 4))
-      .style('y', orient === 'vertical' ? (align === 'start' ? -1 : 1) * (height / 2 + 4) : 0)
+      .style('dx', orient === 'vertical' ? 0 : (align === 'start' ? -1 : 1) * offset)
+      .style('dy', orient === 'vertical' ? (align === 'start' ? -1 : 1) * offset : 0)
       .style('textAlign', textAlign)
       .style('textBaseline', textBaseline);
   }
 
   private bindEvents() {
     const marker = select(this).select('.handle-marker').node() as Marker;
+    const label = select(this).select('.handle-label').node() as Text;
     select(marker).on('mouseenter', () => {
       const { active: activeStyle } = this.styles.markerStyle;
       marker.attr(activeStyle || {});
@@ -146,5 +146,47 @@ export class Handle extends CustomElement<HandleStyleProps> {
       const { size, active: activeStyle, ...markerStyle } = this.styles.markerStyle;
       marker.attr(markerStyle);
     });
+
+    select(label)
+      .on(ElementEvent.ATTR_MODIFIED, () => this.dodgeText())
+      .on(ElementEvent.BOUNDS_CHANGED, () => this.dodgeText());
+  }
+
+  private dodgeText() {
+    const label = select(this).select('.handle-label').node() as Text;
+    const size = (this.styles.markerStyle?.size || 10) as number;
+    const offset = size / 2 + 4;
+    const { halfExtents } = label.getLocalBounds();
+    if (this.styles.orient === 'vertical') {
+      const length = halfExtents[1] * 2;
+      if (this.style.align === 'start') {
+        if (length + offset >= this.getLocalPosition()[1]) {
+          label.attr({ dx: offset, textBaseline: 'top' });
+        } else {
+          label.attr({ dx: -offset, textBaseline: 'bottom' });
+        }
+      } else if (this.styles.max) {
+        if (this.getLocalPosition()[1] + length + offset > this.styles.max) {
+          label.attr({ dx: -offset, textBaseline: 'bottom' });
+        } else {
+          label.attr({ dx: offset, textBaseline: 'top' });
+        }
+      }
+    } else {
+      const length = halfExtents[0] * 2;
+      if (this.style.align === 'start') {
+        if (length + offset >= this.getLocalPosition()[0]) {
+          label.attr({ dx: offset, textAlign: 'left' });
+        } else {
+          label.attr({ dx: -offset, textAlign: 'right' });
+        }
+      } else if (this.styles.max) {
+        if (this.getLocalPosition()[0] + length + offset > this.styles.max) {
+          label.attr({ dx: -offset, textAlign: 'right' });
+        } else {
+          label.attr({ dx: offset, textAlign: 'left' });
+        }
+      }
+    }
   }
 }
