@@ -1,8 +1,8 @@
 import type { PathCommand } from '@antv/g';
-import { Rect } from '@antv/g';
 import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
 import { GUI } from '../../core/gui';
+import { maybeAppend, select } from '../../util';
 import { Lines } from './lines';
 import { Columns } from './columns';
 import { getRange, getStackedData } from './utils';
@@ -43,9 +43,6 @@ export class Sparkline extends GUI<SparklineCfg> {
       },
     },
   };
-
-  // sparkline容器
-  private containerShape!: Rect;
 
   // Lines或者Columns
   private sparkShape!: Lines | Columns;
@@ -143,7 +140,8 @@ export class Sparkline extends GUI<SparklineCfg> {
       range: [0, height],
     });
 
-    const bandWidth = x.getBandWidth();
+    const bandWidth = x.getBandWidth?.() || 0;
+
     const { rawData } = this;
     return {
       columns: data.map((column, i) => {
@@ -173,35 +171,34 @@ export class Sparkline extends GUI<SparklineCfg> {
 
   constructor(options: SparklineOptions) {
     super(deepMix({}, Sparkline.defaultOptions, options));
-
-    this.containerShape = new Rect({
-      name: 'container',
-      style: this.containerCfg,
-    });
-    this.appendChild(this.containerShape);
-    this.init();
   }
 
-  public init() {
-    this.sparkShape = this.createSparkline();
-    this.appendChild(this.sparkShape);
+  connectedCallback() {
+    this.render();
   }
 
   /**
    * 组件的更新
    */
   public update(cfg: Partial<SparklineCfg>) {
-    const { type: oldType } = this.attributes;
     this.attr(deepMix({}, this.attributes, cfg));
-    const { type } = cfg;
-    // 如果type变了，需要清空this.sparkShapes子元素
-    if (type && type !== oldType) {
-      this.clear();
-      this.sparkShape = this.createSparkline();
-      this.appendChild(this.sparkShape);
+    this.render();
+  }
+
+  private render() {
+    const type = this.style.type || 'line';
+
+    const spark = select(this).select('.sparkline').node() as any;
+    if (spark && spark.style.type !== `${type}`) {
+      spark.remove();
+      this.removeChild(spark);
     }
-    if (this.sparkShape instanceof Lines) this.sparkShape.update(this.linesCfg);
-    else this.sparkShape.update(this.columnsCfg);
+    const Ctor = type === 'column' ? Columns : Lines;
+    maybeAppend(this, '.sparkline', () => new Ctor({}))
+      .attr('className', 'sparkline')
+      .call((selection) => {
+        (selection.node() as Columns | Lines).update(type === 'line' ? this.linesCfg : this.columnsCfg);
+      });
   }
 
   /**
@@ -211,21 +208,6 @@ export class Sparkline extends GUI<SparklineCfg> {
     this.removeChild(this.sparkShape);
     this.sparkShape.clear();
     this.sparkShape.destroy();
-  }
-
-  private createSparkline() {
-    const { type } = this.attributes;
-    const baseCfg = { name: 'sparkline' };
-    if (type === 'line')
-      return new Lines({
-        ...baseCfg,
-        style: this.linesCfg as any,
-      });
-    // if (type === 'column')
-    return new Columns({
-      ...baseCfg,
-      style: this.columnsCfg as any,
-    });
   }
 
   /**

@@ -4,7 +4,7 @@ import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale } from '@antv/scale';
 import { applyStyle, maybeAppend, normalPadding, select, Selection } from '../../util';
 import { Linear } from '../axis';
-import { Sparkline } from '../sparkline';
+import { Sparkline, SparklineCfg } from '../sparkline';
 import { AxisBase, AxisStyleProps, DEFAULT_AXIS_CFG, normalSelection } from '../timeline/playAxis';
 import { DEFAULT_TIMELINE_STYLE } from '../timeline/constants';
 import { Handle } from './handle';
@@ -17,7 +17,7 @@ type HandleStyle = {
   lineWidth?: number;
 };
 type StyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'> & {
-  sparkline?: {
+  sparkline?: Partial<SparklineCfg> & {
     padding?: number | number[];
     fields?: string[];
     // todo 补充更多配置
@@ -125,8 +125,9 @@ export class Slider extends AxisBase<StyleProps> {
       .call(applyStyle, backgroundStyle)
       .node();
 
-    const [top, right, bottom, left] = normalPadding(sparkline?.padding!);
-    const sparklineData = (sparkline?.fields || []).map((field) => data.map((d) => d[field] ?? null));
+    const { padding, fields = [], ...sparklineCfg } = sparkline || {};
+    const [top, right, bottom, left] = normalPadding(padding!);
+    const sparklineData = (fields || []).map((field) => data.map((d) => d[field] ?? null));
     maybeAppend(bg, '.slider-sparkline', () => new Sparkline({}))
       .attr('className', 'slider-sparkline')
       .call((selection) => {
@@ -138,6 +139,7 @@ export class Slider extends AxisBase<StyleProps> {
             `rotate(0deg) translate(${left},${top})`,
             `rotate(90deg) translate(${left},-${size - top})`
           ),
+          ...sparklineCfg,
         });
       });
 
@@ -169,7 +171,7 @@ export class Slider extends AxisBase<StyleProps> {
           align: 'start',
           orient: orient as any,
           markerStyle: { ...handleStyles, size: startHandleSize ?? handleSize, symbol: symbol ?? startHandleIcon },
-          textStyle: { ...textStyle, text: data[this.selection[0]]?.date || '' },
+          textStyle: { ...textStyle, text: data[this.selection[0]]?.name || '' },
           max: length,
         });
       });
@@ -183,12 +185,12 @@ export class Slider extends AxisBase<StyleProps> {
           align: 'end',
           orient: orient as any,
           markerStyle: { ...handleStyles, size: endHandleSize ?? handleSize, symbol: symbol ?? endHandleIcon },
-          textStyle: { ...textStyle, text: data[this.selection[1]]?.date || '' },
+          textStyle: { ...textStyle, text: data[this.selection[1]]?.name || '' },
           max: length,
         });
       });
 
-    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick?.date || '' }));
+    const ticks = data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick?.name || '' }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
     maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
@@ -233,8 +235,8 @@ export class Slider extends AxisBase<StyleProps> {
   private adjustLabel() {
     const startHandle = select(this).select('.slider-start-handle').node() as Handle;
     const endHandle = select(this).select('.slider-end-handle').node() as Handle;
-    const text0 = this.styles.data[this.selection[0]]?.date || '';
-    const text1 = this.styles.data[this.selection[1]]?.date || '';
+    const text0 = this.styles.data[this.selection[0]]?.name || '';
+    const text1 = this.styles.data[this.selection[1]]?.name || '';
     if (startHandle.style.textStyle?.text !== text0) {
       startHandle.update({ textStyle: { text: text0 } });
     }

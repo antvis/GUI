@@ -89,8 +89,8 @@ describe('Slider', () => {
   it('new Slider({...}) returns a vertical slider.', () => {
     const slider = new Slider({
       style: {
-        x: 90,
-        y: 240,
+        x: 630,
+        y: 30,
         orient: 'vertical',
         data: timeData,
         length: 270,
@@ -101,6 +101,82 @@ describe('Slider', () => {
         },
         sparkline: {
           fields: ['val1', 'val2'],
+        },
+      },
+    });
+
+    canvas.appendChild(slider);
+  });
+
+  it('new Slider({...}) returns a', () => {
+    const data = [
+      {
+        name: 'London',
+        月份: 'Jan.',
+        London_月均降雨量: 18.9,
+        Berlin_月均降雨量: 12.4,
+      },
+      {
+        name: 'London',
+        月份: 'Feb.',
+        London_月均降雨量: 28.8,
+        Berlin_月均降雨量: 23.2,
+      },
+      {
+        name: 'London',
+        月份: 'Mar.',
+        London_月均降雨量: 39.3,
+        Berlin_月均降雨量: 34.5,
+      },
+      {
+        name: 'London',
+        月份: 'Apr.',
+        London_月均降雨量: 81.4,
+        Berlin_月均降雨量: 99.7,
+      },
+      {
+        name: 'London',
+        月份: 'May',
+        London_月均降雨量: 47,
+        Berlin_月均降雨量: 52.6,
+      },
+      {
+        name: 'London',
+        月份: 'Jun.',
+        London_月均降雨量: 20.3,
+        Berlin_月均降雨量: 35.5,
+      },
+      {
+        name: 'London',
+        月份: 'Jul.',
+        London_月均降雨量: 24,
+        Berlin_月均降雨量: 37.4,
+      },
+      {
+        name: 'London',
+        月份: 'Aug.',
+        London_月均降雨量: 35.6,
+        Berlin_月均降雨量: 42.4,
+      },
+    ];
+
+    const slider = new Slider({
+      style: {
+        x: 60,
+        y: 240,
+        data: data.map((d) => ({ ...d, name: d['月份'] })),
+        length: 524,
+        size: 20,
+        selection: [4, 5],
+        handleStyle: {
+          size: 12,
+        },
+        sparkline: {
+          type: 'column',
+          isGroup: true,
+          fields: ['London_月均降雨量', 'Berlin_月均降雨量'],
+          fillOpacity: 1,
+          padding: 0,
         },
       },
     });

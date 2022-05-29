@@ -2,7 +2,7 @@ import { Cursor, PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g'
 import { AxisTickLineCfg } from '../axis/types';
 
 export type TimeData = {
-  date: string;
+  name: string;
   [k: string]: any;
 };
 
