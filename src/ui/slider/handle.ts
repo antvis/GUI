@@ -161,15 +161,15 @@ export class Handle extends CustomElement<HandleStyleProps> {
       const length = halfExtents[1] * 2;
       if (this.style.align === 'start') {
         if (length + offset >= this.getLocalPosition()[1]) {
-          label.attr({ dx: offset, textBaseline: 'top' });
+          label.attr({ dy: offset, textBaseline: 'top' });
         } else {
-          label.attr({ dx: -offset, textBaseline: 'bottom' });
+          label.attr({ dy: -offset, textBaseline: 'bottom' });
         }
       } else if (this.styles.max) {
         if (this.getLocalPosition()[1] + length + offset > this.styles.max) {
-          label.attr({ dx: -offset, textBaseline: 'bottom' });
+          label.attr({ dy: -offset, textBaseline: 'bottom' });
         } else {
-          label.attr({ dx: offset, textBaseline: 'top' });
+          label.attr({ dy: offset, textBaseline: 'top' });
         }
       }
     } else {

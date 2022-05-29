@@ -160,8 +160,8 @@ export class Slider extends AxisBase<StyleProps> {
 
     const { size: handleSize = 10, symbol, ...handleStyles } = handleStyle;
     maybeAppend(bg, '.slider-start-handle', () => new Handle({ className: 'slider-start-handle' }))
-      .style('x', x1)
-      .style('y', (y1 + y2) / 2)
+      .style('x', this.ifH(x1, (x1 + x2) / 2))
+      .style('y', this.ifH((y1 + y2) / 2, y1))
       .style('cursor', this.ifH('ew-resize', 'ns-resize'))
       .call((selection) => {
         (selection.node() as Handle).update({
@@ -174,8 +174,8 @@ export class Slider extends AxisBase<StyleProps> {
       });
 
     maybeAppend(bg, '.slider-end-handle', () => new Handle({ className: 'slider-end-handle' }))
-      .style('x', x2)
-      .style('y', (y1 + y2) / 2)
+      .style('x', this.ifH(x2, (x1 + x2) / 2))
+      .style('y', this.ifH((y1 + y2) / 2, y2))
       .style('cursor', this.ifH('ew-resize', 'ns-resize'))
       .call((selection) => {
         (selection.node() as Handle).update({
@@ -219,13 +219,13 @@ export class Slider extends AxisBase<StyleProps> {
     const endHandle = target.select('.slider-end-handle').node() as Handle;
     startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, target }: any) => {
       if (attrName === 'x' || attrName === 'y') {
-        selection.style[attrName === 'x' ? 'x1' : 'y1'] = Number(startHandle.style.x);
+        selection.style[attrName === 'x' ? 'x1' : 'y1'] = Number(startHandle.getAttribute(attrName));
         this.adjustLabel(startHandle, 'start');
       }
     });
     endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName }: any) => {
       if (attrName === 'x' || attrName === 'y') {
-        selection.style[attrName === 'x' ? 'x2' : 'y2'] = Number(endHandle.style.x);
+        selection.style[attrName === 'x' ? 'x2' : 'y2'] = Number(endHandle.getAttribute(attrName));
         this.adjustLabel(endHandle, 'end');
       }
     });

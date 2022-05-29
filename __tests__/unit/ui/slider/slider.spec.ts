@@ -84,4 +84,26 @@ describe('Slider', () => {
 
     canvas.appendChild(slider);
   });
+
+  it('new Slider({...}) returns a vertical slider.', () => {
+    const slider = new Slider({
+      style: {
+        x: 90,
+        y: 240,
+        orient: 'vertical',
+        data: timeData,
+        length: 270,
+        size: 20,
+        selection: [4, 16],
+        handleStyle: {
+          size: 12,
+        },
+        sparkline: {
+          fields: ['val1', 'val2'],
+        },
+      },
+    });
+
+    canvas.appendChild(slider);
+  });
 });

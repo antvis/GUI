@@ -1,12 +1,4 @@
-import type {
-  ShapeAttrs,
-  DisplayObjectConfig,
-  TextProps,
-  MixAttrs,
-  RectProps,
-  ImageProps,
-  PathProps,
-} from '../../types';
+import type { ShapeAttrs, DisplayObjectConfig, TextProps, MixAttrs, RectProps } from '../../types';
 import type { MarkerStyleProps } from '../marker';
 import type { SparklineCfg } from '../sparkline/types';
 
