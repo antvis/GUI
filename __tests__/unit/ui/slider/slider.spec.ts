@@ -28,7 +28,8 @@ describe('Slider', () => {
     canvas.appendChild(slider);
 
     slider.addEventListener('selectionChanged', (evt: any) => {
-      // console.log('selectionChanged', evt.detail.originValue, evt.detail.value);
+      const [idx0, idx1] = evt.detail.value;
+      console.log('selectionChanged', evt.detail.originValue, [idx0, idx1], timeData[idx0], timeData[idx1]);
     });
   });
 

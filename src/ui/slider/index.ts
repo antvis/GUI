@@ -2,7 +2,7 @@ import { ElementEvent, Line, CustomEvent, TextStyleProps } from '@antv/g';
 import type { DisplayObjectConfig } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale } from '@antv/scale';
-import { applyStyle, maybeAppend, normalPadding, select, Selection, throttle } from '../../util';
+import { applyStyle, maybeAppend, normalPadding, select, Selection } from '../../util';
 import { Linear } from '../axis';
 import { Sparkline } from '../sparkline';
 import { AxisBase, AxisStyleProps, DEFAULT_AXIS_CFG, normalSelection } from '../timeline/playAxis';
@@ -94,6 +94,7 @@ export class Slider extends AxisBase<StyleProps> {
     const start = getIndexByPosition(handlePosition[0], this.styles.length!, this.style.data);
     const end = getIndexByPosition(handlePosition[1], this.styles.length!, this.style.data);
     this.selection = [start ?? originValue[0], end ?? originValue[1]];
+    this.adjustLabel();
     this.emitEvent('selectionChanged', { originValue, value: this.selection });
   }
 
@@ -220,21 +221,25 @@ export class Slider extends AxisBase<StyleProps> {
     startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, target }: any) => {
       if (attrName === 'x' || attrName === 'y') {
         selection.style[attrName === 'x' ? 'x1' : 'y1'] = Number(startHandle.getAttribute(attrName));
-        this.adjustLabel(startHandle, 'start');
       }
     });
     endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName }: any) => {
       if (attrName === 'x' || attrName === 'y') {
         selection.style[attrName === 'x' ? 'x2' : 'y2'] = Number(endHandle.getAttribute(attrName));
-        this.adjustLabel(endHandle, 'end');
       }
     });
   }
 
-  private adjustLabel(shape: Handle, type: 'start' | 'end') {
-    const text = this.styles.data[this.selection[type === 'start' ? 0 : 1]]?.date || '';
-    if (shape.style.textStyle?.text !== text) {
-      shape.update({ textStyle: { text } });
+  private adjustLabel() {
+    const startHandle = select(this).select('.slider-start-handle').node() as Handle;
+    const endHandle = select(this).select('.slider-end-handle').node() as Handle;
+    const text0 = this.styles.data[this.selection[0]]?.date || '';
+    const text1 = this.styles.data[this.selection[1]]?.date || '';
+    if (startHandle.style.textStyle?.text !== text0) {
+      startHandle.update({ textStyle: { text: text0 } });
+    }
+    if (endHandle.style.textStyle?.text !== text1) {
+      endHandle.update({ textStyle: { text: text1 } });
     }
   }
 
@@ -341,7 +346,6 @@ export class Slider extends AxisBase<StyleProps> {
       .on('touchendoutside', onDragEnd.bind(this));
   }
 
-  @throttle(50)
   protected emitEvent(eventName: string, detail: any) {
     this.dispatchEvent(new CustomEvent(eventName, { detail }));
   }
