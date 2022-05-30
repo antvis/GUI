@@ -33,7 +33,7 @@ canvas.appendChild(sparkline);
 describe('sparkline', () => {
   test('basic line', async () => {
     // @ts-ignore
-    const path0 = sparkline.sparkShape.linesGroup.children[0].attr('path');
+    const path0 = sparkline.querySelector('.sparkline')!.linesGroup.children[0].attr('path');
     const y = (val: number) => {
       return (1 - (val + 10) / 25) * 50;
     };

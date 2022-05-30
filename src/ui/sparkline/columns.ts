@@ -38,6 +38,7 @@ export class Columns extends DisplayObject<IColumnsCfg> {
       .join(
         (enter) =>
           enter.append('rect').each(function (datum) {
+            this.className = 'column';
             this.attr(datum);
           }),
         (update) =>
