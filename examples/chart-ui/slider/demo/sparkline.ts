@@ -52,27 +52,26 @@ const sliderFolder = cfg.addFolder('Slider边距');
 sliderFolder.open();
 const sliderCfg = { 左间距: 0, 右间距: 0, 上间距: 0, 下间距: 0 };
 
-// todo
-// const sliderLeft = sliderFolder.add(sliderCfg, '左间距', 0, 10).onChange((value) => {
-//   slider.update({
-//     padding: [sliderTop.getValue(), sliderRight.getValue(), sliderBottom.getValue(), value],
-//   });
-// });
-// const sliderRight = sliderFolder.add(sliderCfg, '右间距', 0, 10).onChange((value) => {
-//   slider.update({
-//     padding: [sliderTop.getValue(), value, sliderBottom.getValue(), sliderLeft.getValue()],
-//   });
-// });
-// const sliderTop = sliderFolder.add(sliderCfg, '上间距', 0, 10).onChange((value) => {
-//   slider.update({
-//     padding: [value, sliderRight.getValue(), sliderBottom.getValue(), sliderLeft.getValue()],
-//   });
-// });
-// const sliderBottom = sliderFolder.add(sliderCfg, '下间距', 0, 10).onChange((value) => {
-//   slider.update({
-//     padding: [sliderTop.getValue(), sliderRight.getValue(), value, sliderLeft.getValue()],
-//   });
-// });
+const sliderLeft = sliderFolder.add(sliderCfg, '左间距', 0, 10).onChange((value) => {
+  slider.update({
+    padding: [sliderTop.getValue(), sliderRight.getValue(), sliderBottom.getValue(), value],
+  });
+});
+const sliderRight = sliderFolder.add(sliderCfg, '右间距', 0, 10).onChange((value) => {
+  slider.update({
+    padding: [sliderTop.getValue(), value, sliderBottom.getValue(), sliderLeft.getValue()],
+  });
+});
+const sliderTop = sliderFolder.add(sliderCfg, '上间距', 0, 10).onChange((value) => {
+  slider.update({
+    padding: [value, sliderRight.getValue(), sliderBottom.getValue(), sliderLeft.getValue()],
+  });
+});
+const sliderBottom = sliderFolder.add(sliderCfg, '下间距', 0, 10).onChange((value) => {
+  slider.update({
+    padding: [sliderTop.getValue(), sliderRight.getValue(), value, sliderLeft.getValue()],
+  });
+});
 
 const sparklineFolder = cfg.addFolder('Sparkline边距');
 sparklineFolder.open();

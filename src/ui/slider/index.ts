@@ -1,4 +1,4 @@
-import { ElementEvent, Line, CustomEvent, isNil } from '@antv/g';
+import { ElementEvent, CustomEvent, isNil, Rect } from '@antv/g';
 import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale, Band as BandScale, Linear as LinearScale } from '@antv/scale';
 import { applyStyle, maybeAppend, normalPadding, select, Selection } from '../../util';
@@ -86,10 +86,22 @@ export class Slider extends AxisBase<SliderStyleProps> {
     return this.style.type;
   }
 
+  private get length(): number {
+    const { length } = this.styles;
+    const [pt, pr, pb, pl] = normalPadding(this.style.padding);
+    return this.ifH(length - pr - pl, length - pt - pb);
+  }
+
+  private get size(): number {
+    const { size } = this.styles;
+    const [pt, pr, pb, pl] = normalPadding(this.style.padding);
+    return this.ifH(size - pt - pb, size - pr - pl);
+  }
+
   protected updateSelection() {
     const originValue = this.selection;
 
-    const length = this.styles.length!;
+    const length = this.length;
     const startHandle = select(this).select(`.slider-start-handle`).node();
     const endHandle = select(this).select(`.slider-end-handle`).node() || startHandle;
     const handlePosition = this.ifH([startHandle.style.x, endHandle.style.x], [startHandle.style.y, endHandle.style.y]);
@@ -104,8 +116,6 @@ export class Slider extends AxisBase<SliderStyleProps> {
   protected render() {
     const {
       sparkline,
-      length,
-      size,
       backgroundStyle,
       data,
       textStyle,
@@ -117,19 +127,19 @@ export class Slider extends AxisBase<SliderStyleProps> {
       orient,
       ...styles
     } = this.styles;
-    const [width, height] = this.ifH([length, size], [size, length]);
-
+    const [pt, , , pl] = normalPadding(this.style.padding);
+    const [width, height] = this.ifH([this.length, this.size], [this.size, this.length]);
     const bg = maybeAppend(this, '.slider-background', 'rect')
       .attr('className', 'slider-background')
-      .style('x', 0)
-      .style('y', 0)
+      .style('x', pl)
+      .style('y', pt)
       .style('width', width)
       .style('height', height)
       .call(applyStyle, backgroundStyle)
       .node();
 
-    const { padding, fields = [], ...sparklineCfg } = sparkline || {};
-    const [top, right, bottom, left] = normalPadding(padding!);
+    const { padding: p, fields = [], ...sparklineCfg } = sparkline || {};
+    const [top, right, bottom, left] = normalPadding(sparkline?.padding!);
     // todo 优化 Sparkline 兼容 null 数据
     const sparklineData = (fields || []).map((field) => data.map((d) => d[field]).filter((d) => !isNil(d)));
     maybeAppend(bg, '.slider-sparkline', () => new Sparkline({}))
@@ -142,12 +152,12 @@ export class Slider extends AxisBase<SliderStyleProps> {
         }
         (selection.node() as Sparkline).update({
           ...sparklineCfg,
-          width: length - left - right,
-          height: size - top - bottom,
+          width: this.length - left - right,
+          height: this.size - top - bottom,
           data: sparklineData,
           transform: this.ifH(
             `rotate(0deg) translate(${left},${top})`,
-            `rotate(90deg) translate(${left},-${size - top})`
+            `rotate(90deg) translate(${left},-${this.size - top})`
           ),
         });
       });
@@ -158,20 +168,17 @@ export class Slider extends AxisBase<SliderStyleProps> {
       if (this.type === 'linear') return d;
       return tickScale.map(d) + bandWidth / 2;
     }) as number[];
-    const x1 = this.ifH(st * width, width / 2);
-    const x2 = this.ifH(et * width, width / 2);
-    const y1 = this.ifH(height / 2, st * height);
-    const y2 = this.ifH(height / 2, et * height);
+    const x1 = this.ifH(st * width, 0);
+    const x2 = this.ifH(et * width, width);
+    const y1 = this.ifH(0, st * height);
+    const y2 = this.ifH(height, et * height);
 
-    maybeAppend(bg, '.slider-selection', 'line')
+    maybeAppend(bg, '.slider-selection', 'rect')
       .attr('className', 'slider-selection')
-      .style('x1', x1)
-      .style('y1', y1)
-      .style('x2', x2)
-      .style('y2', y2)
-      .style('lineWidth', this.ifH(height, width))
-      .style('stroke', styles.selectionStyle.fill)
-      .style('strokeOpacity', styles.selectionStyle.fillOpacity)
+      .style('x', x1)
+      .style('y', y1)
+      .style('width', x2 - x1)
+      .style('height', y2 - y1)
       .call(applyStyle, styles.selectionStyle);
 
     const { size: handleSize = 10, symbol, ...handleStyles } = handleStyle;
@@ -185,7 +192,7 @@ export class Slider extends AxisBase<SliderStyleProps> {
           orient: orient as any,
           markerStyle: { ...handleStyles, size: startHandleSize ?? handleSize, symbol: symbol ?? startHandleIcon },
           textStyle,
-          max: length,
+          max: this.length,
         });
       });
 
@@ -199,7 +206,7 @@ export class Slider extends AxisBase<SliderStyleProps> {
           orient: orient as any,
           markerStyle: { ...handleStyles, size: endHandleSize ?? handleSize, symbol: symbol ?? endHandleIcon },
           textStyle,
-          max: length,
+          max: this.length,
         });
       });
     this.adjustText();
@@ -242,17 +249,18 @@ export class Slider extends AxisBase<SliderStyleProps> {
     this.dragHandle(target, 'end');
     this.dragSelection(target);
 
-    const selection = target.select('.slider-selection').node() as Line;
+    const selection = target.select('.slider-selection').node() as Rect;
     const startHandle = target.select('.slider-start-handle').node() as Handle;
     const endHandle = target.select('.slider-end-handle').node() as Handle;
     startHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName, target }: any) => {
       if (attrName === 'x' || attrName === 'y') {
-        selection.style[attrName === 'x' ? 'x1' : 'y1'] = Number(startHandle.getAttribute(attrName));
+        selection.style[attrName === 'x' ? 'x' : 'y'] = Number(startHandle.getAttribute(attrName));
       }
     });
     endHandle.addEventListener(ElementEvent.ATTR_MODIFIED, ({ attrName }: any) => {
       if (attrName === 'x' || attrName === 'y') {
-        selection.style[attrName === 'x' ? 'x2' : 'y2'] = Number(endHandle.getAttribute(attrName));
+        selection.style[attrName === 'x' ? 'width' : 'height'] =
+          Number(endHandle.getAttribute(attrName)) - Number(startHandle.getAttribute(attrName));
       }
     });
   }
@@ -300,7 +308,7 @@ export class Slider extends AxisBase<SliderStyleProps> {
     };
     const onDragMove = (event: any) => {
       if (dragging) {
-        const length = this.styles.length!;
+        const length = this.length!;
         const offset = this.ifH(event.x, event.y) - lastPosition;
         const position = shape.getLocalPosition();
         if (this.orient === 'vertical') {
@@ -335,7 +343,7 @@ export class Slider extends AxisBase<SliderStyleProps> {
   }
 
   private dragSelection(selection: Selection) {
-    const shape = selection.select('.slider-selection').node() as Line;
+    const shape = selection.select('.slider-selection').node() as Rect;
     const startHandle = selection.select('.slider-start-handle').node();
     const endHandle = selection.select('.slider-end-handle').node();
 
@@ -355,7 +363,7 @@ export class Slider extends AxisBase<SliderStyleProps> {
     };
     const onDragMove = (event: any) => {
       if (dragging) {
-        const length = this.styles.length!;
+        const length = this.length!;
         const offset = this.ifH(event.x - lastPosition[0], event.y - lastPosition[1]);
         const [x0, y0] = startHandle.getLocalPosition();
         const [x1, y1] = endHandle.getLocalPosition();

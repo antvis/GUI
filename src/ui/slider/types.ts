@@ -17,6 +17,7 @@ export type SliderStyleProps = Omit<AxisStyleProps, 'singleMode' | 'handleStyle'
   x?: number;
   y?: number;
   type?: 'date' | 'category' | 'linear';
+  padding?: number | number[];
   sparkline?: Partial<Omit<SparklineCfg, 'data' | 'width' | 'height' | 'x' | 'y'>> & {
     padding?: number | number[];
     fields?: string[];
