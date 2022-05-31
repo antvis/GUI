@@ -252,10 +252,10 @@ describe('Category legend', () => {
     expect(item2.getBBox().x).toBe(0);
 
     category.update({ orient: 'vertical' });
-    expect(category.querySelector('.page-button')!.style.visibility).toBe('hidden');
+    expect(category.querySelector('.page-button-group')!.style.visibility).toBe('hidden');
 
     category.update({ orient: 'vertical', maxHeight: 78 });
-    expect(category.querySelector('.page-button')!.style.visibility).toBe('visible');
+    expect(category.querySelector('.page-button-group')!.style.visibility).toBe('visible');
 
     category.destroy();
   });

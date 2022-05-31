@@ -86,11 +86,11 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   constructor(options: DisplayObjectConfig<CategoryItemsStyleProps>) {
     super(deepMix({}, CategoryItems.defaultOptions, options));
-    this.container = this.appendChild(new Group());
-    this.clipView = new Path({ style: { path: [] } });
   }
 
   connectedCallback() {
+    this.container = this.appendChild(new Group());
+    this.clipView = new Path({ style: { path: [] } });
     this.render();
     this.bindEvents();
   }
@@ -247,6 +247,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     }, 0);
 
     const limitSize = this.ifHorizontal(this.style.maxWidth, this.style.maxHeight)!;
+
     if (!(isNil(limitSize) || limitSize === Infinity) && limitSize < totalSize) {
       if (this.style.autoWrap && this.style.orient !== 'vertical') {
         this.layoutButton('vertical');
@@ -267,17 +268,17 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
     const buttonGroupBounds = buttonGroup.getLocalBounds();
     const buttonGroupWidth = buttonGroupBounds.halfExtents[0] * 2;
+    const buttonGroupHeight = buttonGroupBounds.halfExtents[1] * 2;
     const [pageWidth, pageHeight] = this.ifHorizontal(
       [limitSize - (buttonGroupWidth + pageSpacing), itemHeight],
-      [itemWidth, limitSize - (buttonGroupBounds.halfExtents[1] * 2 + pageSpacing)]
+      [itemWidth, limitSize - (buttonGroupHeight + pageSpacing)]
     );
     this.clipView.style.path = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
     this.container.style.clipPath = this.clipView;
     // 更新 ButtonGroup 位置.
+    buttonGroup.style.x = this.ifHorizontal(limitSize - buttonGroupWidth, 0);
     // todo 存在像素误差
-    const y = this.ifHorizontal(pageHeight / 2, pageHeight + pageButtonSize / 2 + pageSpacing) - 1;
-    buttonGroup.style.x = limitSize - buttonGroupWidth;
-    buttonGroup.style.y = y;
+    buttonGroup.style.y = this.ifHorizontal(pageHeight / 2 - 1, pageHeight + pageButtonSize + pageSpacing);
 
     // Get page info.
     const direction = this.ifHorizontal('x', 'y');

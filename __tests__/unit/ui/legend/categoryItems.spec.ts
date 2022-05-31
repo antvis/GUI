@@ -19,18 +19,20 @@ describe('CategoryItems', () => {
         orient: 'horizontal',
         items: ITEMS,
         maxWidth: 220,
+        pageButtonSize: 10,
+        pageSpacing: 8,
       },
     });
 
     canvas.appendChild(group);
-    expect(group.querySelector('.page-button')!.style.visibility).toBe('visible');
+    const buttonGroup = group.querySelector('.page-button-group')! as any;
+    expect(buttonGroup.style.visibility).toBe('visible');
 
-    group.style.pageButtonSize = 10;
-    // fixme
-    // group.style.pageInfoWidth = 40;
-    group.style.pageSpacing = 8;
     // @ts-ignore
-    expect(group.clipView.getLocalBounds().halfExtents[0] * 2).toBe(220 - 40 - 10 * 2 - 8);
+    expect(group.clipView.getLocalBounds().halfExtents[0] * 2).toBe(
+      220 - 8 - buttonGroup.getLocalBounds().halfExtents[0] * 2
+    );
+    group.destroy();
   });
 
   it('new CategoryItems({..}) should draw a vertical category items group.', () => {
@@ -41,27 +43,24 @@ describe('CategoryItems', () => {
         items: ITEMS,
         maxHeight: 116,
         pageTextStyle: { fill: 'red' },
-        pageButtonStyle: { default: { fill: 'red' }, disabled: { fill: 'pink' } },
+        pageSpacing: 8,
+        pageButtonSize: 10,
       },
     });
 
     canvas.appendChild(group);
-
-    group.style.pageButtonSize = 10;
-    // fixme
-    // group.style.pageInfoWidth = 40;
-    group.style.pageSpacing = 8;
+    const buttonGroup = group.querySelector('.page-button-group')! as any;
     // @ts-ignore
-    expect(group.clipView.getLocalBounds().halfExtents[1] * 2).toBe(116 - 10 - 8);
+    expect(group.clipView.getLocalBounds().halfExtents[1] * 2).toBe(
+      116 - 8 - buttonGroup.getLocalBounds().halfExtents[1] * 2
+    );
 
-    group.style.pageFormatter = (c: number, t: number) => `${c} // ${t}`;
-    group.style.pageTextStyle = { fill: 'black' };
+    group.update({ pageFormatter: (c: number, t: number) => `${c} // ${t}`, pageTextStyle: { fill: 'black' } });
+    expect(group.querySelector('.page-info')!.style.text).toBe('1 // 3');
 
-    expect(group.querySelector('.page-info')!.style.text).toBe('1 // 2');
-
-    group.style.orient = 'horizontal';
-    expect(group.querySelector('.page-button')!.style.visibility).not.toBe('visible');
-    // group.destroy();
+    group.update({ orient: 'horizontal' });
+    expect(buttonGroup.style.visibility).not.toBe('visible');
+    group.destroy();
   });
 
   it('new CategoryItems({..}) support autoWrap in horizontal orient.', () => {
@@ -81,7 +80,7 @@ describe('CategoryItems', () => {
 
     expect(group.querySelectorAll('.page-button')![0].style.symbol).toBe('up');
     expect(group.querySelectorAll('.page-button')![1].style.symbol).toBe('down');
-    // group.destroy();
+    group.destroy();
   });
 
   it('new CategoryItems({..}) do not support autoWrap in vertical orient.', () => {
@@ -100,6 +99,6 @@ describe('CategoryItems', () => {
 
     expect(group.querySelectorAll('.page-button')![0].style.symbol).toBe('up');
     expect(group.querySelectorAll('.page-button')![1].style.symbol).toBe('down');
-    // group.destroy();
+    group.destroy();
   });
 });
