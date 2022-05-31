@@ -89,25 +89,6 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.bindEvents();
   }
 
-  attributeChangedCallback(name: keyof CategoryItemsStyleProps, oldValue: any, newValue: any) {
-    if (name === 'pageButtonSize') {
-      this.prevButton!.style.size = newValue;
-      this.nextButton!.style.size = newValue;
-      this.adjustLayout();
-    }
-    if (name === 'pageInfoWidth' || name === 'pageSpacing') this.adjustLayout();
-    if (name === 'orient' || name === 'autoWrap' || name === 'maxWidth' || name === 'maxHeight') {
-      this.updatePageButtonSymbol();
-      this.adjustLayout();
-    }
-    if (name === 'maxRows' && this.style.autoWrap) {
-      this.adjustLayout();
-    }
-    if (name === 'pageFormatter') this.updatePageInfo();
-    if (name === 'pageTextStyle') this.applyPageInfoStyle();
-    if (name === 'pageButtonStyle') this.applyPageButtonStyle();
-  }
-
   public update(cfg: Partial<CategoryItemsStyleProps> = {}) {
     this.attr(deepMix({}, this.attributes, cfg));
     this.render();

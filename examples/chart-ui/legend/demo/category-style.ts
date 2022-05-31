@@ -37,25 +37,21 @@ const category = new Category({
     spacing: [10, 10],
     maxWidth: 350,
     maxItemWidth: 180,
-    itemMarker: {
-      style: {
-        selected: {
-          fill: '#ecbf41',
+    itemMarker: ({ color }) => {
+      return {
+        style: {
+          fill: color || '#ecbf41',
         },
-      },
+      };
     },
     itemName: {
       style: {
-        selected: {
-          fill: '#d94948',
-        },
+        fill: '#d94948',
       },
     },
     itemValue: {
       style: {
-        selected: {
-          fill: '#1cb4a2',
-        },
+        fill: '#1cb4a2',
       },
     },
   },

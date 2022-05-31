@@ -1,6 +1,6 @@
 import { CustomEvent } from '@antv/g';
 import { min, isFunction, deepMix } from '@antv/util';
-import { applyStyle, deepAssign, maybeAppend } from '../../util';
+import { deepAssign, maybeAppend } from '../../util';
 import type { StyleState as State } from '../../types';
 import { CategoryItem } from './categoryItem';
 import type { CategoryCfg, CategoryOptions } from './types';
