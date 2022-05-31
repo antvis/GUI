@@ -53,7 +53,7 @@ export class Category extends LegendBase<CategoryCfg> {
 
   private get idItem(): Map<string, CategoryItem> {
     const legendItems = this.labelsGroup?.querySelectorAll('.legend-item') as CategoryItem[];
-    return new Map((legendItems || []).map((item) => [item.getID(), item]));
+    return new Map((legendItems || []).map((item) => [item.style.id, item]));
   }
 
   public getItem(id: string): CategoryItem | undefined {
@@ -91,7 +91,7 @@ export class Category extends LegendBase<CategoryCfg> {
           return deepMix(
             {},
             DEFAULT_ITEM_MARKER,
-            { symbol: item.symbol, style: { default: { fill: item.color, stroke: item.color } } },
+            { symbol: item.symbol, style: { fill: item.color, stroke: item.color } },
             markerCfg
           );
         })(),

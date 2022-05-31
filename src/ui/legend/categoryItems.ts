@@ -40,6 +40,8 @@ type CategoryItemsStyleProps = BaseCustomElementStyleProps & {
   duration?: number;
 };
 
+export type { CategoryItemsStyleProps };
+
 export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   private container!: Group;
 
@@ -315,7 +317,10 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private updatePageInfo() {
-    const pageFormatter = this.style.pageFormatter || CategoryItems.defaultOptions.style.pageFormatter;
+    let pageFormatter = this.style.pageFormatter;
+    if (typeof pageFormatter !== 'function') {
+      pageFormatter = CategoryItems.defaultOptions.style.pageFormatter;
+    }
     this.pageInfo.style.text = !(this.currPage && this.maxPages) ? '' : pageFormatter(this.currPage, this.maxPages);
   }
 

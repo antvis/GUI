@@ -1,22 +1,23 @@
-import { CategoryItems } from '../../../../src/ui/legend/categoryItems';
+import { CategoryItems, CategoryItemsStyleProps } from '../../../../src/ui/legend/categoryItems';
 import { createCanvas } from '../../../utils/render';
+import { LEGEND_ITEMS } from './data';
 
 const canvas = createCanvas(800);
 
-describe('CategoryItems', () => {
-  const items = Array(10)
-    .fill(null)
-    .map((_, idx) => ({
-      id: `${idx}`,
-      itemMarker: { symbol: 'circle', size: 10, style: { default: { fill: 'red' } } },
-      itemName: { content: `Item-${idx} ${Math.random()}`, spacing: 4 },
-    }));
+const ITEMS: CategoryItemsStyleProps['items'] = LEGEND_ITEMS.map((d) => {
+  return {
+    ...d,
+    itemMarker: { symbol: 'circle', style: { fill: d.color }, size: 8 },
+    itemName: { content: d.name },
+  };
+});
 
+describe('CategoryItems', () => {
   it('new CategoryItems({..}) should draw a category items group.', () => {
     const group = new CategoryItems({
       style: {
         orient: 'horizontal',
-        items,
+        items: ITEMS,
         maxWidth: 220,
       },
     });
@@ -36,7 +37,7 @@ describe('CategoryItems', () => {
       style: {
         y: 50,
         orient: 'vertical',
-        items,
+        items: ITEMS,
         maxHeight: 116,
         pageTextStyle: { fill: 'red' },
         pageButtonStyle: { default: { fill: 'red' }, disabled: { fill: 'pink' } },
@@ -58,28 +59,27 @@ describe('CategoryItems', () => {
 
     group.style.orient = 'horizontal';
     expect(group.querySelector('.page-button')!.style.visibility).not.toBe('visible');
-    group.destroy();
+    // group.destroy();
   });
 
-  it('new CategoryItems({..}) support autoWrap in horizontal orient.', () => {
+  it.only('new CategoryItems({..}) support autoWrap in horizontal orient.', () => {
     const group = new CategoryItems({
       style: {
         y: 50,
         orient: 'horizontal',
-        items,
-        maxHeight: 116,
+        items: ITEMS,
+        maxHeight: 20,
         maxWidth: 320,
         autoWrap: true,
-        maxRows: 3,
+        // maxRows: 3,
       },
     });
 
     canvas.appendChild(group);
 
-    group.style.orient = 'horizontal';
     expect(group.querySelectorAll('.page-button')![0].style.symbol).toBe('up');
     expect(group.querySelectorAll('.page-button')![1].style.symbol).toBe('down');
-    group.destroy();
+    // group.destroy();
   });
 
   it('new CategoryItems({..}) do not support autoWrap in vertical orient.', () => {
@@ -87,7 +87,7 @@ describe('CategoryItems', () => {
       style: {
         y: 140,
         orient: 'vertical',
-        items,
+        items: ITEMS,
         maxHeight: 116,
         maxWidth: 320,
         autoWrap: true,
@@ -98,6 +98,6 @@ describe('CategoryItems', () => {
 
     expect(group.querySelectorAll('.page-button')![0].style.symbol).toBe('up');
     expect(group.querySelectorAll('.page-button')![1].style.symbol).toBe('down');
-    group.destroy();
+    // group.destroy();
   });
 });

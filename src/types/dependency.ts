@@ -1,5 +1,9 @@
+import { BaseStyleProps } from '@antv/g';
+export type ShapeAttrs = Partial<BaseStyleProps> & {
+  cursor?: string;
+};
+
 export type {
-  BaseCustomElementStyleProps as ShapeAttrs,
   DisplayObject,
   DisplayObjectConfig,
   CircleStyleProps as CircleProps,

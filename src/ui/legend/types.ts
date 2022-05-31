@@ -1,18 +1,40 @@
-import type {
-  DisplayObjectConfig,
-  ShapeAttrs,
-  StyleState,
-  MixAttrs,
-  TextProps,
-  ImageProps,
-  PathProps,
-} from '../../types';
+import { TextStyleProps } from '@antv/g';
+import type { DisplayObjectConfig, ShapeAttrs, StyleState, MixAttrs, ImageProps, PathProps } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
-import type { ItemMarkerCfg, ItemNameCfg, ItemValueCfg } from './categoryItem';
 
-export type State = StyleState | 'default-active' | 'selected-active';
+export type State = StyleState;
 export type SymbolCfg = MarkerStyleProps['symbol'];
 
+export type MixShapeStyleProps = ShapeAttrs & {
+  disabled?: ShapeAttrs;
+  selected?: ShapeAttrs;
+  active?: ShapeAttrs;
+  inactive?: ShapeAttrs;
+};
+export type ItemMarkerCfg = {
+  size?: number;
+  symbol?: MarkerStyleProps['symbol'];
+  style?: MixShapeStyleProps;
+};
+type TextProps = Omit<TextStyleProps, 'text'>;
+type MixTextStyleProps = TextProps & {
+  active?: TextProps;
+  inactive?: TextProps;
+  disabled?: TextProps;
+  selected?: TextProps;
+};
+export type ItemNameCfg = {
+  content?: string;
+  spacing?: number;
+  style?: MixTextStyleProps;
+};
+export type ItemValueCfg = {
+  content?: string;
+  spacing?: number;
+  // todo 待定
+  align?: 'left' | 'right';
+  style?: MixTextStyleProps;
+};
 /**
  * 连续图例色轨
  */
@@ -259,7 +281,7 @@ export type CategoryCfg = LegendBaseCfg & {
     formatter?: (item: CategoryItem, index: number, items: CategoryItem[]) => string;
   };
   itemPadding?: number | number[];
-  itemBackgroundStyle?: MixAttrs<ShapeAttrs>;
+  itemBackgroundStyle?: MixShapeStyleProps;
   // 图例项最大宽度（跟随形式）
   maxItemWidth?: number;
   // 自动换行、列
