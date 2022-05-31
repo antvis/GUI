@@ -9,7 +9,7 @@ import {
 } from '@antv/g';
 import { deepMix, isNil, last } from '@antv/util';
 import { ShapeAttrs } from '../../types';
-import { normalPadding, select } from '../../util';
+import { maybeAppend, normalPadding, select } from '../../util';
 import { CategoryItem, CategoryItemStyleProps } from './categoryItem';
 import { PageButton } from './pageButton';
 
@@ -84,7 +84,6 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   connectedCallback() {
-    this.initPageNavigator();
     this.render();
     this.bindEvents();
   }
@@ -95,6 +94,8 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private render() {
+    this.initPageNavigator();
+
     const { items = [] } = this.style;
     this.items = select(this.container)
       .selectAll(`.legend-item`)
@@ -128,9 +129,13 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   private initPageNavigator() {
     const buttonCfg = { className: 'page-button', zIndex: 2 };
-    this.prevButton = this.appendChild(new PageButton(buttonCfg));
-    this.nextButton = this.appendChild(new PageButton(buttonCfg));
-    this.pageInfo = this.appendChild(new Text({ className: 'page-info' }));
+    this.prevButton = maybeAppend(this, '#page-prev-button', () => new PageButton(buttonCfg))
+      .attr('id', 'page-prev-button')
+      .node() as PageButton;
+    this.nextButton = maybeAppend(this, '#page-next-button', () => new PageButton(buttonCfg))
+      .attr('id', 'page-next-button')
+      .node() as PageButton;
+    this.pageInfo = maybeAppend(this, '.page-info', 'text').attr('className', 'page-info').node() as Text;
 
     this.updatePageButtonSymbol();
     this.applyPageButtonStyle();
@@ -164,6 +169,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.pageOffsets = [];
   }
 
+  // [todo] refactor later.
   private adjustLayout() {
     this.resetPageCfg();
     if (this.items.length <= 1) return;
@@ -245,7 +251,8 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     const pageInfoWidth = this.style.pageInfoWidth || CategoryItems.defaultOptions.style.pageInfoWidth;
     const pageInfoHeight = this.style.pageInfoHeight || CategoryItems.defaultOptions.style.pageInfoHeight;
 
-    const maxRows = this.style.maxRows || 1;
+    const maxRows = this.style.maxRows || 2;
+
     const [pageWidth, pageHeight] = [limitSize - (pageInfoWidth + pageSpacing), itemHeight * maxRows];
     this.clipView.style.path = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
     this.container.style.clipPath = this.clipView;
@@ -273,9 +280,9 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.currPage = 1;
     this.pageOffsets = pageOffsets;
 
-    const x = pageWidth + pageSpacing + pageButtonSize / 2;
-    const y0 = pageHeight / 2;
     const buttonOffset = (pageInfoHeight + pageButtonSize) / 2;
+    const x = pageWidth + pageSpacing + pageButtonSize / 2;
+    const y0 = Math.max(pageHeight / 2, buttonOffset);
     this.prevButton?.setLocalPosition(x, y0 - buttonOffset);
     this.nextButton?.setLocalPosition(x, y0 + buttonOffset);
     this.pageInfo?.setLocalPosition(x, y0);

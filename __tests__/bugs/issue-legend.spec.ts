@@ -1,12 +1,13 @@
 import { Category } from '../../src/ui/legend/category';
 import { createCanvas } from '../utils/render';
 
-const canvas = createCanvas(800, undefined, true);
+const canvas = createCanvas(800, 'svg', true);
 describe('Legend', () => {
   it('legend `autoWrap` without specify `maxRows`', () => {
     const legend = canvas.appendChild(
       new Category({
         style: {
+          y: 5,
           items: [
             { id: 'Wholesale and Retail Trade', name: 'Wholesale and Retail Trade', color: '#5B8FF9' },
             { id: 'Manufacturing', name: 'Manufacturing', color: '#CDDDFD' },
@@ -24,10 +25,10 @@ describe('Legend', () => {
             { id: 'Mining and Extraction', name: 'Mining and Extraction', color: '#DECFEA' },
           ],
           maxWidth: 565,
-          maxHeight: 60,
+          maxHeight: 64,
           autoWrap: true,
           pageNavigator: {
-            pageFormatter: (c, t) => `${c}/${t}`,
+            pageFormatter: (c, t) => `${c} / ${t}`,
           },
         },
       })
@@ -35,6 +36,6 @@ describe('Legend', () => {
 
     const pageInfo = legend.querySelector('.page-info')! as any;
     expect(pageInfo).toBeDefined();
-    expect(pageInfo.style.text).not.toBe('1/1');
+    expect(pageInfo.style.text).not.toBe('1 / 1');
   });
 });
