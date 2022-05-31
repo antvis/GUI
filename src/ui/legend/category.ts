@@ -38,15 +38,17 @@ export class Category extends LegendBase<CategoryCfg> {
   private drawItems() {
     this.labelsGroup = maybeAppend(this.innerGroup, '.category-items', () => new CategoryItems({}))
       .attr('className', 'category-items')
-      .call(applyStyle, {
-        orient: this.orient,
-        items: this.itemsShapeCfg,
-        spacing: this.style.spacing,
-        autoWrap: this.style.autoWrap,
-        maxRows: this.style.maxRows,
-        maxWidth: this.style.maxWidth,
-        maxHeight: this.style.maxHeight,
-        ...(this.style.pageNavigator || {}),
+      .call((selection) => {
+        (selection.node() as CategoryItems).update({
+          orient: this.orient,
+          items: this.itemsShapeCfg,
+          spacing: this.style.spacing,
+          autoWrap: this.style.autoWrap,
+          maxRows: this.style.maxRows,
+          maxWidth: this.style.maxWidth,
+          maxHeight: this.style.maxHeight,
+          ...(this.style.pageNavigator || {}),
+        });
       })
       .node() as CategoryItems;
   }
@@ -84,7 +86,7 @@ export class Category extends LegendBase<CategoryCfg> {
     return items.map((item, idx) => {
       return {
         id: item.id || `legend-item-${idx}`,
-        state: item.state || 'default',
+        state: item.state || 'selected',
         maxItemWidth: min([maxItemWidth ?? Number.MAX_VALUE, maxWidth ?? Number.MAX_VALUE]),
         itemMarker: (() => {
           const markerCfg = isFunction(itemMarker) ? itemMarker(item, idx, items) : itemMarker;

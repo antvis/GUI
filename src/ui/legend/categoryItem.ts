@@ -77,7 +77,9 @@ function adjustText(nameShape?: Text | null, valueShape?: Text | null, maxWidth?
 }
 
 export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
-  private state: string = 'default';
+  private active = false;
+
+  private state: State = 'selected';
 
   public static defaultOptions: CategoryItemOptions = {
     style: {
@@ -123,7 +125,7 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
 
   constructor(options: CategoryItemOptions) {
     super(deepMix({}, CategoryItem.defaultOptions, options));
-    this.state = this.style.state || 'default';
+    this.state = this.style.state || 'selected';
   }
 
   connectedCallback() {
@@ -131,13 +133,13 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
     this.bindEvents();
   }
 
-  public setState(state: State = 'default') {
+  public setState(state: 'selected' | 'unselected' | 'disabled' = 'selected') {
     this.state = state;
     this.render();
   }
 
   public getState(): State {
-    return (get(this.style, ['state']) || '').split('-')[0] || 'default';
+    return this.state;
   }
 
   public update(cfg: Partial<CategoryItemStyleProps> = {}) {
@@ -187,7 +189,7 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
           y: 0,
           size: markerSize,
           symbol: itemMarker.symbol,
-          ...omit(itemMarker.style || {}, ['active', 'selected', 'disabled']),
+          ...omit(itemMarker.style || {}, ['active', 'selected', 'disabled', 'unselected']),
           ...get(itemMarker.style || {}, this.state),
         });
       });
@@ -207,8 +209,9 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
           text: itemName?.content || '',
           textBaseline: 'middle',
           textAlign: 'left',
-          ...omit(itemName.style || {}, ['active', 'selected', 'disabled']),
+          ...omit(itemName.style || {}, ['active', 'disabled', 'unselected']),
           ...get(itemName.style || {}, this.state),
+          ...(this.active ? get(itemName.style || {}, 'active') : {}),
         });
       })
       .node() as Text;
@@ -232,8 +235,9 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
           tip: itemValue?.content || '',
           text: itemValue?.content || '',
           textAlign: 'left',
-          ...omit(itemValue.style || {}, ['active', 'selected', 'disabled']),
+          ...omit(itemValue.style || {}, ['active', 'disabled', 'unselected']),
           ...get(itemValue.style || {}, this.state),
+          ...(this.active ? get(itemValue.style || {}, 'active') : {}),
           textBaseline: 'middle',
         });
       })
@@ -247,7 +251,7 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
     }
 
     const bounds = container.getLocalBounds();
-    let itemWidth = isNil(this.styles.itemWidth) ? bounds.halfExtents[0] * 2 + pr + pl : this.styles.itemWidth;
+    let itemWidth = Math.max(bounds.halfExtents[0] * 2 + pr + pl, this.styles.itemWidth || 0);
     if (!isNil(maxItemWidth)) {
       itemWidth = Math.min(maxItemWidth, itemWidth);
     }
@@ -260,9 +264,36 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
       .style('width', itemWidth)
       .style('height', itemHeight)
       .style('zIndex', -1)
-      .call(applyStyle, omit(backgroundStyle, ['selected', 'active', 'disabled']))
-      .call(applyStyle, get(backgroundStyle, this.state));
+      .call(applyStyle, omit(backgroundStyle, ['unselected', 'active', 'disabled']))
+      .call(applyStyle, get(backgroundStyle, this.state))
+      .call(applyStyle, this.active ? get(backgroundStyle, 'active') : {});
   }
 
-  private bindEvents() {}
+  public onClick() {
+    if (this.state === 'disabled') return;
+    this.state = this.state === 'unselected' ? 'selected' : 'unselected';
+    const evt = new CustomEvent('stateChange', {
+      detail: { value: { id: this.style.id, state: this.state } },
+    });
+    this.dispatchEvent(evt as any);
+    this.render();
+  }
+
+  private bindEvents() {
+    // Only for PC.
+    this.addEventListener('mouseleave', this.offHover.bind(this));
+    this.addEventListener('mousemove', this.onHover.bind(this));
+    // For PC and mobile.
+    this.addEventListener('pointerdown', this.onClick.bind(this));
+  }
+
+  public onHover() {
+    this.active = true;
+    this.render();
+  }
+
+  public offHover() {
+    this.active = false;
+    this.render();
+  }
 }

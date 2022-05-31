@@ -2,26 +2,24 @@ import { TextStyleProps } from '@antv/g';
 import type { DisplayObjectConfig, ShapeAttrs, StyleState, MixAttrs, ImageProps, PathProps } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
 
+type TextProps = Omit<TextStyleProps, 'text'>;
+
 export type State = StyleState;
 export type SymbolCfg = MarkerStyleProps['symbol'];
-
 export type MixShapeStyleProps = ShapeAttrs & {
   disabled?: ShapeAttrs;
-  selected?: ShapeAttrs;
+  unselected?: TextProps;
   active?: ShapeAttrs;
-  inactive?: ShapeAttrs;
 };
 export type ItemMarkerCfg = {
   size?: number;
   symbol?: MarkerStyleProps['symbol'];
   style?: MixShapeStyleProps;
 };
-type TextProps = Omit<TextStyleProps, 'text'>;
 type MixTextStyleProps = TextProps & {
-  active?: TextProps;
-  inactive?: TextProps;
   disabled?: TextProps;
-  selected?: TextProps;
+  unselected?: TextProps;
+  active?: TextProps;
 };
 export type ItemNameCfg = {
   content?: string;

@@ -9,7 +9,7 @@ import {
 } from '@antv/g';
 import { deepMix, isNil, last } from '@antv/util';
 import { ShapeAttrs } from '../../types';
-import { normalPadding, select2update } from '../../util';
+import { normalPadding, select } from '../../util';
 import { CategoryItem, CategoryItemStyleProps } from './categoryItem';
 import { PageButton } from './pageButton';
 
@@ -85,15 +85,11 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   connectedCallback() {
     this.initPageNavigator();
-    this.drawItems();
+    this.render();
     this.bindEvents();
   }
 
   attributeChangedCallback(name: keyof CategoryItemsStyleProps, oldValue: any, newValue: any) {
-    if (name === 'items') {
-      this.drawItems();
-      this.adjustLayout();
-    }
     if (name === 'pageButtonSize') {
       this.prevButton!.style.size = newValue;
       this.nextButton!.style.size = newValue;
@@ -112,16 +108,34 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     if (name === 'pageButtonStyle') this.applyPageButtonStyle();
   }
 
+  public update(cfg: Partial<CategoryItemsStyleProps> = {}) {
+    this.attr(deepMix({}, this.attributes, cfg));
+    this.render();
+  }
+
+  private render() {
+    const { items = [] } = this.style;
+    this.items = select(this.container)
+      .selectAll(`.legend-item`)
+      .data(items || [], (d, idx) => d.id || idx)
+      .join(
+        (enter) => enter.append((datum) => new CategoryItem({ id: datum.id, className: 'legend-item', style: datum })),
+        (update) =>
+          update.each(function (datum) {
+            this.update(datum);
+          }),
+        (exit) => exit.remove()
+      )
+      .nodes() as CategoryItem[];
+
+    this.adjustLayout();
+  }
+
   private bindEvents() {
     this.container.addEventListener(ElementEvent.MOUNTED, () => this.adjustLayout(), { capture: true });
 
     this.prevButton.addEventListener('click', this.prev.bind(this));
     this.nextButton.addEventListener('click', this.next.bind(this));
-  }
-
-  private drawItems() {
-    const { items = [] } = this.style;
-    this.items = select2update(this.container, 'legend-item', CategoryItem, items) as CategoryItem[];
   }
 
   private ifHorizontal<T>(a: T, b: T) {
