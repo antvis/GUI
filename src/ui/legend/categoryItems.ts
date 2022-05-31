@@ -191,14 +191,21 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
       prevBtn.style.x = prevBtnWidth / 2;
       nextBtn.style.x = prevBtnWidth + pageInfoWidth + nextBtnWidth / 2;
       pageInfo.style.x = (Number(prevBtn.style.x) + Number(nextBtn.style.x)) / 2;
-      pageInfo.style.textAlign = 'center';
+
+      prevBtn.style.y = 0;
+      nextBtn.style.y = 0;
+      pageInfo.style.y = 0;
     } else {
       const prevBtnHeight = prevBtn.getLocalBounds().halfExtents[1] * 2;
       const nextBtnHeight = nextBtn.getLocalBounds().halfExtents[1] * 2;
       prevBtn.style.y = -(pageInfoHeight + prevBtnHeight) / 2;
       nextBtn.style.y = (pageInfoHeight + nextBtnHeight) / 2;
       pageInfo.style.y = 0;
-      pageInfo.style.textBaseline = 'middle';
+
+      const centerX = this.pageInfoBounds.width / 2;
+      prevBtn.style.x = centerX;
+      nextBtn.style.x = centerX;
+      pageInfo.style.x = centerX;
     }
   }
 
@@ -219,6 +226,8 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.currPage = undefined;
     this.maxPages = undefined;
     this.pageOffsets = [];
+    this.container.style.transform = 'translate(0,0)';
+    this.clipView && (this.clipView.style.transform = 'translate(0,0)');
   }
 
   // [todo] refactor later.
