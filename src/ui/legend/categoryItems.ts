@@ -129,10 +129,8 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private bindEvents() {
-    this.container.addEventListener(ElementEvent.MOUNTED, () => this.adjustLayout(), { capture: true });
-
-    this.prevButton.addEventListener('click', this.prev.bind(this));
-    this.nextButton.addEventListener('click', this.next.bind(this));
+    this.prevButton.addEventListener('pointerdown', this.prev.bind(this));
+    this.nextButton.addEventListener('pointerdown', this.next.bind(this));
   }
 
   private ifHorizontal<T>(a: T, b: T) {
@@ -196,15 +194,11 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private showPageNavigator() {
-    this.prevButton.style.visibility = 'visible';
-    this.nextButton.style.visibility = 'visible';
-    this.pageInfo.style.visibility = 'visible';
+    (this.querySelector('.page-button-group') as any).style.visibility = 'visible';
   }
 
   private resetPageCfg() {
-    this.prevButton.style.visibility = 'hidden';
-    this.nextButton.style.visibility = 'hidden';
-    this.pageInfo.style.visibility = 'hidden';
+    (this.querySelector('.page-button-group') as any).style.visibility = 'hidden';
     this.container.style.clipPath = null;
     this.currPage = undefined;
     this.maxPages = undefined;
