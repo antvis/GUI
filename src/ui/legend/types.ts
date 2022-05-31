@@ -146,6 +146,7 @@ export type LegendBaseCfg = {
    */
   title?: {
     content?: string;
+    spacing?: number;
     style?: Partial<TextProps>;
     // 目前仅对 连续图例 生效
     align?: 'left' | 'center' | 'right';

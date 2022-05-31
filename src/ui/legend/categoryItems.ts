@@ -68,11 +68,26 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
       duration: 320,
       maxRows: 2,
       maxCols: 2,
-      pageInfoWidth: 32,
+      pageInfoWidth: 24,
       pageInfoHeight: 14,
       pageButtonSize: 10,
       pageFormatter: (current: number, total: number) => `${current} / ${total}`,
-      pageButtonStyle: { default: { fill: 'black' }, disabled: { fill: 'rgb(131,131,131)' } },
+      pageButtonStyle: {
+        size: 10,
+        // 不建议设置 margin 和 padding (需要根据方向调整，比较麻烦)
+        margin: 0,
+        padding: 0,
+        markerStyle: {
+          fill: 'black',
+          cursor: 'pointer',
+          disabled: { fill: '#d9d9d9', cursor: 'not-allowed' },
+        },
+        backgroundStyle: {
+          cursor: 'pointer',
+          fill: 'transparent',
+          disabled: { cursor: 'not-allowed' },
+        },
+      },
       pageTextStyle: { fontSize: 12, textBaseline: 'middle', textAlign: 'center' },
     },
   };
@@ -94,7 +109,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private render() {
-    this.initPageNavigator();
+    this.renderButtonGroup();
 
     const { items = [] } = this.style;
     this.items = select(this.container)
@@ -127,25 +142,52 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     return typeof a === 'function' ? a() : a;
   }
 
-  private initPageNavigator() {
-    const buttonCfg = { className: 'page-button', zIndex: 2 };
-    this.prevButton = maybeAppend(this, '#page-prev-button', () => new PageButton(buttonCfg))
-      .attr('id', 'page-prev-button')
+  private renderButtonGroup() {
+    const group = maybeAppend(this, '.page-button-group', () => new Group({ className: 'page-button-group' })).node();
+    const prevBtnId = 'page-prev-button';
+    const nextBtnId = 'page-next-button';
+    this.prevButton = maybeAppend(group, `#${prevBtnId}`, () => new PageButton({}))
+      .attr('id', prevBtnId)
+      .attr('className', 'page-button')
+      .attr('zIndex', 2)
       .node() as PageButton;
-    this.nextButton = maybeAppend(this, '#page-next-button', () => new PageButton(buttonCfg))
-      .attr('id', 'page-next-button')
+    this.pageInfo = maybeAppend(group, '.page-info', 'text').attr('className', 'page-info').node() as Text;
+    this.nextButton = maybeAppend(group, `#${nextBtnId}`, () => new PageButton({}))
+      .attr('id', nextBtnId)
+      .attr('className', 'page-button')
+      .attr('zIndex', 2)
       .node() as PageButton;
-    this.pageInfo = maybeAppend(this, '.page-info', 'text').attr('className', 'page-info').node() as Text;
-
     this.updatePageButtonSymbol();
     this.applyPageButtonStyle();
     this.applyPageInfoStyle();
   }
 
+  private layoutButton(orient: 'horizontal' | 'vertical') {
+    const { pageInfoWidth = 24, pageInfoHeight = 10 } = this.style;
+    const buttonGroup = this.querySelector('.page-button-group') as Group;
+    const [prevBtn, pageInfo, nextBtn] = buttonGroup.childNodes as [PageButton, Text, PageButton];
+
+    if (orient === 'horizontal') {
+      const prevBtnWidth = prevBtn.getLocalBounds().halfExtents[0] * 2;
+      const nextBtnWidth = nextBtn.getLocalBounds().halfExtents[0] * 2;
+      prevBtn.style.x = prevBtnWidth / 2;
+      nextBtn.style.x = prevBtnWidth + pageInfoWidth + nextBtnWidth / 2;
+      pageInfo.style.x = (prevBtn.style.x + nextBtn.style.x) / 2;
+      pageInfo.style.textAlign = 'center';
+    } else {
+      const prevBtnHeight = prevBtn.getLocalBounds().halfExtents[1] * 2;
+      const nextBtnHeight = nextBtn.getLocalBounds().halfExtents[1] * 2;
+      prevBtn.style.y = -(pageInfoHeight + prevBtnHeight) / 2;
+      nextBtn.style.y = (pageInfoHeight + nextBtnHeight) / 2;
+      pageInfo.style.y = 0;
+      pageInfo.style.textBaseline = 'middle';
+    }
+  }
+
   private applyPageButtonStyle() {
-    const markerStyle = deepMix({}, CategoryItems.defaultOptions.style.pageButtonStyle, this.style.pageButtonStyle);
-    this.prevButton.attr({ markerStyle });
-    this.nextButton.attr({ markerStyle });
+    const buttonStyle = deepMix({}, CategoryItems.defaultOptions.style.pageButtonStyle, this.style.pageButtonStyle);
+    this.prevButton.update(buttonStyle);
+    this.nextButton.update(buttonStyle);
   }
 
   private applyPageInfoStyle() {
@@ -197,8 +239,10 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     const limitSize = this.ifHorizontal(this.style.maxWidth, this.style.maxHeight)!;
     if (!(isNil(limitSize) || limitSize === Infinity) && limitSize < totalSize) {
       if (this.style.autoWrap && this.style.orient !== 'vertical') {
+        this.layoutButton('vertical');
         this.adjustHorizontalWrap(itemWidth, itemHeight, limitSize);
       } else {
+        this.layoutButton('horizontal');
         this.adjustFlip(itemWidth, itemHeight, limitSize);
       }
     }
@@ -206,24 +250,24 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   private adjustFlip(itemWidth: number, itemHeight: number, limitSize: number) {
     this.showPageNavigator();
+    const buttonGroup = this.querySelector('.page-button-group') as Group;
+
     const pageSpacing = this.style.pageSpacing!;
     const pageButtonSize = this.prevButton.style.size || CategoryItems.defaultOptions.style.pageButtonSize;
-    const pageInfoWidth = this.style.pageInfoWidth || CategoryItems.defaultOptions.style.pageInfoWidth;
 
+    const buttonGroupBounds = buttonGroup.getLocalBounds();
+    const buttonGroupWidth = buttonGroupBounds.halfExtents[0] * 2;
     const [pageWidth, pageHeight] = this.ifHorizontal(
-      [limitSize - (pageButtonSize * 2 + pageInfoWidth + pageSpacing), itemHeight],
-      [itemWidth, limitSize - (pageButtonSize + pageSpacing)]
+      [limitSize - (buttonGroupWidth + pageSpacing), itemHeight],
+      [itemWidth, limitSize - (buttonGroupBounds.halfExtents[1] * 2 + pageSpacing)]
     );
     this.clipView.style.path = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
     this.container.style.clipPath = this.clipView;
-
-    const x0 = this.ifHorizontal(pageWidth + pageSpacing, 0);
-    const x1 = x0 + pageButtonSize / 2;
-    const x2 = x0 + (pageButtonSize / 2) * 3 + pageInfoWidth;
-    const y = this.ifHorizontal(itemHeight / 2, pageHeight + pageButtonSize / 2 + pageSpacing);
-    this.prevButton?.setLocalPosition(x1, y);
-    this.nextButton?.setLocalPosition(x2, y);
-    this.pageInfo.setLocalPosition((x1 + x2) / 2, y);
+    // 更新 ButtonGroup 位置.
+    // todo 存在像素误差
+    const y = this.ifHorizontal(pageHeight / 2, pageHeight + pageButtonSize / 2 + pageSpacing) - 1;
+    buttonGroup.style.x = limitSize - buttonGroupWidth;
+    buttonGroup.style.y = y;
 
     // Get page info.
     const direction = this.ifHorizontal('x', 'y');
@@ -246,20 +290,20 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   private adjustHorizontalWrap(itemWidth: number, itemHeight: number, limitSize: number) {
     this.showPageNavigator();
-    const pageSpacing = this.style.pageSpacing!;
-    const pageButtonSize = this.prevButton.style.size || CategoryItems.defaultOptions.style.pageButtonSize;
-    const pageInfoWidth = this.style.pageInfoWidth || CategoryItems.defaultOptions.style.pageInfoWidth;
-    const pageInfoHeight = this.style.pageInfoHeight || CategoryItems.defaultOptions.style.pageInfoHeight;
+    const buttonGroup = this.querySelector('.page-button-group') as Group;
+
+    const { pageSpacing = 0, pageInfoWidth = 24 } = this.style;
 
     const maxRows = this.style.maxRows || 2;
+    const buttonGroupBounds = buttonGroup.getLocalBounds();
+    const buttonGroupWidth = Math.max(buttonGroupBounds.halfExtents[0] * 2, pageInfoWidth);
 
-    const [pageWidth, pageHeight] = [limitSize - (pageInfoWidth + pageSpacing), itemHeight * maxRows];
+    const [pageWidth, pageHeight] = [limitSize - (buttonGroupWidth + pageSpacing), itemHeight * maxRows];
     this.clipView.style.path = `M0,0 L${pageWidth},0 L${pageWidth},${pageHeight} L0,${pageHeight} Z`;
     this.container.style.clipPath = this.clipView;
 
     // Get page info.
     const pageSize = pageWidth;
-
     let row = 1;
     let offset = 0;
     const pageOffsets: number[] = [0];
@@ -280,12 +324,10 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.currPage = 1;
     this.pageOffsets = pageOffsets;
 
-    const buttonOffset = (pageInfoHeight + pageButtonSize) / 2;
-    const x = pageWidth + pageSpacing + pageButtonSize / 2;
-    const y0 = Math.max(pageHeight / 2, buttonOffset);
-    this.prevButton?.setLocalPosition(x, y0 - buttonOffset);
-    this.nextButton?.setLocalPosition(x, y0 + buttonOffset);
-    this.pageInfo?.setLocalPosition(x, y0);
+    // 更新 ButtonGroup 位置. (todo 可以优化下，靠近 items 而不是贴边)
+    buttonGroup.style.x = limitSize - buttonGroupWidth;
+    // todo 后续修复 存在几像素误差
+    buttonGroup.style.y = pageHeight / 2 - 2;
     this.updatePageNavigatorState();
   }
 
@@ -300,22 +342,22 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   private updatePageNavigatorState() {
     this.updatePageInfo();
     if (this.currPage === this.maxPages) {
-      this.nextButton.style.disabled = true;
+      this.nextButton.setState('disabled');
     } else {
-      this.nextButton.style.disabled = false;
+      this.nextButton.setState('default');
     }
     if (this.currPage === 1) {
-      this.prevButton.style.disabled = true;
+      this.prevButton.setState('disabled');
     } else {
-      this.prevButton.style.disabled = false;
+      this.prevButton.setState('default');
     }
   }
 
   private updatePageButtonSymbol() {
     const { autoWrap } = this.style;
     const sign = this.ifHorizontal(autoWrap ? 1 : 0, 1);
-    this.prevButton.attr({ symbol: ['left', 'up'][sign] });
-    this.nextButton.attr({ symbol: ['right', 'down'][sign] });
+    this.prevButton.update({ symbol: ['left', 'up'][sign] });
+    this.nextButton.update({ symbol: ['right', 'down'][sign] });
   }
 
   private updatePageInfo() {
