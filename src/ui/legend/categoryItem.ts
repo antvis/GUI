@@ -1,14 +1,6 @@
 import { Text, CustomElement, DisplayObjectConfig, CustomEvent } from '@antv/g';
 import { deepMix, get, omit, isNil } from '@antv/util';
-import {
-  applyStyle,
-  getFont,
-  maybeAppend,
-  getEllipsisText,
-  normalPadding,
-  TEXT_INHERITABLE_PROPS,
-  select,
-} from '../../util';
+import { applyStyle, getFont, maybeAppend, getEllipsisText, normalPadding, TEXT_INHERITABLE_PROPS } from '../../util';
 import { Marker } from '../marker';
 import { NAME_VALUE_RATIO } from './constant';
 import { ItemMarkerCfg, ItemNameCfg, ItemValueCfg, MixShapeStyleProps, State } from './types';
@@ -191,6 +183,7 @@ export class CategoryItem extends CustomElement<CategoryItemStyleProps> {
           symbol: itemMarker.symbol,
           ...omit(itemMarker.style || {}, ['active', 'selected', 'disabled', 'unselected']),
           ...get(itemMarker.style || {}, this.state),
+          ...(this.active ? get(itemMarker.style || {}, 'active') : {}),
         });
       });
 

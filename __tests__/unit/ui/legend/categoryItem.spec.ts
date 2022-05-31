@@ -1,5 +1,6 @@
 import { CategoryItem } from '../../../../src/ui/legend/categoryItem';
 import { createCanvas } from '../../../utils/render';
+import { delay } from '../../../utils/delay';
 
 const canvas = createCanvas(500, 'svg', true);
 
@@ -7,7 +8,7 @@ const categoryItem = new CategoryItem({
   style: {
     x: 30,
     y: 30,
-    state: 'default',
+    state: 'selected',
     id: '1',
     padding: 2,
     itemMarker: {
@@ -15,11 +16,11 @@ const categoryItem = new CategoryItem({
       symbol: 'circle',
       style: {
         fill: 'red',
-        selected: {
-          fill: 'green',
-        },
         active: {
           opacity: 0.9,
+          fill: 'green',
+        },
+        disabled: {
           fill: 'green',
         },
       },
@@ -28,16 +29,14 @@ const categoryItem = new CategoryItem({
       style: {
         fontSize: 12,
         opacity: 1,
-        fill: 'red',
         textBaseline: 'middle',
-        selected: {
-          fontSize: 12,
-          opacity: 1,
-          fill: 'green',
-        },
+        fill: 'red',
         active: {
           fontSize: 12,
           opacity: 0.9,
+          fill: 'green',
+        },
+        disabled: {
           fill: 'green',
         },
       },
@@ -49,15 +48,12 @@ const categoryItem = new CategoryItem({
         fontSize: 12,
         opacity: 1,
         fill: 'red',
-        textBaseline: 'middle',
-        selected: {
-          fontSize: 12,
-          opacity: 1,
-          fill: 'green',
-        },
         active: {
           fontSize: 12,
           opacity: 0.9,
+          fill: 'green',
+        },
+        disabled: {
           fill: 'green',
         },
       },
@@ -66,11 +62,11 @@ const categoryItem = new CategoryItem({
     },
     backgroundStyle: {
       fill: 'rgba(245, 0, 31, 0.1)',
-      selected: {
-        fill: 'rgba(255, 192, 50, 0.1)',
-      },
       active: {
         fill: 'rgba(67, 195, 119, 0.1)',
+      },
+      disabled: {
+        fill: 'rgba(245, 0, 31, 0.1)',
       },
     },
   },
@@ -107,8 +103,8 @@ describe('CategoryItem', () => {
     expect(background.getBounds().center[1]).toBe(valueShape.getBounds().center[1]);
   });
 
-  it('new CategoryItem({}) returns a categoryItem with selected state.', () => {
-    categoryItem.setState('selected');
+  it('new CategoryItem({}) returns a categoryItem with disabled state.', () => {
+    categoryItem.setState('disabled');
     const marker = categoryItem.querySelector('.legend-item-marker')! as any;
     const nameShape = categoryItem.querySelector('.legend-item-name')! as any;
     const valueShape = categoryItem.querySelector('.legend-item-value')! as any;
@@ -117,11 +113,12 @@ describe('CategoryItem', () => {
     expect(marker.attr('fill')).toBe('green');
     expect(nameShape.attr('fill')).toBe('green');
     expect(valueShape.attr('fill')).toBe('green');
-    expect(background.attr('fill')).toBe('rgba(255, 192, 50, 0.1)');
+    expect(background.attr('fill')).toBe('rgba(245, 0, 31, 0.1)');
   });
 
-  it('new CategoryItem({}) returns a categoryItem with active state.', () => {
-    categoryItem.setState('active');
+  it('new CategoryItem({}) returns a categoryItem trigger active style when mousemove.', () => {
+    categoryItem.setState('selected');
+    categoryItem.emit('mousemove', {});
     const marker = categoryItem.querySelector('.legend-item-marker')! as any;
     const nameShape = categoryItem.querySelector('.legend-item-name')! as any;
     const background = categoryItem.querySelector('.legend-item-background')! as any;
