@@ -46,7 +46,7 @@ function adjustText(nameShape?: Text | null, valueShape?: Text | null, maxWidth?
   const width1 = nameBounds.halfExtents[0] * 2;
   const width2 = valueBounds.halfExtents[0] * 2;
   const spacing = width1 && width2 ? valueBounds.min[0] - nameBounds.max[0] : 0;
-  if (width1 + width2 > maxWidth) {
+  if (width1 + width2 + spacing > maxWidth) {
     // todo 后续开放占比配置。
     let [w1, w2] = [maxWidth * NAME_VALUE_RATIO, maxWidth * (1 - NAME_VALUE_RATIO)];
     let nameFlag = true;
