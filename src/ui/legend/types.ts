@@ -1,10 +1,10 @@
 import { TextStyleProps } from '@antv/g';
-import type { DisplayObjectConfig, ShapeAttrs, StyleState, MixAttrs, ImageProps, PathProps } from '../../types';
+import type { DisplayObjectConfig, ShapeAttrs, ImageProps, PathProps } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
 
 type TextProps = Omit<TextStyleProps, 'text'>;
 
-export type State = StyleState;
+export type State = 'selected' | 'unselected' | 'disabled';
 export type SymbolCfg = MarkerStyleProps['symbol'];
 export type MixShapeStyleProps = ShapeAttrs & {
   disabled?: ShapeAttrs;

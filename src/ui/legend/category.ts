@@ -1,9 +1,8 @@
 import { CustomEvent } from '@antv/g';
 import { min, isFunction, deepMix } from '@antv/util';
 import { deepAssign, maybeAppend } from '../../util';
-import type { StyleState as State } from '../../types';
 import { CategoryItem } from './categoryItem';
-import type { CategoryCfg, CategoryOptions } from './types';
+import type { CategoryCfg, CategoryOptions, State } from './types';
 import { CATEGORY_DEFAULT_OPTIONS, DEFAULT_ITEM_MARKER, DEFAULT_ITEM_NAME, DEFAULT_ITEM_VALUE } from './constant';
 import { LegendBase } from './base';
 import { CategoryItems } from './categoryItems';
