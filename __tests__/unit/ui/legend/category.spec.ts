@@ -35,7 +35,7 @@ describe('Category legend', () => {
   });
 
   it('Category Title, support html', () => {
-    const category = new Category({ style: { items, title: { content: 'Legend title' } } });
+    const category = new Category({ style: { items, title: { content: 'Legend title', spacing: 0 } } });
     canvas.appendChild(category);
 
     let title = category.querySelector('.legend-title') as DisplayObject;

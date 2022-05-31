@@ -62,7 +62,7 @@ describe('CategoryItems', () => {
     // group.destroy();
   });
 
-  it.only('new CategoryItems({..}) support autoWrap in horizontal orient.', () => {
+  it('new CategoryItems({..}) support autoWrap in horizontal orient.', () => {
     const group = new CategoryItems({
       style: {
         y: 50,
