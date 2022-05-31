@@ -1,7 +1,7 @@
 import { Category } from '../../src/ui/legend/category';
 import { createCanvas } from '../utils/render';
 
-const canvas = createCanvas(800, 'svg', true);
+const canvas = createCanvas(800, undefined, true);
 describe('Legend', () => {
   it('legend `autoWrap` without specify `maxRows`', () => {
     const legend = canvas.appendChild(
@@ -24,9 +24,9 @@ describe('Legend', () => {
             { id: 'Agriculture', name: 'Agriculture', color: '#945FB9' },
             { id: 'Mining and Extraction', name: 'Mining and Extraction', color: '#DECFEA' },
           ],
-          maxWidth: 565,
+          maxWidth: 165,
           maxHeight: 64,
-          autoWrap: true,
+          // autoWrap: true,
           pageNavigator: {
             pageFormatter: (c, t) => `${c} / ${t}`,
           },

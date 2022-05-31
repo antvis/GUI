@@ -54,7 +54,6 @@ function createCategory(x, y, items, symbol = 'circle', furtherOptions = {}) {
         maxItemWidth: 160,
         pageNavigator: {
           pageSpacing: 4,
-          pageInfoWidth: 32,
         },
         ...furtherOptions,
       },

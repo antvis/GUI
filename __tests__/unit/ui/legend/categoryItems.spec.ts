@@ -26,7 +26,8 @@ describe('CategoryItems', () => {
     expect(group.querySelector('.page-button')!.style.visibility).toBe('visible');
 
     group.style.pageButtonSize = 10;
-    group.style.pageInfoWidth = 40;
+    // fixme
+    // group.style.pageInfoWidth = 40;
     group.style.pageSpacing = 8;
     // @ts-ignore
     expect(group.clipView.getLocalBounds().halfExtents[0] * 2).toBe(220 - 40 - 10 * 2 - 8);
@@ -47,7 +48,8 @@ describe('CategoryItems', () => {
     canvas.appendChild(group);
 
     group.style.pageButtonSize = 10;
-    group.style.pageInfoWidth = 40;
+    // fixme
+    // group.style.pageInfoWidth = 40;
     group.style.pageSpacing = 8;
     // @ts-ignore
     expect(group.clipView.getLocalBounds().halfExtents[1] * 2).toBe(116 - 10 - 8);

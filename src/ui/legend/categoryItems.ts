@@ -9,36 +9,37 @@ import {
 } from '@antv/g';
 import { deepMix, isNil, last } from '@antv/util';
 import { ShapeAttrs } from '../../types';
-import { maybeAppend, normalPadding, select } from '../../util';
+import { applyStyle, getFont, maybeAppend, measureTextWidth, normalPadding, select } from '../../util';
 import { CategoryItem, CategoryItemStyleProps } from './categoryItem';
-import { PageButton } from './pageButton';
+import { PageButton, ButtonStyleProps } from './pageButton';
 
-type CategoryItemsStyleProps = BaseCustomElementStyleProps & {
-  orient: 'horizontal' | 'vertical';
-  items: CategoryItemStyleProps[];
-  spacing?: number[];
-  maxWidth?: number;
-  maxHeight?: number;
-  autoWrap?: boolean;
-  maxRows?: number;
+export type PageNavigatorCfg = {
   // todo
   // pagePosition?: string;
   /** Spacing between page buttons and legend items. */
   pageSpacing?: number;
   pageButtonSize?: number;
-  pageButtonStyle?: {
-    default?: ShapeAttrs;
-    disabled?: ShapeAttrs;
-  };
-  pageInfoWidth?: number;
-  pageInfoHeight?: number;
+  pageButtonStyle?: ButtonStyleProps;
+  pageInfoSpacing?: number;
   pageFormatter?: (current: number, total: number) => string;
   pageTextStyle?: ShapeAttrs;
-  // todo:
-  loop?: boolean;
-  effect?: any;
-  duration?: number;
 };
+
+type CategoryItemsStyleProps = BaseCustomElementStyleProps &
+  PageNavigatorCfg & {
+    orient: 'horizontal' | 'vertical';
+    items: CategoryItemStyleProps[];
+    spacing?: number[];
+    maxWidth?: number;
+    maxHeight?: number;
+    autoWrap?: boolean;
+    maxRows?: number;
+
+    // todo:
+    loop?: boolean;
+    effect?: any;
+    duration?: number;
+  };
 
 export type { CategoryItemsStyleProps };
 
@@ -51,15 +52,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
 
   private nextButton!: PageButton;
 
-  private pageInfo!: Text;
-
   private clipView!: Path;
-
-  private maxPages?: number = undefined;
-
-  private currPage?: number = undefined;
-
-  private pageOffsets: number[] = [];
 
   public static defaultOptions = {
     style: {
@@ -68,10 +61,9 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
       duration: 320,
       maxRows: 2,
       maxCols: 2,
-      pageInfoWidth: 24,
-      pageInfoHeight: 14,
       pageButtonSize: 10,
-      pageFormatter: (current: number, total: number) => `${current} / ${total}`,
+      pageInfoSpacing: 2,
+      pageFormatter: (current: number, total: number) => `${current}/${total}`,
       pageButtonStyle: {
         size: 10,
         // 不建议设置 margin 和 padding (需要根据方向调整，比较麻烦)
@@ -108,6 +100,10 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.render();
   }
 
+  private get styles(): Required<CategoryItemsStyleProps> {
+    return deepMix({}, CategoryItems.defaultOptions.style, this.attributes);
+  }
+
   private render() {
     this.renderButtonGroup();
 
@@ -141,6 +137,8 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private renderButtonGroup() {
+    const { pageButtonStyle: buttonStyle = {}, pageTextStyle } = this.styles;
+
     const group = maybeAppend(this, '.page-button-group', () => new Group({ className: 'page-button-group' })).node();
     const prevBtnId = 'page-prev-button';
     const nextBtnId = 'page-next-button';
@@ -148,20 +146,42 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
       .attr('id', prevBtnId)
       .attr('className', 'page-button')
       .attr('zIndex', 2)
+      .call((selection) => {
+        (selection.node() as PageButton).update(buttonStyle);
+      })
       .node() as PageButton;
-    this.pageInfo = maybeAppend(group, '.page-info', 'text').attr('className', 'page-info').node() as Text;
+    maybeAppend(group, '.page-info', 'text').attr('className', 'page-info').call(applyStyle, pageTextStyle);
     this.nextButton = maybeAppend(group, `#${nextBtnId}`, () => new PageButton({}))
       .attr('id', nextBtnId)
       .attr('className', 'page-button')
       .attr('zIndex', 2)
+      .call((selection) => {
+        (selection.node() as PageButton).update(buttonStyle);
+      })
       .node() as PageButton;
     this.updatePageButtonSymbol();
-    this.applyPageButtonStyle();
-    this.applyPageInfoStyle();
+  }
+
+  private get pageInfoBounds() {
+    const pageInfo = this.querySelector('.page-info') as Text;
+    if (!pageInfo) {
+      return { width: 0, height: 0 };
+    }
+    const { pageFormatter, pageInfoSpacing: spacing } = this.styles;
+    const visibility = pageInfo.style.visibility;
+
+    pageInfo.style.visibility = 'hidden';
+    pageInfo.style.text = pageFormatter(1, this.styles.items.length);
+    const [hw, hh] = pageInfo.getLocalBounds().halfExtents;
+    pageInfo.style.visibility = visibility;
+
+    return { width: (hw + spacing) * 2, height: (hh + spacing) * 2 };
   }
 
   private layoutButton(orient: 'horizontal' | 'vertical') {
-    const { pageInfoWidth = 24, pageInfoHeight = 10 } = this.style;
+    const { pageInfoSpacing = 0 } = this.style;
+    const pageInfoHeight = this.pageInfoBounds.height;
+    const pageInfoWidth = this.pageInfoBounds.width + pageInfoSpacing * 2;
     const buttonGroup = this.querySelector('.page-button-group') as Group;
     const [prevBtn, pageInfo, nextBtn] = buttonGroup.childNodes as [PageButton, Text, PageButton];
 
@@ -170,7 +190,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
       const nextBtnWidth = nextBtn.getLocalBounds().halfExtents[0] * 2;
       prevBtn.style.x = prevBtnWidth / 2;
       nextBtn.style.x = prevBtnWidth + pageInfoWidth + nextBtnWidth / 2;
-      pageInfo.style.x = (prevBtn.style.x + nextBtn.style.x) / 2;
+      pageInfo.style.x = (Number(prevBtn.style.x) + Number(nextBtn.style.x)) / 2;
       pageInfo.style.textAlign = 'center';
     } else {
       const prevBtnHeight = prevBtn.getLocalBounds().halfExtents[1] * 2;
@@ -182,20 +202,16 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     }
   }
 
-  private applyPageButtonStyle() {
-    const buttonStyle = deepMix({}, CategoryItems.defaultOptions.style.pageButtonStyle, this.style.pageButtonStyle);
-    this.prevButton.update(buttonStyle);
-    this.nextButton.update(buttonStyle);
-  }
-
-  private applyPageInfoStyle() {
-    const pageTextStyle = deepMix({}, CategoryItems.defaultOptions.style.pageTextStyle, this.style.pageTextStyle);
-    this.pageInfo.attr(pageTextStyle);
-  }
-
-  private showPageNavigator() {
+  private showButtonGroup() {
     (this.querySelector('.page-button-group') as any).style.visibility = 'visible';
   }
+
+  // ==== 设置分页布局  ====
+  private maxPages?: number = undefined;
+
+  private currPage?: number = undefined;
+
+  private pageOffsets: number[] = [];
 
   private resetPageCfg() {
     (this.querySelector('.page-button-group') as any).style.visibility = 'hidden';
@@ -243,7 +259,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private adjustFlip(itemWidth: number, itemHeight: number, limitSize: number) {
-    this.showPageNavigator();
+    this.showButtonGroup();
     const buttonGroup = this.querySelector('.page-button-group') as Group;
 
     const pageSpacing = this.style.pageSpacing!;
@@ -283,10 +299,11 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private adjustHorizontalWrap(itemWidth: number, itemHeight: number, limitSize: number) {
-    this.showPageNavigator();
+    this.showButtonGroup();
     const buttonGroup = this.querySelector('.page-button-group') as Group;
 
-    const { pageSpacing = 0, pageInfoWidth = 24 } = this.style;
+    const { pageSpacing = 0 } = this.style;
+    const pageInfoWidth = this.pageInfoBounds.width;
 
     const maxRows = this.style.maxRows || 2;
     const buttonGroupBounds = buttonGroup.getLocalBounds();
@@ -355,11 +372,10 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
   }
 
   private updatePageInfo() {
-    let pageFormatter = this.style.pageFormatter;
-    if (typeof pageFormatter !== 'function') {
-      pageFormatter = CategoryItems.defaultOptions.style.pageFormatter;
-    }
-    this.pageInfo.style.text = !(this.currPage && this.maxPages) ? '' : pageFormatter(this.currPage, this.maxPages);
+    const pageFormatter = this.styles.pageFormatter;
+    select(this)
+      .select('.page-info')
+      .style('text', !(this.currPage && this.maxPages) ? '' : pageFormatter(this.currPage, this.maxPages));
   }
 
   private finished() {
@@ -398,7 +414,7 @@ export class CategoryItems extends CustomElement<CategoryItemsStyleProps> {
     this.goTo(to);
   }
 
-  public goTo(to: number) {
+  private goTo(to: number) {
     if (to === this.currPage) return;
     if (this.playState === 'idle') {
       const { effect, duration, autoWrap } = this.style;

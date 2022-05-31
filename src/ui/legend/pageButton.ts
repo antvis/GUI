@@ -1,6 +1,6 @@
-import { Button } from '../timeline/button';
+import { Button, ButtonStyleProps } from '../timeline/button';
 
-export { Button as PageButton };
+export { Button as PageButton, ButtonStyleProps };
 
 Button.registerSymbol('left', (x: number, y: number, r: number) => {
   const diff = r * Math.sin(Math.PI / 3);

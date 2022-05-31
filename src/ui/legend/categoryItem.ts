@@ -1,4 +1,4 @@
-import { Text, CustomElement, DisplayObjectConfig, DisplayObject } from '@antv/g';
+import { Text, CustomElement, DisplayObjectConfig, CustomEvent } from '@antv/g';
 import { deepMix, get, omit, isNil } from '@antv/util';
 import {
   applyStyle,

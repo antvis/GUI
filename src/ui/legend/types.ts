@@ -1,6 +1,7 @@
-import { TextStyleProps } from '@antv/g';
+import type { TextStyleProps } from '@antv/g';
 import type { DisplayObjectConfig, ShapeAttrs, ImageProps, PathProps } from '../../types';
 import type { MarkerStyleProps } from '../marker/types';
+import type { PageNavigatorCfg } from './categoryItems';
 
 type TextProps = Omit<TextStyleProps, 'text'>;
 
@@ -290,15 +291,8 @@ export type CategoryCfg = LegendBaseCfg & {
   maxRows?: number;
   // 图例项倒序
   reverse?: boolean;
-  pageNavigator?: {
-    pageSpacing?: number;
-    pageButtonSize?: number;
-    pageButtonStyle?: { default?: ShapeAttrs; disabled?: ShapeAttrs };
-    pageInfoWidth?: number;
-    pageInfoHeight?: number;
-    pageFormatter?: (current: number, total: number) => string;
-    pageTextStyle?: ShapeAttrs;
-  };
+  // todo 优化类型定义
+  pageNavigator?: PageNavigatorCfg;
 };
 
 export type CategoryOptions = DisplayObjectConfig<CategoryCfg>;
