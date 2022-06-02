@@ -92,7 +92,7 @@ export class Category extends LegendBase<CategoryCfg> {
           return deepMix(
             {},
             DEFAULT_ITEM_MARKER,
-            { symbol: item.symbol, style: { fill: item.color, stroke: item.color } },
+            { symbol: item.marker, style: { fill: item.color, stroke: item.color } },
             markerCfg
           );
         })(),
