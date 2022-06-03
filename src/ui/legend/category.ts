@@ -86,6 +86,7 @@ export class Category extends LegendBase<CategoryCfg> {
       return {
         id: item.id || `legend-item-${idx}`,
         state: item.state || 'selected',
+        item,
         maxItemWidth: min([maxItemWidth ?? Number.MAX_VALUE, maxWidth ?? Number.MAX_VALUE]),
         itemMarker: (() => {
           const markerCfg = isFunction(itemMarker) ? itemMarker(item, idx, items) : itemMarker;
