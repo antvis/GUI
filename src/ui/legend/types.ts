@@ -286,6 +286,7 @@ export type CategoryCfg = LegendBaseCfg & {
   maxItemWidth?: number;
   // 自动换行、列
   autoWrap?: boolean;
+  cols?: number;
   // 最大行（横）/列（纵）数
   // maxCols?: number; // [todo] 暂时不提供
   maxRows?: number;
