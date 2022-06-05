@@ -8,7 +8,7 @@ const renderer = new CanvasRenderer();
 const canvas = new Canvas({
   container: 'container',
   width: 600,
-  height: 200,
+  height: 600,
   renderer,
 });
 
@@ -29,18 +29,18 @@ const items = [
 const category = new Category({
   style: {
     x: 10,
-    y: 10,
+    y: 300,
     items,
     title: {
       content: '基本分类图例',
     },
     spacing: [10, 10],
-    maxItemWidth: 160,
+    maxWidth: 300,
+    autoWrap: true,
+    maxRows: 4,
     itemMarker: {
       style: {
-        selected: {
-          fill: '#6bce85',
-        },
+        fill: '#6bce85',
       },
     },
   },

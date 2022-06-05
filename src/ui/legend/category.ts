@@ -72,7 +72,7 @@ export class Category extends LegendBase<CategoryCfg> {
   /**
    * 获得items状态列表
    */
-  public getItemsStates(): { id: string; state: State }[] {
+  public getItemsStates(): { id: string; state: string }[] {
     return Array.from(this.idItem.entries()).map(([id, item]) => ({ id, state: item.getState() }));
   }
 
@@ -86,7 +86,7 @@ export class Category extends LegendBase<CategoryCfg> {
       return {
         id: item.id || `legend-item-${idx}`,
         state: item.state || 'selected',
-        item,
+        value: item,
         maxItemWidth: min([maxItemWidth ?? Number.MAX_VALUE, maxWidth ?? Number.MAX_VALUE]),
         itemMarker: (() => {
           const markerCfg = isFunction(itemMarker) ? itemMarker(item, idx, items) : itemMarker;
