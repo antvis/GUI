@@ -29,11 +29,7 @@ export class Category extends LegendBase<CategoryCfg> {
     this.drawItems();
   }
 
-  protected bindEvents() {
-    super.bindEvents();
-    const innerGroup = this.querySelector('.legend-inner-group');
-    innerGroup?.addEventListener('stateChange', () => this.dispatchItemsChange());
-  }
+  protected bindEvents() {}
 
   private drawItems() {
     const innerGroup = maybeAppend(this, '.legend-inner-group', 'g').attr('className', 'legend-inner-group').node();
@@ -88,7 +84,7 @@ export class Category extends LegendBase<CategoryCfg> {
     return items.map((item, idx) => {
       return {
         id: item.id || `legend-item-${idx}`,
-        state: item.state || 'selected',
+        state: item.state || 'default',
         value: item,
         maxItemWidth: min([maxItemWidth ?? Number.MAX_VALUE, maxWidth ?? Number.MAX_VALUE]),
         itemMarker: (() => {
