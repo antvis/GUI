@@ -1,7 +1,7 @@
-import { Group, Text, HTML, TextStyleProps, Rect, HTMLStyleProps, ElementEvent, DisplayObjectConfig } from '@antv/g';
+import { Group, Text, HTML, TextStyleProps, HTMLStyleProps, ElementEvent, DisplayObjectConfig } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUI } from '../../core/gui';
-import { normalPadding, select, TEXT_INHERITABLE_PROPS } from '../../util';
+import { applyStyle, maybeAppend, normalPadding, select, TEXT_INHERITABLE_PROPS } from '../../util';
 import { LEGEND_BASE_DEFAULT_OPTIONS } from './constant';
 import { LegendBaseCfg } from './types';
 
@@ -17,8 +17,6 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
 
   protected innerGroup!: Group;
 
-  protected backgroundShape!: Rect;
-
   protected titleShape!: HTML | Text;
 
   constructor(options: DisplayObjectConfig<T>) {
@@ -28,7 +26,6 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
   protected abstract drawInner(): void;
 
   public init() {
-    this.backgroundShape = this.appendChild(new Rect({ className: 'legend-background', zIndex: -1 }));
     this.container = this.appendChild(new Group({ className: 'legend-container' }));
     this.titleShape = this.container.appendChild(new Text({ className: 'legend-title' }));
     this.innerGroup = this.container.appendChild(new Group({ className: 'legend-inner-group' }));
@@ -37,26 +34,29 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
   connectedCallback() {
     this.init();
     this.titleShape.addEventListener(ElementEvent.BOUNDS_CHANGED, () => this.adjustInnerGroup());
-    this.container.addEventListener(ElementEvent.BOUNDS_CHANGED, () => this.adjustBackground());
 
-    this.update();
+    this.render();
     this.bindEvents();
   }
 
   public update(cfg: Partial<T> = {}) {
     this.attr(cfg);
-    this.drawTitle();
-    this.drawInner();
-    this.applyBackgroundStyle();
 
-    // Adjust layout.
-    const [top, , , left] = this.padding;
-    this.container.setLocalPosition(left, top);
+    this.render();
   }
 
   attributeChangedCallback(name: any, ...args: any[]) {
     if (name === 'inset') this.adjustInnerGroup();
-    if (name === 'maxWidth' || name === 'maxHeight' || name === 'padding') this.adjustBackground();
+  }
+
+  private render() {
+    this.drawTitle();
+    this.drawInner();
+    this.drawBackground();
+
+    // Adjust layout.
+    const [top, , , left] = this.padding;
+    this.container.setLocalPosition(left, top);
   }
 
   public destroy() {
@@ -131,21 +131,21 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
     }
   }
 
-  private applyBackgroundStyle() {
+  private drawBackground() {
     const { backgroundStyle = {} } = this.style;
-    this.backgroundShape.attr(backgroundStyle);
-  }
 
-  private adjustBackground() {
-    const background = this.backgroundShape;
     const [top, right, bottom, left] = this.padding;
     const { maxWidth, maxHeight } = this.style;
     const { min, max } = this.container.getLocalBounds();
     const w = max[0] - min[0];
     const h = max[1] - min[1];
 
-    background.style.width = Math.min(w + right + left, maxWidth || Number.MAX_VALUE);
-    background.style.height = Math.min(h + top + bottom, maxHeight || Number.MAX_VALUE);
+    maybeAppend(this, '.legend-background', 'rect')
+      .attr('className', 'legend-background')
+      .style('zIndex', -1)
+      .style('width', Math.min(w + right + left, maxWidth || Number.MAX_VALUE))
+      .style('height', Math.min(h + top + bottom, maxHeight || Number.MAX_VALUE))
+      .call(applyStyle, backgroundStyle);
   }
 
   private adjustInnerGroup() {
