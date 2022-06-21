@@ -31,11 +31,13 @@ export class Category extends LegendBase<CategoryCfg> {
 
   protected bindEvents() {
     super.bindEvents();
-    this.innerGroup.addEventListener('stateChange', () => this.dispatchItemsChange());
+    const innerGroup = this.querySelector('.legend-inner-group');
+    innerGroup?.addEventListener('stateChange', () => this.dispatchItemsChange());
   }
 
   private drawItems() {
-    this.labelsGroup = maybeAppend(this.innerGroup, '.category-items', () => new CategoryItems({}))
+    const innerGroup = maybeAppend(this, '.legend-inner-group', 'g').attr('className', 'legend-inner-group').node();
+    this.labelsGroup = maybeAppend(innerGroup, '.category-items', () => new CategoryItems({}))
       .attr('className', 'category-items')
       .call((selection) => {
         (selection.node() as CategoryItems).update({

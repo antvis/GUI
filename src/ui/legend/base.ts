@@ -1,4 +1,4 @@
-import { Group, Text, HTML, TextStyleProps, HTMLStyleProps, ElementEvent, DisplayObjectConfig } from '@antv/g';
+import { Group, TextStyleProps, HTMLStyleProps, DisplayObjectConfig, HTML, Text } from '@antv/g';
 import { deepMix } from '@antv/util';
 import { GUI } from '../../core/gui';
 import { applyStyle, maybeAppend, normalPadding, select, TEXT_INHERITABLE_PROPS } from '../../util';
@@ -15,48 +15,33 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
 
   protected container!: Group;
 
-  protected innerGroup!: Group;
-
-  protected titleShape!: HTML | Text;
-
   constructor(options: DisplayObjectConfig<T>) {
     super(deepMix({}, LegendBase.defaultOptions, options));
   }
 
   protected abstract drawInner(): void;
 
-  public init() {
-    this.container = this.appendChild(new Group({ className: 'legend-container' }));
-    this.titleShape = this.container.appendChild(new Text({ className: 'legend-title' }));
-    this.innerGroup = this.container.appendChild(new Group({ className: 'legend-inner-group' }));
-  }
-
   connectedCallback() {
-    this.init();
-    this.titleShape.addEventListener(ElementEvent.BOUNDS_CHANGED, () => this.adjustInnerGroup());
-
     this.render();
     this.bindEvents();
   }
 
   public update(cfg: Partial<T> = {}) {
-    this.attr(cfg);
-
+    this.attr(deepMix({}, this.attributes, cfg));
     this.render();
   }
 
-  attributeChangedCallback(name: any, ...args: any[]) {
-    if (name === 'inset') this.adjustInnerGroup();
-  }
-
   private render() {
+    const [top, , , left] = this.padding;
+    this.container = maybeAppend(this, '.legend-container', 'g')
+      .attr('className', 'legend-container')
+      .style('x', left)
+      .style('y', top)
+      .node();
     this.drawTitle();
+    this.createInnerGroup();
     this.drawInner();
     this.drawBackground();
-
-    // Adjust layout.
-    const [top, , , left] = this.padding;
-    this.container.setLocalPosition(left, top);
   }
 
   public destroy() {
@@ -94,11 +79,12 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
 
   protected get titleShapeBBox(): { top: number; left: number; right: number; bottom: number } {
     let box = { left: 0, top: 0, width: 0, height: 0 };
+    const titleShape = select(this).select('.legend-title').node();
     if (this.titleStyleProps.type === 'html') {
       const { width, height } = this.titleStyleProps as HTMLStyleProps;
       box = { left: 0, top: 0, width: width as number, height: height as number };
-    } else {
-      const { min, halfExtents } = this.titleShape.getLocalBounds();
+    } else if (titleShape) {
+      const { min, halfExtents } = titleShape.getLocalBounds();
       box = {
         left: min[0],
         top: min[1],
@@ -112,23 +98,25 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
   protected bindEvents() {}
 
   private drawTitle() {
-    const { type, ...style } = this.titleStyleProps;
-    if (this.titleShape?.tagName !== type) {
-      this.titleShape?.remove();
-      this.innerGroup.removeChild(this.titleShape);
-      if (type === 'html') {
-        this.titleShape = select(this.innerGroup)
-          .append(() => new HTML({ style: style as HTMLStyleProps }))
-          .node() as any;
-      } else {
-        this.titleShape = select(this.innerGroup)
-          .append(() => new Text({ style: style as TextStyleProps }))
-          .node() as any;
-      }
-      this.titleShape.className = 'legend-title';
-    } else {
-      this.titleShape.attr(style);
+    const { type, ...style } = this.titleStyleProps as any;
+    const className = 'legend-title';
+    const titleShape = this.querySelector(`.${className}`) as any;
+    if (titleShape && titleShape?.tagName !== type) {
+      titleShape.remove();
     }
+    maybeAppend(this.container, `.${className}`, () =>
+      type === 'html' ? new HTML({ className, style }) : new Text({ className, style })
+    ).call(applyStyle, style);
+  }
+
+  private createInnerGroup() {
+    const titleSpacing = this.style.title?.spacing || 0;
+    const inset = normalPadding(this.style.inset);
+    const { left: tl, bottom: tb } = this.titleShapeBBox;
+    maybeAppend(this.container, '.legend-inner-group', 'g')
+      .attr('className', 'legend-inner-group')
+      .style('x', tl + inset[3])
+      .style('y', tb + inset[0] + titleSpacing);
   }
 
   private drawBackground() {
@@ -146,14 +134,5 @@ export abstract class LegendBase<T extends LegendBaseCfg = LegendBaseCfg> extend
       .style('width', Math.min(w + right + left, maxWidth || Number.MAX_VALUE))
       .style('height', Math.min(h + top + bottom, maxHeight || Number.MAX_VALUE))
       .call(applyStyle, backgroundStyle);
-  }
-
-  private adjustInnerGroup() {
-    const titleSpacing = this.style.title?.spacing || 0;
-    const inset = normalPadding(this.style.inset);
-    const [top, , , left] = inset;
-    // Adjust layout.
-    const { left: tl, bottom: tb } = this.titleShapeBBox;
-    this.innerGroup.setLocalPosition(tl + left, tb + top + titleSpacing);
   }
 }
