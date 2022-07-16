@@ -156,9 +156,14 @@ function getLabelAttrs(
         textAlign = ifOutside(orient, 'end', 'start');
       }
     } else if (align === 'tangential') {
-      angle = 90 + angle;
       textAlign = 'center';
-      textBaseline = ifOutside(orient, 'bottom', 'top');
+      if (angle >= 0 && angle < 180) {
+        angle += 270;
+        textBaseline = 'top';
+      } else {
+        angle += 90;
+        textBaseline = 'bottom';
+      }
     } else {
       // normal align.
       angle = rotate ?? 0;
