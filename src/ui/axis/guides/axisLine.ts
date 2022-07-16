@@ -37,7 +37,7 @@ export function renderAxisLine(
   container: Group,
   path: string,
   points?: [Vector2, Vector2],
-  cfg?: AxisLineCfg | null = {}
+  cfg: AxisLineCfg | null = {}
 ) {
   maybeAppend(container, '.axis-line', 'path')
     .attr('className', 'axis-line')
