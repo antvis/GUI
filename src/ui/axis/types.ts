@@ -75,7 +75,7 @@ export type AxisSubTickLineCfg = {
 
 export type AxisLabelCfg = {
   type?: LabelType;
-  style?: Partial<TextStyleProps> | ((tick: TickDatum, index: number) => Partial<TextStyleProps>);
+  style?: Partial<TextStyleProps> | ((tick: TickDatum, index: number, ticks: TickDatum[]) => Partial<TextStyleProps>);
   formatter?: (tick: TickDatum, index?: number) => string;
   // label是否与Tick对齐
   alignTick?: boolean;

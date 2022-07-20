@@ -171,7 +171,7 @@ function getTitlePosition(
 function getTickLines(ticks: any[], endPoints: any[], axisPosition: any, tickLength: number) {
   return Array.from(ticks).map((datum) => {
     const [[x1, y1], [x2, y2]] = getTickPoints(endPoints, datum.value, axisPosition, tickLength);
-    return { x1, y1, x2, y2, id: `tick-${datum.id}` };
+    return { x1, y1, x2, y2, id: `tick-${datum.id}`, data: datum };
   });
 }
 

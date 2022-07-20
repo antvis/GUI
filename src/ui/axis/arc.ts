@@ -63,7 +63,7 @@ function getTickLines(
   return Array.from(ticks).map((datum) => {
     const tickAngle = (endAngle - startAngle) * datum.value + startAngle;
     const [[x1, y1], [x2, y2]] = getArcTickPoints(center, radius, tickAngle, orient, tickLength);
-    return { x1, y1, x2, y2, id: `tick-${datum.id}` };
+    return { x1, y1, x2, y2, id: `tick-${datum.id}`, data: datum };
   });
 }
 
