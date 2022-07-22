@@ -193,6 +193,7 @@ export type ContinuousCfg = LegendBaseCfg & {
      * @title 标签格式化方式
      */
     formatter?: (value: number, idx?: number) => string;
+    maxLength?: number;
   };
   // 色板配置
   rail?: {

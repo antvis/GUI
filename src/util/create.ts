@@ -35,7 +35,7 @@ export function createComponent<T>(
   };
 }
 
-export abstract class Base<T> extends CustomElement<T> {
+export abstract class BaseComponent<T> extends CustomElement<T> {
   constructor(config: DisplayObjectConfig<T>) {
     super(config);
   }

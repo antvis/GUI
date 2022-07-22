@@ -23,7 +23,7 @@ export function getTitleShapeBBox(titleShape?: DisplayObject): {
   return { left: 0, top: 0, right: box.width, bottom: box.height };
 }
 
-export function renderTitle(container: Group, cfg?: any): DisplayObject | null {
+export function renderTitle(container: Group, cfg?: any): any | null {
   if (!cfg) {
     const shape = container.querySelector('.legend-title');
     if (shape) shape.remove();
