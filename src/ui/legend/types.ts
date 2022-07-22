@@ -262,7 +262,7 @@ export type CategoryItemValue = {
 };
 
 // 分类图例配置
-export type CategoryCfg = LegendBaseCfg & {
+export type CategoryStyleProps = LegendBaseCfg & {
   padding?: number | number[];
   items: CategoryItemValue[];
   // 图例项宽度（等分形式）
@@ -295,4 +295,4 @@ export type CategoryCfg = LegendBaseCfg & {
   pageNavigator?: PageNavigatorCfg;
 };
 
-export type CategoryOptions = DisplayObjectConfig<CategoryCfg>;
+export type CategoryOptions = DisplayObjectConfig<CategoryStyleProps>;

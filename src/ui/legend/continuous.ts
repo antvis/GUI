@@ -1,6 +1,16 @@
-import { TextStyleProps, DisplayObject, clamp, Text, CustomEvent } from '@antv/g';
+import { TextStyleProps, DisplayObject, clamp, Text, CustomEvent, Group } from '@antv/g';
 import { get, isUndefined, memoize } from '@antv/util';
-import { deepAssign, applyStyle, select, getEventPos, toPrecision, throttle, select2update } from '../../util';
+import {
+  deepAssign,
+  applyStyle,
+  select,
+  getEventPos,
+  toPrecision,
+  throttle,
+  select2update,
+  normalPadding,
+} from '../../util';
+import { Base } from '../../util/create';
 import {
   CONTINUOUS_DEFAULT_OPTIONS,
   DEFAULT_HANDLE_CFG,
@@ -8,7 +18,7 @@ import {
   DEFAULT_RAIL_CFG,
   STEP_RATIO,
 } from './constant';
-import { LegendBase } from './base';
+import { getTitleShapeBBox, renderGroup, renderRect, renderTitle } from './base';
 import { ContinuousCfg, ContinuousOptions } from './types';
 import { getSafetySelections, getStepValueByValue, ifHorizontal } from './utils';
 import { Rail } from './continuousRail';
@@ -54,13 +64,12 @@ const sortTicks = memoize(
   (...args: any[]) => JSON.stringify(args)
 );
 
-export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
-  public static tag: string = 'continuous-legend';
+function render(attributes: ContinuousCfg, container: Group) {}
 
-  protected static defaultOptions = {
-    type: Continuous.tag,
-    ...CONTINUOUS_DEFAULT_OPTIONS,
-  };
+export class Continuous<T extends ContinuousCfg> extends Base<T> {
+  constructor(config: any) {
+    super(deepAssign({ type: 'continuous-legend' }, CONTINUOUS_DEFAULT_OPTIONS, config));
+  }
 
   protected rail!: Rail;
 
@@ -70,13 +79,31 @@ export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
 
   protected indicator!: Indicator;
 
-  constructor(options: ContinuousOptions) {
-    super(deepAssign({}, Continuous.defaultOptions, options));
-  }
+  public render(attributes: T, container: Group) {
+    console.log('container', container.getLocalPosition(), container.style.x);
 
-  attributeChangedCallback(name: any, oldValue: any, newValue: any) {
-    super.attributeChangedCallback?.(name, oldValue, newValue);
-    if (name === 'orient') this.indicator.style.position = this.ifHorizontal('top', 'right');
+    const { padding, title, inset, orient = 'horizontal', backgroundStyle = {}, maxWidth, maxHeight } = attributes;
+    const [top, right, bottom, left] = normalPadding(padding);
+
+    const group = renderGroup(container, 'legend-container', left, top);
+    const titleShape = renderTitle(group, title);
+
+    const titleSpacing = title?.spacing || 0;
+    const [insetTop, , , insetLeft] = normalPadding(inset);
+    const { left: tl, bottom: tb } = getTitleShapeBBox(titleShape);
+    const innerGroup = renderGroup(container, 'legend-inner-group', tl + insetLeft, tb + insetTop + titleSpacing);
+    this.drawInner();
+
+    const { min, max } = group.getLocalBounds();
+    const w = max[0] - min[0];
+    const h = max[1] - min[1];
+    renderRect(
+      container,
+      'legend-background',
+      Math.min(w + right + left, maxWidth || Number.MAX_VALUE),
+      Math.min(h + top + bottom, maxHeight || Number.MAX_VALUE),
+      backgroundStyle
+    );
   }
 
   public drawInner() {
@@ -84,6 +111,10 @@ export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
     this.drawRail();
     this.drawHandles();
     this.createIndicator();
+  }
+
+  private get orient() {
+    return this.style.orient || 'horizontal';
   }
 
   public get selection() {
@@ -229,7 +260,6 @@ export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
   private prevValue!: number;
 
   public bindEvents() {
-    super.bindEvents();
     // 如果！slidable，则不绑定事件或者事件响应不生效
     // // 放置需要绑定drag事件的对象
     const dragObject = new Map<string, DisplayObject>();
@@ -269,14 +299,15 @@ export class Continuous<T extends ContinuousCfg> extends LegendBase<T> {
     }
 
     this.indicator.show();
+    const container = this.querySelector('.legend-container') as Group;
     const { min, max } = this.style;
     const safeValue = clamp(value, min, max);
     const offsetX = this.ifHorizontal(this.getOffset(safeValue), this.railCfg.size + 12);
     // todo consider size-rail.
     const offsetY = this.ifHorizontal(-14, this.getOffset(safeValue));
     const { x, y } = this.rail.getBBox();
-    const { x: x0, y: y0 } = this.container.getBBox();
-    const [dx, dy] = this.container.getLocalPosition();
+    const { x: x0, y: y0 } = container.getBBox();
+    const [dx, dy] = container.getLocalPosition();
     this.indicator.style.x = x - x0 + dx + offsetX;
     this.indicator.style.y = y - y0 + dy + offsetY;
     this.indicator.style.textStyle = { text };

@@ -22,7 +22,6 @@ export const LEGEND_BASE_DEFAULT_OPTIONS = {
         textBaseline: 'top',
         fill: '#2C3542',
       },
-      formatter: (text: string) => text,
     },
     label: {
       style: {
