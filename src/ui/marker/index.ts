@@ -52,13 +52,15 @@ export class Marker extends BaseComponent<MarkerStyleProps> {
       return;
     }
 
-    const r = (size as number) / 2;
     maybeAppend(container, `.${type}-marker`, type)
       .attr('className', `marker ${type}-marker`)
       .call((selection) => {
         if (type === 'image') {
-          selection.style('img', symbol).style('width', size).style('height', size).style('x', -r).style('y', -r);
+          // todo 大小和 path symbol 保持一致
+          const r = (size as number) * 2;
+          selection.style('img', symbol).style('width', r).style('height', r).style('x', -size).style('y', -size);
         } else {
+          const r = (size as number) / 2;
           const symbolFn = isFunction(symbol) ? symbol : Marker.getSymbol(symbol);
           selection.style('path', symbolFn?.(0, 0, r)).call(applyStyle, style);
         }

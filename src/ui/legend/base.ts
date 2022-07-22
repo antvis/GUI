@@ -1,4 +1,4 @@
-import { Group, DisplayObject } from '@antv/g';
+import { Group, DisplayObject, HTML, Text } from '@antv/g';
 import { applyStyle, maybeAppend } from '../../util';
 
 export function getTitleShapeBBox(titleShape?: DisplayObject): {
@@ -32,14 +32,17 @@ export function renderTitle(container: Group, cfg?: any): any | null {
   const { useHTML, style } = cfg;
   const type = useHTML ? 'html' : 'text';
   const className = `legend-title ${type}-title`;
-  return maybeAppend(container, `.${className}`, type)
-    .attr('className', className)
+  const innerHTML = `<span>${cfg?.content || ''}</span>`;
+  return maybeAppend(container, `.${className}`, () => {
+    if (useHTML) return new HTML({ className, style: { innerHTML } });
+    return new Text({ className, style });
+  })
     .call((selection) => {
       if (useHTML) {
         selection
           .style('width', cfg.width ?? 80)
           .style('height', cfg.height ?? 20)
-          .style('innerHTML', `<span>${cfg?.content || ''}</span>`);
+          .style('innerHTML', innerHTML);
       } else {
         selection
           .style('fontSize', 12)

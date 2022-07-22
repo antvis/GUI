@@ -1,6 +1,6 @@
 import { Group, DisplayObject, Text } from '@antv/g';
 import { getFont, parseLength, getEllipsisText } from '../text';
-import { select } from '../selection';
+import { select, applyStyle } from '../selection';
 import { defined } from '../defined';
 
 export type LabelAttrs = {
@@ -15,11 +15,11 @@ export type LabelAttrs = {
 };
 
 type LabelCfg = {
-  maxLength?: number;
+  maxLength?: string | number;
   style?: object | ((datum: any, idx: number, data: any[]) => any);
 };
 
-export function applyStyle(shape: DisplayObject, idx: number, attrs: any[], style?: any) {
+export function applyLabelStyle(shape: DisplayObject, idx: number, attrs: any[], style?: any) {
   const datum = attrs[idx].data;
   const data = attrs.map((d) => d.data);
   const labelStyle = typeof style === 'function' ? style.call(null, datum, idx, data) : style;
@@ -46,8 +46,8 @@ export function renderLabels(
   container: Group,
   className: string,
   labels: LabelAttrs[],
-  style: LabelCfg['style'] = {},
-  maxLength?: number | string
+  cfg?: LabelCfg | null,
+  defaultStyle?: any
 ) {
   select(container)
     .selectAll(`.${className}`)
@@ -60,16 +60,17 @@ export function renderLabels(
           .style('fontFamily', 'sans-serif')
           .style('fontSize', 12)
           .style('fontWeight', 'normal')
+          .call(applyStyle, defaultStyle || {})
           .each(function (datum, idx) {
             this.attr(datum);
-            limitText(this, maxLength || Number.MAX_SAFE_INTEGER);
-            applyStyle(this, idx, labels, style);
+            limitText(this, cfg?.maxLength || Number.MAX_SAFE_INTEGER);
+            applyLabelStyle(this, idx, labels, cfg?.style);
           }),
       (update) =>
         update.each(function (datum, idx) {
           this.attr(datum);
-          limitText(this, maxLength || Number.MAX_SAFE_INTEGER);
-          applyStyle(this, idx, labels, style);
+          limitText(this, cfg?.maxLength || Number.MAX_SAFE_INTEGER);
+          applyLabelStyle(this, idx, labels, cfg?.style);
         }),
       (exit) => exit.remove()
     );

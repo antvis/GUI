@@ -81,8 +81,11 @@ const sortTicks = memoize(
 );
 
 function renderRailLabels(container: Group, labels: any[], cfg?: any) {
-  const style = deepAssign({ fill: '#2C3542', fillOpacity: 0.65, fontWeight: 'normal' });
-  renderLabels(container, 'legend-label', labels, style, cfg?.maxLength);
+  renderLabels(container, 'legend-label', labels, cfg, {
+    fill: '#2C3542',
+    fillOpacity: 0.65,
+    fontWeight: 'normal',
+  });
 }
 
 export class Continuous<T extends ContinuousCfg> extends BaseComponent<T> {
