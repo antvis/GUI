@@ -35,7 +35,7 @@ function getType(symbol: MarkerStyleProps['symbol']): string | null {
   if (['base64', 'url', 'image'].includes(markerType)) {
     return 'image';
   }
-  if (markerType === 'symbol') {
+  if (symbol && markerType === 'symbol') {
     return 'path';
   }
 
@@ -46,9 +46,12 @@ export class Marker extends BaseComponent<MarkerStyleProps> {
   public render(attributes: MarkerStyleProps, container: Group) {
     const { x, y, symbol, size = 16, ...style } = attributes;
     const type = getType(symbol);
+
     if (!type) {
       const shape = this.querySelector('.marker');
       shape?.remove();
+      this.removeChildren();
+
       return;
     }
 

@@ -20,7 +20,7 @@ export type TagStyleProps = {
 
   // 图标
   /** 图标类型，也可以自定义; 默认不显示 */
-  marker?: MarkerStyleProps;
+  marker?: MarkerStyleProps | null;
 
   /** text 和 marker 的间距，默认为 4px (只有当 marker 存在时，才生效) */
   spacing?: number;

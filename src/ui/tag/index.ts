@@ -61,7 +61,7 @@ export class Tag extends BaseComponent<Required<TagStyleProps>> {
     const group = maybeAppend(container, '.tag-content', 'g').attr('className', 'tag-content').node();
     const markerShape = maybeAppend(group, '.tag-marker', () => new Marker({}))
       .attr('className', 'tag-marker')
-      .call((selection) => (selection.node() as Marker).update(marker))
+      .call((selection) => (selection.node() as Marker).update(marker || { symbol: '', size: 0 }))
       .node() as Marker;
 
     const { x, y } = getTextPosition(markerShape, spacing);
@@ -78,8 +78,8 @@ export class Tag extends BaseComponent<Required<TagStyleProps>> {
     adjust(group, pl, pt, align || 'start', verticalAlign || 'top');
 
     const bounds = group.getLocalBounds();
-    maybeAppend(container, '.background', 'rect')
-      .attr('className', 'background')
+    maybeAppend(container, '.tag-background', 'rect')
+      .attr('className', 'tag-background')
       .style('zIndex', (group.style.zIndex || 0) - 1)
       .style('x', bounds.min[0] - pl)
       .style('y', bounds.min[1] - pt)
