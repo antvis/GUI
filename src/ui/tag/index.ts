@@ -61,7 +61,10 @@ export class Tag extends BaseComponent<Required<TagStyleProps>> {
     const group = maybeAppend(container, '.tag-content', 'g').attr('className', 'tag-content').node();
     const markerShape = maybeAppend(group, '.tag-marker', () => new Marker({}))
       .attr('className', 'tag-marker')
-      .call((selection) => (selection.node() as Marker).update(marker || { symbol: '', size: 0 }))
+      .call((selection) => {
+        (selection.node() as Marker).clear();
+        (selection.node() as Marker).update(marker || { symbol: '', size: 0 });
+      })
       .node() as Marker;
 
     const { x, y } = getTextPosition(markerShape, spacing);

@@ -35,7 +35,7 @@ function getType(symbol: MarkerStyleProps['symbol']): string | null {
   if (['base64', 'url', 'image'].includes(markerType)) {
     return 'image';
   }
-  if (symbol && markerType === 'symbol') {
+  if ((symbol || symbol === '') && markerType === 'symbol') {
     return 'path';
   }
 
