@@ -1,5 +1,5 @@
 import type { Group, Rect } from '@antv/g';
-import { deepMix, get } from '@antv/util';
+import { deepMix, get, isEqual, omit } from '@antv/util';
 import { BaseComponent } from '../../util/create';
 import { Tag } from '../tag';
 import type { GUIOption } from '../../types';
@@ -33,9 +33,7 @@ function getTagShapeStyle(
   checked: boolean = true
 ) {
   return {
-    x: checked
-      ? Number(shape.style.x) + spacing
-      : Number(shape.style.width) + Number(shape.style.x) - width - spacing / 2,
+    x: checked ? Number(shape.style.x) + spacing : Number(shape.style.width) + Number(shape.style.x) - width,
     y: Number(shape.style.y) + (Number(shape.style.height) - height) / 2,
   };
 }
@@ -45,6 +43,11 @@ export class Switch extends BaseComponent<Required<SwitchStyleProps>> {
    * 组件 switch
    */
   public static tag = 'switch';
+
+  /**
+   *  开关
+   */
+  private checked!: boolean;
 
   /**
    * 默认配置项
@@ -69,8 +72,9 @@ export class Switch extends BaseComponent<Required<SwitchStyleProps>> {
 
     const group = maybeAppend(container, '.switch-content', 'g').attr('className', 'switch-content').node();
     const bounds = group.getLocalBounds();
-    const { sizeStyle, tagStyle } = get(SIZE_STYLE, size);
+    const { sizeStyle, tagStyle } = get(SIZE_STYLE, size, SIZE_STYLE.default);
     const cursor = disabled ? 'no-drop' : 'pointer';
+    const color = checked ? OPTION_COLOR : CLOSE_COLOR;
 
     // 背景
     const backgroundShape = maybeAppend(group, '.switch-background', 'rect')
@@ -78,25 +82,36 @@ export class Switch extends BaseComponent<Required<SwitchStyleProps>> {
       .style('zIndex', (group.style.zIndex || 0) - 1)
       .style('x', bounds.min[0])
       .style('y', bounds.min[1])
-      .style('fill', checked ? OPTION_COLOR : CLOSE_COLOR)
+      .style('fill', color)
       .style('cursor', cursor)
       .style('fillOpacity', disabled ? 0.4 : 1)
       .call(applyStyle, sizeStyle)
-      .node();
+      .node() as Rect;
 
-    // 控件样式获取
-    const handleShapeStyle = getHandleShapeStyle(backgroundShape as any, spacing, checked);
+    // 背景阴影动效
+    const backgroundStrokeShape = maybeAppend(group, '.switch-background-stroke', 'rect')
+      .attr('className', 'switch-background-stroke')
+      .style('zIndex', (group.style.zIndex || 0) - 2)
+      .style('x', bounds.min[0])
+      .style('y', bounds.min[1])
+      .style('stroke', color)
+      .style('lineWidth', 0)
+      .call(applyStyle, sizeStyle)
+      .node() as Rect;
+
     // 控件
     const handleShape = maybeAppend(group, '.switch-handle', 'rect')
       .attr('className', 'switch-handle')
       .style('fill', '#fff')
       .style('cursor', cursor)
-      .call(applyStyle, handleShapeStyle)
-      .node();
+      .node() as Rect;
 
-    // Tag 配置
+    // Tag 配置, 创建
     const tagCfg = checked ? checkedChildren : unCheckedChildren;
-    if (tagCfg) {
+    if (checkedChildren || unCheckedChildren) {
+      // 控件样式获取 主要为获取大小，好计算 Tag 的位置
+      const handleShapeStyle = getHandleShapeStyle(backgroundShape as any, spacing, checked);
+
       const tagShape = maybeAppend(group, '.switch-tag', () => new Tag({}))
         .attr('className', 'switch-tag')
         .call((selection) =>
@@ -107,7 +122,7 @@ export class Switch extends BaseComponent<Required<SwitchStyleProps>> {
                 backgroundStyle: null,
               },
               tagStyle,
-              tagCfg
+              { text: '', marker: false, background: false, ...tagCfg }
             )
           )
         )
@@ -115,18 +130,45 @@ export class Switch extends BaseComponent<Required<SwitchStyleProps>> {
 
       // 增加 整体宽度
       const bounds = tagShape.getLocalBounds();
-      const width = bounds.max[0] - bounds.min[0] + handleShapeStyle.radius / 2;
+      const width = bounds.max[0] - bounds.min[0] + handleShapeStyle.radius;
       const height = bounds.max[1] - bounds.min[1];
 
-      backgroundShape.attr('width', Math.max(width + sizeStyle.height + 2, sizeStyle.width));
+      // 内容填充背景，修改背景组件宽度
+      const backgroundWidth = Math.max(width + sizeStyle.height + 2, sizeStyle.width);
+      backgroundShape.attr('width', backgroundWidth);
+      backgroundStrokeShape.attr('width', backgroundWidth);
 
-      // 调整控件 和 tag 位置
-      const { x } = getHandleShapeStyle(backgroundShape as any, spacing, checked);
-      handleShape.attr('x', x);
-
-      tagShape.update(
-        getTagShapeStyle(backgroundShape as any, { width, height }, handleShapeStyle.radius / 2, checked)
-      );
+      tagShape.update(getTagShapeStyle(backgroundShape as any, { width, height }, handleShapeStyle.radius, checked));
     }
+
+    // 动画添加 通过获取 开启 和 关闭的 x 来实现动画效果
+    const newHandleShapeStyle = getHandleShapeStyle(backgroundShape as any, spacing, checked);
+    const oldHandleShapeStyle = getHandleShapeStyle(backgroundShape as any, spacing, !checked);
+    if (handleShape.attr('x') && !isEqual(newHandleShapeStyle, oldHandleShapeStyle) && this.checked !== checked) {
+      // 调整控件 和 tag 位置
+      handleShape.attr(oldHandleShapeStyle);
+      // 清理之前的动画
+      handleShape.getAnimations()[0]?.cancel();
+
+      handleShape.animate([{ x: oldHandleShapeStyle.x }, { x: newHandleShapeStyle.x }], {
+        duration: 120,
+        fill: 'both',
+      });
+
+      backgroundStrokeShape.animate(
+        [
+          { lineWidth: 0, strokeOpacity: 0.5 },
+          { lineWidth: 14, strokeOpacity: 0 },
+        ],
+        {
+          duration: 400,
+          easing: 'ease-on',
+        }
+      );
+    } else {
+      handleShape.attr(newHandleShapeStyle);
+    }
+
+    this.checked = !!checked;
   }
 }

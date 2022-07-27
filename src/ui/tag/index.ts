@@ -63,7 +63,7 @@ export class Tag extends BaseComponent<Required<TagStyleProps>> {
       .attr('className', 'tag-marker')
       .call((selection) => {
         (selection.node() as Marker).clear();
-        (selection.node() as Marker).update(marker || { symbol: '', size: 0 });
+        (selection.node() as Marker).update(marker || { symbol: 'triangle', size: 0, x: 0 });
       })
       .node() as Marker;
 
