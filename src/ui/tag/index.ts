@@ -81,7 +81,7 @@ export class Tag extends BaseComponent<Required<TagStyleProps>> {
       .call((selection) => {
         // text 为空字符串或者 false 但 textShape 依然形成了体积
         if (!text) {
-          selection.node().destroy();
+          selection.remove();
         }
       });
     adjust(group, pl, pt, align || 'start', verticalAlign || 'top');
