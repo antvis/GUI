@@ -1,9 +1,9 @@
 import { Rect, Group } from '@antv/g';
 import { deepMix, max, get } from '@antv/util';
-import { GUI } from '../../core/gui';
+import { BaseComponent } from '../../util/create';
 import { Marker } from '../marker';
 import { Button } from '../button';
-import { ButtonPosition, PageNavigatorCfg, PageNavigatorOptions } from './types';
+import { PageNavigatorCfg, PageNavigatorOptions } from './types';
 import { getShapeSpace } from '../../util';
 import { DEFAULT_BUTTON_STYLE } from './constant';
 import type { DisplayObject } from '../../types';
@@ -19,7 +19,8 @@ interface Page {
 
 type PlayState = 'idle' | 'running' | 'finished';
 
-export class PageNavigator extends GUI<PageNavigatorCfg> {
+// todo 优化该组件
+export class PageNavigator extends BaseComponent<PageNavigatorCfg> {
   public static tag = 'page-navigator';
 
   private static defaultOptions = {
@@ -208,6 +209,8 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
     this.init();
   }
 
+  public render(attributes: PageNavigatorCfg, container: Group) {}
+
   public init() {
     this.initShape();
     this.updateView();
@@ -383,11 +386,11 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   private updateButtonState() {
     const { loop } = this.attributes;
     if (!loop) {
-      this.nextButton.setState(this.currPage === this.maxPages ? 'disabled' : 'enabled');
-      this.prevButton.setState(this.currPage === 1 ? 'disabled' : 'enabled');
+      this.nextButton.setState(this.currPage === this.maxPages ? 'disabled' : 'default');
+      this.prevButton.setState(this.currPage === 1 ? 'disabled' : 'default');
     } else {
-      this.nextButton.setState('enabled');
-      this.prevButton.setState('enabled');
+      this.nextButton.setState('default');
+      this.prevButton.setState('default');
     }
   }
 
