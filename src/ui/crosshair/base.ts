@@ -1,13 +1,13 @@
 import { Path, Group } from '@antv/g';
 import { deepMix } from '@antv/util';
-import { BaseComponent } from '../../util/create';
+import { GUI } from '../../core/gui';
 import { maybeAppend } from '../../util';
 import { Tag } from '../tag';
 import { CROSSHAIR_BASE_DEFAULT_STYLE } from './constant';
 import type { CrosshairBaseCfg, CrosshairBaseOptions } from './types';
 import type { Point } from '../../types';
 
-export abstract class CrosshairBase<T extends CrosshairBaseCfg> extends BaseComponent<Required<T>> {
+export abstract class CrosshairBase<T extends CrosshairBaseCfg> extends GUI<Required<T>> {
   public static tag = 'crosshair-base';
 
   protected static defaultOptions = {

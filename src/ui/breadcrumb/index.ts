@@ -1,13 +1,13 @@
 import { Group, Text } from '@antv/g';
 import { deepMix, isNil, pick } from '@antv/util';
-import { BaseComponent } from '../../util/create';
+import { GUI } from '../../core/gui';
 import { maybeAppend, normalPadding, TEXT_INHERITABLE_PROPS } from '../../util';
 import { Tag } from '../tag';
 import type { BreadcrumbCfg, BreadcrumbOptions, BreadcrumbItem } from './type';
 
 export type { BreadcrumbCfg, BreadcrumbOptions };
 
-export class Breadcrumb extends BaseComponent<Required<BreadcrumbCfg>> {
+export class Breadcrumb extends GUI<Required<BreadcrumbCfg>> {
   /**
    * 标签类型
    */

@@ -1,6 +1,6 @@
 import { Rect, Group } from '@antv/g';
 import { deepMix, max, get } from '@antv/util';
-import { BaseComponent } from '../../util/create';
+import { GUI } from '../../core/gui';
 import { Marker } from '../marker';
 import { Button } from '../button';
 import { PageNavigatorCfg, PageNavigatorOptions } from './types';
@@ -20,7 +20,7 @@ interface Page {
 type PlayState = 'idle' | 'running' | 'finished';
 
 // todo 优化该组件
-export class PageNavigator extends BaseComponent<PageNavigatorCfg> {
+export class PageNavigator extends GUI<PageNavigatorCfg> {
   public static tag = 'page-navigator';
 
   private static defaultOptions = {

@@ -1,7 +1,7 @@
 import { Group, Rect } from '@antv/g';
 import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
 import { Linear, Band } from '@antv/scale';
-import { BaseComponent } from '../../util/create';
+import { GUI } from '../../core/gui';
 import { applyStyle, maybeAppend } from '../../util';
 import { Lines } from './lines';
 import { Columns } from './columns';
@@ -20,7 +20,7 @@ import {
 
 export type { SparklineCfg, SparklineOptions };
 
-export class Sparkline extends BaseComponent<SparklineCfg> {
+export class Sparkline extends GUI<SparklineCfg> {
   public static tag = 'sparkline';
 
   private static defaultOptions = {
