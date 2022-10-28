@@ -24,7 +24,7 @@ export const AXIS_BASE_DEFAULT_CFG: DisplayObjectConfig<Partial<AxisBaseCfg>> = 
         transformOrigin: 'center',
       },
     }),
-    lineArrowOffset: 50,
+    lineArrowOffset: 15,
     lineArrowSize: 0.6,
     tickStroke: 'black',
     tickLength: 5,
