@@ -256,7 +256,7 @@ export class Text extends GUI<Required<TextCfg>> {
     this.backgroundShape.attr(this.backgroundCfg);
     this.textShape.attr(this.textCfg);
     this.layout();
-    this.decorationGroup.removeChildren(true);
+    this.decorationGroup.removeChildren();
     this.decorationCfg.forEach((cfg) => {
       this.decorationGroup.appendChild(new Decoration({ style: cfg }));
     });

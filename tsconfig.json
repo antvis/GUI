@@ -18,7 +18,10 @@
     "strict": true,
     "importHelpers": true,
     "downlevelIteration": true,
-    "noImplicitThis": false
+    "noImplicitThis": false,
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "examples"]

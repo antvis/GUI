@@ -1,7 +1,7 @@
 import { clone, deepMix, get } from '@antv/util';
 import type { TextStyleProps } from '@antv/g';
+import type { InferStyle, MixAttrs, StyleState } from '@/types';
 import { STATE_LIST } from '../constant';
-import type { MixAttrs, StyleState } from '../types';
 
 /**
  * 以下属性都是可继承的，这意味着没有显式定义（值为 unset）时，是需要从未来的祖先节点中计算得到的。
@@ -93,4 +93,54 @@ export function applyStyleSheet(element: HTMLElement, style: { [key: string]: Ob
         }, '');
       });
   });
+}
+
+/**
+ *
+ * @param style
+ * @param prefix
+ * @returns
+ */
+export function getStyleFromPrefixed<T extends { [keys: string]: any }>(style: T, prefix: string) {
+  const _style: { [keys: string]: any } = {};
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  };
+  Object.keys(style).forEach((key) => {
+    if (key.startsWith(prefix)) {
+      _style[capitalizeFirstLetter(key.slice(prefix.length))] = style[key];
+    }
+  });
+  return _style as InferStyle<T>;
+}
+
+/**
+ * extract group style from mixin style
+ * @param style
+ * @returns shape style and rest style
+ */
+export function styleSplitter(style: { [keys: string]: any }) {
+  const groupStyleDict: string[] = [
+    'transform',
+    'transformOrigin',
+    'anchor',
+    'visibility',
+    'pointerEvents',
+    'zIndex',
+    'cursor',
+    'clipPath',
+    'clipPathTargets',
+    'offsetPath',
+    'offsetPathTargets',
+    'offsetDistance',
+    'draggable',
+    'droppable',
+  ];
+  const output: typeof style = {};
+  const groupStyle: typeof style = {};
+  Object.entries(style).forEach(([key, val]) => {
+    if (groupStyleDict.indexOf(key) !== -1) groupStyle[key] = val;
+    else output[key] = val;
+  });
+  return [output, groupStyle];
 }

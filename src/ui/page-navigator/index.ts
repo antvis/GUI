@@ -1,12 +1,12 @@
-import { Rect, Group } from '@antv/g';
-import { deepMix, max, get } from '@antv/util';
+import type { DisplayObject } from '@antv/g';
+import { Group, Rect } from '@antv/g';
+import { deepMix, max } from '@antv/util';
 import { GUI } from '../../core/gui';
-import { Marker } from '../marker';
-import { Button } from '../button';
-import { PageNavigatorCfg, PageNavigatorOptions } from './types';
 import { getShapeSpace } from '../../util';
+import { Button } from '../button';
+import { Marker } from '../marker';
 import { DEFAULT_BUTTON_STYLE } from './constant';
-import type { DisplayObject } from '../../types';
+import { PageNavigatorCfg, PageNavigatorOptions } from './types';
 
 export { PageNavigatorCfg, PageNavigatorOptions } from './types';
 
@@ -226,7 +226,7 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
     if (view) {
       if (this.view) {
         this.view.style.clipPath = null;
-        this.removeChild(this.view, false);
+        this.removeChild(this.view);
       }
       // 更新full view
       this.currPage = this.attributes.initPageNum!;
@@ -246,14 +246,14 @@ export class PageNavigator extends GUI<PageNavigatorCfg> {
   public clear() {
     if (this.view) {
       this.view.style.clipPath = null;
-      this.removeChild(this.view, false);
+      this.removeChild(this.view);
     }
     this.fullView = undefined;
-    this.removeChildren(true);
+    this.removeChildren();
   }
 
   public destroy() {
-    this.removeChildren(true);
+    this.removeChildren();
     super.destroy();
   }
 
