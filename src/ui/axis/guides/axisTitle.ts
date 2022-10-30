@@ -1,12 +1,12 @@
 import type { InferStyle } from '@/types';
 import type { Selection } from '@/util';
 import { applyStyle, createDO, styleSplitter } from '@/util';
-import type { AxisCfg } from '../types';
+import type { AxisStyleProps } from '../types';
 
 function getTitlePosition(
   axis: Selection,
   title: Selection,
-  cfg: AxisCfg
+  cfg: AxisStyleProps
 ): {
   x: number;
   y: number;
@@ -36,26 +36,26 @@ function getTitlePosition(
   };
 }
 
-function getTitleLayout(container: Selection, title: Selection, cfg: AxisCfg) {
+function getTitleLayout(container: Selection, title: Selection, cfg: AxisStyleProps) {
   const axis = container.select('#axis-main-group');
   return getTitlePosition(axis, title, cfg);
 }
 
-function createTitleEl(container: Selection, cfg: AxisCfg) {
+function createTitleEl(container: Selection, cfg: AxisStyleProps) {
   const { title } = cfg;
   const group = container.maybeAppend('axis-title-group', 'g').attr('anchor', '0 0');
   const titleEl = group.maybeAppend('axis-title', () => createDO(title!));
   return [group, titleEl];
 }
 
-function applyTitleStyle(title: Selection, group: Selection, cfg: AxisCfg, style: any) {
+function applyTitleStyle(title: Selection, group: Selection, cfg: AxisStyleProps, style: any) {
   const [titleStyle, groupStyle] = styleSplitter(style);
   title.call(applyStyle, titleStyle);
   group.node().attr(groupStyle);
   group.node().attr(getTitleLayout(group, title, cfg));
 }
 
-export function renderTitle<T = any>(container: Selection, cfg: AxisCfg, style: InferStyle<T>) {
+export function renderTitle<T = any>(container: Selection, cfg: AxisStyleProps, style: InferStyle<T>) {
   if (!cfg.title) return;
   const [group, titleEl] = createTitleEl(container, cfg);
   applyTitleStyle(titleEl, group, cfg, style);

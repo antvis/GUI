@@ -4,21 +4,21 @@ import type { Selection } from '@/util';
 import { degToRad, getCallbackValue } from '@/util';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction } from 'lodash';
-import type { AxisCfg, AxisDatum } from '../types';
+import type { AxisStyleProps, AxisDatum } from '../types';
 import { getDirectionVector, getValuePos } from './axisLine';
 import { filterExec } from './utils';
 
-function getGridVector(value: number, cfg: AxisCfg) {
+function getGridVector(value: number, cfg: AxisStyleProps) {
   return getDirectionVector(value, cfg.gridDirection!, cfg);
 }
 
-function getGridCenter(cfg: AxisCfg) {
+function getGridCenter(cfg: AxisStyleProps) {
   const { type, gridCenter } = cfg;
   if (type === 'linear') return gridCenter;
   return gridCenter || cfg.center;
 }
 
-function renderStraight(data: AxisDatum[], cfg: AxisCfg) {
+function renderStraight(data: AxisDatum[], cfg: AxisStyleProps) {
   const { gridLength = 0 } = cfg;
   return data.map(({ value }) => {
     const [x, y] = getValuePos(value, cfg);
@@ -32,7 +32,7 @@ function renderStraight(data: AxisDatum[], cfg: AxisCfg) {
   });
 }
 
-function renderSurround(data: AxisDatum[], cfg: AxisCfg, style: any) {
+function renderSurround(data: AxisDatum[], cfg: AxisStyleProps, style: any) {
   const { controlAngles } = style;
   const center = getGridCenter(cfg);
   if (!center) throw new Error('grid center is not provid');
@@ -56,7 +56,7 @@ function renderSurround(data: AxisDatum[], cfg: AxisCfg, style: any) {
   });
 }
 
-export function renderGrid(container: Selection, _data: AxisDatum[], cfg: AxisCfg, style: any) {
+export function renderGrid(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, style: any) {
   const { type, closed, areaFill, connect } = style;
   const center = getGridCenter(cfg);
   const data = filterExec(_data, cfg.gridFiltrate);

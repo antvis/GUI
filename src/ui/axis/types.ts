@@ -164,7 +164,7 @@ export type AxisGridCfg = {
    */
   gridAreaFill?: string | string[] | Callbackable<string, AxisDatumCP>;
 };
-export type AxisBaseCfg = AxisTitleStyle &
+export type AxisBaseStyleProps = AxisTitleStyle &
   AxisTitleCfg &
   AxisLineStyle &
   AxisLineCfg &
@@ -191,16 +191,16 @@ export type AxisBaseCfg = AxisTitleStyle &
      */
     crossSize?: number;
   };
-export interface LinearAxisCfg extends AxisBaseCfg {
+export interface LinearAxisStyleProps extends AxisBaseStyleProps {
   type: 'linear';
   startPos: Vector2;
   endPos: Vector2;
 }
-export interface ArcAxisCfg extends AxisBaseCfg {
+export interface ArcAxisStyleProps extends AxisBaseStyleProps {
   type: 'arc';
   angleRange: [number, number];
   radius: number;
   center: Vector2;
 }
 
-export type AxisCfg = LinearAxisCfg | ArcAxisCfg;
+export type AxisStyleProps = LinearAxisStyleProps | ArcAxisStyleProps;

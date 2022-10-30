@@ -3,11 +3,11 @@ import { applyStyle, getCallbackValue, select, Selection, styleSplitter } from '
 import type { Group } from '@antv/g';
 import { DisplayObject } from '@antv/g';
 import { isFunction, memoize } from 'lodash';
-import type { AxisCfg, AxisDatum } from '../types';
+import type { AxisStyleProps, AxisDatum } from '../types';
 import { getDirectionVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
 
-export function getTickVector(value: number, cfg: AxisCfg): Vector2 {
+export function getTickVector(value: number, cfg: AxisStyleProps): Vector2 {
   return getDirectionVector(value, cfg.tickDirection!, cfg);
 }
 
@@ -22,14 +22,20 @@ export const getTickPoints = memoize(
   (unitVector, tickLength) => [...unitVector, tickLength].join()
 );
 
-function getTickLineLayout(datum: AxisDatum, index: number, data: AxisDatum[], tickVector: Vector2, cfg: AxisCfg) {
+function getTickLineLayout(
+  datum: AxisDatum,
+  index: number,
+  data: AxisDatum[],
+  tickVector: Vector2,
+  cfg: AxisStyleProps
+) {
   const { tickLength } = cfg;
   const [ox, oy] = getValuePos(datum.value, cfg);
   const [[x1, y1], [x2, y2]] = getTickPoints(tickVector, getCallbackValue(tickLength, [datum, index, data]));
   return { x: ox, y: oy, x1, x2, y1, y2 };
 }
 
-function createTickEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisCfg) {
+function createTickEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
   const { tickFormatter: formatter } = cfg;
   const tickVector = getTickVector(datum.value, cfg);
   let el: any = 'line';
@@ -44,7 +50,7 @@ function applyTickStyle(
   data: AxisDatum[],
   tick: Selection,
   group: Group,
-  cfg: AxisCfg,
+  cfg: AxisStyleProps,
   style: any
 ) {
   const tickVector = getTickVector(datum.value, cfg);
@@ -58,7 +64,7 @@ function applyTickStyle(
 export function renderTicks<T = any>(
   container: Selection,
   _data: AxisDatum[],
-  cfg: AxisCfg,
+  cfg: AxisStyleProps,
   callbackableStyle: InferStyle<T>
 ) {
   const data = filterExec(_data, cfg.tickFiltrate);

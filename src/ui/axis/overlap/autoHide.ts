@@ -1,7 +1,7 @@
 import type { DisplayObject } from '@antv/g';
 import { defined, getLocalBBox } from '@/util';
 import { intersect } from '@/layout/intersect';
-import type { HideOverlapCfg, AxisCfg } from '../types';
+import type { HideOverlapCfg, AxisStyleProps } from '../types';
 import { isAxisHorizontal, isAxisVertical } from '../guides/axisLine';
 import { boundTest } from '../utils/helper';
 
@@ -16,7 +16,12 @@ const methods: Record<string, (items: DisplayObject[], args: any) => DisplayObje
 
 const filterDefined = (arr: any[]) => arr.filter((d) => defined(d));
 
-export default function equidistance(labels: DisplayObject[], overlapCfg: HideOverlapCfg, cfg: AxisCfg, utils: Utils) {
+export default function equidistance(
+  labels: DisplayObject[],
+  overlapCfg: HideOverlapCfg,
+  cfg: AxisStyleProps,
+  utils: Utils
+) {
   const count = labels.length;
   const { keepHeader, keepTail } = overlapCfg;
   if (count <= 1) return;

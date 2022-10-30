@@ -1,14 +1,19 @@
 import { getFont, parseLength } from '@/util';
 import type { Text } from '@antv/g';
 import { isNil } from '@antv/util';
-import { AxisCfg, EllipsisOverlapCfg } from '../types';
+import { AxisStyleProps, EllipsisOverlapCfg } from '../types';
 import { boundTest } from '../utils/helper';
 
 export type Utils = {
   ellipsis: (text: Text, len?: number, suffix?: string) => void;
 };
 
-export default function ellipseLabels(labels: Text[], overlapCfg: EllipsisOverlapCfg, cfg: AxisCfg, utils: Utils) {
+export default function ellipseLabels(
+  labels: Text[],
+  overlapCfg: EllipsisOverlapCfg,
+  cfg: AxisStyleProps,
+  utils: Utils
+) {
   if (labels.length <= 1) return;
   const { suffix = '...', minLength, maxLength, step: ellipsisStep, margin = [0, 0, 0, 0] } = overlapCfg;
 

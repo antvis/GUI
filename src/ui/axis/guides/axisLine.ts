@@ -3,10 +3,17 @@ import { applyStyle, createDO, degToRad, select, Selection } from '@/util';
 import { ext, vec2 } from '@antv/matrix-util';
 import { memoize } from 'lodash';
 import { baseDependencies } from './utils';
-import type { ArcAxisCfg, AxisCfg, AxisLineCfg, AxisLineStyle, Direction, LinearAxisCfg } from '../types';
+import type {
+  ArcAxisStyleProps,
+  AxisStyleProps,
+  AxisLineCfg,
+  AxisLineStyle,
+  Direction,
+  LinearAxisStyleProps,
+} from '../types';
 
 export const getLineAngle = memoize(
-  (value: number, cfg: ArcAxisCfg) => {
+  (value: number, cfg: ArcAxisStyleProps) => {
     const {
       angleRange: [startAngle, endAngle],
     } = cfg;
@@ -16,7 +23,7 @@ export const getLineAngle = memoize(
 );
 
 export const getLineTangentVector = memoize(
-  (value: number, cfg: AxisCfg) => {
+  (value: number, cfg: AxisStyleProps) => {
     if (cfg.type === 'linear') {
       const {
         startPos: [startX, startY],
@@ -35,13 +42,13 @@ export const getLineTangentVector = memoize(
   }
 );
 
-export function getDirectionVector(value: number, direction: Direction, cfg: AxisCfg): Vector2 {
+export function getDirectionVector(value: number, direction: Direction, cfg: AxisStyleProps): Vector2 {
   const tangentVector = getLineTangentVector(value, cfg);
   return ext.vertical([], tangentVector, direction !== 'positive') as Vector2;
 }
 
 export const getLinearValuePos = memoize(
-  (value: number, cfg: LinearAxisCfg): Vector2 => {
+  (value: number, cfg: LinearAxisStyleProps): Vector2 => {
     const {
       startPos: [sx, sy],
       endPos: [ex, ey],
@@ -53,7 +60,7 @@ export const getLinearValuePos = memoize(
 );
 
 export const getArcValuePos = memoize(
-  (value: number, cfg: ArcAxisCfg): Vector2 => {
+  (value: number, cfg: ArcAxisStyleProps): Vector2 => {
     const {
       radius,
       center: [cx, cy],
@@ -64,20 +71,20 @@ export const getArcValuePos = memoize(
   (value, cfg) => [value, ...cfg.angleRange, cfg.radius, ...cfg.center].join()
 );
 
-export function getValuePos(value: number, cfg: AxisCfg) {
+export function getValuePos(value: number, cfg: AxisStyleProps) {
   if (cfg.type === 'linear') return getLinearValuePos(value, cfg);
   return getArcValuePos(value, cfg);
 }
 
-export function isAxisHorizontal(cfg: LinearAxisCfg): boolean {
+export function isAxisHorizontal(cfg: LinearAxisStyleProps): boolean {
   return getLineTangentVector(0, cfg)[1] === 0;
 }
 
-export function isAxisVertical(cfg: LinearAxisCfg): boolean {
+export function isAxisVertical(cfg: LinearAxisStyleProps): boolean {
   return getLineTangentVector(0, cfg)[0] === 0;
 }
 
-function renderArc<T extends AxisLineStyle>(container: Selection, cfg: ArcAxisCfg, style: InferStyle<T>) {
+function renderArc<T extends AxisLineStyle>(container: Selection, cfg: ArcAxisStyleProps, style: InferStyle<T>) {
   const {
     angleRange: [startAngle, endAngle],
     center: [cx, cy],
@@ -128,7 +135,7 @@ function extendLine(startPos: Point, endPos: Point, range: [number, number] = [0
   return [s1 * x, s1 * y, s2 * x, s2 * y];
 }
 
-function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: LinearAxisCfg, style: InferStyle<T>) {
+function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: LinearAxisStyleProps, style: InferStyle<T>) {
   const { startPos, endPos, truncRange, lineExtension } = cfg;
   const [[x1, y1], [x2, y2]] = [startPos, endPos];
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, truncRange) : new Array(4).fill(0);
@@ -164,7 +171,7 @@ function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: Linear
 function renderAxisArrow<T>(
   container: Selection,
   type: 'linear' | 'arc',
-  { lineArrow, truncRange, lineArrowOffset = 0, lineArrowSize }: AxisCfg,
+  { lineArrow, truncRange, lineArrowOffset = 0, lineArrowSize }: AxisStyleProps,
   style: InferStyle<T>
 ) {
   if (!lineArrow) return;
@@ -177,7 +184,7 @@ function renderAxisArrow<T>(
   shapeToAddArrow.style('markerEnd', arrow).style('markerEndOffset', -lineArrowOffset);
 }
 
-export function renderAxisLine<T>(container: Selection, cfg: AxisCfg, style: InferStyle<T>) {
+export function renderAxisLine<T>(container: Selection, cfg: AxisStyleProps, style: InferStyle<T>) {
   const { type } = cfg;
   if (type === 'linear') renderLinear(container, cfg, style);
   else renderArc(container, cfg, style);

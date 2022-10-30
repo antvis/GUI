@@ -5,7 +5,7 @@ import type { DisplayObject, Group } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction, isString, memoize } from 'lodash';
 import { processOverlap } from '../overlap';
-import type { AxisCfg, AxisDatum } from '../types';
+import type { AxisStyleProps, AxisDatum } from '../types';
 import { getFactor } from '../utils';
 import { getDirectionVector, getLineTangentVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
@@ -26,7 +26,7 @@ const getAngle = memoize(
   (v1, v2) => [...v1, ...v2].join()
 );
 
-function getLabelVector(value: number, cfg: AxisCfg) {
+function getLabelVector(value: number, cfg: AxisStyleProps) {
   return getDirectionVector(value, cfg.labelDirection!, cfg);
 }
 
@@ -38,7 +38,7 @@ function correctLabelRotation(_rotate: number) {
 }
 
 /** get rotation from preset or layout */
-function getLabelRotation(datum: AxisDatum, label: DisplayObject, cfg: AxisCfg) {
+function getLabelRotation(datum: AxisDatum, label: DisplayObject, cfg: AxisStyleProps) {
   const { labelAlign } = cfg;
   const customRotate = getTransform(label, 'rotate');
   if (customRotate) return +customRotate % 180;
@@ -52,7 +52,7 @@ function getLabelRotation(datum: AxisDatum, label: DisplayObject, cfg: AxisCfg) 
 }
 
 /** get the label align according to its tick and label angle  */
-function getLabelAlign(value: number, rotate: number, cfg: AxisCfg) {
+function getLabelAlign(value: number, rotate: number, cfg: AxisStyleProps) {
   const { type, labelAlign } = cfg;
   const labelVector = getLabelVector(value, cfg);
   const labelAngle = angleNormalizer(rotate);
@@ -99,7 +99,7 @@ function getLabelAlign(value: number, rotate: number, cfg: AxisCfg) {
   // return align[-unionFactor as VerticalFactor];
 }
 
-function setRotateAndAdjustLabelAlign(rotate: number, group: G2Element, cfg: AxisCfg) {
+function setRotateAndAdjustLabelAlign(rotate: number, group: G2Element, cfg: AxisStyleProps) {
   group.setLocalEulerAngles(+rotate);
   const { value } = group.__data__;
   const textAlign = getLabelAlign(value, rotate, cfg);
@@ -107,7 +107,7 @@ function setRotateAndAdjustLabelAlign(rotate: number, group: G2Element, cfg: Axi
   label?.nodeName === 'text' && select(label).style('textAlign', textAlign);
 }
 
-function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisCfg) {
+function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
   const { tickLength, tickDirection, labelDirection, labelSpacing } = cfg;
   const _labelSpacing = getCallbackValue<number>(labelSpacing, [datum, index, data]);
   const [labelVector, unionFactor] = [getLabelVector(datum.value, cfg), getFactor(labelDirection!, tickDirection!)];
@@ -120,7 +120,7 @@ function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: Ax
   return { x, y };
 }
 
-function createLabelEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisCfg) {
+function createLabelEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
   const { labelFormatter: formatter } = cfg;
   const labelVector = getLabelVector(datum.value, cfg);
   let el: any = () => createDO(datum.label || '');
@@ -129,7 +129,14 @@ function createLabelEl(container: Selection, datum: AxisDatum, index: number, da
   return container.append(el).attr('className', 'axis-label-item');
 }
 
-function applyLabelStyle(datum: AxisDatum, index: number, data: AxisDatum[], group: Group, cfg: AxisCfg, style: any) {
+function applyLabelStyle(
+  datum: AxisDatum,
+  index: number,
+  data: AxisDatum[],
+  group: Group,
+  cfg: AxisStyleProps,
+  style: any
+) {
   // 1. set style
   // 2. set position
   // 3. set rotation
@@ -149,7 +156,7 @@ function applyLabelStyle(datum: AxisDatum, index: number, data: AxisDatum[], gro
   setRotateAndAdjustLabelAlign(rotate, group, cfg);
 }
 
-function overlapHandler(cfg: AxisCfg) {
+function overlapHandler(cfg: AxisStyleProps) {
   processOverlap(this.node().childNodes as DisplayObject[], cfg, {
     hide: (label) => {
       label.style.visibility = 'hidden';
@@ -171,7 +178,12 @@ function overlapHandler(cfg: AxisCfg) {
   });
 }
 
-export function renderLabels<T = any>(container: Selection, _data: AxisDatum[], cfg: AxisCfg, style: InferStyle<T>) {
+export function renderLabels<T = any>(
+  container: Selection,
+  _data: AxisDatum[],
+  cfg: AxisStyleProps,
+  style: InferStyle<T>
+) {
   const { labelFiltrate, labelFormatter: formatter } = cfg;
   const data = filterExec(_data, labelFiltrate);
   container

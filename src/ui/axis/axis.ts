@@ -8,20 +8,20 @@ import { renderAxisLine } from './guides/axisLine';
 import { renderTicks } from './guides/axisTicks';
 import { renderTitle } from './guides/axisTitle';
 import type {
-  ArcAxisCfg,
-  AxisCfg,
+  ArcAxisStyleProps,
+  AxisStyleProps,
   AxisGridStyle,
   AxisLabelStyle,
   AxisLineStyle,
   AxisTickStyle,
   AxisTitleStyle,
-  LinearAxisCfg,
+  LinearAxisStyleProps,
 } from './types';
 
-type AxisOptions = DisplayObjectConfig<AxisCfg>;
+type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
 export { AxisOptions };
 
-export const Axis = createComponent<AxisCfg>(
+export const Axis = createComponent<AxisStyleProps>(
   {
     render(attributes, container) {
       const {
@@ -56,10 +56,10 @@ export const Axis = createComponent<AxisCfg>(
 
       const restStyle = (() => {
         if (type === 'linear') {
-          const { startPos, endPos, ...rest } = restCfg as LinearAxisCfg;
+          const { startPos, endPos, ...rest } = restCfg as LinearAxisStyleProps;
           return rest;
         }
-        const { angleRange, radius, center, ...rest } = restCfg as ArcAxisCfg;
+        const { angleRange, radius, center, ...rest } = restCfg as ArcAxisStyleProps;
         return rest;
       })();
 

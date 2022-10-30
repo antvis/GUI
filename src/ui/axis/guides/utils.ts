@@ -2,7 +2,7 @@ import type { CallbackableObject } from '@/types';
 import { getCallbackValue } from '@/util';
 import { DisplayObject } from '@antv/g';
 import { isFunction } from 'lodash';
-import type { AxisCfg, AxisDatumCP } from '../types';
+import type { AxisStyleProps, AxisDatumCP } from '../types';
 
 export function applyStyle(shape: DisplayObject, idx: number, attrs: any[], style?: any) {
   const datum = attrs[idx].data;
@@ -19,7 +19,7 @@ export function getCallbackStyle<T>(style: CallbackableObject<T, AxisDatumCP>, p
   );
 }
 
-export function baseDependencies(cfg: AxisCfg): any[] {
+export function baseDependencies(cfg: AxisStyleProps): any[] {
   if (cfg.type === 'linear') return [...cfg.startPos, ...cfg.endPos];
   return [...cfg.angleRange, ...cfg.center, cfg.radius];
 }

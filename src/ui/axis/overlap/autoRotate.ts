@@ -1,7 +1,7 @@
 import type { DisplayObject } from '@antv/g';
 import { isArray, isNil } from 'lodash';
 import { getTransform } from '@/util';
-import { AxisCfg, RotateOverlapCfg } from '../types';
+import { AxisStyleProps, RotateOverlapCfg } from '../types';
 import { boundTest } from '../utils/helper';
 
 export type Utils = {
@@ -10,7 +10,12 @@ export type Utils = {
 
 type RotateType = Parameters<Utils['rotate']>[1];
 
-export default function adjustAngle(labels: DisplayObject[], overlapCfg: RotateOverlapCfg, cfg: AxisCfg, utils: Utils) {
+export default function adjustAngle(
+  labels: DisplayObject[],
+  overlapCfg: RotateOverlapCfg,
+  cfg: AxisStyleProps,
+  utils: Utils
+) {
   const { optionalAngles = [0, 45, 90], margin, recoverWhenFailed } = overlapCfg;
   const defaultAngles = labels.map((label) => +(getTransform(label, 'rotate') || 0));
   const runAndPassed = () => boundTest(labels, margin).length < 1;
