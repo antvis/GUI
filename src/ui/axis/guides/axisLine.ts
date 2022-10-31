@@ -127,8 +127,7 @@ function renderTruncation<T>(
 }
 
 function extendLine(startPos: Point, endPos: Point, range: [number, number] = [0, 0]) {
-  const [[x1, y1], [x2, y2]] = [startPos, endPos];
-  const [l1, l2] = range;
+  const [[x1, y1], [x2, y2], [l1, l2]] = [startPos, endPos, range];
   const [x, y] = [x2 - x1, y2 - y1];
   const L = Math.sqrt(x ** 2 + y ** 2);
   const [s1, s2] = [-l1 / L, l2 / L];
@@ -138,7 +137,7 @@ function extendLine(startPos: Point, endPos: Point, range: [number, number] = [0
 function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: LinearAxisStyleProps, style: InferStyle<T>) {
   const { startPos, endPos, truncRange, lineExtension } = cfg;
   const [[x1, y1], [x2, y2]] = [startPos, endPos];
-  const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, truncRange) : new Array(4).fill(0);
+  const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
   container.node().removeChildren();
 
   const renderLine = (id: string, [[a, b], [c, d]]: [Vector2, Vector2]) => {
