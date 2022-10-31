@@ -18,8 +18,16 @@ import type {
   LinearAxisStyleProps,
 } from './types';
 
-type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
-export { AxisOptions };
+export type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
+
+const PREFIX = (name: string) => `axis-${name}`;
+const GROUP_NAME = {
+  main: PREFIX('main-group'),
+  line: PREFIX('line-group'),
+  tick: PREFIX('tick-group'),
+  label: PREFIX('label-group'),
+  grid: PREFIX('grid-group'),
+};
 
 export const Axis = createComponent<AxisStyleProps>(
   {
@@ -79,12 +87,12 @@ export const Axis = createComponent<AxisStyleProps>(
         return true;
       });
       /** grid */
-      const axisGridGroup = select(container).maybeAppend('axis-grid-group', 'g').attr('className', 'axis-grid-group');
+      const axisGridGroup = select(container).maybeAppend(GROUP_NAME.grid, 'g').attr('className', GROUP_NAME.grid);
       ifShow(showGrid!, axisGridGroup, () => renderGrid(axisGridGroup, data, attributes, gridStyle), true);
       /** main group */
-      const axisMainGroup = select(container).maybeAppend('axis-main-group', 'g').attr('className', 'axis-main-group');
+      const axisMainGroup = select(container).maybeAppend(GROUP_NAME.main, 'g').attr('className', GROUP_NAME.main);
       /** line */
-      const axisLineGroup = axisMainGroup.maybeAppend('axis-line-group', 'g').attr('className', 'axis-line-group');
+      const axisLineGroup = axisMainGroup.maybeAppend(GROUP_NAME.line, 'g').attr('className', GROUP_NAME.line);
       ifShow(
         showLine!,
         axisLineGroup,
@@ -94,7 +102,7 @@ export const Axis = createComponent<AxisStyleProps>(
         true
       );
       /** tick */
-      const axisTickGroup = axisMainGroup.maybeAppend('axis-tick-group', 'g').attr('className', 'axis-tick-group');
+      const axisTickGroup = axisMainGroup.maybeAppend(GROUP_NAME.grid, 'g').attr('className', GROUP_NAME.grid);
       ifShow(
         showTick!,
         axisTickGroup,
@@ -104,7 +112,7 @@ export const Axis = createComponent<AxisStyleProps>(
         true
       );
       /** label */
-      const axisLabelGroup = axisMainGroup.maybeAppend('axis-label-group', 'g').attr('className', 'axis-label-group');
+      const axisLabelGroup = axisMainGroup.maybeAppend(GROUP_NAME.label, 'g').attr('className', GROUP_NAME.label);
       ifShow(
         showLabel!,
         axisLabelGroup,
