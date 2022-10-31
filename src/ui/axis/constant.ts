@@ -14,6 +14,7 @@ export const AXIS_BASE_DEFAULT_CFG: DisplayObjectConfig<Partial<AxisBaseStylePro
     titleFill: 'black',
     titleFontSize: 12,
     titleTextBaseline: 'middle',
+    showLine: true,
     lineLineWidth: 1,
     lineStroke: 'black',
     lineArrow: new Path({

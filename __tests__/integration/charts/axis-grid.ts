@@ -106,10 +106,10 @@ export const AxisGrid = () => {
     tickDirection: 'negative',
     gridLength: 200,
     gridType: 'surround',
-    gridConnect: 'arc',
+    // gridConnect: 'arc',
     gridAreaFill: ['#f2cea5', '#f8dea3', '#c6cf93', '#95b5c0'],
     gridCenter: [800, 450],
-    gridClosed: true,
+    // gridClosed: true,
     gridLineWidth: 0,
     gridControlAngles: [45, 90, 135, 180, 225, 270, 315],
   });

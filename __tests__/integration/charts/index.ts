@@ -16,3 +16,4 @@ export { AxisArcLabelHorizontal } from './axis-arc-label-horizontal';
 export { AxisArcLabelParallel } from './axis-arc-label-parallel';
 export { AxisArcLabelPerpendicular } from './axis-arc-label-perpendicular';
 export { AxisGrid } from './axis-grid';
+export { AxisGrid2 } from './axis-grid-2';

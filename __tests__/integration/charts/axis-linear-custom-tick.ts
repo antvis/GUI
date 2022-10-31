@@ -1,4 +1,4 @@
-import { Text, Circle, Line } from '@antv/g';
+import { Text, Circle, Line, Rect } from '@antv/g';
 import { Axis } from '../../../src/ui/axis';
 
 export const AxisLinearTickFormat = () => {
@@ -38,13 +38,13 @@ export const AxisLinearTickFormat = () => {
     style: {
       type: 'linear',
       startPos: [200, 150],
-      endPos: [600, 250],
+      endPos: [600, 150],
       data: tickData,
       lineLineWidth: 5,
-      lineStroke: 'red',
       labelFormatter: () => '',
       tickStroke: (datum, index) => (index % 2 === 0 ? 'blue' : 'green'),
       tickFormatter: (datum, index, data, [cx, cy]) => {
+        if (index === 3) return new Rect({ style: { width: 20, height: 20, fill: 'green', anchor: '0.5 0.5' } });
         return index % 5 === 0
           ? new Circle({ style: { r: index % 10 === 0 ? 10 : 5 } })
           : new Line({ style: { x1: 0, x2: 0, y1: 50 * cx, y2: 10 * cy } });
