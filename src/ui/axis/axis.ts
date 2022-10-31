@@ -1,4 +1,4 @@
-import { getStyleFromPrefixed, sampling, select } from '@/util';
+import { getStyleFromPrefixed, sampling, select, ifShow } from '@/util';
 import { createComponent } from '@/util/create';
 import { DisplayObjectConfig } from '@antv/g';
 import { AXIS_BASE_DEFAULT_CFG } from './constant';
@@ -35,20 +35,23 @@ export const Axis = createComponent<AxisStyleProps>(
         titleAlign,
         truncRange,
         truncShape,
+        showLine,
         lineExtension,
         lineArrow,
         lineArrowOffset,
+        showTick,
         tickDirection,
         tickLength,
         tickFiltrate,
         tickFormatter,
-        label,
+        showLabel,
         labelAlign,
         labelDirection,
         labelSpacing,
         labelFiltrate,
         labelFormatter,
         labelTransforms,
+        showGrid,
         gridFiltrate,
         gridLength,
         ...restCfg
@@ -75,23 +78,42 @@ export const Axis = createComponent<AxisStyleProps>(
         if (truncRange && value > truncRange[0] && value < truncRange[1]) return false;
         return true;
       });
-
+      /** grid */
       const axisGridGroup = select(container).maybeAppend('axis-grid-group', 'g').attr('className', 'axis-grid-group');
-      if (gridLength === 0) axisGridGroup.node().removeChildren();
-      else renderGrid(axisGridGroup, data, attributes, gridStyle);
-
+      ifShow(showGrid!, axisGridGroup, () => renderGrid(axisGridGroup, data, attributes, gridStyle), true);
+      /** main group */
       const axisMainGroup = select(container).maybeAppend('axis-main-group', 'g').attr('className', 'axis-main-group');
-
+      /** line */
       const axisLineGroup = axisMainGroup.maybeAppend('axis-line-group', 'g').attr('className', 'axis-line-group');
-      renderAxisLine(axisLineGroup, attributes, lineStyle);
-
+      ifShow(
+        showLine!,
+        axisLineGroup,
+        () => {
+          renderAxisLine(axisLineGroup, attributes, lineStyle);
+        },
+        true
+      );
+      /** tick */
       const axisTickGroup = axisMainGroup.maybeAppend('axis-tick-group', 'g').attr('className', 'axis-tick-group');
-      renderTicks(axisTickGroup, data, attributes, tickStyle);
-
+      ifShow(
+        showTick!,
+        axisTickGroup,
+        () => {
+          renderTicks(axisTickGroup, data, attributes, tickStyle);
+        },
+        true
+      );
+      /** label */
       const axisLabelGroup = axisMainGroup.maybeAppend('axis-label-group', 'g').attr('className', 'axis-label-group');
-      if (label === false) axisLabelGroup.node().removeChildren();
-      else renderLabels(axisLabelGroup, data, attributes, labelStyle);
-
+      ifShow(
+        showLabel!,
+        axisLabelGroup,
+        () => {
+          renderLabels(axisLabelGroup, data, attributes, labelStyle);
+        },
+        true
+      );
+      /** title */
       renderTitle(select(container), attributes, titleStyle);
     },
   },

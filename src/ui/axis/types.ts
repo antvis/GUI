@@ -78,6 +78,7 @@ export type AxisTitleCfg = {
 };
 export type AxisLineStyle = PrefixedStyle<LineStyleProps, 'line'>;
 export type AxisLineCfg = {
+  showLine?: boolean;
   /**
    * truncate range in the axis line
    */
@@ -104,6 +105,7 @@ export type AxisLineCfg = {
 };
 export type AxisTickStyle = CallbackableObject<PrefixedStyle<LineStyleProps, 'tick'>, AxisDatumCP>;
 export type AxisTickCfg = {
+  showTick?: boolean;
   /**
    * the position of ticks
    * @description `negative` means ticks is opposite to the direction of cross axis
@@ -125,7 +127,7 @@ export type AxisTickCfg = {
 };
 export type AxisLabelStyle = CallbackableObject<PrefixedStyle<TextStyleProps, 'label'>, AxisDatumCP>;
 export type AxisLabelCfg = {
-  label?: false;
+  showLabel?: boolean;
   labelAlign?: 'horizontal' | 'parallel' | 'perpendicular';
   labelDirection?: Direction;
   /**
@@ -144,6 +146,7 @@ export type AxisLabelCfg = {
 };
 export type AxisGridStyle = PrefixedStyle<GridCfg, 'grid'>;
 export type AxisGridCfg = {
+  showGrid?: boolean;
   gridFiltrate?: (...params: AxisDatumCP) => boolean;
   gridDirection?: Direction;
   /**

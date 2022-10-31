@@ -19,3 +19,4 @@ export * from './angle-converter';
 export * from './transform';
 export * from './in-range';
 export * from './callback';
+export * from './if-show';
