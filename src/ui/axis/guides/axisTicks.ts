@@ -1,5 +1,5 @@
 import type { InferStyle, Vector2 } from '@/types';
-import { applyStyle, getCallbackValue, select, Selection, styleSplitter } from '@/util';
+import { applyStyle, getCallbackValue, select, Selection, styleSeparator } from '@/util';
 import type { Group } from '@antv/g';
 import { DisplayObject } from '@antv/g';
 import { isFunction, memoize } from 'lodash';
@@ -55,7 +55,7 @@ function applyTickStyle(
 ) {
   const tickVector = getTickVector(datum.value, cfg);
   const { x1, x2, y1, y2, x, y } = getTickLineLayout(datum, index, data, tickVector, cfg);
-  const [tickStyle, groupStyle] = styleSplitter(getCallbackStyle(style, [datum, index, data]));
+  const [tickStyle, groupStyle] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
   tick.node().nodeName === 'line' && tick.call(applyStyle, { x1, x2, y1, y2, ...tickStyle });
   group.attr({ x, y, ...groupStyle });
   applyStyle(tick, tickStyle);

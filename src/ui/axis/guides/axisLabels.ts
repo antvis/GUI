@@ -1,6 +1,15 @@
 import type { InferStyle, Vector2 } from '@/types';
 import type { G2Element, Selection } from '@/util';
-import { applyStyle, createDO, getCallbackValue, getTransform, inRange, radToDeg, select, styleSplitter } from '@/util';
+import {
+  applyStyle,
+  createDO,
+  getCallbackValue,
+  getTransform,
+  inRange,
+  radToDeg,
+  select,
+  styleSeparator,
+} from '@/util';
 import type { DisplayObject, Group } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction, isString, memoize } from 'lodash';
@@ -142,7 +151,7 @@ function applyLabelStyle(
   // 3. set rotation
   // 4. set label align
   const label = group.querySelector<DisplayObject>('.axis-label-item');
-  const [labelStyle, groupStyle] = styleSplitter(getCallbackStyle(style, [datum, index, data]));
+  const [labelStyle, groupStyle] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
   label?.nodeName === 'text' &&
     select(label as DisplayObject).call(applyStyle, {
       fontSize: 12,

@@ -121,7 +121,7 @@ export function getStyleFromPrefixed<T extends { [keys: string]: any }>(style: T
  * @param style
  * @returns shape style and rest style
  */
-export function styleSplitter(style: { [keys: string]: any }) {
+export function styleSeparator(style: { [keys: string]: any }) {
   const groupStyleDict: string[] = [
     'transform',
     'transformOrigin',

@@ -1,6 +1,6 @@
 import type { InferStyle } from '@/types';
 import type { Selection } from '@/util';
-import { applyStyle, createDO, styleSplitter } from '@/util';
+import { applyStyle, createDO, styleSeparator } from '@/util';
 import type { AxisStyleProps } from '../types';
 
 function getTitlePosition(
@@ -49,7 +49,7 @@ function createTitleEl(container: Selection, cfg: AxisStyleProps) {
 }
 
 function applyTitleStyle(title: Selection, group: Selection, cfg: AxisStyleProps, style: any) {
-  const [titleStyle, groupStyle] = styleSplitter(style);
+  const [titleStyle, groupStyle] = styleSeparator(style);
   title.call(applyStyle, titleStyle);
   group.node().attr(groupStyle);
   group.node().attr(getTitleLayout(group, title, cfg));
