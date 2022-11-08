@@ -32,5 +32,9 @@ export function createComponent<T>(
       this.attr(deepMix({}, this.attributes, cfg));
       this.descriptor.render?.(this.attributes, this);
     }
+
+    attributeChangedCallback() {
+      this.descriptor.render?.(this.attributes, this);
+    }
   };
 }

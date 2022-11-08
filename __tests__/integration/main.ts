@@ -3,95 +3,132 @@ import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Renderer as SVGRenderer } from '@antv/g-svg';
 import * as cases from './charts';
 
-const renderers = {
-  svg: new SVGRenderer(),
-  canvas: new CanvasRenderer(),
-};
+type Renderer = 'svg' | 'canvas';
 
-let _select;
-let _canvas;
+class DemoHandler {
+  #selectDemo: HTMLSelectElement;
 
-const caseNames = Object.keys(cases);
+  #selectRenderer: HTMLSelectElement;
 
-function createSelection() {
-  const controller = document.createElement('div');
-  document.body.prepend(controller);
-  const select = document.createElement('select');
-  caseNames.forEach((testName) => {
-    const option = document.createElement('option');
-    option.value = testName;
-    option.innerText = testName;
-    select.appendChild(option);
-  });
-  controller.appendChild(select);
-  _select = select;
-  return select;
-}
+  #canvas!: Canvas;
 
-function createCanvas(container: HTMLElement, render) {
-  let div: HTMLDivElement;
-  if (!container) {
-    div = document.createElement('div');
-    div.id = 'container';
-  } else div = container as HTMLDivElement;
+  #caseNames = Object.keys(cases);
 
-  const canvas = new Canvas({
-    container: div,
-    width: 1000,
-    height: 600,
-    renderer: renderers[render],
-  });
-  _canvas = canvas;
-  return canvas;
-}
-
-function getCase(key = 'case') {
-  return new URLSearchParams(window.location.search).get(key);
-}
-
-function storeStatus(name: string) {
-  if (getCase() !== name) {
-    window.location.href = `${window.location.origin}?case=${name}`;
-  }
-}
-
-function select(name: string) {
-  if (!_canvas || !caseNames.includes(name)) return;
-  _canvas.removeChildren();
-  _canvas.appendChild(cases[name]());
-  _select.value = name;
-  storeStatus(name);
-}
-
-function recoverStatus() {
-  const lastSelect = getCase();
-  if (lastSelect) select(lastSelect);
-  else select(caseNames[0]);
-}
-
-function onKeyPress(evt: KeyboardEvent) {
-  const { key } = evt;
-  const index = caseNames.indexOf(_select.value);
-  if (key === 's' && index < caseNames.length - 1) {
-    select(caseNames[index + 1]);
-  } else if (key === 'w' && index > 0) {
-    select(caseNames[index - 1]);
-  }
-}
-
-function handler(container = document.getElementById('container'), render = 'svg') {
-  const selectEl = createSelection();
-  selectEl.onchange = (e) => {
-    const testName = (e.target as HTMLSelectElement).value;
-    select(testName);
+  #render = {
+    svg: new SVGRenderer(),
+    canvas: new CanvasRenderer(),
   };
-  const canvas = createCanvas(container!, render);
-  (window as any).__g_instances__ = [canvas];
-  recoverStatus();
-  window.addEventListener('keypress', onKeyPress);
-  canvas.addEventListener('keypress', onKeyPress);
+
+  private getCase(key = 'case') {
+    return new URLSearchParams(window.location.search).get(key);
+  }
+
+  private initCanvas(container: HTMLElement, renderer: SVGRenderer | CanvasRenderer) {
+    this.#canvas = new Canvas({
+      container,
+      width: 1000,
+      height: 1000,
+      renderer,
+    });
+  }
+
+  private selectCase(name: string) {
+    const canvas = this.#canvas;
+    const select = this.#selectDemo;
+    if (!canvas || !this.#caseNames.includes(name)) return;
+    canvas.removeChildren();
+    // @ts-ignore
+    canvas.appendChild(cases[name]());
+
+    select.value = name;
+    this.storeStatus(name);
+  }
+
+  private initDemoSelect() {
+    if (!this.#selectDemo) return;
+    this.#caseNames.forEach((caseName) => {
+      const option = document.createElement('option');
+      option.value = caseName;
+      option.innerText = caseName;
+      this.#selectDemo.appendChild(option);
+    });
+    this.#selectDemo.onchange = (e) => {
+      const caseName = (e.target as HTMLInputElement).value;
+      this.selectCase(caseName);
+    };
+  }
+
+  private setRenderer(renderer: Renderer) {
+    this.#canvas.setRenderer(this.#render[renderer]);
+    this.#selectRenderer.value = renderer;
+    localStorage.setItem('renderer', renderer);
+  }
+
+  private initRendererSelect() {
+    Object.entries(this.#render).forEach(([r, i]) => {
+      const option = document.createElement('option');
+      option.value = r;
+      option.innerText = r;
+      this.#selectRenderer.appendChild(option);
+    });
+    const lastRenderer = localStorage.getItem('renderer') || 'svg';
+    this.setRenderer(lastRenderer as Renderer);
+    this.#selectRenderer.onchange = (e) => {
+      const renderer = (e.target as HTMLInputElement).value as Renderer;
+      this.setRenderer(renderer);
+    };
+  }
+
+  private storeStatus(name: string) {
+    if (this.getCase() !== name) {
+      window.history.pushState({}, '', `${window.location.origin}?case=${name}`);
+    }
+  }
+
+  private recoverStatus() {
+    const lastSelect = this.getCase();
+    if (lastSelect) {
+      this.selectCase(lastSelect);
+    } else {
+      this.selectCase(this.#caseNames[0]);
+    }
+  }
+
+  private onKeyPress(evt: KeyboardEvent) {
+    const { key } = evt;
+    const index = this.#caseNames.indexOf(this.#selectDemo.value);
+    if (key === 's' && index < this.#caseNames.length - 1) {
+      this.selectCase(this.#caseNames[index + 1]);
+    } else if (key === 'w' && index > 0) {
+      this.selectCase(this.#caseNames[index - 1]);
+    }
+  }
+
+  private connectToPlugins() {
+    if (!(window as any).__g_instances__) {
+      (window as any).__g_instances__ = [];
+    }
+    (window as any).__g_instances__.push(this.#canvas);
+  }
+
+  constructor(container: HTMLElement) {
+    this.#selectDemo = document.querySelector<HTMLSelectElement>('#select')!;
+    this.#selectRenderer = document.querySelector<HTMLSelectElement>('#renderer')!;
+
+    this.initCanvas(container, this.#render.svg);
+
+    this.initDemoSelect();
+
+    this.initRendererSelect();
+
+    this.connectToPlugins();
+
+    this.recoverStatus();
+
+    window.addEventListener('keypress', this.onKeyPress.bind(this));
+  }
 }
 
 window.onload = () => {
-  handler();
+  const handler = new DemoHandler(document.getElementById('container')!);
 };

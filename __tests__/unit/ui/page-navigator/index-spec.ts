@@ -1,6 +1,6 @@
 import { Canvas, Text, Group, Rect } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
-import { PageNavigator } from '../../../../src';
+import { Navigator } from '../../../../src';
 import { createDiv } from '../../../utils';
 import { getShapeSpace, TEXT_INHERITABLE_PROPS } from '../../../../src/util';
 
@@ -18,7 +18,7 @@ const canvas = new Canvas({
 const pages = new Group({ name: 'group' });
 
 function createPages(count: number, width: number, height: number) {
-  const pages = [];
+  const pages: any[] = [];
   for (let i = 0; i < count; i += 1) {
     const rect = new Rect({
       style: {
@@ -63,7 +63,7 @@ describe.skip('page navigator', () => {
   });
 
   test('page navigator', async () => {
-    const pageNavigator = new PageNavigator({
+    const pageNavigator = new Navigator({
       style: {
         x: 100,
         y: 100,
@@ -135,17 +135,17 @@ describe.skip('page navigator', () => {
     // 第1页
     expect(pages.getLocalPosition()[0]).toBeCloseTo(0);
     // 第二页
-    await pageNavigator.next().then((e) => {
+    await pageNavigator.next().then((e: any) => {
       //
     });
     expect(pages.getLocalPosition()[0]).toBeCloseTo(-pageWidth);
     // 第三页
-    await pageNavigator.goTo(3).then((e) => {
+    await pageNavigator.goTo(3).then((e: any) => {
       //
     });
     expect(pages.getLocalPosition()[0]).toBeCloseTo(-pageWidth * 2);
     // 第四页
-    await pageNavigator.next().then((e) => {
+    await pageNavigator.next().then((e: any) => {
       //
     });
     expect(pages.getLocalPosition()[0]).toBeCloseTo(-pageWidth * 3);

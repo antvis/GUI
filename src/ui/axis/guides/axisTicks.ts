@@ -1,9 +1,9 @@
-import type { InferStyle, Vector2 } from '@/types';
+import type { Vector2 } from '@/types';
 import { applyStyle, getCallbackValue, select, Selection, styleSeparator } from '@/util';
 import type { Group } from '@antv/g';
 import { DisplayObject } from '@antv/g';
 import { isFunction, memoize } from 'lodash';
-import type { AxisStyleProps, AxisDatum } from '../types';
+import type { AxisDatum, AxisStyleProps } from '../types';
 import { getDirectionVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
 
@@ -61,12 +61,7 @@ function applyTickStyle(
   applyStyle(tick, tickStyle);
 }
 
-export function renderTicks<T = any>(
-  container: Selection,
-  _data: AxisDatum[],
-  cfg: AxisStyleProps,
-  callbackableStyle: InferStyle<T>
-) {
+export function renderTicks(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, callbackableStyle: any) {
   const data = filterExec(_data, cfg.tickFiltrate);
   container
     .selectAll('.axis-tick')

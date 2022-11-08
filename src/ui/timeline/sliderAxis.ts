@@ -4,7 +4,7 @@ import { clamp, deepMix } from '@antv/util';
 import { Point as PointScale } from '@antv/scale';
 import { GUI } from '../../core/gui';
 import { applyStyle, maybeAppend, select, Selection } from '../../util';
-import { Linear, LinearAxisStyleProps } from '../axis';
+import { Axis, AxisStyleProps as AxisOptions } from '../axis';
 import {
   AxisBase,
   AxisStyleProps,
@@ -164,8 +164,8 @@ export class SliderAxis extends AxisBase<AxisStyleProps> {
     const ticks = styles.data.map((tick, idx) => ({ value: tickScale.map(idx), text: tick.date }));
     const { position: verticalFactor = -1, tickLine: tickLineCfg, ...axisLabelCfg } = styles.label || {};
 
-    maybeAppend(bg, '.slider-axis', () => new Linear({ className: 'slider-axis' })).call((selection) =>
-      (selection.node() as GUI<LinearAxisStyleProps>).update(
+    maybeAppend(bg, '.slider-axis', () => new Axis({ className: 'slider-axis' })).call((selection) =>
+      (selection.node() as GUI<AxisOptions>).update(
         deepMix({}, DEFAULT_AXIS_CFG, {
           startPos: [verticalFactor * this.ifH(0, width + 2), verticalFactor * this.ifH(height + 2, 0)],
           endPos: [

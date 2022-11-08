@@ -61,9 +61,9 @@ function renderGridLine(container: Group, items: GridCfg['items'], cfg: GridCfg,
           .style('stroke', '#D9D9D9')
           .style('lineWidth', 1)
           .style('lineDash', [4, 4])
-          .each(function (style, idx) {
-            this.attr(style);
-            applyStyle(this, idx, lines, style);
+          .each(function ({ path }, idx) {
+            this.attr({ ...style, path });
+            applyStyle(this, idx, lines, { path, ...style });
           }),
       (update) =>
         update.each(function (style, idx) {

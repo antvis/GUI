@@ -1,6 +1,5 @@
-import type { InferStyle } from '@/types';
 import type { Selection } from '@/util';
-import { applyStyle, createDO, styleSeparator } from '@/util';
+import { applyStyle, renderExtDo, styleSeparator } from '@/util';
 import type { AxisStyleProps } from '../types';
 
 function getTitlePosition(
@@ -44,7 +43,7 @@ function getTitleLayout(container: Selection, title: Selection, cfg: AxisStylePr
 function createTitleEl(container: Selection, cfg: AxisStyleProps) {
   const { title } = cfg;
   const group = container.maybeAppend('axis-title-group', 'g').attr('anchor', '0 0');
-  const titleEl = group.maybeAppend('axis-title', () => createDO(title!));
+  const titleEl = group.maybeAppend('axis-title', () => renderExtDo(title!));
   return [group, titleEl];
 }
 
@@ -55,7 +54,7 @@ function applyTitleStyle(title: Selection, group: Selection, cfg: AxisStyleProps
   group.node().attr(getTitleLayout(group, title, cfg));
 }
 
-export function renderTitle<T = any>(container: Selection, cfg: AxisStyleProps, style: InferStyle<T>) {
+export function renderTitle(container: Selection, cfg: AxisStyleProps, style: any) {
   if (!cfg.title) return;
   const [group, titleEl] = createTitleEl(container, cfg);
   applyTitleStyle(titleEl, group, cfg, style);

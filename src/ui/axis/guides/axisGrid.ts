@@ -1,7 +1,6 @@
 import type { Point } from '@/types';
 import { Grid } from '@/ui/grid';
-import type { Selection } from '@/util';
-import { degToRad, getCallbackValue } from '@/util';
+import { applyStyle, Selection, degToRad, getCallbackValue } from '@/util';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction } from 'lodash';
 import type { AxisStyleProps, AxisDatum } from '../types';
@@ -61,21 +60,18 @@ export function renderGrid(container: Selection, _data: AxisDatum[], cfg: AxisSt
   const center = getGridCenter(cfg);
   const data = filterExec(_data, cfg.gridFiltrate);
   const gridItems = type === 'segment' ? renderStraight(data, cfg) : renderSurround(data, cfg, style);
-
   container
     .maybeAppend('axis-grid', () => new Grid({}))
     .attr('className', 'axis-grid')
-    .call((selection) =>
-      (selection.node() as Grid).update({
-        type,
-        connect,
-        closed,
-        center,
-        ...style,
-        items: gridItems,
-        areaFill: isFunction(areaFill)
-          ? data.map((datum, index) => getCallbackValue(areaFill, [datum, index, data]))
-          : areaFill,
-      })
-    );
+    .call(applyStyle, {
+      type,
+      connect,
+      closed,
+      center,
+      ...style,
+      items: gridItems,
+      areaFill: isFunction(areaFill)
+        ? data.map((datum, index) => getCallbackValue(areaFill, [datum, index, data]))
+        : areaFill,
+    });
 }

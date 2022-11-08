@@ -1,6 +1,6 @@
-import { clone, deepMix, get } from '@antv/util';
+import type { MixAttrs, StyleState } from '@/types';
 import type { TextStyleProps } from '@antv/g';
-import type { InferStyle, MixAttrs, StyleState } from '@/types';
+import { clone, deepMix, get } from '@antv/util';
 import { STATE_LIST } from '../constant';
 
 /**
@@ -101,19 +101,42 @@ export function applyStyleSheet(element: HTMLElement, style: { [key: string]: Ob
  *
  * @param style
  * @param prefix
+ * @param invert get the reset style
  * @returns
  */
-export function getStyleFromPrefixed<T extends { [keys: string]: any }>(style: T, prefix: string) {
+export function getStyleFromPrefixed(style: { [keys: string]: any }, prefix: string, invert: boolean = false) {
   const _style: { [keys: string]: any } = {};
+  const startsWith = (str: string, prefix: string) => {
+    return str.startsWith(prefix) && str.length > prefix.length;
+  };
   const capitalizeFirstLetter = (str: string) => {
     return str.charAt(0).toLowerCase() + str.slice(1);
   };
-  Object.keys(style).forEach((key) => {
-    if (key.startsWith(prefix)) {
-      _style[capitalizeFirstLetter(key.slice(prefix.length))] = style[key];
+  const add = (key: string) => {
+    if (invert) {
+      _style[key] = style[key];
+      return;
     }
+    _style[capitalizeFirstLetter(key.slice(prefix.length))] = style[key];
+  };
+  Object.keys(style).forEach((key) => {
+    if (startsWith(key, prefix) !== invert) add(key);
   });
-  return _style as InferStyle<T>;
+  return _style;
+}
+
+export function getStylesFromPrefixed(style: any, prefix: string[]) {
+  // debugger;
+  const styles: any[] = [];
+  let _style = style;
+  for (let i = 0; i < prefix.length; i++) {
+    const p = prefix[i];
+    styles.push(getStyleFromPrefixed(_style, p) as any);
+    _style = getStyleFromPrefixed(_style, p, true);
+  }
+  // rest
+  styles.push(_style);
+  return styles;
 }
 
 /**

@@ -34,16 +34,16 @@ export const DEFAULT_STYLE: AxisStyleProps = deepMix(
 );
 
 export const DEFAULT_AXIS_CFG = {
-  axisLine: null,
-  label: {
-    autoRotate: false,
-    rotate: 0,
-    autoHide: true,
-    autoHideTickLine: false,
-    autoEllipsis: true,
-    minLength: 50,
-    alignTick: true,
-  },
+  // axisLine: null,
+  // label: {
+  //   autoRotate: false,
+  //   rotate: 0,
+  //   autoHide: true,
+  //   autoHideTickLine: false,
+  //   autoEllipsis: true,
+  //   minLength: 50,
+  //   alignTick: true,
+  // },
 };
 
 export function normalSelection(selection: number | number[] = [], singleMode?: boolean): [number, number] {

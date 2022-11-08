@@ -3,7 +3,7 @@ import { Axis } from '../../../src/ui/axis';
 
 export const axisWarper = (group: Group, baseParams: any) => {
   return (extraParams: any) => {
-    group.appendChild(
+    return group.appendChild(
       new Axis({
         style: {
           radius: 80,

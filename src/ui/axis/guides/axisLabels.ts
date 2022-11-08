@@ -1,12 +1,12 @@
-import type { InferStyle, Vector2 } from '@/types';
+import type { Vector2 } from '@/types';
 import type { G2Element, Selection } from '@/util';
 import {
   applyStyle,
-  createDO,
   getCallbackValue,
   getTransform,
   inRange,
   radToDeg,
+  renderExtDo,
   select,
   styleSeparator,
 } from '@/util';
@@ -14,7 +14,7 @@ import type { DisplayObject, Group } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction, isString, memoize } from 'lodash';
 import { processOverlap } from '../overlap';
-import type { AxisStyleProps, AxisDatum } from '../types';
+import type { AxisDatum, AxisStyleProps } from '../types';
 import { getFactor } from '../utils';
 import { getDirectionVector, getLineTangentVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
@@ -117,10 +117,10 @@ function setRotateAndAdjustLabelAlign(rotate: number, group: G2Element, cfg: Axi
 }
 
 function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
-  const { tickLength, tickDirection, labelDirection, labelSpacing } = cfg;
+  const { showTick, tickLength, tickDirection, labelDirection, labelSpacing } = cfg;
   const _labelSpacing = getCallbackValue<number>(labelSpacing, [datum, index, data]);
   const [labelVector, unionFactor] = [getLabelVector(datum.value, cfg), getFactor(labelDirection!, tickDirection!)];
-  const extraLength = unionFactor === 1 ? getCallbackValue<number>(tickLength, [datum, index, data]) : 0;
+  const extraLength = unionFactor === 1 ? getCallbackValue<number>(showTick ? tickLength : 0, [datum, index, data]) : 0;
   const [x, y] = vec2.add(
     [0, 0],
     vec2.scale([0, 0], labelVector, _labelSpacing + extraLength),
@@ -132,9 +132,10 @@ function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: Ax
 function createLabelEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
   const { labelFormatter: formatter } = cfg;
   const labelVector = getLabelVector(datum.value, cfg);
-  let el: any = () => createDO(datum.label || '');
-  if (isString(formatter)) el = () => createDO(formatter);
-  else if (isFunction(formatter)) el = () => createDO(getCallbackValue(formatter, [datum, index, data, labelVector]));
+  let el: any = () => renderExtDo(datum.label || '');
+  if (isString(formatter)) el = () => renderExtDo(formatter);
+  else if (isFunction(formatter))
+    el = () => renderExtDo(getCallbackValue(formatter, [datum, index, data, labelVector]));
   return container.append(el).attr('className', 'axis-label-item');
 }
 
@@ -187,12 +188,7 @@ function overlapHandler(cfg: AxisStyleProps) {
   });
 }
 
-export function renderLabels<T = any>(
-  container: Selection,
-  _data: AxisDatum[],
-  cfg: AxisStyleProps,
-  style: InferStyle<T>
-) {
+export function renderLabels(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, style: any) {
   const { labelFiltrate, labelFormatter: formatter } = cfg;
   const data = filterExec(_data, labelFiltrate);
   container

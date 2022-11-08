@@ -18,7 +18,7 @@ export type PrefixedStyle<T, P extends string> = {
   [K in keyof T as K extends string ? `${P}${Capitalize<K>}` : never]?: T[K];
 };
 
-export type DO = string | DisplayObject;
+export type ExtendDisplayObject = string | number | DisplayObject;
 
 export type Callbackable<T, P extends any[]> = T | ((...args: P) => T);
 

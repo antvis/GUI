@@ -1,6 +1,14 @@
 import type { DisplayObject, LineStyleProps, TextStyleProps } from '@antv/g';
 import type { GridCfg } from '@/ui/grid/types';
-import type { Callbackable, CallbackParameter, CallbackableObject, DO, PrefixedStyle, Point, Vector2 } from '@/types';
+import type {
+  Callbackable,
+  CallbackParameter,
+  CallbackableObject,
+  ExtendDisplayObject,
+  PrefixedStyle,
+  Point,
+  Vector2,
+} from '@/types';
 
 export type AxisType = 'linear' | 'arc' | 'helix';
 
@@ -61,7 +69,7 @@ export type LabelOverlapCfg =
 
 export type AxisTitleStyle = PrefixedStyle<TextStyleProps, 'title'>;
 export type AxisTitleCfg = {
-  title?: DO;
+  title?: ExtendDisplayObject;
   /**
    * distance between axis body (line with ticks and labels)
    */
@@ -88,7 +96,10 @@ export type AxisLineCfg = {
    * when using a callback form, the argument will additional returns the positon of two points
    * we will provide sevaral default shapes
    */
-  truncShape?: Callbackable<DO | [DO, DO], CallbackParameter<AxisDatum, [Vector2, Vector2]>>;
+  truncShape?: Callbackable<
+    ExtendDisplayObject | [ExtendDisplayObject, ExtendDisplayObject],
+    CallbackParameter<AxisDatum, [Vector2, Vector2]>
+  >;
   /**
    * extend lenth on the head and tail of axis line
    */
@@ -97,7 +108,7 @@ export type AxisLineCfg = {
    * line arrow shape
    * When string is passed, use the build-in arrow shape
    */
-  lineArrow?: DO;
+  lineArrow?: ExtendDisplayObject;
   /** line arrow offset, -20 ~ 20 is safety */
   lineArrowOffset?: number;
   /** size of line arrow */
@@ -118,7 +129,7 @@ export type AxisTickCfg = {
    * tick formatter
    * the callback will additionally return the tick direction
    */
-  tickFormatter?: Callbackable<DO, CallbackParameter<AxisDatum, [Vector2]>>;
+  tickFormatter?: Callbackable<ExtendDisplayObject, CallbackParameter<AxisDatum, [Vector2]>>;
   /**
    * @description `horizontal` means the labels are always horizontal
    * @description `parallel` means the labels are parallel to the axis line
@@ -138,7 +149,7 @@ export type AxisLabelCfg = {
   /**
    * formatter for labels, if string, return directly. you can even format it as a g shape
    */
-  labelFormatter?: Callbackable<DO, AxisDatumCP>;
+  labelFormatter?: Callbackable<ExtendDisplayObject, AxisDatumCP>;
   /**
    * transform label by using ellipsis, hide and rotate to avoid overlap
    */

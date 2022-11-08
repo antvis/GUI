@@ -1,7 +1,7 @@
 import { DisplayObjectConfig, RectStyleProps, CustomEvent } from '@antv/g';
 import { Band as BandScale } from '@antv/scale';
 import { deepMix } from '@antv/util';
-import { Linear, LinearAxisStyleProps } from '../axis';
+import { Axis, AxisOptions } from '../axis';
 import { applyStyle, maybeAppend, select } from '../../util';
 import { GUI } from '../../core/gui';
 import {
@@ -168,12 +168,12 @@ export class CellAxis extends AxisBase<CellAxisStyleProps> {
       bg,
       '.slider-axis',
       () =>
-        new Linear({
+        new Axis({
           className: 'slider-axis',
           style: DEFAULT_AXIS_CFG,
         })
     ).call((selection) =>
-      (selection.node() as GUI<LinearAxisStyleProps>).update({
+      (selection.node() as GUI<AxisOptions>).update({
         startPos,
         endPos,
         ticks,

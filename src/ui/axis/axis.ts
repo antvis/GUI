@@ -1,4 +1,4 @@
-import { getStyleFromPrefixed, sampling, select, ifShow } from '@/util';
+import { getStylesFromPrefixed, ifShow, sampling, select } from '@/util';
 import { createComponent } from '@/util/create';
 import { DisplayObjectConfig } from '@antv/g';
 import { AXIS_BASE_DEFAULT_CFG } from './constant';
@@ -7,16 +7,7 @@ import { renderLabels } from './guides/axisLabels';
 import { renderAxisLine } from './guides/axisLine';
 import { renderTicks } from './guides/axisTicks';
 import { renderTitle } from './guides/axisTitle';
-import type {
-  ArcAxisStyleProps,
-  AxisStyleProps,
-  AxisGridStyle,
-  AxisLabelStyle,
-  AxisLineStyle,
-  AxisTickStyle,
-  AxisTitleStyle,
-  LinearAxisStyleProps,
-} from './types';
+import type { ArcAxisStyleProps, AxisStyleProps, LinearAxisStyleProps } from './types';
 
 export type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
 
@@ -74,13 +65,13 @@ export const Axis = createComponent<AxisStyleProps>(
         return rest;
       })();
 
-      const [titleStyle, lineStyle, tickStyle, labelStyle, gridStyle] = [
-        getStyleFromPrefixed<AxisTitleStyle>(restStyle, 'title'),
-        getStyleFromPrefixed<AxisLineStyle>(restStyle, 'line'),
-        getStyleFromPrefixed<AxisTickStyle>(restStyle, 'tick'),
-        getStyleFromPrefixed<AxisLabelStyle>(restStyle, 'label'),
-        getStyleFromPrefixed<AxisGridStyle>(restStyle, 'grid'),
-      ];
+      const [titleStyle, lineStyle, tickStyle, labelStyle, gridStyle] = getStylesFromPrefixed(restStyle, [
+        'title',
+        'line',
+        'tick',
+        'label',
+        'grid',
+      ]);
 
       const data = sampling(_data, dataThreshold).filter(({ value }) => {
         if (truncRange && value > truncRange[0] && value < truncRange[1]) return false;

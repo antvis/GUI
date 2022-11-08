@@ -1,16 +1,9 @@
-import type { InferStyle, Point, Vector2 } from '@/types';
-import { applyStyle, createDO, degToRad, select, Selection } from '@/util';
+import type { Point, Vector2 } from '@/types';
+import { applyStyle, degToRad, renderExtDo, select, Selection } from '@/util';
 import { ext, vec2 } from '@antv/matrix-util';
 import { memoize } from 'lodash';
+import type { ArcAxisStyleProps, AxisLineCfg, AxisStyleProps, Direction, LinearAxisStyleProps } from '../types';
 import { baseDependencies } from './utils';
-import type {
-  ArcAxisStyleProps,
-  AxisStyleProps,
-  AxisLineCfg,
-  AxisLineStyle,
-  Direction,
-  LinearAxisStyleProps,
-} from '../types';
 
 export const getLineAngle = memoize(
   (value: number, cfg: ArcAxisStyleProps) => {
@@ -84,7 +77,7 @@ export function isAxisVertical(cfg: LinearAxisStyleProps): boolean {
   return getLineTangentVector(0, cfg)[0] === 0;
 }
 
-function renderArc<T extends AxisLineStyle>(container: Selection, cfg: ArcAxisStyleProps, style: InferStyle<T>) {
+function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any) {
   const {
     angleRange: [startAngle, endAngle],
     center: [cx, cy],
@@ -116,11 +109,7 @@ function renderArc<T extends AxisLineStyle>(container: Selection, cfg: ArcAxisSt
   container.maybeAppend('axis-line', 'path').attr('className', 'axis-line').style('path', path).call(applyStyle, style);
 }
 
-function renderTruncation<T>(
-  container: Selection,
-  { truncRange, truncShape, lineExtension }: AxisLineCfg,
-  style: InferStyle<T>
-) {
+function renderTruncation<T>(container: Selection, { truncRange, truncShape, lineExtension }: AxisLineCfg, style: any) {
   const firstLine = container.select('#axis-line-linear-first').node();
   const secondLine = container.select('#axis-line-linear-second').node();
   // TODO
@@ -134,7 +123,7 @@ function extendLine(startPos: Point, endPos: Point, range: [number, number] = [0
   return [s1 * x, s1 * y, s2 * x, s2 * y];
 }
 
-function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: LinearAxisStyleProps, style: InferStyle<T>) {
+function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: any) {
   const { startPos, endPos, truncRange, lineExtension } = cfg;
   const [[x1, y1], [x2, y2]] = [startPos, endPos];
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
@@ -167,14 +156,14 @@ function renderLinear<T extends AxisLineStyle>(container: Selection, cfg: Linear
   renderTruncation(container, cfg, style);
 }
 
-function renderAxisArrow<T>(
+function renderAxisArrow(
   container: Selection,
   type: 'linear' | 'arc',
   { lineArrow, truncRange, lineArrowOffset = 0, lineArrowSize }: AxisStyleProps,
-  style: InferStyle<T>
+  style: any
 ) {
   if (!lineArrow) return;
-  const arrow = createDO(lineArrow);
+  const arrow = renderExtDo(lineArrow);
   select(arrow).call(applyStyle, { ...style, transform: `scale(${lineArrowSize})` });
   let shapeToAddArrow: Selection;
   if (type === 'arc') shapeToAddArrow = container.select('#axis-line');
@@ -183,7 +172,7 @@ function renderAxisArrow<T>(
   shapeToAddArrow.style('markerEnd', arrow).style('markerEndOffset', -lineArrowOffset);
 }
 
-export function renderAxisLine<T>(container: Selection, cfg: AxisStyleProps, style: InferStyle<T>) {
+export function renderAxisLine<T>(container: Selection, cfg: AxisStyleProps, style: any) {
   const { type } = cfg;
   if (type === 'linear') renderLinear(container, cfg, style);
   else renderArc(container, cfg, style);

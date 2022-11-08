@@ -11,7 +11,7 @@ export abstract class GUI<T> extends CustomElement<T> {
     const { x = 0, y = 0 } = this.style;
     this.setLocalPosition([+x, +y]);
 
-    this.update();
+    this.render(this.attributes, this);
     this.bindEvents(this.attributes, this);
   }
 
@@ -28,6 +28,10 @@ export abstract class GUI<T> extends CustomElement<T> {
     this.removeAllEventListeners();
     this.removeChildren();
     this.remove();
+  }
+
+  attributeChangedCallback() {
+    this.render?.(this.attributes, this);
   }
 
   public abstract render(attributes: T, container: Group): void;
