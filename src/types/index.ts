@@ -2,8 +2,8 @@
 
 import { DisplayObject } from '@antv/g';
 
-export * from './dependency';
 export * from './compose';
+export * from './dependency';
 export type { MixAttrs, StyleState } from './styles';
 
 export type GUIOption<C> = {
@@ -14,8 +14,10 @@ export type GUIOption<C> = {
 export type Point = [number, number];
 export type Vector2 = [number, number];
 
-export type PrefixedStyle<T, P extends string> = {
-  [K in keyof T as K extends string ? `${P}${Capitalize<K>}` : never]?: T[K];
+export type PrefixedStyle<T extends { [key: string]: any }, P extends string> = {
+  [K in keyof Omit<T, 'filter'> as K extends string ? `${P}${Capitalize<K>}` : never]?: T[K];
+} & {
+  [K in Extract<T, 'filter'> as `${P}Filtrate`]?: T['filter'];
 };
 
 export type ExtendDisplayObject = string | number | DisplayObject;

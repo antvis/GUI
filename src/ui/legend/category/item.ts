@@ -9,6 +9,7 @@ import {
   normalPadding,
   select,
   classNames,
+  filterTransform,
 } from '@/util';
 import type { DisplayObject, DisplayObjectConfig, PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
 import { isNumber, isString } from 'lodash';
@@ -21,11 +22,10 @@ export interface CategoryItemData {
   label?: ExtendDisplayObject;
   value?: ExtendDisplayObject;
 }
-export type CategoryItemStyle = { marker?: string | (() => DisplayObject) } & PrefixedStyle<
-  { [key: string]: any },
-  'marker'
-> &
-  PrefixedStyle<ItemTextStyle, 'label'> &
+export type CategoryItemStyle = {
+  marker?: string | (() => DisplayObject);
+  [key: `marker${string}`]: any;
+} & PrefixedStyle<ItemTextStyle, 'label'> &
   PrefixedStyle<ItemTextStyle, 'value'> &
   PrefixedStyle<ItemBackgrounStyle, 'background'>;
 export interface CategoryItemCfg {
@@ -144,7 +144,8 @@ function adjustLayout(container: Selection, cfg: CategoryItemStyleProps) {
 export const CategoryItem = createComponent<CategoryItemStyleProps>(
   {
     render(attributes, container) {
-      const { width, height, span, spacing, maxWidth, marker, label, value, ...restStyle } = attributes;
+      const { width, height, span, spacing, maxWidth, marker, label, value, ...restStyle } =
+        filterTransform(attributes);
       const [markerStyle, labelStyle, valueStyle, itemBackgroundStyle] = getStylesFromPrefixed(restStyle, [
         'marker',
         'label',

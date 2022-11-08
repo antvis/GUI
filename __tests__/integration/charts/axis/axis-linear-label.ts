@@ -120,6 +120,7 @@ export const AxisLinearLabel = () => {
     showGrid: false,
     showTick: false,
     labelSpacing: 20,
+    labelFilter: (_: any, i: number) => i % 2 === 0,
     labelTransform: 'rotate(0)',
     labelTextAlign: 'center',
     labelTextBaseline: 'bottom',

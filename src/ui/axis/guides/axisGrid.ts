@@ -59,7 +59,7 @@ function renderSurround(data: AxisDatum[], cfg: AxisStyleProps, style: any) {
 export function renderGrid(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, style: any) {
   const { type, closed, areaFill, connect } = style;
   const center = getGridCenter(cfg);
-  const data = filterExec(_data, cfg.gridFiltrate);
+  const data = filterExec(_data, cfg.gridFilter);
   const gridItems = type === 'segment' ? renderStraight(data, cfg) : renderSurround(data, cfg, style);
   container
     .maybeAppendByClassName(CLASS_NAMES.grid, () => new Grid({}))

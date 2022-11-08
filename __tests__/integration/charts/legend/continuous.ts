@@ -48,7 +48,7 @@ export const ContinuousDemo = () => {
     ribbonLen: 400,
     labelDirection: 'negative',
     showIndicator: false,
-    labelFiltrate: (_: any, i: number) => i !== 2,
+    labelFilter: (_: any, i: number) => i !== 2,
     labelFormatter: ({ range: [min, max] }: any) => {
       return `< ${max.toPrecision(1)}`;
     },
@@ -71,7 +71,9 @@ export const ContinuousDemo = () => {
     slidable: false,
     ribbonLen: 400,
     showHandle: false,
-    showLabel: false,
+    // showLabel: false,
+    labelAlign: 'value',
+    labelFormatter: () => 'label',
     indicatorPadding: [6, 4],
   });
 

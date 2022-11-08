@@ -12,6 +12,7 @@ import {
   Selection,
   throttle,
   toPrecision,
+  filterTransform,
 } from '@/util';
 import { CustomEvent, Group } from '@antv/g';
 import { Linear } from '@antv/scale';
@@ -78,13 +79,10 @@ export class Continuous extends GUI<ContinuousStyleProps> {
       showIndicator,
     } = attributes as RT;
 
-    const [titleStyle, labelStyle, indicatorStyle, ribbonStyle, handleStyle] = getStylesFromPrefixed(attributes, [
-      'title',
-      'label',
-      'indicator',
-      'ribbon',
-      'handle',
-    ]);
+    const [titleStyle, labelStyle, indicatorStyle, ribbonStyle, handleStyle] = getStylesFromPrefixed(
+      filterTransform(attributes),
+      ['title', 'label', 'indicator', 'ribbon', 'handle']
+    );
 
     const titleEl = select(container).maybeAppendByClassName(
       CLASS_NAMES.title,
@@ -253,7 +251,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
 
   private renderLabel(group: Selection) {
     const { ribbonSize, ribbonLen } = this.attributes;
-    const { spacing, align, formatter, filtrate, ...labelStyle } = getStyleFromPrefixed(this.attributes, 'label');
+    const { spacing, align, formatter, filter, ...labelStyle } = getStyleFromPrefixed(this.attributes, 'label');
     const [startPos, endPos] = this.ifHorizontal(
       [
         [0, ribbonSize / 2],
@@ -284,7 +282,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
       .call(applyStyle, style)
       .node();
     axis.attr('labelFormatter', formatter);
-    axis.attr('labelFiltrate', filtrate);
+    axis.attr('labelFilter', filter);
   }
 
   /** 当前交互的对象 */

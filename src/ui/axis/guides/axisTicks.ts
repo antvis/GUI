@@ -63,7 +63,7 @@ function applyTickStyle(
 }
 
 export function renderTicks(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, callbackableStyle: any) {
-  const data = filterExec(_data, cfg.tickFiltrate);
+  const data = filterExec(_data, cfg.tickFilter);
   container
     .selectAll('.axis-tick')
     .data(data)

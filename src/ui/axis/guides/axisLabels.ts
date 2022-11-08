@@ -191,8 +191,7 @@ function overlapHandler(cfg: AxisStyleProps) {
 }
 
 export function renderLabels(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, style: any) {
-  const { labelFiltrate } = cfg;
-  const data = filterExec(_data, labelFiltrate);
+  const data = filterExec(_data, cfg.labelFilter);
   container
     .selectAll(CLASS_NAMES.label.class)
     .data(data)

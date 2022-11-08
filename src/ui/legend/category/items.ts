@@ -1,5 +1,13 @@
-import type { Callbackable, CallbackParameter, PrefixedStyle } from '@/types';
-import { classNames, createComponent, getCallbackValue, getStylesFromPrefixed, Padding, select } from '@/util';
+import type { Callbackable, CallbackableObject, CallbackParameter, PrefixedStyle } from '@/types';
+import {
+  classNames,
+  createComponent,
+  getCallbackValue,
+  getStylesFromPrefixed,
+  Padding,
+  select,
+  filterTransform,
+} from '@/util';
 import type { GroupStyleProps } from '@antv/g';
 import { DisplayObject, Group } from '@antv/g';
 import { chain, noop } from 'lodash';
@@ -28,7 +36,7 @@ interface CategoryItemsCfg {
   mouseleave?: (el: Selection) => void;
 }
 
-type CallbackableItemStyle = Callbackable<
+type CallbackableItemStyle = CallbackableObject<
   Omit<CategoryItemStyle, 'width' | 'height'>,
   CallbackParameter<CatoryItemsDatum>
 >;
@@ -134,7 +142,7 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
         mouseenter,
         mouseleave,
         ...restStyle
-      } = attributes as Required<CategoryItemsStyleProps>;
+      } = filterTransform(attributes) as Required<CategoryItemsStyleProps>;
 
       const [navStyle, itemStyle] = getStylesFromPrefixed(restStyle, ['nav', 'item']);
       const renderData = Object.entries(chain(getRenderData(data, attributes, itemStyle)).groupBy('page').value()).map(

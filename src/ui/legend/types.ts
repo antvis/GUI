@@ -29,7 +29,7 @@ export type LabelCfg<T = any> = {
   labelSpacing?: number;
   labelAlign?: 'value' | 'range';
   labelFormatter?: (val: T, index: number, arr: T[]) => string;
-  labelFiltrate?: (val: T, index: number, arr: T[]) => boolean;
+  labelFilter?: (val: T, index: number, arr: T[]) => boolean;
 };
 
 export type IndicatorStyle = PrefixedStyle<PathStyleProps & TextStyleProps, 'indicator'>;

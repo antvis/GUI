@@ -1,4 +1,4 @@
-import { getStylesFromPrefixed, ifShow, sampling, select } from '@/util';
+import { getStylesFromPrefixed, ifShow, sampling, select, filterTransform } from '@/util';
 import { createComponent } from '@/util/create';
 import { DisplayObjectConfig } from '@antv/g';
 import { AXIS_BASE_DEFAULT_CFG, CLASS_NAMES } from './constant';
@@ -10,6 +10,8 @@ import { renderTitle } from './guides/axisTitle';
 import type { ArcAxisStyleProps, AxisStyleProps, LinearAxisStyleProps } from './types';
 
 export type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
+
+type RA = Required<AxisStyleProps>;
 
 export const Axis = createComponent<AxisStyleProps>(
   {
@@ -32,20 +34,20 @@ export const Axis = createComponent<AxisStyleProps>(
         showTick,
         tickDirection,
         tickLength,
-        tickFiltrate,
+        tickFilter,
         tickFormatter,
         showLabel,
         labelAlign,
         labelDirection,
         labelSpacing,
-        labelFiltrate,
+        labelFilter,
         labelFormatter,
         labelTransforms,
         showGrid,
-        gridFiltrate,
+        gridFilter,
         gridLength,
         ...restCfg
-      } = attributes;
+      } = filterTransform(attributes) as RA;
 
       const restStyle = (() => {
         if (type === 'linear') {

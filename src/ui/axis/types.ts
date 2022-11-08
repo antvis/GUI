@@ -124,7 +124,7 @@ export type AxisTickCfg = {
    */
   tickDirection?: Direction;
   tickLength?: Callbackable<number, AxisDatumCP>;
-  tickFiltrate?: (...params: AxisDatumCP) => boolean;
+  tickFilter?: (...params: AxisDatumCP) => boolean;
   /**
    * tick formatter
    * the callback will additionally return the tick direction
@@ -145,7 +145,7 @@ export type AxisLabelCfg = {
    * spacing between label and it's tick
    */
   labelSpacing?: Callbackable<number, AxisDatumCP>;
-  labelFiltrate?: (...params: AxisDatumCP) => boolean;
+  labelFilter?: (...params: AxisDatumCP) => boolean;
   /**
    * formatter for labels, if string, return directly. you can even format it as a g shape
    */
@@ -158,7 +158,7 @@ export type AxisLabelCfg = {
 export type AxisGridStyle = PrefixedStyle<GridCfg, 'grid'>;
 export type AxisGridCfg = {
   showGrid?: boolean;
-  gridFiltrate?: (...params: AxisDatumCP) => boolean;
+  gridFilter?: (...params: AxisDatumCP) => boolean;
   gridDirection?: Direction;
   /**
    * the grid line length
