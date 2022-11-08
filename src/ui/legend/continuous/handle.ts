@@ -1,6 +1,6 @@
 import type { PrefixedStyle } from '@/types';
 import { Marker, MarkerStyleProps } from '@/ui/marker';
-import { applyStyle, createComponent, getStylesFromPrefixed, select, maybeAppend } from '@/util';
+import { applyStyle, createComponent, getStylesFromPrefixed, select, classNames, ifShow } from '@/util';
 import type { GroupStyleProps } from '@antv/g';
 import { Group, TextStyleProps } from '@antv/g';
 import { ifHorizontal } from '../utils';
@@ -14,6 +14,15 @@ export type HandleStyleProps<T = any> = GroupStyleProps &
     showLabel?: boolean;
     formatter?: (val: T) => string;
   };
+
+const CLASS_NAMES = classNames(
+  {
+    marker: 'marker',
+    labelGroup: 'labelGroup',
+    label: 'label',
+  } as const,
+  'handle'
+);
 
 const DEFAULT_HANDLE_CFG: HandleStyleProps = {
   markerSize: 25,
@@ -42,25 +51,25 @@ export const Handle = createComponent<HandleStyleProps>(
       } = attribute as Required<HandleStyleProps>;
       const [{ text, ...labelStyle }, handleStyle] = getStylesFromPrefixed(attribute, ['label', 'marker']);
       if (!markerSymbol || visibility === 'hidden') {
-        container.querySelector('#handle')?.remove();
-        container.querySelector('.handle-text')?.remove();
+        container.querySelector(CLASS_NAMES.marker.class)?.remove();
+        container.querySelector(CLASS_NAMES.label.class)?.remove();
         return;
       }
 
-      const handle = select(container)
-        .maybeAppend('handle', () => new Marker({}))
-        // todo: here exists some bugs, if className is assigned, it will render serveral paths
-        // .attr('className', 'handle')
-        .call(applyStyle, { symbol: markerSymbol, ...handleStyle });
+      const style = { symbol: markerSymbol, ...handleStyle };
+      const marker = select(container)
+        // .maybeAppendByClassName(CLASS_NAMES.marker, () => new Marker({ style }))
+        .maybeAppend(CLASS_NAMES.marker.name, () => new Marker({}))
+        .call(applyStyle, style);
 
-      if (showLabel) {
-        const label = select(container)
-          .maybeAppend('handle-label', 'text')
-          .attr('className', 'handle-label')
+      const labelGroup = select(container).maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g');
+      ifShow(showLabel, labelGroup, (group) => {
+        const label = group
+          .maybeAppendByClassName(CLASS_NAMES.label, 'text')
           .call(applyStyle, { text: formatter(text).toString(), ...labelStyle });
 
         // adujust layout
-        const { width, height } = handle.node().getBBox();
+        const { width, height } = marker.node().getBBox();
         const [x, y, textAlign, textBaseline] = ifHorizontal(
           orient,
           [0, height + spacing, 'center', 'top'],
@@ -68,7 +77,7 @@ export const Handle = createComponent<HandleStyleProps>(
         );
         label.node().setLocalPosition(x, y);
         label.style('textAlign', textAlign).style('textBaseline', textBaseline);
-      } else select(container).select('#handle-label').remove();
+      });
     },
   },
   {

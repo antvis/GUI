@@ -1,6 +1,15 @@
 import { ExtendDisplayObject, PrefixedStyle } from '@/types';
 import type { Padding, Selection } from '@/util';
-import { applyStyle, createComponent, renderExtDo, getStylesFromPrefixed, ifShow, normalPadding, select } from '@/util';
+import {
+  applyStyle,
+  createComponent,
+  renderExtDo,
+  getStylesFromPrefixed,
+  ifShow,
+  normalPadding,
+  select,
+  classNames,
+} from '@/util';
 import type { DisplayObject, DisplayObjectConfig, PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
 import { isNumber, isString } from 'lodash';
 import { circle } from '../../marker/symbol';
@@ -31,13 +40,19 @@ export type CategoryItemStyleProps = CategoryItemStyle & CategoryItemCfg & Categ
 
 export type CategoryItemOptions = DisplayObjectConfig<CategoryItemStyleProps>;
 
-const PREFIX = (name: string) => `legend-category-item-${name}`;
-const GROUP_NAME = {
-  marker: PREFIX('marker-group'),
-  label: PREFIX('label-group'),
-  value: PREFIX('value-group'),
-  background: PREFIX('background-group'),
-};
+const CLASS_NAMES = classNames(
+  {
+    markerGroup: 'marker-group',
+    marker: 'marker',
+    labelGroup: 'label-group',
+    label: 'label',
+    valueGroup: 'value-group',
+    value: 'value',
+    backgroundGroup: 'background-group',
+    background: 'background',
+  },
+  'legend-category-item'
+);
 
 const DEFAULT_CFG: Partial<CategoryItemStyleProps> = {
   marker: 'path',
@@ -79,23 +94,23 @@ function getItemLayout(cfg: CategoryItemStyleProps) {
 }
 
 function renderMarker(container: Selection, cfg: CategoryItemStyleProps, style: PathStyleProps) {
-  container.maybeAppend(PREFIX('marker'), cfg.marker!).call(applyStyle, { anchor: '0.5 0.5', ...style });
+  container.maybeAppendByClassName(CLASS_NAMES.marker, cfg.marker!).call(applyStyle, { anchor: '0.5 0.5', ...style });
 }
 
 function renderLabel(container: Selection, cfg: CategoryItemStyleProps, style: ItemTextStyle) {
   const { label, height } = cfg;
-  container.maybeAppend(PREFIX('label'), () => renderExtDo(label!)).call(applyStyle, style);
+  container.maybeAppendByClassName(CLASS_NAMES.label, () => renderExtDo(label!)).call(applyStyle, style);
 }
 
 function renderValue(container: Selection, cfg: CategoryItemStyleProps, style: ItemTextStyle) {
   const { value } = cfg;
-  container.maybeAppend(PREFIX('value'), () => renderExtDo(value!)).call(applyStyle, style);
+  container.maybeAppendByClassName(CLASS_NAMES.value, () => renderExtDo(value!)).call(applyStyle, style);
 }
 
 function renderBackground(container: Selection, cfg: CategoryItemStyleProps, style: ItemBackgrounStyle) {
   const { width, height } = cfg;
   container.style('zIndex', -1);
-  container.maybeAppend(PREFIX('background'), 'rect').call(applyStyle, { width, height, ...style });
+  container.maybeAppendByClassName(CLASS_NAMES.background, 'rect').call(applyStyle, { width, height, ...style });
 }
 
 function adjustLayout(container: Selection, cfg: CategoryItemStyleProps) {
@@ -117,12 +132,12 @@ function adjustLayout(container: Selection, cfg: CategoryItemStyleProps) {
       });
     }
   };
-  container.select(`#${GROUP_NAME.marker}`).call(applyStyle, { x: x1, y: h });
-  const labelGroup = container.select(`#${GROUP_NAME.label}`).call(applyStyle, { x: x2, y: h });
-  setTextEllipsisCfg(labelGroup.select(`#${PREFIX('label')}`), w2);
+  container.select(`.${CLASS_NAMES.markerGroup}`).call(applyStyle, { x: x1, y: h });
+  const labelGroup = container.select(`.${CLASS_NAMES.labelGroup}`).call(applyStyle, { x: x2, y: h });
+  setTextEllipsisCfg(labelGroup.select(`.${CLASS_NAMES.label}`), w2);
   if (showValue) {
-    const valueGroup = container.select(`#${GROUP_NAME.value}`).call(applyStyle, { x: x3, y: h });
-    setTextEllipsisCfg(valueGroup.select(`#${PREFIX('value')}`), w3);
+    const valueGroup = container.select(`.${CLASS_NAMES.valueGroup}`).call(applyStyle, { x: x3, y: h });
+    setTextEllipsisCfg(valueGroup.select(`.${CLASS_NAMES.value}`), w3);
   }
 }
 
@@ -140,7 +155,7 @@ export const CategoryItem = createComponent<CategoryItemStyleProps>(
       const group = select(container);
 
       /** marker */
-      const markerGroup = group.maybeAppend(GROUP_NAME.marker, 'g').attr('className', GROUP_NAME.marker);
+      const markerGroup = group.maybeAppendByClassName(CLASS_NAMES.markerGroup, 'g');
       ifShow(
         !!marker,
         markerGroup,
@@ -151,7 +166,7 @@ export const CategoryItem = createComponent<CategoryItemStyleProps>(
       );
 
       /** label */
-      const labelGroup = group.maybeAppend(GROUP_NAME.label, 'g').attr('className', GROUP_NAME.label);
+      const labelGroup = group.maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g');
       ifShow(
         !!label,
         labelGroup,
@@ -162,7 +177,7 @@ export const CategoryItem = createComponent<CategoryItemStyleProps>(
       );
 
       /** value */
-      const valueGroup = group.maybeAppend(GROUP_NAME.value, 'g').attr('calssName', GROUP_NAME.value);
+      const valueGroup = group.maybeAppendByClassName(CLASS_NAMES.valueGroup, 'g');
       ifShow(
         isShowValue(value),
         valueGroup,
@@ -173,7 +188,7 @@ export const CategoryItem = createComponent<CategoryItemStyleProps>(
       );
 
       /** background */
-      const backgroundGroup = group.maybeAppend(GROUP_NAME.background, 'g').attr('className', GROUP_NAME.background);
+      const backgroundGroup = group.maybeAppendByClassName(CLASS_NAMES.backgroundGroup, 'g');
       renderBackground(backgroundGroup, attributes, itemBackgroundStyle);
 
       adjustLayout(select(container), attributes);

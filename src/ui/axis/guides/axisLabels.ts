@@ -1,5 +1,5 @@
 import type { Vector2 } from '@/types';
-import type { G2Element, Selection } from '@/util';
+import type { Selection, _Element } from '@/util';
 import {
   applyStyle,
   getCallbackValue,
@@ -13,6 +13,7 @@ import {
 import type { DisplayObject, Group } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction, isString, memoize } from 'lodash';
+import { CLASS_NAMES } from '../constant';
 import { processOverlap } from '../overlap';
 import type { AxisDatum, AxisStyleProps } from '../types';
 import { getFactor } from '../utils';
@@ -108,7 +109,7 @@ function getLabelAlign(value: number, rotate: number, cfg: AxisStyleProps) {
   // return align[-unionFactor as VerticalFactor];
 }
 
-function setRotateAndAdjustLabelAlign(rotate: number, group: G2Element, cfg: AxisStyleProps) {
+function setRotateAndAdjustLabelAlign(rotate: number, group: _Element, cfg: AxisStyleProps) {
   group.setLocalEulerAngles(+rotate);
   const { value } = group.__data__;
   const textAlign = getLabelAlign(value, rotate, cfg);
@@ -136,7 +137,8 @@ function createLabelEl(container: Selection, datum: AxisDatum, index: number, da
   if (isString(formatter)) el = () => renderExtDo(formatter);
   else if (isFunction(formatter))
     el = () => renderExtDo(getCallbackValue(formatter, [datum, index, data, labelVector]));
-  return container.append(el).attr('className', 'axis-label-item');
+
+  return container.append(el).attr('className', CLASS_NAMES.labelItem.name);
 }
 
 function applyLabelStyle(
@@ -151,7 +153,7 @@ function applyLabelStyle(
   // 2. set position
   // 3. set rotation
   // 4. set label align
-  const label = group.querySelector<DisplayObject>('.axis-label-item');
+  const label = group.getElementsByClassName<DisplayObject>(CLASS_NAMES.labelItem.toString())?.[0];
   const [labelStyle, groupStyle] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
   label?.nodeName === 'text' &&
     select(label as DisplayObject).call(applyStyle, {
@@ -189,16 +191,16 @@ function overlapHandler(cfg: AxisStyleProps) {
 }
 
 export function renderLabels(container: Selection, _data: AxisDatum[], cfg: AxisStyleProps, style: any) {
-  const { labelFiltrate, labelFormatter: formatter } = cfg;
+  const { labelFiltrate } = cfg;
   const data = filterExec(_data, labelFiltrate);
   container
-    .selectAll('.axis-label')
+    .selectAll(CLASS_NAMES.label.class)
     .data(data)
     .join(
       (enter) =>
         enter
           .append('g')
-          .attr('className', 'axis-label')
+          .attr('className', CLASS_NAMES.label.name)
           .each(function (...args) {
             createLabelEl(select(this), ...args, data, cfg);
             applyLabelStyle(...args, data, this, cfg, style);

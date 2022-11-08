@@ -1,5 +1,5 @@
 import type { PrefixedStyle } from '@/types';
-import { applyStyle, createComponent, getStylesFromPrefixed, select, Selection } from '@/util';
+import { applyStyle, createComponent, getStylesFromPrefixed, select, Selection, classNames } from '@/util';
 import { Group, GroupStyleProps, Path, PathStyleProps, RectStyleProps } from '@antv/g';
 import { isFunction } from 'lodash';
 import { ifHorizontal } from '../utils';
@@ -24,6 +24,17 @@ export type RibbonCfg = {
 };
 
 export type RibbonStyleProps = GroupStyleProps & RibbonStyle & RibbonCfg;
+
+const CLASS_NAMES = classNames(
+  {
+    backgroundGroup: 'background-group',
+    background: 'background',
+    ribbonGroup: 'ribbon-group',
+    ribbon: 'ribbon',
+    clipPath: 'clip-path',
+  },
+  'ribbon'
+);
 
 const DEFAULT_RIBBON_CFG: RibbonStyleProps = {
   type: 'color',
@@ -84,14 +95,18 @@ function getClipPath(cfg: RibbonStyleProps): any[] {
 }
 
 function renderBackground(container: Selection, cfg: RibbonStyleProps, style: any) {
-  container.maybeAppend('background', 'path').call(applyStyle, { path: getBackgroundPath(cfg), ...style });
+  container
+    .maybeAppendByClassName(CLASS_NAMES.background, 'path')
+    .call(applyStyle, { path: getBackgroundPath(cfg), ...style });
 }
 
 function renderRibbon(container: Selection, cfg: RibbonStyleProps, style: any) {
   const fill = getColor(cfg);
-  const ribbon = container.maybeAppend('ribbon', 'path').call(applyStyle, { path: getRibbonPath(cfg), fill, ...style });
+  const ribbon = container
+    .maybeAppendByClassName(CLASS_NAMES.ribbon, 'path')
+    .call(applyStyle, { path: getRibbonPath(cfg), fill, ...style });
   const clipPath = ribbon
-    .maybeAppend('clip-path', 'path')
+    .maybeAppendByClassName(CLASS_NAMES.clipPath, 'path')
     .call(applyStyle, { path: getClipPath(cfg) })
     .node();
   ribbon.style('clip-path', clipPath);
@@ -101,7 +116,7 @@ export const Ribbon = createComponent<RibbonStyleProps>(
   {
     render(attribute: RibbonStyleProps, container: Group) {
       const [ribbonStyle, backgroundStyle] = getStylesFromPrefixed(attribute, ['ribbon', 'background']);
-      const backgroundGroup = select(container).maybeAppend('background-group', 'g');
+      const backgroundGroup = select(container).maybeAppendByClassName(CLASS_NAMES.backgroundGroup, 'g');
       renderBackground(backgroundGroup, attribute, backgroundStyle);
 
       /**
@@ -109,7 +124,7 @@ export const Ribbon = createComponent<RibbonStyleProps>(
        *  |- ribbon
        * - clip path
        */
-      const ribbonGroup = select(container).maybeAppend('ribbon-group', 'g');
+      const ribbonGroup = select(container).maybeAppendByClassName(CLASS_NAMES.ribbonGroup, 'g');
       renderRibbon(ribbonGroup, attribute, ribbonStyle);
     },
   },

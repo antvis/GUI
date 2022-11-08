@@ -17,7 +17,7 @@ import {
 } from '@antv/g';
 import { group } from 'd3-array';
 
-export type G2Element = DisplayObject & {
+export type _Element = DisplayObject & {
   // Data for this element.
   __data__?: any;
   // An Array of data to be splitted to.
@@ -43,7 +43,7 @@ function error(msg: string) {
  * @todo More useful functor.
  */
 export class Selection<T = any> {
-  static registry: Record<string, new () => G2Element> = {
+  static registry: Record<string, new () => _Element> = {
     g: Group,
     rect: Rect,
     circle: Circle,
@@ -57,11 +57,11 @@ export class Selection<T = any> {
     html: HTML,
   };
 
-  private _elements: G2Element[];
+  private _elements: _Element[];
 
-  private _parent: G2Element;
+  private _parent: _Element;
 
-  private _data: T[] | [T, G2Element[]][];
+  private _data: T[] | [T, _Element[]][];
 
   private _enter: Selection;
 
@@ -77,16 +77,16 @@ export class Selection<T = any> {
 
   private _transitions: Promise<void>[];
 
-  private _facetElements: G2Element[];
+  private _facetElements: _Element[];
 
   constructor(
-    elements: Iterable<G2Element> = null,
-    data: T[] | [T, G2Element[]][] = null,
-    parent: G2Element = null,
+    elements: Iterable<_Element> = null,
+    data: T[] | [T, _Element[]][] = null,
+    parent: _Element = null,
     document: IDocument | null = null,
     selections: [Selection, Selection, Selection, Selection, Selection] = [null, null, null, null, null],
     transitions: Promise<void>[] = [],
-    updateElements: G2Element[] = []
+    updateElements: _Element[] = []
   ) {
     this._elements = Array.from(elements);
     this._data = data;
@@ -101,26 +101,26 @@ export class Selection<T = any> {
     this._facetElements = updateElements;
   }
 
-  selectAll(selector: string | G2Element[]): Selection<T> {
-    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<G2Element>(selector) : selector;
+  selectAll(selector: string | _Element[]): Selection<T> {
+    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<_Element>(selector) : selector;
     return new Selection<T>(elements, null, this._elements[0], this._document);
   }
 
-  selectFacetAll(selector: string | G2Element[]): Selection<T> {
-    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<G2Element>(selector) : selector;
+  selectFacetAll(selector: string | _Element[]): Selection<T> {
+    const elements = typeof selector === 'string' ? this._parent.querySelectorAll<_Element>(selector) : selector;
     return new Selection<T>(this._elements, null, this._parent, this._document, undefined, undefined, elements);
   }
 
   /**
    * @todo Replace with querySelector which has bug now.
    */
-  select(selector: string | G2Element): Selection<T> {
+  select(selector: string | _Element): Selection<T> {
     const element =
-      typeof selector === 'string' ? this._parent.querySelectorAll<G2Element>(selector)[0] || null : selector;
+      typeof selector === 'string' ? this._parent.querySelectorAll<_Element>(selector)[0] || null : selector;
     return new Selection<T>([element], null, element, this._document);
   }
 
-  append(node: string | ((data: T, i: number) => G2Element)): Selection<T> {
+  append(node: string | ((data: T, i: number) => _Element)): Selection<T> {
     const callback = typeof node === 'function' ? node : () => this.createElement(node);
 
     const elements = [];
@@ -150,16 +150,32 @@ export class Selection<T = any> {
     return new Selection(elements, null, elements[0], this._document);
   }
 
-  maybeAppend(id: string, node: string | (() => G2Element)) {
+  #maybeAppend(selector: string, node: string | (() => _Element)) {
     const element = this._elements[0];
-    const child = element.getElementById(id) as G2Element;
-    if (child) {
-      return new Selection([child], null, this._parent, this._document);
-    }
+    const child = element.querySelector<_Element>(selector);
+    if (child) return new Selection([child], null, this._parent, this._document);
     const newChild = typeof node === 'string' ? this.createElement(node) : node();
-    newChild.id = id;
     element.appendChild(newChild);
     return new Selection([newChild], null, this._parent, this._document);
+  }
+
+  maybeAppend(id: string, node: string | (() => _Element)) {
+    const element = this.#maybeAppend(`#${id}`, node);
+    element.attr('id', id);
+    return element;
+  }
+
+  maybeAppendByClassName(className: any, node: string | (() => _Element)) {
+    const cls = className.toString();
+    const element = this.#maybeAppend(`.${cls}`, node);
+    element.attr('className', cls);
+    return element;
+  }
+
+  maybeAppendByName(name: string, node: string | (() => _Element)) {
+    const element = this.#maybeAppend(`[name="${name}"]`, node);
+    element.attr('name', name);
+    return element;
   }
 
   /**
@@ -177,24 +193,24 @@ export class Selection<T = any> {
     const enter: T[] = [];
 
     // An Array of elements to be updated.
-    const update: G2Element[] = [];
+    const update: _Element[] = [];
 
     // A Set of elements to be removed.
-    const exit = new Set<G2Element>(this._elements);
+    const exit = new Set<_Element>(this._elements);
 
     // An Array of data to be merged into one element.
-    const merge: [T, G2Element[]][] = [];
+    const merge: [T, _Element[]][] = [];
 
     // A Set of elements to be split into multiple datum.
-    const split = new Set<G2Element>();
+    const split = new Set<_Element>();
 
     // A Map from key to each element.
-    const keyElement = new Map<string, G2Element>(this._elements.map((d, i) => [id(d.__data__, i), d]));
+    const keyElement = new Map<string, _Element>(this._elements.map((d, i) => [id(d.__data__, i), d]));
 
     // A Map from key to exist element. The Update Selection
     // can get element from this map, this is for diff among
     // facets.
-    const keyUpdateElement = new Map<string, G2Element>(this._facetElements.map((d, i) => [id(d.__data__, i), d]));
+    const keyUpdateElement = new Map<string, _Element>(this._facetElements.map((d, i) => [id(d.__data__, i), d]));
 
     // A Map from groupKey to a group of elements.
     const groupKeyElements = group(this._elements, (d) => groupId(d.__data__));
@@ -262,9 +278,9 @@ export class Selection<T = any> {
     return new Selection<T>(elements, null, this._parent, this._document, undefined, transitions);
   }
 
-  createElement(type: string): G2Element {
+  createElement(type: string): _Element {
     if (this._document) {
-      return this._document.createElement<G2Element, BP>(type, {});
+      return this._document.createElement<_Element, BP>(type, {});
     }
     const Ctor = Selection.registry[type];
     if (Ctor) return new Ctor();
@@ -348,11 +364,11 @@ export class Selection<T = any> {
     return this;
   }
 
-  node(): G2Element {
+  node(): _Element {
     return this._elements[0];
   }
 
-  nodes(): G2Element[] {
+  nodes(): _Element[] {
     return this._elements;
   }
 
@@ -379,7 +395,7 @@ export function select<T = any>(node: DisplayObject) {
 export function maybeAppend<T>(
   parent: Group,
   selector: string,
-  node: string | ((data: T, i: number) => G2Element)
+  node: string | ((data: T, i: number) => _Element)
 ): Selection<T> {
   if (!parent.querySelector(selector)) {
     return select(parent).append(node);

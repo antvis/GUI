@@ -1,7 +1,12 @@
 import { Selection } from './selection';
 
-export function ifShow(show: boolean, container: Selection, creator: () => void, removeChildren?: boolean) {
+export function ifShow(
+  show: boolean,
+  container: Selection,
+  creator: (group: Selection) => void,
+  removeChildren?: boolean
+) {
   if (show) {
-    creator();
+    creator(container);
   } else if (removeChildren) container.node().removeChildren();
 }

@@ -1,3 +1,4 @@
+import { classNames } from '@/util';
 import type { DisplayObjectConfig } from '@antv/g';
 import { Path } from '@antv/g';
 import { deepMix } from '@antv/util';
@@ -59,3 +60,24 @@ export const ARC_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_CFG, {
 export const HELIX_DEFAULT_OPTIONS = deepMix({}, AXIS_BASE_DEFAULT_CFG, {
   style: {},
 });
+
+export const CLASS_NAMES = classNames(
+  {
+    mainGroup: 'main-group',
+    gridGroup: 'grid-group',
+    grid: 'grid',
+    lineGroup: 'line-group',
+    line: 'line',
+    tickGroup: 'tick-group',
+    tick: 'tick',
+    tickItem: 'tick-item',
+    labelGroup: 'label-group',
+    label: 'label',
+    labelItem: 'label-item',
+    titleGroup: 'title-group',
+    title: 'title',
+    lineFirst: 'line-first',
+    lineSecond: 'line-second',
+  },
+  'axis'
+);

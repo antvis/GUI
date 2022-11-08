@@ -1,4 +1,5 @@
 import { deepMix } from '@antv/util';
+import { classNames } from '@/util';
 import type { LegendBaseOptions } from './types';
 
 export const LEGEND_BASE_DEFAULT_OPTIONS: Partial<LegendBaseOptions> = {
@@ -70,3 +71,20 @@ export const STEP_RATIO = 0.01;
 
 // 分类图例name和value宽度比例
 export const NAME_VALUE_RATIO = 0.5;
+
+export const CLASS_NAMES = classNames(
+  {
+    title: 'title',
+    itemsGroup: 'items-group',
+    contentGroup: 'content-group',
+    ribbonGroup: 'ribbon-group',
+    ribbon: 'ribbon',
+    handlesGroup: 'handles-group',
+    startHandle: 'start-handle',
+    endHandle: 'end-handle',
+    labelGroup: 'label-group',
+    label: 'label',
+    indicator: 'indicator',
+  },
+  'legend'
+);

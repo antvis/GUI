@@ -3,6 +3,7 @@ import { applyStyle, getCallbackValue, select, Selection, styleSeparator } from 
 import type { Group } from '@antv/g';
 import { DisplayObject } from '@antv/g';
 import { isFunction, memoize } from 'lodash';
+import { CLASS_NAMES } from '../constant';
 import type { AxisDatum, AxisStyleProps } from '../types';
 import { getDirectionVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
@@ -41,7 +42,7 @@ function createTickEl(container: Selection, datum: AxisDatum, index: number, dat
   let el: any = 'line';
   if (formatter instanceof DisplayObject) el = () => formatter;
   else if (isFunction(formatter)) el = () => getCallbackValue(formatter, [datum, index, data, tickVector]);
-  return container.append(el).attr('className', 'axis-tick-item');
+  return container.append(el).attr('className', CLASS_NAMES.tickItem.name);
 }
 
 function applyTickStyle(
@@ -70,7 +71,7 @@ export function renderTicks(container: Selection, _data: AxisDatum[], cfg: AxisS
       (enter) =>
         enter
           .append('g')
-          .attr('className', 'axis-tick')
+          .attr('className', CLASS_NAMES.tick.name)
           .each(function (...args) {
             const tick = createTickEl(select(this), ...args, data, cfg);
             applyTickStyle(...args, data, tick, this, cfg, callbackableStyle);

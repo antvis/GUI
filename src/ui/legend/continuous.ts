@@ -7,11 +7,11 @@ import {
   getEventPos,
   getStyleFromPrefixed,
   getStylesFromPrefixed,
+  ifShow,
   select,
   Selection,
   throttle,
   toPrecision,
-  ifShow,
 } from '@/util';
 import { CustomEvent, Group } from '@antv/g';
 import { Linear } from '@antv/scale';
@@ -19,7 +19,7 @@ import { capitalize, clamp, isUndefined, memoize } from 'lodash';
 import type { AxisStyleProps } from '../axis';
 import { Axis } from '../axis';
 import { Title } from '../title';
-import { CONTINUOUS_DEFAULT_OPTIONS, STEP_RATIO } from './constant';
+import { CLASS_NAMES, CONTINUOUS_DEFAULT_OPTIONS, STEP_RATIO } from './constant';
 import { Handle } from './continuous/handle';
 import { Ribbon } from './continuous/ribbon';
 import { getNextTickValue } from './continuous/utils';
@@ -86,25 +86,27 @@ export class Continuous extends GUI<ContinuousStyleProps> {
       'handle',
     ]);
 
-    const titleEl = select(container).maybeAppend(
-      'title',
+    const titleEl = select(container).maybeAppendByClassName(
+      CLASS_NAMES.title,
       () => new Title({ style: { width, height, ...titleStyle } })
     );
 
     // @ts-ignore
     const { x, y, width: w, height: h } = titleEl.node().getAvailableSpace();
 
-    const contentGroup = select(container).maybeAppend(PREFIX('content-group'), 'g').call(applyStyle, { x, y });
+    const contentGroup = select(container)
+      .maybeAppendByClassName(CLASS_NAMES.contentGroup, 'g')
+      .call(applyStyle, { x, y });
 
-    const ribbonGroup = contentGroup.maybeAppend(PREFIX('ribbon-group'), 'g');
+    const ribbonGroup = contentGroup.maybeAppendByClassName(CLASS_NAMES.ribbonGroup, 'g');
     this.renderRibbon(ribbonGroup, ribbonStyle);
 
-    this.handlesGroup = ribbonGroup.maybeAppend(PREFIX('handles-group'), 'g');
+    this.handlesGroup = ribbonGroup.maybeAppendByClassName(CLASS_NAMES.handlesGroup, 'g');
     this.renderHandles();
 
     this.renderIndicator(contentGroup, indicatorStyle);
 
-    const labelGroup = select(container).maybeAppend(PREFIX('label-group'), 'g').call(applyStyle, { x, y });
+    const labelGroup = select(container).maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g').call(applyStyle, { x, y });
 
     ifShow(showLabel, labelGroup, () => {
       this.renderLabel(labelGroup);
@@ -144,7 +146,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
   private renderRibbon(group: Selection, style: any) {
     const { type, orient, color, block, data } = this.attributes;
     this.ribbon = group
-      .maybeAppend(PREFIX('ribbon'), () => new Ribbon({}))
+      .maybeAppendByClassName(CLASS_NAMES.ribbon, () => new Ribbon({}))
       .call(applyStyle, {
         type,
         orient,
@@ -169,7 +171,8 @@ export class Continuous extends GUI<ContinuousStyleProps> {
     const { orient } = this.attributes;
     const { formatter, ...handleStyle } = getStyleFromPrefixed(this.attributes, 'handle');
     const handle = this.handlesGroup
-      .maybeAppend(PREFIX(`${type}-handle`), () => new Handle({}))
+      // @ts-ignore
+      .maybeAppendByClassName(CLASS_NAMES.prefix(`${type}-handle`), () => new Handle({}))
       .call(applyStyle, { orient, labelText: value, ...handleStyle });
     this.setHandlePosition(type, value);
     return handle;
@@ -179,7 +182,8 @@ export class Continuous extends GUI<ContinuousStyleProps> {
     const { ribbonSize, handleFormatter } = this.attributes;
     const offset = this.getOffset(value);
     const [x, y] = this.ifHorizontal([offset, ribbonSize * 0.7], [ribbonSize / 2, offset]);
-    const handle = this.handlesGroup.select(`#${PREFIX(`${type}-handle`)}`).node();
+    // @ts-ignore
+    const handle = this.handlesGroup.select(`.${CLASS_NAMES.prefix(`${type}-handle`)}`).node();
     handle?.attr('formatter', handleFormatter);
     const [prevX, prevY] = handle.getLocalPosition();
 
@@ -200,7 +204,9 @@ export class Continuous extends GUI<ContinuousStyleProps> {
 
   private renderIndicator(group: Selection, style: any) {
     const { formatter } = style;
-    this.indicator = group.maybeAppend(PREFIX('indicator'), () => new Indicator({})).call(applyStyle, { ...style });
+    this.indicator = group
+      .maybeAppendByClassName(CLASS_NAMES.indicator, () => new Indicator({}))
+      .call(applyStyle, { ...style });
     this.indicator.node().attr('formatter', formatter);
   }
 
@@ -274,7 +280,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
     } as AxisStyleProps;
 
     const axis = group
-      .maybeAppend(PREFIX('label'), () => new Axis({ style }))
+      .maybeAppendByClassName(CLASS_NAMES.label, () => new Axis({ style }))
       .call(applyStyle, style)
       .node();
     axis.attr('labelFormatter', formatter);

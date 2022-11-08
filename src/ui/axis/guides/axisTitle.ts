@@ -1,5 +1,6 @@
 import type { Selection } from '@/util';
 import { applyStyle, renderExtDo, styleSeparator } from '@/util';
+import { CLASS_NAMES } from '../constant';
 import type { AxisStyleProps } from '../types';
 
 function getTitlePosition(
@@ -36,14 +37,14 @@ function getTitlePosition(
 }
 
 function getTitleLayout(container: Selection, title: Selection, cfg: AxisStyleProps) {
-  const axis = container.select('#axis-main-group');
+  const axis = container.select(CLASS_NAMES.mainGroup.class);
   return getTitlePosition(axis, title, cfg);
 }
 
 function createTitleEl(container: Selection, cfg: AxisStyleProps) {
   const { title } = cfg;
-  const group = container.maybeAppend('axis-title-group', 'g').attr('anchor', '0 0');
-  const titleEl = group.maybeAppend('axis-title', () => renderExtDo(title!));
+  const group = container.maybeAppendByClassName(CLASS_NAMES.titleGroup, 'g').attr('anchor', '0 0');
+  const titleEl = group.maybeAppendByClassName(CLASS_NAMES.title, () => renderExtDo(title!));
   return [group, titleEl];
 }
 

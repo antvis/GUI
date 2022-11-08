@@ -85,10 +85,10 @@ export const CategoryItems = () => {
     },
     mouseenter: (el: any) => {
       console.log('mouseenter item: ', el.attr('label'), el.attr('value'));
-      el.querySelector('#legend-category-item-background').attr('fill', '#f4bb51');
+      el.querySelector('.legend-category-item-background').attr('fill', '#f4bb51');
     },
     mouseleave: (el: any) => {
-      el.querySelector('#legend-category-item-background').attr('fill', 'white');
+      el.querySelector('.legend-category-item-background').attr('fill', 'white');
     },
   });
 

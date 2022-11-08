@@ -2,6 +2,7 @@ import type { Point, Vector2 } from '@/types';
 import { applyStyle, degToRad, renderExtDo, select, Selection } from '@/util';
 import { ext, vec2 } from '@antv/matrix-util';
 import { memoize } from 'lodash';
+import { CLASS_NAMES } from '../constant';
 import type { ArcAxisStyleProps, AxisLineCfg, AxisStyleProps, Direction, LinearAxisStyleProps } from '../types';
 import { baseDependencies } from './utils';
 
@@ -87,7 +88,7 @@ function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any) {
   const diffAngle = endAngle - startAngle;
   if (diffAngle === 360) {
     container
-      .maybeAppend('axis-line', 'circle')
+      .maybeAppendByClassName(CLASS_NAMES.line, 'circle')
       .style('cx', cx)
       .style('cy', cy)
       .style('r', radius)
@@ -106,12 +107,12 @@ function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any) {
   const path = isClosePath
     ? `M${cx},${cy},L${x1},${y1},A${rx},${ry},0,${large},${sweep},${x2},${y2},L${cx},${cy}`
     : `M${x1},${y1},A${rx},${ry},0,${large},${sweep},${x2},${y2}`;
-  container.maybeAppend('axis-line', 'path').attr('className', 'axis-line').style('path', path).call(applyStyle, style);
+  container.maybeAppendByClassName(CLASS_NAMES.line, 'path').style('path', path).call(applyStyle, style);
 }
 
 function renderTruncation<T>(container: Selection, { truncRange, truncShape, lineExtension }: AxisLineCfg, style: any) {
-  const firstLine = container.select('#axis-line-linear-first').node();
-  const secondLine = container.select('#axis-line-linear-second').node();
+  const firstLine = container.select(CLASS_NAMES.lineFirst.class).node();
+  const secondLine = container.select(CLASS_NAMES.lineSecond.class).node();
   // TODO
 }
 
@@ -129,10 +130,10 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
   container.node().removeChildren();
 
-  const renderLine = (id: string, [[a, b], [c, d]]: [Vector2, Vector2]) => {
+  const renderLine = (className: string, [[a, b], [c, d]]: [Vector2, Vector2]) => {
     container
-      .maybeAppend(id, 'line')
-      .attr('className', 'axis-line')
+      .maybeAppendByClassName(className, 'line')
+      .attr('className', `${CLASS_NAMES.line.name} ${className}`)
       .call(applyStyle, { ...style, x1: a, y1: b, x2: c, y2: d });
   };
   if (!truncRange) {
@@ -145,11 +146,11 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
   const [r1, r2] = truncRange;
   const [x3, y3] = [x1 + (x2 - x1) * r1, y1 + (y2 - y1) * r1];
   const [x4, y4] = [x1 + (x2 - x1) * r2, y1 + (y2 - y1) * r2];
-  renderLine('axis-line-first', [
+  renderLine(CLASS_NAMES.lineFirst.name, [
     [x1 + ox1, y1 + oy1],
     [x3, y3],
   ]);
-  renderLine('axis-line-second', [
+  renderLine(CLASS_NAMES.lineSecond.name, [
     [x4, y4],
     [x2 + ox2, y2 + oy2],
   ]);
@@ -166,9 +167,9 @@ function renderAxisArrow(
   const arrow = renderExtDo(lineArrow);
   select(arrow).call(applyStyle, { ...style, transform: `scale(${lineArrowSize})` });
   let shapeToAddArrow: Selection;
-  if (type === 'arc') shapeToAddArrow = container.select('#axis-line');
-  else if (truncRange) shapeToAddArrow = container.select('#axis-line-second');
-  else shapeToAddArrow = container.select('#axis-line');
+  if (type === 'arc') shapeToAddArrow = container.select(CLASS_NAMES.line.class);
+  else if (truncRange) shapeToAddArrow = container.select(CLASS_NAMES.lineSecond.class);
+  else shapeToAddArrow = container.select(CLASS_NAMES.line.class);
   shapeToAddArrow.style('markerEnd', arrow).style('markerEndOffset', -lineArrowOffset);
 }
 

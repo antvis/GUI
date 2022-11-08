@@ -1,7 +1,7 @@
 import { getStylesFromPrefixed, ifShow, sampling, select } from '@/util';
 import { createComponent } from '@/util/create';
 import { DisplayObjectConfig } from '@antv/g';
-import { AXIS_BASE_DEFAULT_CFG } from './constant';
+import { AXIS_BASE_DEFAULT_CFG, CLASS_NAMES } from './constant';
 import { renderGrid } from './guides/axisGrid';
 import { renderLabels } from './guides/axisLabels';
 import { renderAxisLine } from './guides/axisLine';
@@ -10,15 +10,6 @@ import { renderTitle } from './guides/axisTitle';
 import type { ArcAxisStyleProps, AxisStyleProps, LinearAxisStyleProps } from './types';
 
 export type AxisOptions = DisplayObjectConfig<AxisStyleProps>;
-
-const PREFIX = (name: string) => `axis-${name}`;
-const GROUP_NAME = {
-  main: PREFIX('main-group'),
-  line: PREFIX('line-group'),
-  tick: PREFIX('tick-group'),
-  label: PREFIX('label-group'),
-  grid: PREFIX('grid-group'),
-};
 
 export const Axis = createComponent<AxisStyleProps>(
   {
@@ -78,12 +69,13 @@ export const Axis = createComponent<AxisStyleProps>(
         return true;
       });
       /** grid */
-      const axisGridGroup = select(container).maybeAppend(GROUP_NAME.grid, 'g').attr('className', GROUP_NAME.grid);
+      const axisGridGroup = select(container).maybeAppendByClassName(CLASS_NAMES.gridGroup, 'g');
       ifShow(showGrid!, axisGridGroup, () => renderGrid(axisGridGroup, data, attributes, gridStyle), true);
       /** main group */
-      const axisMainGroup = select(container).maybeAppend(GROUP_NAME.main, 'g').attr('className', GROUP_NAME.main);
+      const axisMainGroup = select(container).maybeAppendByClassName(CLASS_NAMES.mainGroup, 'g');
+
       /** line */
-      const axisLineGroup = axisMainGroup.maybeAppend(GROUP_NAME.line, 'g').attr('className', GROUP_NAME.line);
+      const axisLineGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.lineGroup, 'g');
       ifShow(
         showLine!,
         axisLineGroup,
@@ -93,7 +85,7 @@ export const Axis = createComponent<AxisStyleProps>(
         true
       );
       /** tick */
-      const axisTickGroup = axisMainGroup.maybeAppend(GROUP_NAME.grid, 'g').attr('className', GROUP_NAME.grid);
+      const axisTickGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.tickGroup, 'g');
       ifShow(
         showTick!,
         axisTickGroup,
@@ -103,7 +95,7 @@ export const Axis = createComponent<AxisStyleProps>(
         true
       );
       /** label */
-      const axisLabelGroup = axisMainGroup.maybeAppend(GROUP_NAME.label, 'g').attr('className', GROUP_NAME.label);
+      const axisLabelGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g');
       ifShow(
         showLabel!,
         axisLabelGroup,

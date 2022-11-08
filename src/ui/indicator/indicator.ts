@@ -11,6 +11,7 @@ import {
   Selection,
   styleSeparator,
   TEXT_INHERITABLE_PROPS,
+  classNames,
 } from '@/util';
 import { DisplayObjectConfig, ElementEvent, Group } from '@antv/g';
 import { DEFAULT_INDICATOR_CFG } from './constant';
@@ -20,6 +21,14 @@ type Edge = [Point, Point];
 
 type RT = Required<IndicatorStyleProps>;
 
+const CLASS_NAMES = classNames(
+  {
+    background: 'background',
+    labelGroup: 'label-group',
+    label: 'label',
+  },
+  'indicator'
+);
 export class Indicator<T = any> extends GUI<IndicatorStyleProps<T>> {
   constructor(options: DisplayObjectConfig<IndicatorStyleProps<T>> = {}) {
     super(deepAssign({}, { style: { visibility: 'hidden', ...DEFAULT_INDICATOR_CFG } }, options));
@@ -46,7 +55,7 @@ export class Indicator<T = any> extends GUI<IndicatorStyleProps<T>> {
     const path = this.getPath(position, points);
     const backgroundStyle = getStyleFromPrefixed(this.attributes, 'background');
     this.background = select(this.group)
-      .maybeAppend('background', 'path')
+      .maybeAppendByClassName(CLASS_NAMES.background, 'path')
       .call(applyStyle, backgroundStyle)
       .style('path', path);
     this.group.appendChild(this.label.node());
@@ -56,10 +65,10 @@ export class Indicator<T = any> extends GUI<IndicatorStyleProps<T>> {
     const { value, formatter } = this.attributes as RT;
     const labelStyle = getStyleFromPrefixed(this.attributes, 'label');
     const [textStyle, groupStyle] = styleSeparator(labelStyle);
-    this.label = select(this.group).maybeAppend('label-group', 'g').call(applyStyle, groupStyle);
+    this.label = select(this.group).maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g').call(applyStyle, groupStyle);
     if (!value) return;
     const text = this.label
-      .maybeAppend('text', () => renderExtDo(formatter(value)))
+      .maybeAppendByClassName(CLASS_NAMES.label, () => renderExtDo(formatter(value)))
       .style('text', formatter(value).toString());
     text.selectAll('text').call(applyStyle, { ...TEXT_INHERITABLE_PROPS, ...textStyle });
   }

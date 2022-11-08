@@ -19,7 +19,7 @@ export const HandleDemo = () => {
     );
   };
 
-  createHandle({});
+  createHandle({ showLabel: false });
 
   createHandle({ y: 150, orient: 'vertical' });
 

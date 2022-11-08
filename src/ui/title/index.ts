@@ -97,32 +97,3 @@ export class Title extends GUI<TitleStyleProps> {
       .call(mayApplyStyle, { x, y, textAlign, textBaseline });
   }
 }
-
-export const _Title = createComponent<TitleStyleProps>(
-  {
-    render(attributes, container) {
-      const { width, height, position, spacing, ...restStyle } = attributes as Required<TitleStyleProps>;
-      const [titleStyle] = styleSeparator(restStyle);
-      const { x, y, textAlign, textBaseline } = getTitleLayout(attributes);
-
-      Object.assign(container, {
-        getAvailableSpace: () => {
-          return this.getAvailableSpace(container, attributes);
-        },
-      });
-
-      if (!restStyle.text) {
-        container.removeChildren();
-        return;
-      }
-
-      select(container)
-        .maybeAppend('title-text', 'text')
-        .call(applyStyle, titleStyle)
-        .call(mayApplyStyle, { x, y, textAlign, textBaseline });
-    },
-  },
-  {
-    ...DEFAULT_TITLE_CFG,
-  }
-);

@@ -8,6 +8,7 @@ import {
   select,
   styleSeparator,
   TEXT_INHERITABLE_PROPS,
+  classNames,
 } from '@/util';
 import { DisplayObject, Rect } from '@antv/g';
 import { clamp, get, noop, set } from 'lodash';
@@ -47,7 +48,21 @@ type Context = {
   attributes: NavigatorStyleProps;
 };
 
-const PREFIX = (str: string) => `navigation-${str}`;
+const CLASS_NAMES = classNames(
+  {
+    prevBtnGroup: 'prev-btn-group',
+    prevBtn: 'prev-btn',
+    nextBtnGroup: 'next-btn-group',
+    nextBtn: 'next-btn',
+    pageInfoGroup: 'page-info-group',
+    pageInfo: 'page-info',
+    playWindow: 'play-window',
+    contentGroup: 'content-group',
+    controller: 'controller',
+    clipPath: 'clip-path',
+  },
+  'navitagor'
+);
 
 function setVisiblePages(pages: number[], ctx: Context) {
   const pageViews = ctx.getState<DisplayObject[]>('pageViews');
@@ -59,9 +74,9 @@ function setVisiblePages(pages: number[], ctx: Context) {
 
 function adjustControllerLayout(ctx: Context) {
   const { attributes, container } = ctx;
-  const prevBtn = container.select('#prev-btn-group').node();
-  const nextBtn = container.select('#next-btn-group').node();
-  const pageNum = container.select('#page-info-group').node();
+  const prevBtn = container.select(CLASS_NAMES.prevBtnGroup.class).node();
+  const nextBtn = container.select(CLASS_NAMES.nextBtnGroup.class).node();
+  const pageNum = container.select(CLASS_NAMES.pageInfoGroup.class).node();
   const { orient, controllerPadding: padding } = attributes as Required<NavigatorStyleProps>;
   const { width: pW, height: pH } = pageNum.getBBox();
 
@@ -113,7 +128,7 @@ function updatePageInfo(ctx: Context) {
     attributes: { formatter, pageViews },
   } = ctx;
   if (pageViews.length < 2) return;
-  container.select('#page-info').style('text', formatter!(getState('currPage') + 1, pageViews.length));
+  container.select(CLASS_NAMES.pageInfo.class).style('text', formatter!(getState('currPage') + 1, pageViews.length));
   adjustControllerLayout(ctx);
 }
 
@@ -137,7 +152,7 @@ function goTo(pageNum: number, ctx: Context) {
   const currPage = getState<number>('currPage');
   const playState = getState<string>('playState');
   const finished = getState<Promise<any>>('finished');
-  const playWindow = container.select(`#${PREFIX('play-window')}`).node();
+  const playWindow = container.select(CLASS_NAMES.playWindow.class).node();
 
   if (pageNum === currPage || playState !== 'idle' || pageNum < 0 || pageNum >= pageViews.length) return { finished };
   getState('pageViews')[currPage].setLocalPosition(0, 0);
@@ -186,17 +201,17 @@ function renderController(container: Selection, ctx: Context) {
   const [style, textStyle] = getStylesFromPrefixed(attributes, ['button', 'pageNum']);
   const [pathStyle, groupStyle] = styleSeparator(style);
 
-  const prevBtnGroup = container.maybeAppend('prev-btn-group', 'g').call(applyStyle, groupStyle);
-  prevBtnGroup.maybeAppend('prev-btn', 'path').attr('className', 'btn').attr('className', 'btn');
+  const prevBtnGroup = container.maybeAppendByClassName(CLASS_NAMES.prevBtnGroup, 'g').call(applyStyle, groupStyle);
+  prevBtnGroup.maybeAppendByClassName(CLASS_NAMES.prevBtn, 'path').attr('className', 'btn');
 
-  const nextBtnGroup = container.maybeAppend('next-btn-group', 'g').call(applyStyle, groupStyle);
-  nextBtnGroup.maybeAppend('next-btn', 'path').attr('className', 'btn');
+  const nextBtnGroup = container.maybeAppendByClassName(CLASS_NAMES.nextBtnGroup, 'g').call(applyStyle, groupStyle);
+  nextBtnGroup.maybeAppendByClassName(CLASS_NAMES.nextBtn, 'path').attr('className', 'btn');
 
   container.selectAll('.btn').call(applyStyle, pathStyle);
 
-  const pageInfoGroup = container.maybeAppend('page-info-group', 'g');
+  const pageInfoGroup = container.maybeAppendByClassName(CLASS_NAMES.pageInfoGroup, 'g');
   pageInfoGroup
-    .maybeAppend('page-info', 'text')
+    .maybeAppendByClassName(CLASS_NAMES.pageInfo, 'text')
     .style('text', '')
     .call(applyStyle, { ...TEXT_INHERITABLE_PROPS, ...textStyle });
 
@@ -269,8 +284,8 @@ export const Navigator = createComponent<NavigatorStyleProps>(
        *  |- clipPath
        */
 
-      const clipPath = select(container).maybeAppend(
-        PREFIX('clip-path'),
+      const clipPath = select(container).maybeAppendByClassName(
+        CLASS_NAMES.clipPath,
         () =>
           new Rect({
             style: { x: 0, y: 0, width: pageWidth, height: pageHeight },
@@ -278,12 +293,12 @@ export const Navigator = createComponent<NavigatorStyleProps>(
       );
 
       const contentGroup = select(container)
-        .maybeAppend(PREFIX('content-group'), 'g')
+        .maybeAppendByClassName(CLASS_NAMES.contentGroup, 'g')
         .style('x', 0)
         .style('y', 0)
         .style('clipPath', clipPath.node());
 
-      const playWindow = contentGroup.maybeAppend(PREFIX('play-window'), 'g');
+      const playWindow = contentGroup.maybeAppendByClassName(CLASS_NAMES.playWindow, 'g');
 
       playWindow.node().removeChildren();
 
@@ -291,7 +306,7 @@ export const Navigator = createComponent<NavigatorStyleProps>(
 
       setVisiblePages([initPage], ctx);
 
-      const ptGroup = select(container).maybeAppend(PREFIX('page-turner-group'), 'g');
+      const ptGroup = select(container).maybeAppendByClassName(CLASS_NAMES.controller, 'g');
       renderController(ptGroup, ctx);
       goTo(initPage, ctx);
     },

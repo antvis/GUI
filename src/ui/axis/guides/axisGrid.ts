@@ -1,9 +1,10 @@
 import type { Point } from '@/types';
 import { Grid } from '@/ui/grid';
-import { applyStyle, Selection, degToRad, getCallbackValue } from '@/util';
+import { applyStyle, degToRad, getCallbackValue, Selection } from '@/util';
 import { vec2 } from '@antv/matrix-util';
 import { isFunction } from 'lodash';
-import type { AxisStyleProps, AxisDatum } from '../types';
+import { CLASS_NAMES } from '../constant';
+import type { AxisDatum, AxisStyleProps } from '../types';
 import { getDirectionVector, getValuePos } from './axisLine';
 import { filterExec } from './utils';
 
@@ -61,8 +62,7 @@ export function renderGrid(container: Selection, _data: AxisDatum[], cfg: AxisSt
   const data = filterExec(_data, cfg.gridFiltrate);
   const gridItems = type === 'segment' ? renderStraight(data, cfg) : renderSurround(data, cfg, style);
   container
-    .maybeAppend('axis-grid', () => new Grid({}))
-    .attr('className', 'axis-grid')
+    .maybeAppendByClassName(CLASS_NAMES.grid, () => new Grid({}))
     .call(applyStyle, {
       type,
       connect,

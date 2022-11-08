@@ -1,13 +1,13 @@
 import type { Callbackable, CallbackParameter, PrefixedStyle } from '@/types';
-import { applyStyle, Padding, createComponent, getCallbackValue, getStylesFromPrefixed, select } from '@/util';
+import { classNames, createComponent, getCallbackValue, getStylesFromPrefixed, Padding, select } from '@/util';
+import type { GroupStyleProps } from '@antv/g';
 import { DisplayObject, Group } from '@antv/g';
 import { chain, noop } from 'lodash';
-import type { GroupStyleProps } from '@antv/g';
 import type { NavigatorStyleProps } from '../../navigator';
 import { Navigator } from '../../navigator';
+import { ifHorizontal } from '../utils';
 import type { CategoryItemData, CategoryItemStyle, CategoryItemStyleProps } from './item';
 import { CategoryItem } from './item';
-import { ifHorizontal } from '../utils';
 
 interface CatoryItemsDatum extends CategoryItemData {
   [keys: string]: any;
@@ -47,7 +47,15 @@ type CategoryData = {
   style: Omit<CategoryItemStyleProps, 'width' | 'height'>;
 };
 
-const PREFIX = (str: string) => `category-${str}`;
+const CLASS_NAMES = classNames(
+  {
+    itemPage: 'item-page',
+    navigator: 'navigator',
+    pageView: 'page-view',
+    item: 'item',
+  },
+  'items'
+);
 
 const CATEGORY_ITEMS_DEFAULT_CFG: CategoryItemsStyleProps = {
   width: 200,
@@ -132,29 +140,26 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
       const renderData = Object.entries(chain(getRenderData(data, attributes, itemStyle)).groupBy('page').value()).map(
         ([page, items]) => ({ page, items })
       );
-      const pageViews = new Group({ id: PREFIX('page-views') });
+      const pageViews = new Group({ className: CLASS_NAMES.pageView.class });
 
       const [iW, iH] = getItemShape(attributes);
       select(pageViews)
-        .selectAll('.legend-item-page')
+        .selectAll(CLASS_NAMES.itemPage.class)
         .data(renderData)
         .join(
           (enter) =>
             enter
               .append('g')
-              .attr('className', 'category-page')
-              .attr('id', (_: any, index: number) => {
-                return `category-page-${index}`;
-              })
+              .attr('className', CLASS_NAMES.itemPage.class)
               .each(function ({ items }) {
                 select(this)
-                  .selectAll('.legend-item')
+                  .selectAll(CLASS_NAMES.item.class)
                   .data(items)
                   .join(
                     (enter) =>
                       enter
                         .append(({ style }) => new CategoryItem({ style: { width: iW, height: iH, ...style } }))
-                        .attr('className', 'legend-item')
+                        .attr('className', CLASS_NAMES.item.class)
                         .style('x', ({ col }: CategoryData) => col * (iW + colPadding))
                         .style('y', ({ row }: CategoryData) => row * (iH + rowPadding))
                         .on('click', function () {
@@ -180,8 +185,8 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
           (exit) => exit.remove()
         );
 
-      select(container).maybeAppend(
-        PREFIX(PREFIX('navigator')),
+      select(container).maybeAppendByClassName(
+        CLASS_NAMES.navigator,
         () =>
           new Navigator({
             style: {
