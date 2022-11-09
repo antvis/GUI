@@ -56,7 +56,7 @@ export function writePNG(nodeCanvas: any, path: string) {
   });
 }
 
-export async function renderCanvas(gshape: DisplayObject, filename: string, defaultWidth = 640, defaultHeight = 480) {
+export async function renderCanvas(gshape: DisplayObject, filename: string, defaultWidth = 1000, defaultHeight = 1000) {
   const [canvas, nodeCanvas] = createGCanvas(defaultWidth, defaultHeight);
 
   canvas.appendChild(gshape);

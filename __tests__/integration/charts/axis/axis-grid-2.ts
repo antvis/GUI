@@ -45,7 +45,7 @@ export const AxisGrid2 = () => {
     gridDirection: 'negative',
     gridType: 'surround',
     gridConnect: 'arc',
-    gridAreaFill: (datum, index) => (index % 2 === 0 ? 'pink' : 'transparent'),
+    gridAreaFill: (datum: any, index: any) => (index % 2 === 0 ? 'pink' : 'transparent'),
     gridCenter: [200, 450],
     gridClosed: false,
     gridLineWidth: 0,

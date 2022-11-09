@@ -65,6 +65,7 @@ export class Marker extends GUI<MarkerStyleProps> {
         } else {
           const r = (size as number) / 2;
           const symbolFn = isFunction(symbol) ? symbol : Marker.getSymbol(symbol);
+          // @ts-ignore
           selection.style('path', symbolFn?.(x, y, r)).call(applyStyle, style);
         }
       });
