@@ -31,6 +31,7 @@ export const Axis = createComponent<AxisStyleProps>(
         lineExtension,
         lineArrow,
         lineArrowOffset,
+        lineArrowSize,
         showTick,
         tickDirection,
         tickLength,

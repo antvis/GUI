@@ -2,16 +2,23 @@ import { ExtendDisplayObject, PrefixedStyle } from '@/types';
 import type { Padding, Selection } from '@/util';
 import {
   applyStyle,
+  classNames,
   createComponent,
-  renderExtDo,
+  filterTransform,
   getStylesFromPrefixed,
   ifShow,
   normalPadding,
+  renderExtDo,
   select,
-  classNames,
-  filterTransform,
 } from '@/util';
-import type { DisplayObject, DisplayObjectConfig, PathStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
+import type {
+  DisplayObject,
+  DisplayObjectConfig,
+  GroupStyleProps,
+  PathStyleProps,
+  RectStyleProps,
+  TextStyleProps,
+} from '@antv/g';
 import { isNumber, isString } from 'lodash';
 import { circle } from '../../marker/symbol';
 
@@ -28,7 +35,7 @@ export type CategoryItemStyle = {
 } & PrefixedStyle<ItemTextStyle, 'label'> &
   PrefixedStyle<ItemTextStyle, 'value'> &
   PrefixedStyle<ItemBackgrounStyle, 'background'>;
-export interface CategoryItemCfg {
+export interface CategoryItemCfg extends GroupStyleProps {
   width: number;
   height: number;
   span?: number[];

@@ -16,6 +16,7 @@ export const AxisArcBasis = () => {
 
   createAxis({
     center: [150, 150],
+    lineArrow: '',
     lineStroke: 'red',
     tickStroke: 'red',
   });

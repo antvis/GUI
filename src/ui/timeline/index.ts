@@ -40,7 +40,7 @@ function layoutControl(position: string, length: number, props: TimelineStylePro
     (type === 'cell' ? CellAxis.defaultOptions?.style?.size : SliderAxis.defaultOptions?.style?.size) ||
     4;
   axisSize += type === 'cell' ? axisCellSpacing : 0;
-  const [axisPt, axisPr, axisPb, axisPl] = normalPadding(playAxis?.appendPadding);
+  const [axisPt, axisPr, axisPb, axisPl] = normalPadding(playAxis?.appendPadding || 0);
 
   const buttonGap = controlButton?.spacing || 0;
   const playButtonSize = isNull(controlButton) || isNull(controlButton?.playBtn) ? 0 : controlButton?.playBtn?.size!;

@@ -11,7 +11,10 @@ export function applyStyle(shape: DisplayObject, idx: number, attrs: any[], styl
   shape.attr(labelStyle || {});
 }
 
-export function getCallbackStyle<T>(style: CallbackableObject<T, AxisDatumCP>, params: AxisDatumCP) {
+export function getCallbackStyle<T extends { [keys: string]: any }>(
+  style: CallbackableObject<T, AxisDatumCP>,
+  params: AxisDatumCP
+) {
   return Object.fromEntries(
     Object.entries(style).map(([key, val]) => {
       return [key, getCallbackValue(val as any, params)];
