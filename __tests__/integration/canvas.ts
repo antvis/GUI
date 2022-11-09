@@ -1,5 +1,5 @@
 import type { DisplayObject } from '@antv/g';
-import { Canvas } from '@antv/g';
+import { Canvas, CanvasEvent } from '@antv/g';
 import { Renderer } from '@antv/g-canvas';
 import { createCanvas } from 'canvas';
 import * as fs from 'fs';
@@ -59,7 +59,9 @@ export function writePNG(nodeCanvas: any, path: string) {
 export async function renderCanvas(gshape: DisplayObject, filename: string, defaultWidth = 1000, defaultHeight = 1000) {
   const [canvas, nodeCanvas] = createGCanvas(defaultWidth, defaultHeight);
 
-  canvas.appendChild(gshape);
+  canvas.addEventListener(CanvasEvent.READY, () => {
+    canvas.appendChild(gshape);
+  });
 
   // Wait for the next tick.
   await sleep(20);
