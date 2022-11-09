@@ -1,6 +1,5 @@
-import { getStylesFromPrefixed, ifShow, sampling, select, filterTransform } from '@/util';
-import { createComponent } from '@/util/create';
 import { DisplayObjectConfig } from '@antv/g';
+import { getStylesFromPrefixed, ifShow, sampling, select, filterTransform, createComponent } from '../../util';
 import { AXIS_BASE_DEFAULT_CFG, CLASS_NAMES } from './constant';
 import { renderGrid } from './guides/axisGrid';
 import { renderLabels } from './guides/axisLabels';
