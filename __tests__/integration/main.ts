@@ -24,11 +24,16 @@ class DemoHandler {
   }
 
   private initCanvas(container: HTMLElement, renderer: SVGRenderer | CanvasRenderer) {
-    this.#canvas = new Canvas({
-      container,
-      width: 1000,
-      height: 1000,
-      renderer,
+    return new Promise((resolve) => {
+      this.#canvas = new Canvas({
+        container,
+        width: 1000,
+        height: 1000,
+        renderer,
+      });
+      this.#canvas.addEventListener('ready', () => {
+        resolve(null);
+      });
     });
   }
 
@@ -115,17 +120,17 @@ class DemoHandler {
     this.#selectDemo = document.querySelector<HTMLSelectElement>('#select')!;
     this.#selectRenderer = document.querySelector<HTMLSelectElement>('#renderer')!;
 
-    this.initCanvas(container, this.#render.svg);
+    this.initCanvas(container, this.#render.svg).then(() => {
+      this.initDemoSelect();
 
-    this.initDemoSelect();
+      this.initRendererSelect();
 
-    this.initRendererSelect();
+      this.connectToPlugins();
 
-    this.connectToPlugins();
+      this.recoverStatus();
 
-    this.recoverStatus();
-
-    window.addEventListener('keypress', this.onKeyPress.bind(this));
+      window.addEventListener('keypress', this.onKeyPress.bind(this));
+    });
   }
 }
 

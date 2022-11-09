@@ -15,7 +15,7 @@ export const Category = () => {
 
   const createCategory = (args: any) => {
     const { width = 300, height = 90, gridRow = 3, gridCol = 3, rowPadding = 0, colPadding = 0 } = args;
-    group.appendChild(
+    return group.appendChild(
       new C({
         style: {
           width,

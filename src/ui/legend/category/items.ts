@@ -151,6 +151,17 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
       const pageViews = new Group({ className: CLASS_NAMES.pageView.class });
 
       const [iW, iH] = getItemShape(attributes);
+      const getItemStyle = ({ col, row, style }: CategoryData, index: number) => {
+        const [x, y] = [col * (iW + colPadding), row * (iH + rowPadding)];
+        return {
+          x,
+          y,
+          width: iW,
+          height: iH,
+          ...style,
+        };
+      };
+
       select(pageViews)
         .selectAll(CLASS_NAMES.itemPage.class)
         .data(renderData)
@@ -166,10 +177,8 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
                   .join(
                     (enter) =>
                       enter
-                        .append(({ style }) => new CategoryItem({ style: { width: iW, height: iH, ...style } }))
+                        .append((datum, index) => new CategoryItem({ style: getItemStyle(datum, index) }))
                         .attr('className', CLASS_NAMES.item.class)
-                        .style('x', ({ col }: CategoryData) => col * (iW + colPadding))
-                        .style('y', ({ row }: CategoryData) => row * (iH + rowPadding))
                         .on('click', function () {
                           click(this);
                         })
@@ -180,8 +189,8 @@ export const CategoryItems = createComponent<CategoryItemsStyleProps>(
                           mouseleave(this);
                         }),
                     (update) =>
-                      update.each(function (datum) {
-                        this.update(datum);
+                      update.each(function (datum, index) {
+                        this.update(getItemStyle(datum, index));
                       }),
                     (exit) => exit.remove()
                   );
