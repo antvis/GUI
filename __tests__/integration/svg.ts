@@ -45,7 +45,7 @@ export function sleep(n: number) {
   });
 }
 
-export async function renderSVG(gshape: DisplayObject, defaultWidth = 640, defaultHeight = 480) {
+export async function renderSVG(gshape: DisplayObject, defaultWidth = 1000, defaultHeight = 1000) {
   const [canvas, dom] = createGCanvas(defaultWidth, defaultHeight);
 
   canvas.appendChild(gshape);
