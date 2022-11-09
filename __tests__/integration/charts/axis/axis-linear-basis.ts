@@ -118,25 +118,25 @@ export const AxisLinearBasis = () => {
     tickLength: 10,
   });
 
-  createAxis({
-    startPos: [660, 380],
-    endPos: [950, 380],
-    data: tickData,
-    truncRange: [0.1, 0.3],
-    lineLineWidth: 2,
-    lineStroke: 'black',
-    tickLineWidth: 2,
-    tickStroke: 'black',
-    labelTransform: 'rotate(90)',
-    labelTransforms: [
-      {
-        type: 'ellipsis',
-        minLength: 50,
-        maxLength: 120,
-        suffix: '...',
-      },
-    ],
-  });
+  // createAxis({
+  //   startPos: [660, 380],
+  //   endPos: [950, 380],
+  //   data: tickData,
+  //   truncRange: [0.1, 0.3],
+  //   lineLineWidth: 2,
+  //   lineStroke: 'black',
+  //   tickLineWidth: 2,
+  //   tickStroke: 'black',
+  //   labelTransform: 'rotate(90)',
+  //   labelTransforms: [
+  //     {
+  //       type: 'ellipsis',
+  //       minLength: 50,
+  //       maxLength: 120,
+  //       suffix: '...',
+  //     },
+  //   ],
+  // });
 
   return group;
 };
