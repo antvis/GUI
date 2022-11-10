@@ -64,3 +64,5 @@ export const AxisLinearLabelOverlap = () => {
 
   return group;
 };
+
+AxisLinearLabelOverlap.skip = true;
