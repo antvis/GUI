@@ -58,7 +58,7 @@ export class Navigator extends GUI<NavigatorStyleProps> {
     super(deepAssign({}, { style: NAVIGATOR_DEFAULT_CFG }, options));
   }
 
-  #currPage: number = 0;
+  private _currPage: number = 0;
 
   private finishedPromise: Promise<number> | null = null;
 
@@ -90,7 +90,7 @@ export class Navigator extends GUI<NavigatorStyleProps> {
   }
 
   public get currPage() {
-    return this.#currPage;
+    return this._currPage;
   }
 
   public get finished() {
@@ -239,7 +239,7 @@ export class Navigator extends GUI<NavigatorStyleProps> {
         playWindow.animate([{ transform: `translate(0, 0)` }, { transform: `translate(${-dx}, ${-dy})` }], animateCfg),
       ].map((ani) => ani?.finished)
     ).then(() => {
-      this.#currPage = pageNum;
+      this._currPage = pageNum;
       this.playState = 'idle';
       this.setVisiblePages([pageNum]);
       this.updatePageInfo();
