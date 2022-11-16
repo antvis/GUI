@@ -1,6 +1,6 @@
 import { CrosshairBase } from './base';
 import { LINE_CROSSHAIR_DEFAULT_STYLE } from './constant';
-import { deepAssign, getShapeSpace, throttle, getStyleFromPrefixed } from '../../util';
+import { deepAssign, getShapeSpace, throttle } from '../../util';
 import type { LineCrosshairCfg, LineCrosshairOptions } from './types';
 import type { Point } from '../../types';
 
