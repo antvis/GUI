@@ -16,7 +16,6 @@ export const AxisArc = () => {
 
   createAxis({
     title: '极坐标系',
-    titleAlign: 'start',
     center: [150, 150],
     labelFormatter: (d: any, i: number) => (i % 5 === 0 ? i / 5 : ''),
   });
