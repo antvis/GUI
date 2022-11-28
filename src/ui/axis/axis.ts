@@ -72,7 +72,10 @@ export const Axis = createComponent<AxisStyleProps>(
       });
       /** grid */
       const axisGridGroup = select(container).maybeAppendByClassName(CLASS_NAMES.gridGroup, 'g');
-      ifShow(showGrid!, axisGridGroup, (group) => renderGrid(group, data, attributes, gridStyle));
+      axisGridGroup.node().removeChildren();
+      if (showGrid) {
+        renderGrid(axisGridGroup, data, attributes, gridStyle);
+      }
       /** main group */
       const axisMainGroup = select(container).maybeAppendByClassName(CLASS_NAMES.mainGroup, 'g');
 
