@@ -2,9 +2,9 @@ import { Group } from '@antv/g';
 import { Axis } from '../../../../src/ui/axis';
 import { data } from '../../utils';
 
-export const AxisArc = () => {
+export const AxisArcDirection18 = () => {
   const group = new Group({
-    name: '极坐标系',
+    name: '极坐标系-刻度朝内-标签在外-标签平行于刻度',
   });
 
   group.appendChild(
@@ -12,15 +12,15 @@ export const AxisArc = () => {
       style: {
         type: 'arc',
         radius: 80,
+        data: data(12),
+        lineLineWidth: 5,
+        tickLength: 10,
+        labelSpacing: 0,
         angleRange: [-90, 270],
         center: [150, 150],
-        title: '极坐标系',
-        titleSpacing: 10,
-        data: data(60),
-        lineLineWidth: 1,
-        tickLength: (d: any, i: number) => (i % 5 === 0 ? 10 : 5),
-        labelSpacing: 10,
-        labelFormatter: (d: any, i: number) => (i % 5 === 0 ? i / 5 : ''),
+        tickDirection: 'positive',
+        labelDirection: 'negative',
+        labelAlign: 'perpendicular',
       },
     })
   );

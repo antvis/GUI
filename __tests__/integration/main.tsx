@@ -1,7 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Renderer as SVGRenderer } from '@antv/g-svg';
-import { Select } from 'antd';
+import { Select, Tag } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import * as cases from './charts';
@@ -23,6 +23,7 @@ const View: React.FC = () => {
   const [renderer, setRenderer] = useState<Renderer>((searchParams.get('renderer') as Renderer) || 'svg');
   const [caseList, setCaseList] = useState<string[]>(casesName);
   const [currCase, setCurrCase] = useState(searchParams.get('case') || caseList[0]);
+  const [tags, setTags] = useState<string[]>([]);
 
   const getRenderer = useCallback(() => {
     return renderers[renderer];
@@ -31,11 +32,15 @@ const View: React.FC = () => {
   const renderCase = (name: string) => {
     if (!canvasRef.current || !casesName.includes(name)) return;
     canvasRef.current.removeChildren();
-    canvasRef.current.appendChild(cases[name]());
+    const node = cases[name]();
+    const title = node.name || name;
+    document.title = title;
+    setTags(title.split('-'));
+    canvasRef.current.appendChild(node);
   };
 
   const searchCase = (keyword: string) => {
-    setCaseList(Object.keys(cases).filter((name) => name.includes(keyword)));
+    setCaseList(Object.keys(cases).filter((name) => name.toLowerCase().includes(keyword.toLowerCase())));
   };
 
   const setSearch = (pair: { [key: string]: string }) => {
@@ -114,10 +119,15 @@ const View: React.FC = () => {
           <Option key={name}>{name}</Option>
         ))}
       </Select>
-      <Select value={renderer} onSelect={setRenderer} style={{ width: 140, marginLeft: 10 }}>
+      <Select value={renderer} onSelect={setRenderer} style={{ width: 140, margin: 10 }}>
         <Option value="svg">svg</Option>
         <Option value="canvas">canvas</Option>
       </Select>
+      <span>
+        {tags.map((tag) => (
+          <Tag key={tag}>{tag}</Tag>
+        ))}
+      </span>
       <div ref={containerRef}></div>
     </div>
   );
