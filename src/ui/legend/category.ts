@@ -30,7 +30,7 @@ export class Category extends GUI<CategoryStyleProps> {
           CLASS_NAMES.title,
           () => new Title({ style: { width, height, ...titleStyle } as TitleStyleProps })
         )
-        .call(applyStyle, titleStyle);
+        .update(titleStyle);
     });
   }
 
@@ -44,7 +44,7 @@ export class Category extends GUI<CategoryStyleProps> {
     this.itemsGroup = container.maybeAppendByClassName<Group>(CLASS_NAMES.itemsGroup, 'g').call(applyStyle, groupStyle);
     this.itemsGroup
       .maybeAppendByClassName(CLASS_NAMES.items, () => new CategoryItems({ style: itemStyle as CategoryStyleProps }))
-      .call(applyStyle, groupStyle);
+      .update(groupStyle);
 
     // cuz itemsStyle has callbackable parameters, so it can not passed by call applyStyle
     Object.entries(itemStyle).forEach(([k, v]) => this.itemsGroup.attr(k, v));

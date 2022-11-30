@@ -240,6 +240,7 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
     this.items = [];
     this.itemsCache.removeChildren();
     const itemEls = this.items;
+
     select(this.itemsCache)
       .selectAll(CLASS_NAMES.itemPage.class)
       .data(this.renderData)
@@ -287,7 +288,12 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
                 const { x, y, index, width, height } = layout;
                 const item = this.appendChild(items[index]);
                 set(item, '__data__', layout);
-                item.attr('x', x).attr('y', y).attr('width', width).attr('height', height);
+                item.update({
+                  x,
+                  y,
+                  width,
+                  height,
+                });
               });
             }),
         (update) => update,
@@ -304,18 +310,13 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
     const height = (this.pageViews.children[0] as Group)?.getBBox().height || 0;
 
     const shape = layout === 'grid' ? { pageWidth: width! - navWidth, pageHeight: height - navHeight } : {};
-    container.maybeAppendByClassName(
-      CLASS_NAMES.navigator,
-      () =>
-        new Navigator({
-          style: {
-            ...navStyle,
-            ...shape,
-            orient,
-            pageViews: this.pageViews.children as DisplayObject[],
-          },
-        })
-    );
+    const style = {
+      ...navStyle,
+      ...shape,
+      orient,
+      pageViews: this.pageViews.children as DisplayObject[],
+    };
+    container.maybeAppendByClassName(CLASS_NAMES.navigator, () => new Navigator({ style })).update(navStyle);
   }
 
   render(attributes: Required<CategoryItemsStyleProps>, container: Group) {

@@ -21,45 +21,6 @@ export const CategoryItems7 = () => {
     })
   );
 
-  // createItems({
-  //   x: 10,
-  //   y: 90,
-  //   width: 1000,
-  //   itemSpacing: [5, 10],
-  //   colPadding: 10,
-  //   itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-  // });
-
-  // createItems({
-  //   x: 10,
-  //   y: 130,
-  //   width: 1000,
-  //   colPadding: 10,
-  //   itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-  // });
-
-  // createItems({
-  //   x: 10,
-  //   y: 170,
-  //   colPadding: 10,
-  //   gridRow: 2,
-  //   gridCol: 5,
-  //   width: 650,
-  //   height: 50,
-  //   itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-  // });
-
-  // createItems({
-  //   x: 10,
-  //   y: 240,
-  //   colPadding: 10,
-  //   gridRow: 2,
-  //   gridCol: 2,
-  //   width: 650,
-  //   height: 50,
-  //   itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-  // });
-
   return group;
 };
 
