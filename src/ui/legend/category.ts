@@ -1,6 +1,6 @@
 import type { DisplayObjectConfig, Group } from '@antv/g';
 import { GUI } from '../../core/gui';
-import { applyStyle, deepAssign, subObject, subObjects, select, Selection, styleSeparator } from '../../util';
+import { ifShow, applyStyle, deepAssign, subObject, subObjects, select, Selection, styleSeparator } from '../../util';
 import type { TitleStyleProps } from '../title';
 import { Title } from '../title';
 import { CategoryItems } from './category/items';
@@ -11,7 +11,7 @@ export type { CategoryOptions };
 
 export class Category extends GUI<CategoryStyleProps> {
   constructor(config: DisplayObjectConfig<CategoryStyleProps>) {
-    super(deepAssign({}, { style: CATEGORY_DEFAULT_OPTIONS }, config));
+    super(deepAssign({}, CATEGORY_DEFAULT_OPTIONS, config));
   }
 
   private titleGroup!: Selection;
@@ -19,15 +19,19 @@ export class Category extends GUI<CategoryStyleProps> {
   private itemsGroup!: Selection;
 
   private renderTitle(container: Selection, width: number, height: number) {
+    const { showTitle } = this.attributes;
     const style = subObject(this.attributes, 'title') as TitleStyleProps;
     const [titleStyle, groupStyle] = styleSeparator(style);
     this.titleGroup = container.maybeAppendByClassName<Group>(CLASS_NAMES.titleGroup, 'g').call(applyStyle, groupStyle);
-    this.titleGroup
-      .maybeAppendByClassName(
-        CLASS_NAMES.title,
-        () => new Title({ style: { width, height, ...titleStyle } as TitleStyleProps })
-      )
-      .call(applyStyle, titleStyle);
+
+    ifShow(!!showTitle, this.titleGroup, (group) => {
+      group
+        .maybeAppendByClassName(
+          CLASS_NAMES.title,
+          () => new Title({ style: { width, height, ...titleStyle } as TitleStyleProps })
+        )
+        .call(applyStyle, titleStyle);
+    });
   }
 
   private renderItems(container: Selection, width: number, height: number) {
@@ -47,20 +51,29 @@ export class Category extends GUI<CategoryStyleProps> {
   }
 
   private adjustLayout() {
-    const { x, y } = this.titleGroup.select(CLASS_NAMES.title.class).node<Title>().getAvailableSpace();
-    this.itemsGroup.node().setLocalPosition(x, y);
+    const { showTitle } = this.attributes;
+    if (showTitle) {
+      const { x, y } = this.titleGroup.select(CLASS_NAMES.title.class).node<Title>().getAvailableSpace();
+      this.itemsGroup.node().setLocalPosition(x, y);
+    }
+  }
+
+  private get availableSpace(): [number, number] {
+    const { showTitle, width, height } = this.attributes;
+    if (!showTitle) return [width!, height!];
+    const { width: availableWidth, height: availableHeight } = (
+      this.titleGroup.select(CLASS_NAMES.title.class).node() as Title
+    ).getAvailableSpace();
+    return [availableWidth, availableHeight];
   }
 
   render(attributes: CategoryStyleProps, container: Group) {
     const { width, height } = attributes;
     const ctn = select(container);
-    this.renderTitle(ctn, width, height);
 
-    const { width: availableWidth, height: availableHeight } = (
-      this.titleGroup.select(CLASS_NAMES.title.class).node() as Title
-    ).getAvailableSpace();
+    this.renderTitle(ctn, width!, height!);
 
-    this.renderItems(ctn, +availableWidth, +availableHeight);
+    this.renderItems(ctn, ...this.availableSpace);
 
     this.adjustLayout();
   }

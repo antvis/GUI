@@ -3,9 +3,7 @@ import { Axis } from '../../../../src/ui/axis';
 import { data } from '../../utils';
 
 export const AxisArcBasis3 = () => {
-  const group = new Group({
-    name: '极坐标系-刻度朝外-标签在外',
-  });
+  const group = new Group();
 
   group.appendChild(
     new Axis({
@@ -27,3 +25,5 @@ export const AxisArcBasis3 = () => {
 
   return group;
 };
+
+AxisArcBasis3.tags = ['极坐标系', '刻度朝外', '标签在外'];

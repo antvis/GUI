@@ -1,4 +1,4 @@
-import { Canvas } from '@antv/g';
+import { Canvas, CanvasEvent } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Renderer as SVGRenderer } from '@antv/g-svg';
 import { Select, Tag } from 'antd';
@@ -20,6 +20,7 @@ const View: React.FC = () => {
   const canvasRef = useRef<Canvas>();
   const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(window.location.search);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [renderer, setRenderer] = useState<Renderer>((searchParams.get('renderer') as Renderer) || 'svg');
   const [caseList, setCaseList] = useState<string[]>(casesName);
   const [currCase, setCurrCase] = useState(searchParams.get('case') || caseList[0]);
@@ -33,9 +34,9 @@ const View: React.FC = () => {
     if (!canvasRef.current || !casesName.includes(name)) return;
     canvasRef.current.removeChildren();
     const node = cases[name]();
-    const title = node.name || name;
-    document.title = title;
-    setTags(title.split('-'));
+    const title = cases[name].tags || [name];
+    document.title = title.join('-');
+    setTags(title);
     canvasRef.current.appendChild(node);
   };
 
@@ -78,6 +79,10 @@ const View: React.FC = () => {
     });
   };
 
+  const onCanvasReady = () => {
+    setCanvasReady(true);
+  };
+
   useEffect(() => {
     // init canvas
     const canvas = new Canvas({
@@ -91,9 +96,10 @@ const View: React.FC = () => {
     connectToPlugins(canvas);
 
     window.addEventListener('keydown', onKeyDown);
+    canvas.addEventListener(CanvasEvent.READY, onCanvasReady);
 
     return () => {
-      // canvas.removeEventListener(CanvasEvent.READY, () => {});
+      canvas.removeEventListener(CanvasEvent.READY, onCanvasReady);
       window.removeEventListener('keydown', onKeyDown);
     };
   }, []);
@@ -107,10 +113,11 @@ const View: React.FC = () => {
   }, [renderer]);
 
   useEffect(() => {
+    if (!canvasReady) return;
     const caseToShow = currCase || caseList[0];
     setSearch({ case: caseToShow });
     renderCase(caseToShow);
-  }, [currCase]);
+  }, [currCase, canvasReady]);
 
   return (
     <div>

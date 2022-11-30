@@ -73,6 +73,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
       type,
       slidable,
       step,
+      showTitle,
       showHandle,
       showLabel,
       showIndicator,
@@ -90,6 +91,7 @@ export class Continuous extends GUI<ContinuousStyleProps> {
       CLASS_NAMES.title,
       () => new Title({ style: { width, height, ...titleStyle } })
     );
+    ifShow(showTitle, select(container), (group) => {});
 
     // @ts-ignore
     const { x, y, width: w, height: h } = titleEl.node().getAvailableSpace();
