@@ -16,7 +16,7 @@ export const Slider4 = () => {
     })
   );
 
-  slider.addEventListener('valueChange', (e) => {
+  slider.addEventListener('valueChange', (e: any) => {
     console.log('value change', e);
   });
 
