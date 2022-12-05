@@ -137,6 +137,22 @@ export function subObjects(style: any, prefix: string[]) {
 }
 
 /**
+ * add prefix to style
+ * @param style
+ * @param prefix
+ */
+export function prefixStyle(style: any, prefix: string) {
+  const _style: any = {};
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+  Object.keys(style).forEach((key) => {
+    _style[`${prefix}${capitalizeFirstLetter(key)}`] = style[key];
+  });
+  return _style;
+}
+
+/**
  * extract group style from mixin style
  * @param style
  * @returns shape style and rest style
