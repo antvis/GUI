@@ -4,7 +4,7 @@ import { Slider } from '../../../../src/ui/slider';
 export const Slider4 = () => {
   const group = new Group();
 
-  group.appendChild(
+  const slider = group.appendChild(
     new Slider({
       style: {
         x: 10,
@@ -15,6 +15,10 @@ export const Slider4 = () => {
       },
     })
   );
+
+  slider.addEventListener('valueChange', (e) => {
+    console.log('value change', e);
+  });
 
   return group;
 };

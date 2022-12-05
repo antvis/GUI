@@ -1,5 +1,5 @@
 import type { Cursor } from '@antv/g';
-import { Group, Rect, Text } from '@antv/g';
+import { Group, Rect, Text, CustomEvent } from '@antv/g';
 import { deepMix, noop } from '@antv/util';
 import { GUI } from '../../core/gui';
 import type { Selection } from '../../util';
@@ -389,13 +389,20 @@ export class Slider extends GUI<SliderStyleProps> {
       onSelectionMouseenter = noop,
       onSelectionMouseleave = noop,
     } = this.attributes;
-    const selection = this.selectionShape.node();
+    const selection = this.selectionShape;
     // 选区drag事件
-    selection.addEventListener('mousedown', this.onDragStart('selection'));
-    selection.addEventListener('touchstart', this.onDragStart('selection'));
+    selection.on('mousedown', this.onDragStart('selection'));
+    selection.on('touchstart', this.onDragStart('selection'));
     // 选区hover事件
-    selection.addEventListener('mouseenter', onSelectionMouseenter);
-    selection.addEventListener('mouseleave', onSelectionMouseleave);
+    this.dispatchEvent(new CustomEvent('selectionMouseenter'));
+    selection.on('mouseenter', () => {
+      onSelectionMouseenter(selection);
+      this.dispatchEvent(new CustomEvent('selectionMouseenter'));
+    });
+    selection.on('mouseleave', () => {
+      onSelectionMouseleave(selection);
+      this.dispatchEvent(new CustomEvent('selectionMouseleave'));
+    });
 
     const exceptHandleText = (target: any | null) => {
       return target && target.className !== '.handle-text';
@@ -410,12 +417,18 @@ export class Slider extends GUI<SliderStyleProps> {
         exceptHandleText(e.target) && this.onDragStart(type)(e);
       });
     });
-    const background = this.backgroundShape.node();
+    const background = this.backgroundShape;
     // Drag and brush
-    background.addEventListener('mousedown', this.onDragStart('background'));
-    background.addEventListener('touchstart', this.onDragStart('background'));
-    background.addEventListener('mouseenter', onBackgroundMouseenter);
-    background.addEventListener('mouseleave', onBackgroundMouseleave);
+    background.on('mousedown', this.onDragStart('background'));
+    background.on('touchstart', this.onDragStart('background'));
+    background.on('mouseenter', () => {
+      onBackgroundMouseenter(background);
+      this.dispatchEvent(new CustomEvent('backgroundMouseenter'));
+    });
+    background.on('mouseleave', () => {
+      onBackgroundMouseleave(background);
+      this.dispatchEvent(new CustomEvent('backgroundMouseleave'));
+    });
   }
 
   private onDragStart = (target: string) => (e: any) => {
@@ -473,5 +486,12 @@ export class Slider extends GUI<SliderStyleProps> {
   private onValueChange = (oldValue: [number, number]) => {
     const { onValueChange = noop } = this.attributes;
     onValueChange(this.getValues(), oldValue);
+    const evt = new CustomEvent('valueChange', {
+      detail: {
+        oldValue,
+        value: this.getValues(),
+      },
+    });
+    this.dispatchEvent(evt);
   };
 }
