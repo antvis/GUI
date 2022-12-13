@@ -2,7 +2,7 @@ import { Group } from '@antv/g';
 import { deepMix, substitute, isString, isElement } from '@antv/util';
 import { createDom } from '@antv/dom-util';
 import { GUI } from '../../core/gui';
-import { applyStyleSheet, parseHTML, throttle, uuid, ifShow } from '../../util';
+import { applyStyleSheet, parseHTML, throttle, ifShow } from '../../util';
 import { CLASS_NAME, TOOLTIP_STYLE } from './constant';
 import type { TooltipCfg, TooltipOptions, TooltipItem, TooltipPosition } from './types';
 
@@ -47,8 +47,6 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
       style: TOOLTIP_STYLE,
     },
   };
-
-  public readonly tooltipId = uuid();
 
   public get HTMLTooltipElement() {
     return this.element;
@@ -141,7 +139,7 @@ export class Tooltip extends GUI<Required<TooltipCfg>> {
   private initShape() {
     const { template } = this.attributes;
     this.element = createDom(template.container!) as HTMLElement;
-    this.element.setAttribute('id', this.id ?? this.tooltipId);
+    if (this.id) this.element.setAttribute('id', this.id);
   }
 
   /**
