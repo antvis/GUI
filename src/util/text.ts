@@ -17,7 +17,7 @@ export const measureTextWidth = memoize(
     if (!ctx) {
       ctx = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
     }
-    ctx!.font = [fontStyle, fontVariant, fontWeight, `${fontSize}px`, fontFamily].join(' ');
+    ctx!.font = [fontStyle, fontVariant, fontWeight, `${fontSize}px`, fontFamily].join(' ').trim();
     return ctx!.measureText(isString(text) ? text : '').width;
   },
   (text: any, font: Font = {}) => [text, ...values(font)].join('')
