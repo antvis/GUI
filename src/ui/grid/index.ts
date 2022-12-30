@@ -57,10 +57,11 @@ function renderGridLine(container: Group, items: GridCfg['items'], cfg: GridCfg,
       (enter) =>
         enter
           .append('path')
-
-          .style('stroke', '#D9D9D9')
-          .style('lineWidth', 1)
-          .style('lineDash', [4, 4])
+          .styles({
+            stroke: '#D9D9D9',
+            lineWidth: 1,
+            lineDash: [4, 4],
+          })
           .each(function ({ path }, idx) {
             this.attr({ ...style, path });
             applyStyle(this, idx, lines, { path, ...style });
