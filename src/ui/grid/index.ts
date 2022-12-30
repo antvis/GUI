@@ -63,13 +63,11 @@ function renderGridLine(container: Group, items: GridCfg['items'], cfg: GridCfg,
             lineDash: [4, 4],
           })
           .each(function ({ path }, idx) {
-            this.attr({ ...style, path });
             applyStyle(this, idx, lines, { path, ...style });
           })
           .attr('className', 'grid-line'),
       (update) =>
         update.each(function (style, idx) {
-          this.attr(style);
           applyStyle(this, idx, lines, style);
         }),
       (exit) => exit.remove()
@@ -97,13 +95,11 @@ function renderAlternateRegion(container: Group, items: GridCfg['items'], cfg: G
         enter
           .append('path')
           .each(function (style, idx) {
-            this.attr(style);
             applyStyle(this, idx, regions, style);
           })
           .attr('className', 'grid-region'),
       (update) =>
         update.each(function (style, idx) {
-          this.attr(style);
           applyStyle(this, idx, regions, style);
         }),
       (exit) => exit.remove()
