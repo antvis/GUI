@@ -1,17 +1,16 @@
-import type { FlexContainerConfig } from './types';
+import type { FlexContainerConfig, FlexLayoutConfig } from './types';
 import type { LayoutExecuter } from '../types';
 import { getItemsBBox } from '../utils';
 
-export const flex: LayoutExecuter = function (container, items, config) {
+export const flex: LayoutExecuter<FlexLayoutConfig> = function (container, children, config) {
   const { width, height } = container;
-  const { containerConfig, itemsConfig } = config;
   const {
     flexDirection = 'row',
     flexWrap = 'nowrap',
     justifyContent = 'flex-start',
     alignContent = 'flex-start',
     alignItems = 'flex-start',
-  } = containerConfig as FlexContainerConfig;
+  } = config;
 
   const isHorizontalFlow = flexDirection === 'row'; // || flexDirection === 'row-reverse';
   const isLeftToRightFlow = flexDirection === 'row' || flexDirection === 'column';
@@ -21,11 +20,11 @@ export const flex: LayoutExecuter = function (container, items, config) {
   const direction = isHorizontalFlow ? (isLeftToRightFlow ? [1, 0] : [-1, 0]) : isLeftToRightFlow ? [0, 1] : [0, -1];
 
   let [offsetX, offsetY] = [0, 0];
-  const itemsFromDirection = items.map((item) => {
-    const { width, height } = item;
+  const itemsFromDirection = children.map((child) => {
+    const { width, height } = child;
     const [x, y] = [offsetX, offsetY];
     [offsetX, offsetY] = [offsetX + width * direction[0], offsetY + height * direction[1]];
-    return { x, y, width, height };
+    return new DOMRect(x, y, width, height);
   });
 
   // flex wrap
@@ -45,11 +44,10 @@ export const flex: LayoutExecuter = function (container, items, config) {
   };
   const itemsFromJustifyContent = itemsFromDirection.map((item) => {
     const { x, y } = item;
-    return {
-      ...item,
-      x: isHorizontalFlow ? x + justifyContentOffset[justifyContent] : x,
-      y: isHorizontalFlow ? y : y + justifyContentOffset[justifyContent],
-    };
+    const itemBox = DOMRect.fromRect(item);
+    itemBox.x = isHorizontalFlow ? x + justifyContentOffset[justifyContent] : x;
+    itemBox.y = isHorizontalFlow ? y : y + justifyContentOffset[justifyContent];
+    return itemBox;
   });
 
   // align items
@@ -64,11 +62,10 @@ export const flex: LayoutExecuter = function (container, items, config) {
   };
   const itemsFromAlignItems = itemsFromJustifyContent.map((item) => {
     const { x, y } = item;
-    return {
-      ...item,
-      x: isHorizontalFlow ? x : x + alignItemsOffset[alignItems],
-      y: isHorizontalFlow ? y + alignItemsOffset[alignItems] : y,
-    };
+    const itemBox = DOMRect.fromRect(item);
+    itemBox.x = isHorizontalFlow ? x : x + alignItemsOffset[alignItems];
+    itemBox.y = isHorizontalFlow ? y + alignItemsOffset[alignItems] : y;
+    return itemBox;
   });
 
   return itemsFromAlignItems;
