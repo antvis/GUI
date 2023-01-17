@@ -1,11 +1,4 @@
-import {
-  Group,
-  ElementEvent,
-  type GroupStyleProps,
-  type DisplayObjectConfig,
-  type MutationEvent,
-  type DisplayObject,
-} from '@antv/g';
+import { Group, ElementEvent, type GroupStyleProps, type DisplayObjectConfig, type DisplayObject } from '@antv/g';
 import { SeriesAttr, NormalSeriesAttr, normalSeriesAttr } from '../../util/series';
 import { throttle } from '../../util';
 import { type LayoutElementConfig, calcLayout } from '../../util/layout';
@@ -19,7 +12,9 @@ export type BoxStyleProps = GroupStyleProps &
     padding?: SeriesAttr;
   };
 
-export class ContentBoxLite extends Group {
+export class Layout extends Group {
+  private layoutEvents: ElementEvent[] = [ElementEvent.INSERTED, ElementEvent.REMOVED, ElementEvent.BOUNDS_CHANGED];
+
   private $margin: NormalSeriesAttr = normalSeriesAttr(0);
 
   private $padding: NormalSeriesAttr = normalSeriesAttr(0);
@@ -73,7 +68,7 @@ export class ContentBoxLite extends Group {
   layout() {
     if (!this.attributes.display) return;
     this.children.forEach((child) => {
-      (child as ContentBoxLite).layout?.();
+      (child as Layout).layout?.();
     });
     const bboxes = calcLayout(
       this.getAvailableSpace(),
@@ -87,13 +82,13 @@ export class ContentBoxLite extends Group {
   }
 
   bindEvents() {
-    this.addEventListener(ElementEvent.INSERTED, this.layout);
-    this.addEventListener(ElementEvent.REMOVED, this.layout);
+    this.layoutEvents.forEach((event) => {
+      this.addEventListener(event, this.layout);
+    });
   }
 
   destroy() {
-    this.removeEventListener(ElementEvent.INSERTED, this.layout);
-    this.removeEventListener(ElementEvent.REMOVED, this.layout);
+    this.removeAllEventListeners();
   }
 
   attributeChangedCallback(name: string, value: any, oldValue: any) {

@@ -1,12 +1,12 @@
 import { Group, Rect } from '@antv/g';
-import { ContentBoxLite } from '../../../../src/ui/layout';
+import { Layout } from '../../../../src/ui/layout';
 import { createGrid } from '../../utils';
 
 export const LayoutFlexDirectionRow = () => {
   const group = new Group();
   createGrid(group, 100);
   const box = group.appendChild(
-    new ContentBoxLite({
+    new Layout({
       style: {
         width: 100,
         height: 100,

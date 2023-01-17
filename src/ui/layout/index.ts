@@ -1,1 +1,1 @@
-export { ContentBoxLite } from './box';
+export { Layout } from './layout';
