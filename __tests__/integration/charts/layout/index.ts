@@ -15,3 +15,5 @@ export { LayoutFlexPositionTopRight } from './layout-flex-position-top-right';
 export { LayoutFlexPositionBottomLeft } from './layout-flex-position-bottom-left';
 export { LayoutFlexPositionBottomRight } from './layout-flex-position-bottom-right';
 export { LayoutFlexPositionCenter } from './layout-flex-position-center';
+export { LayoutFlexManipulateChildren } from './layout-flex-manipulate-children';
+export { LayoutFlexUpdateLayout } from './layout-flex-update-layout';

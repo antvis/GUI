@@ -1,7 +1,14 @@
-import { Group, ElementEvent, type GroupStyleProps, type DisplayObjectConfig, type DisplayObject } from '@antv/g';
-import { SeriesAttr, NormalSeriesAttr, normalSeriesAttr } from '../../util/series';
-import { throttle } from '../../util';
-import { type LayoutElementConfig, calcLayout } from '../../util/layout';
+import {
+  ElementEvent,
+  FederatedEvent,
+  Group,
+  type DisplayObject,
+  type DisplayObjectConfig,
+  type GroupStyleProps,
+  type INode,
+} from '@antv/g';
+import { calcLayout, type LayoutElementConfig } from '../../util/layout';
+import { NormalSeriesAttr, normalSeriesAttr, SeriesAttr } from '../../util/series';
 
 export type BoxStyleProps = GroupStyleProps &
   LayoutElementConfig & {
@@ -13,7 +20,7 @@ export type BoxStyleProps = GroupStyleProps &
   };
 
 export class Layout extends Group {
-  private layoutEvents: ElementEvent[] = [ElementEvent.INSERTED, ElementEvent.REMOVED, ElementEvent.BOUNDS_CHANGED];
+  private layoutEvents: ElementEvent[] = [ElementEvent.BOUNDS_CHANGED, ElementEvent.INSERTED, ElementEvent.REMOVED];
 
   private $margin: NormalSeriesAttr = normalSeriesAttr(0);
 
@@ -46,6 +53,12 @@ export class Layout extends Group {
     );
   }
 
+  public appendChild<T extends INode>(child: T, index?: number): T {
+    (child as unknown as DisplayObject).isMutationObserved = true;
+    super.appendChild(child, index);
+    return child;
+  }
+
   public getAvailableSpace() {
     const { x = 0, y = 0, width, height } = this.attributes;
     const [paddingTop, paddingRight, paddingBottom, paddingLeft] = this.$padding;
@@ -62,9 +75,11 @@ export class Layout extends Group {
     const { margin = 0, padding = 0 } = cfg.style || {};
     this.margin = margin;
     this.padding = padding;
+
+    this.isMutationObserved = true;
+    this.bindEvents();
   }
 
-  @throttle(16, true)
   layout() {
     if (!this.attributes.display) return;
     this.children.forEach((child) => {
@@ -83,7 +98,10 @@ export class Layout extends Group {
 
   bindEvents() {
     this.layoutEvents.forEach((event) => {
-      this.addEventListener(event, this.layout);
+      this.addEventListener(event, (e: FederatedEvent) => {
+        (e.target as DisplayObject).isMutationObserved = true;
+        this.layout();
+      });
     });
   }
 

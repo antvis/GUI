@@ -53,18 +53,27 @@ export const flex: LayoutExecuter<FlexLayoutConfig> = function (container, child
   // align items
   // flex-start, flex-end, center
   const itemsForAlignItemsBBox = getItemsBBox(itemsFromJustifyContent);
-  const alignItemsOffset = {
-    'flex-start': 0,
-    'flex-end': isHorizontalFlow ? height - itemsForAlignItemsBBox.height : width - itemsForAlignItemsBBox.width,
-    center: isHorizontalFlow
-      ? (height - itemsForAlignItemsBBox.height) / 2
-      : (width - itemsForAlignItemsBBox.width) / 2,
+
+  const calcAlignItemsOffset = (box: DOMRect) => {
+    const [key, size] = isHorizontalFlow ? ['height', height] : ['width', width];
+
+    switch (alignItems) {
+      case 'flex-start':
+        return 0;
+      case 'flex-end':
+        return size - box[key as 'width' | 'height'];
+      case 'center':
+        return size / 2 - box[key as 'width' | 'height'] / 2;
+      default:
+        return 0;
+    }
   };
+
   const itemsFromAlignItems = itemsFromJustifyContent.map((item) => {
     const { x, y } = item;
     const itemBox = DOMRect.fromRect(item);
-    itemBox.x = isHorizontalFlow ? x : x + alignItemsOffset[alignItems];
-    itemBox.y = isHorizontalFlow ? y + alignItemsOffset[alignItems] : y;
+    itemBox.x = isHorizontalFlow ? x : x + calcAlignItemsOffset(itemBox);
+    itemBox.y = isHorizontalFlow ? y + calcAlignItemsOffset(itemBox) : y;
     return itemBox;
   });
 
