@@ -1,6 +1,6 @@
-import type { FlexContainerConfig, FlexLayoutConfig } from './types';
 import type { LayoutExecuter } from '../types';
 import { getItemsBBox } from '../utils';
+import type { FlexLayoutConfig } from './types';
 
 export const flex: LayoutExecuter<FlexLayoutConfig> = function (container, children, config) {
   const { width, height } = container;
@@ -77,5 +77,12 @@ export const flex: LayoutExecuter<FlexLayoutConfig> = function (container, child
     return itemBox;
   });
 
-  return itemsFromAlignItems;
+  const finalItems = itemsFromAlignItems.map((item) => {
+    const itemBox = DOMRect.fromRect(item);
+    itemBox.x += container.x ?? 0;
+    itemBox.y += container.y ?? 0;
+    return itemBox;
+  });
+
+  return finalItems;
 };

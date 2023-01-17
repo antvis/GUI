@@ -60,11 +60,12 @@ export class Layout extends Group {
   }
 
   public getAvailableSpace() {
-    const { x = 0, y = 0, width, height } = this.attributes;
+    const { width, height } = this.attributes;
     const [paddingTop, paddingRight, paddingBottom, paddingLeft] = this.$padding;
+    const [marginTop, , , marginLeft] = this.$margin;
     return new DOMRect(
-      x + paddingLeft,
-      y + paddingTop,
+      paddingLeft + marginLeft,
+      paddingTop + marginTop,
       width - paddingLeft - paddingRight,
       height - paddingTop - paddingBottom
     );
@@ -82,14 +83,16 @@ export class Layout extends Group {
 
   layout() {
     if (!this.attributes.display) return;
-    this.children.forEach((child) => {
-      (child as Layout).layout?.();
-    });
+    // this.children.forEach((child) => {
+    //   (child as Layout).layout?.();
+    // });
+
     const bboxes = calcLayout(
       this.getAvailableSpace(),
       this.children.map((child) => (child as DisplayObject).getBBox()),
       this.attributes
     );
+
     this.children.forEach((child, index) => {
       const { x, y } = bboxes[index];
       (child as DisplayObject).attr({ x, y });

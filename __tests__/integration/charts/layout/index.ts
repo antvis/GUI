@@ -17,3 +17,4 @@ export { LayoutFlexPositionBottomRight } from './layout-flex-position-bottom-rig
 export { LayoutFlexPositionCenter } from './layout-flex-position-center';
 export { LayoutFlexManipulateChildren } from './layout-flex-manipulate-children';
 export { LayoutFlexUpdateLayout } from './layout-flex-update-layout';
+export { LayoutFlexNest } from './layout-flex-nest';
