@@ -13,7 +13,7 @@ export const LayoutFlexUpdateLayout = () => {
 
   const [width, height] = [100, 100];
 
-  const createLayout = (flexDirection, justifyContent, alignItems, position) => {
+  const createLayout = (flexDirection: any, justifyContent: any, alignItems: any, position: any) => {
     const box = group.appendChild(
       new Layout({
         style: {
