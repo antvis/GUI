@@ -14,6 +14,19 @@ export const LayoutFlexUpdateLayout = () => {
   const [width, height] = [100, 100];
 
   const createLayout = (flexDirection: any, justifyContent: any, alignItems: any, position: any) => {
+    group.appendChild(
+      new Rect({
+        style: {
+          x: position.x,
+          y: position.y,
+          width,
+          height,
+          strokeWidth: 2,
+          stroke: 'orange',
+        },
+      })
+    );
+
     const box = group.appendChild(
       new Layout({
         style: {
