@@ -48,8 +48,6 @@ export type CategoryItemsStyleProps = GroupStyleProps &
   PrefixedStyle<NavigatorStyleProps, 'nav'> &
   PrefixedStyle<CallbackableItemStyle, 'item'>;
 
-const b: PrefixedStyle<CallbackableItemStyle, 'item'> = {};
-
 type ItemLayout = {
   page: number;
   index: number;

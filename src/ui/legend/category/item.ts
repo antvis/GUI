@@ -49,10 +49,6 @@ export type CategoryItemCfg = GroupStyleProps & {
 
 export type CategoryItemStyleProps = CategoryItemStyle & CategoryItemCfg & CategoryItemData;
 
-const c: CategoryItemStyleProps = {
-  markerFill: 'red',
-};
-
 export type CategoryItemOptions = DisplayObjectConfig<CategoryItemStyleProps>;
 
 const CLASS_NAMES = classNames(
