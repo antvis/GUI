@@ -1,17 +1,17 @@
 import { Group, Rect } from '@antv/g';
 import { Continuous } from './utils';
 
-export const Continuous4 = () => {
+export const Continuous5 = () => {
   const group = new Group({
     style: {
-      width: 805,
-      height: 505,
+      width: 685,
+      height: 805,
     },
   });
 
   const shape = {
-    width: 400,
-    height: 80,
+    width: 110,
+    height: 400,
   };
 
   const conditions = [
@@ -30,8 +30,9 @@ export const Continuous4 = () => {
   ];
 
   conditions.forEach((con, i) => {
-    const x = Math.floor(i / 6) * (shape.width + 5);
-    const y = (i % 6) * (shape.height + 5);
+    const y = Math.floor(i / 6) * (shape.height + 5);
+    const x = (i % 6) * (shape.width + 5);
+
     group.appendChild(
       new Rect({
         style: {
@@ -49,13 +50,13 @@ export const Continuous4 = () => {
           y,
           block: true,
           data: new Array(10).fill(0).map((d, i) => ({ value: i * 100 })),
-          labelSpacing: 10,
-          labelFontSize: 10,
-          labelTickLength: 30,
-          labelTickStroke: 'red',
-          handleMarkerSize: 20,
-          handleFormatter: (str: any) => `${str}°C`,
           ...shape,
+          orient: 'vertical',
+          showLabel: true,
+          labelSpacing: 10,
+          labelAlign: 'value',
+          handleMarkerSize: 30,
+          handleFormatter: () => '',
           ...con,
         },
       })
@@ -65,4 +66,4 @@ export const Continuous4 = () => {
   return group;
 };
 
-Continuous4.tags = ['图例', '连续图例', '分块'];
+Continuous5.tags = ['图例', '连续图例', '分块', '垂直'];

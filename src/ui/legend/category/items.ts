@@ -48,6 +48,8 @@ export type CategoryItemsStyleProps = GroupStyleProps &
   PrefixedStyle<NavigatorStyleProps, 'nav'> &
   PrefixedStyle<CallbackableItemStyle, 'item'>;
 
+const b: PrefixedStyle<CallbackableItemStyle, 'item'> = {};
+
 type ItemLayout = {
   page: number;
   index: number;
@@ -289,12 +291,9 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
       layouts,
     }));
     const categoryItems = [...this.navigator.getContainer().children] as CategoryItem[];
+
     itemsLayouts.forEach(({ layouts }) => {
-      const page = this.pageViews.appendChild(
-        new Group({
-          className: CLASS_NAMES.page.name,
-        })
-      );
+      const page = this.pageViews.appendChild(new Group({ className: CLASS_NAMES.page.name }));
       layouts.forEach((layout) => {
         const { x, y, index, width, height } = layout;
         const item = categoryItems[index];
@@ -320,6 +319,10 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
       .update(style)
       .node();
     return this.navigator;
+  }
+
+  public getBBox(): DOMRect {
+    return this.navigator.getBBox();
   }
 
   render(attributes: Required<CategoryItemsStyleProps>, container: Group) {
