@@ -1,29 +1,33 @@
-export const BBox = class BBox {
-  x = 0;
+export class BBox {
+  public x = 0;
 
-  y = 0;
+  public y = 0;
 
-  width = 0;
+  public width = 0;
 
-  height = 0;
+  public height = 0;
 
-  bottom = 0;
+  public get bottom() {
+    return this.y + this.height;
+  }
 
-  left = 0;
+  public get left() {
+    return this.x;
+  }
 
-  right = 0;
+  public get right() {
+    return this.x + this.width;
+  }
 
-  top = 0;
+  public get top() {
+    return this.y;
+  }
 
   constructor(x = 0, y = 0, width = 0, height = 0) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    this.top = y;
-    this.left = x;
-    this.right = x + width;
-    this.bottom = y + height;
   }
 
   static fromRect(other: DOMRect) {
@@ -33,4 +37,4 @@ export const BBox = class BBox {
   toJSON() {
     return JSON.stringify(this);
   }
-};
+}
