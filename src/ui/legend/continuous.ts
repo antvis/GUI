@@ -84,21 +84,19 @@ export class Continuous extends GUI<ContinuousStyleProps> {
 
     /** label */
     const { showLabel } = attributes;
-    const labelGroup = select(container)
-      .maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g')
-      .styles({ x, y, zIndex: 1 });
+
+    /** content */
+    const contentGroup = select(container).maybeAppendByClassName(CLASS_NAMES.contentGroup, 'g').styles({ x, y });
+
+    const labelGroup = contentGroup.maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g').styles({ zIndex: 1 });
     ifShow(!!showLabel, labelGroup, (group) => {
       this.renderLabel(group);
     });
 
-    /** content */
-    const contentGroup = select(container).maybeAppendByClassName(CLASS_NAMES.contentGroup, 'g').styles({ x, y });
     const ribbonGroup = contentGroup.maybeAppendByClassName(CLASS_NAMES.ribbonGroup, 'g');
 
     /** handle */
-    this.handlesGroup = select(container)
-      .maybeAppendByClassName(CLASS_NAMES.handlesGroup, 'g')
-      .styles({ x, y, zIndex: 2 });
+    this.handlesGroup = contentGroup.maybeAppendByClassName(CLASS_NAMES.handlesGroup, 'g').styles({ zIndex: 2 });
     this.renderHandles();
 
     /** ribbon */
