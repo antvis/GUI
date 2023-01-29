@@ -35,6 +35,15 @@ export class BBox {
   }
 
   toJSON() {
-    return JSON.stringify(this);
+    return {
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      top: this.top,
+      right: this.right,
+      bottom: this.bottom,
+      left: this.left,
+    };
   }
 }
