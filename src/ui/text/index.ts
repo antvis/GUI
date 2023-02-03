@@ -255,7 +255,7 @@ export class Text extends GUI<Required<TextCfg>> {
     this.clear();
     this.backgroundShape.attr(this.backgroundCfg);
     this.textShape.attr(this.textCfg);
-    this.layout();
+    this.itemLayout();
     this.decorationGroup.removeChildren();
     this.decorationCfg.forEach((cfg) => {
       this.decorationGroup.appendChild(new Decoration({ style: cfg }));
@@ -311,7 +311,7 @@ export class Text extends GUI<Required<TextCfg>> {
     this.textShape.attr({ y: yOffset });
   }
 
-  private layout() {
+  private itemLayout() {
     this.adjustTextAlign();
     this.adjustVerticalAlign();
     this.overflow();

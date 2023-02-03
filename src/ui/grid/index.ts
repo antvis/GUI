@@ -145,6 +145,10 @@ function dataFormatter(data: GridStyleProps['items'], cfg: GridStyleProps) {
 }
 
 export class Grid extends GUI<GridStyleProps> {
+  defaultOptions() {
+    return {};
+  }
+
   render(attributes: GridStyleProps, container: Group) {
     // @ts-ignore do no passBy className
     const { class: className, items = [], animate, type, center, areaFill, closed, ...style } = attributes;

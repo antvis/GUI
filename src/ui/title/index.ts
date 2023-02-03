@@ -6,19 +6,6 @@ import type { TitleOptions, TitleStyleProps } from './types';
 
 export type { TitleOptions, TitleStyleProps };
 
-const DEFAULT_TITLE_CFG: Partial<TitleStyleProps> = {
-  text: '',
-  width: 0,
-  height: 0,
-  fill: '#4a505a',
-  fontWeight: 'bold',
-  fontSize: 12,
-  fontFamily: 'sans-serif',
-  inset: 0,
-  spacing: 0,
-  position: 'top-left',
-};
-
 const CLASS_NAMES = classNames(
   {
     text: 'text',
@@ -112,9 +99,26 @@ function getTitleLayout(cfg: TitleStyleProps) {
 export class Title extends GUI<TitleStyleProps> {
   private title!: Text;
 
-  constructor(options: TitleOptions = {}) {
-    super(deepAssign({}, { style: DEFAULT_TITLE_CFG }, options));
+  public defaultOptions() {
+    return {
+      style: {
+        text: '',
+        width: 0,
+        height: 0,
+        fill: '#4a505a',
+        fontWeight: 'bold',
+        fontSize: 12,
+        fontFamily: 'sans-serif',
+        inset: 0,
+        spacing: 0,
+        position: 'top-left',
+      },
+    };
   }
+
+  // constructor(options: TitleOptions = {}) {
+  //   super(deepAssign({}, { style: DEFAULT_TITLE_CFG }, options));
+  // }
 
   public getAvailableSpace(): DOMRect {
     const container = this;
