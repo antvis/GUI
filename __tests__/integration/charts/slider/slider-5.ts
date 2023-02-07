@@ -6,6 +6,13 @@ export const Slider5 = () => {
 
   group.appendChild(
     new Slider({
+      data: {
+        sparklineData: [
+          [10, 2, 3, 4, 15, 10, 5, 0, 3, 1],
+          [5, 7, 10, 3, 10, 6, 10, 1, 5, 0],
+          [1, 3, 4, 10, 15, 13, 3, 3, 10, 12],
+        ],
+      },
       style: {
         x: 10,
         y: 10,
@@ -14,11 +21,6 @@ export const Slider5 = () => {
         sparklineType: 'line',
         sparklineSmooth: false,
         sparklineIsStack: true,
-        sparklineData: [
-          [10, 2, 3, 4, 15, 10, 5, 0, 3, 1],
-          [5, 7, 10, 3, 10, 6, 10, 1, 5, 0],
-          [1, 3, 4, 10, 15, 13, 3, 3, 10, 12],
-        ],
       },
     })
   );

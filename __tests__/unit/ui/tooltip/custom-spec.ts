@@ -49,6 +49,11 @@ const innerCanvas = new Canvas({
   renderer,
 });
 const sparkline = new Sparkline({
+  data: [
+    [10, 2, 3, 4, 15, 10, 5, 0, 3, 1],
+    [5, 7, 10, 3, 10, 6, 10, 1, 5, 0],
+    [-10, 3, 4, 10, 15, 13, 3, 3, 0, 12],
+  ],
   style: {
     x: 0,
     y: 0,
@@ -56,11 +61,6 @@ const sparkline = new Sparkline({
     height: 50,
     type: 'line',
     smooth: true,
-    data: [
-      [10, 2, 3, 4, 15, 10, 5, 0, 3, 1],
-      [5, 7, 10, 3, 10, 6, 10, 1, 5, 0],
-      [-10, 3, 4, 10, 15, 13, 3, 3, 0, 12],
-    ],
   },
 });
 innerCanvas.appendChild(sparkline);

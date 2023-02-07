@@ -17,6 +17,11 @@ export type PrefixedStyle<T extends { [key: string]: any }, P extends string> = 
   [K in Extract<T, 'filter'> as `${P}Filtrate`]?: T['filter'];
 };
 
+type a = { data: number; style: {} };
+type b = { data: string; style: {} };
+type c = a | b;
+export type PrefixedOptions<> = {};
+
 export type ExtendDisplayObject = string | number | DisplayObject;
 
 export type Callbackable<T, P extends any[]> = T | ((...args: P) => T);

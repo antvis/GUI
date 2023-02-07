@@ -1,18 +1,8 @@
-import { Group, type DisplayObject, type DisplayObjectConfig, type GroupStyleProps, CustomEvent } from '@antv/g';
+import { CustomEvent, Group, type DisplayObject, type DisplayObjectConfig, type GroupStyleProps } from '@antv/g';
 import { noop, set } from '@antv/util';
 import { GUI } from '../../../core/gui';
 import type { CallbackableObject, CallbackParameter, PrefixedStyle } from '../../../types';
-import {
-  classNames,
-  deepAssign,
-  filterTransform,
-  getCallbackValue,
-  groupBy,
-  SeriesAttr,
-  select,
-  Selection,
-  subObject,
-} from '../../../util';
+import { classNames, getCallbackValue, groupBy, select, Selection, SeriesAttr, subObject } from '../../../util';
 import { Navigator, type NavigatorStyleProps } from '../../navigator';
 import { ifHorizontal } from '../utils';
 import { CategoryItem, type CategoryItemData, type CategoryItemStyleProps } from './item';
@@ -21,32 +11,33 @@ interface CategoryItemsDatum extends CategoryItemData {
   [keys: string]: any;
 }
 
-interface CategoryItemsCfg {
-  orient?: 'horizontal' | 'vertical';
-  data: CategoryItemsDatum[];
-  layout?: 'flex' | 'grid';
-  width?: number;
-  height?: number;
-  gridRow?: number;
-  gridCol?: number;
-  // maxItemWidth?: number;
-  padding?: SeriesAttr;
-  rowPadding?: number;
-  colPadding?: number;
-  click?: (el: Selection) => void;
-  mouseenter?: (el: Selection) => void;
-  mouseleave?: (el: Selection) => void;
-}
-
 type CallbackableItemStyle = CallbackableObject<
   Omit<CategoryItemStyleProps, 'width' | 'height'>,
   CallbackParameter<CategoryItemsDatum>
 >;
 
 export type CategoryItemsStyleProps = GroupStyleProps &
-  CategoryItemsCfg &
   PrefixedStyle<NavigatorStyleProps, 'nav'> &
   PrefixedStyle<CallbackableItemStyle, 'item'>;
+
+export interface CategoryItemsOptions extends DisplayObjectConfig<CategoryItemsStyleProps> {
+  data: CategoryItemsDatum[];
+  events: {
+    click?: (el: Selection) => void;
+    mouseenter?: (el: Selection) => void;
+    mouseleave?: (el: Selection) => void;
+  };
+  layout: {
+    orient?: 'horizontal' | 'vertical';
+    layout?: 'flex' | 'grid';
+    gridRow?: number;
+    gridCol?: number;
+    // maxItemWidth?: number;
+    padding?: SeriesAttr;
+    rowPadding?: number;
+    colPadding?: number;
+  };
+}
 
 type ItemLayout = {
   page: number;
@@ -68,22 +59,6 @@ const CLASS_NAMES = classNames(
   'items'
 );
 
-const CATEGORY_ITEMS_DEFAULT_CFG: CategoryItemsStyleProps = {
-  data: [],
-  gridRow: Infinity,
-  gridCol: undefined,
-  padding: 0,
-  width: 1000,
-  height: 100,
-  rowPadding: 0,
-  colPadding: 0,
-  layout: 'flex',
-  orient: 'horizontal',
-  click: noop,
-  mouseenter: noop,
-  mouseleave: noop,
-};
-
 /**
  * if value exists, it need to follow rule, otherwise, return default value
  * @param value
@@ -98,9 +73,27 @@ const ifSatisfied = <T>(value: T, rule: (val: T) => boolean, defaultValue = true
   return defaultValue;
 };
 
-export class CategoryItems extends GUI<CategoryItemsStyleProps> {
-  constructor(config: DisplayObjectConfig<CategoryItemsStyleProps>) {
-    super(deepAssign({}, { style: CATEGORY_ITEMS_DEFAULT_CFG }, config));
+export class CategoryItems extends GUI<CategoryItemsOptions> {
+  public defaultOptions() {
+    return {
+      data: [],
+      layout: {
+        gridRow: Infinity,
+        gridCol: undefined,
+        padding: 0,
+        rowPadding: 0,
+        colPadding: 0,
+        layout: 'flex',
+        orient: 'horizontal',
+      },
+      style: {
+        width: 1000,
+        height: 100,
+        click: noop,
+        mouseenter: noop,
+        mouseleave: noop,
+      },
+    };
   }
 
   private navigator!: Navigator;
@@ -112,7 +105,8 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
   }
 
   private get grid(): [number, number] {
-    const { gridRow, gridCol, data } = this.attributes;
+    const { gridRow, gridCol } = this.layout;
+    const { data } = this;
     if (!gridRow && !gridCol) throw new Error('gridRow and gridCol can not be set null at the same time');
     if (!!gridRow && !!gridCol) return [gridRow, gridCol];
     if (gridRow) return [gridRow, data.length];
@@ -120,16 +114,15 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
   }
 
   private get renderData() {
-    const { data, layout } = this.attributes;
     const style = subObject(this.attributes, 'item');
-
+    const { data } = this;
     const d = data.map((datum, index) => {
       const { id = index as number, label, value } = datum;
       return {
         id: `${id}`,
         index,
         style: {
-          layout,
+          layout: this.layout,
           label,
           value,
           ...Object.fromEntries(
@@ -142,7 +135,8 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
   }
 
   private getGridLayout() {
-    const { orient, width, rowPadding, colPadding } = this.attributes as Required<CategoryItemsStyleProps>;
+    const { orient, rowPadding, colPadding } = this.layout;
+    const { width } = this.attributes;
     const [navWidth] = this.navigatorShape;
     const [gridRow, gridCol] = this.grid;
     const pageSize = gridCol * gridRow;
@@ -175,16 +169,12 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
   }
 
   private getFlexLayout(): ItemLayout[] {
-    const {
-      width: maxWidth,
-      height: maxHeight,
-      rowPadding,
-      colPadding: cP,
-    } = this.attributes as Required<CategoryItemsStyleProps>;
+    const { rowPadding, colPadding: cP } = this.layout;
+    const { width: maxWidth, height: maxHeight } = this.attributes as Required<CategoryItemsStyleProps>;
     const [navWidth] = this.navigatorShape;
     const [gridRow, gridCol] = this.grid;
 
-    const [limitWidth, limitHeight] = [maxWidth - navWidth, maxHeight];
+    const [limitWidth, limitHeight] = [+maxWidth - navWidth, maxHeight];
     let [x, y, page, pageIndex, col, row, prevWidth, prevHeight] = [0, 0, 0, 0, 0, 0, 0, 0];
 
     return (this.pageViews.children as CategoryItem[]).map((item, index) => {
@@ -320,7 +310,7 @@ export class CategoryItems extends GUI<CategoryItemsStyleProps> {
     return this.navigator.getBBox();
   }
 
-  render(attributes: Required<CategoryItemsStyleProps>, container: Group) {
+  render(attributes: CategoryItemsOptions, container: Group) {
     const { data } = this.attributes;
     if (!data || data.length === 0) return;
     /**

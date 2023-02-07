@@ -35,11 +35,12 @@ interface ColumnStyleProps
 
 export type SparklineStyleProps = GroupStyleProps & {
   type: 'line' | 'column';
-  data?: number[] | number[][];
   isStack?: boolean;
   range?: [number, number];
   color?: string | string[] | ((idx: number) => string);
 } & LineStyleProps &
   ColumnStyleProps;
 
-export type SparklineOptions = DisplayObjectConfig<SparklineStyleProps>;
+export interface SparklineOptions extends DisplayObjectConfig<SparklineStyleProps> {
+  data?: number[] | number[][];
+}

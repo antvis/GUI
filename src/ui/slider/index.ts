@@ -12,6 +12,7 @@ import {
   toPrecision,
   transition,
   type Selection,
+  deepAssign,
 } from '../../util';
 import { Sparkline, type SparklineStyleProps } from '../sparkline';
 import { HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
@@ -22,44 +23,47 @@ export type { SliderStyleProps, SliderOptions };
 
 type HandleType = 'start' | 'end';
 
-export class Slider extends GUI<SliderStyleProps> {
+export class Slider extends GUI<SliderOptions> {
   public static tag = 'slider';
 
-  private static defaultOptions = {
-    style: {
-      values: [0, 1],
-      trackLength: 200,
-      trackSize: 20,
-      slidable: true,
-      brushable: true,
-      scrollable: true,
-      orient: 'horizontal',
-      trackZIndex: -1,
-      trackFill: '#416180',
-      trackOpacity: 0.05,
-      selectionCursor: 'move',
-      selectionZIndex: 2,
-      selectionFill: '#5B8FF9',
-      selectionFillOpacity: 0.45,
-      sparklinePadding: 1,
-      padding: 0,
-      showHandle: true,
-      showLabel: true,
-      handleSpacing: 2,
-      formatter: (val: string) => val,
-      ...superObject(HANDLE_DEFAULT_CFG, 'handle'),
-      ...superObject(HANDLE_ICON_DEFAULT_CFG, 'handleIcon'),
-      ...superObject(HANDLE_LABEL_DEFAULT_CFG, 'handleLabel'),
-    } as SliderStyleProps,
-  };
+  public defaultOptions() {
+    return {
+      animation: { duration: 100, fill: 'both' },
+      style: {
+        values: [0, 1],
+        trackLength: 200,
+        trackSize: 20,
+        slidable: true,
+        brushable: true,
+        scrollable: true,
+        orient: 'horizontal',
+        trackZIndex: -1,
+        trackFill: '#416180',
+        trackOpacity: 0.05,
+        selectionCursor: 'move',
+        selectionZIndex: 2,
+        selectionFill: '#5B8FF9',
+        selectionFillOpacity: 0.45,
+        sparklinePadding: 1,
+        padding: 0,
+        showHandle: true,
+        showLabel: true,
+        handleSpacing: 2,
+        formatter: (val: string) => val,
+        ...superObject(HANDLE_DEFAULT_CFG, 'handle'),
+        ...superObject(HANDLE_ICON_DEFAULT_CFG, 'handleIcon'),
+        ...superObject(HANDLE_LABEL_DEFAULT_CFG, 'handleLabel'),
+      },
+    };
+  }
 
   private range = [0, 1];
 
   public get values(): [number, number] {
-    return this.getAttribute('values') as [number, number];
+    return this.getAttribute('values');
   }
 
-  public set values(values: SliderStyleProps['values']) {
+  public set values(values: [number, number]) {
     this.setAttribute('values', this.clampValues(values));
   }
 
@@ -83,29 +87,24 @@ export class Slider extends GUI<SliderStyleProps> {
   /**
    * 选区开始的位置
    */
-  private selectionStartPos: number;
+  private selectionStartPos: number = 0;
 
   /**
    * 选区宽度
    */
-  private selectionWidth: number;
+  private selectionWidth: number = 0;
 
   /**
    * 记录上一次鼠标事件所在坐标
    */
-  private prevPos: number;
+  private prevPos: number = 0;
 
   /**
    * drag事件当前选中的对象
    */
-  private target: string;
+  private target: string = '';
 
-  private animation: any = {
-    duration: 100,
-    fill: 'both',
-  };
-
-  private get sparklineShapeCfg() {
+  private get sparklineShapeOptions() {
     const { orient } = this.attributes;
 
     // 暂时只在水平模式下绘制
@@ -116,14 +115,15 @@ export class Slider extends GUI<SliderStyleProps> {
     const { width, height } = this.availableSpace;
     const { trackLineWidth = 0 } = this.attributes;
     const bkgLW = +trackLineWidth;
-    return {
-      x: bkgLW / 2 + left,
-      y: bkgLW / 2 + top,
-      ...sparklineStyle,
-      zIndex: 0,
-      width: width - bkgLW - left - right,
-      height: height - bkgLW - top - bottom,
-    } as SparklineStyleProps;
+    return deepAssign({}, sparklineStyle, {
+      style: {
+        x: bkgLW / 2 + left,
+        y: bkgLW / 2 + top,
+        zIndex: 0,
+        width: width - bkgLW - left - right,
+        height: height - bkgLW - top - bottom,
+      },
+    });
   }
 
   private get shape() {
@@ -148,12 +148,7 @@ export class Slider extends GUI<SliderStyleProps> {
   }
 
   constructor(options: SliderOptions) {
-    super(deepMix({}, Slider.defaultOptions, options));
-
-    this.selectionStartPos = 0;
-    this.selectionWidth = 0;
-    this.prevPos = 0;
-    this.target = '';
+    super(options);
   }
 
   public getValues() {
@@ -161,7 +156,7 @@ export class Slider extends GUI<SliderStyleProps> {
   }
 
   /** 不触发重绘 */
-  public setValues(values: SliderStyleProps['values'] = [0, 0], animate: boolean = false) {
+  public setValues(values: [number, number] = [0, 0], animate: boolean = false) {
     this.attr('values', values);
     const animation = animate === false ? false : this.animation;
     transition(this.selectionShape.node(), this.selectionCfg, animation);
@@ -169,10 +164,10 @@ export class Slider extends GUI<SliderStyleProps> {
     transition(this.endHandle.node(), this.getHandleShapeCfg('end'), animation);
   }
 
-  private innerSetValues(values: SliderStyleProps['values'] = [0, 0], trigger: boolean = false) {
+  private innerSetValues(values: [number, number] = [0, 0], trigger: boolean = false) {
     const oldValues = this.values;
     const newValues = this.clampValues(values);
-    this.update({ values: newValues });
+    this.update({ style: { values: newValues } });
     if (trigger) {
       this.onValueChange(oldValues);
     }
@@ -191,7 +186,7 @@ export class Slider extends GUI<SliderStyleProps> {
     const { orient } = this.attributes;
     const sparklineGroup = select(container).maybeAppendByClassName('slider-sparkline-group', 'g');
     ifShow(orient === 'horizontal', sparklineGroup, (group) => {
-      const sparklineStyle = this.sparklineShapeCfg as SparklineStyleProps;
+      const sparklineStyle = this.sparklineShapeOptions as SparklineStyleProps;
       group
         .maybeAppendByClassName('slider-sparkline', () => new Sparkline({ style: sparklineStyle }))
         .call((selection) => {

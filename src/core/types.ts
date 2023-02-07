@@ -3,10 +3,13 @@ import type { DisplayObjectConfig, IAnimation } from '@antv/g';
 
 export type Animation = KeyframeAnimationOptions & Pick<IAnimation, 'onfinish' | 'oncancel' | 'onframe'>;
 
-export interface ComponentConfig<T> extends DisplayObjectConfig<T> {
-  data?: any;
-  layout?: Record<string, any>;
-  events?: Record<string, any>;
+export interface ComponentConfig<
+  S extends { style?: any; data?: any; layout?: any; events?: any; animation?: any; interactions?: any }
+> extends DisplayObjectConfig<S> {
+  data?: S['data'];
+  layout?: S['layout'];
+  events?: S['events'];
+  style?: S['style'];
   animation?:
     | false
     | Animation
@@ -16,5 +19,5 @@ export interface ComponentConfig<T> extends DisplayObjectConfig<T> {
         update?: Animation;
         leave?: Animation;
       };
-  interactions?: Record<string, any>;
+  interactions?: S['interactions'];
 }

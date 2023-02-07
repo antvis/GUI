@@ -19,14 +19,17 @@ export interface SliderStyleProps
     PrefixedStyle<RectStyleProps, 'track'>,
     PrefixedStyle<RectStyleProps, 'selection'>,
     HandleStyleProps {
-  orient?: 'vertical' | 'horizontal';
+  values?: [number, number];
   trackLength?: number;
   trackSize?: number;
   slidable?: boolean;
   brushable?: boolean;
   scrollable?: boolean;
-  values?: [number, number];
-  padding?: SeriesAttr;
 }
 
-export type SliderOptions = DisplayObjectConfig<SliderStyleProps>;
+export interface SliderOptions extends DisplayObjectConfig<SliderStyleProps> {
+  layout?: {
+    orient?: 'vertical' | 'horizontal';
+    padding?: SeriesAttr;
+  };
+}

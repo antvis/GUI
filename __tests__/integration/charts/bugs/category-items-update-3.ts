@@ -8,32 +8,34 @@ export const BugCategoryItemsUpdate3 = () => {
   const items = group.appendChild(
     new CategoryItems({
       className: 'category-items-3',
-      style: {
-        width: 400,
-        height: 100,
+      data: flowItemData,
+      layout: {
         gridRow: 2,
         gridCol: 3,
         layout: 'grid',
-        data: flowItemData,
+        colPadding: 10,
+        rowPadding: 5,
+      },
+      style: {
+        width: 400,
+        height: 100,
         itemMarkerFill: '#d3d2d3',
         itemLabelFill: 'green',
         itemValueFill: 'green',
-        colPadding: 10,
-        rowPadding: 5,
       },
     })
   );
 
   setTimeout(() => {
-    items.update({ gridCol: 7 });
+    items.update({ layout: { gridCol: 7 } });
   }, 1000);
 
   setTimeout(() => {
-    items.update({ gridCol: 2 });
+    items.update({ layout: { gridCol: 2 } });
   }, 2000);
 
   setTimeout(() => {
-    items.update({ width: 300 });
+    items.update({ style: { width: 300 } });
   }, 300);
 
   return group;

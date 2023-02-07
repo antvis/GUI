@@ -3,19 +3,31 @@ import type { GenericAnimation } from '../animation';
 import { deepAssign } from '../util';
 import type { ComponentConfig } from './types';
 
-export abstract class GUI<T extends Record<string, any>> extends CustomElement<T> {
-  protected __data?: ComponentConfig<T>['data'];
+// type ReqiuredComponentConfig<T> = Required<ComponentConfig<T>>;
 
-  protected __layout?: ComponentConfig<T>['layout'];
+export abstract class GUI<
+  T extends { style?: any; data?: any; layout?: any; events?: any; animation?: any; interactions?: any }
+> extends CustomElement<T extends { style: infer S } ? S : any> {
+  protected data: Required<T extends { data: infer D } ? D : any>;
 
-  protected __events?: ComponentConfig<T>['events'];
+  protected layout: Required<T extends { layout: infer L } ? L : any>;
 
-  protected __animation?: ComponentConfig<T>['animation'];
+  protected events: Required<T extends { events: infer E } ? E : any>;
 
-  protected __interactions__?: ComponentConfig<T>['interactions'];
+  protected animation:
+    | false
+    | Animation
+    | {
+        appear?: Animation;
+        enter?: Animation;
+        update?: Animation;
+        leave?: Animation;
+      };
 
-  public defaultOptions() {
-    return {};
+  protected interactions: Required<T extends { interactions: infer I } ? I : any>;
+
+  public defaultOptions(): T extends { style: infer S } ? S : any {
+    return {} as any;
   }
 
   constructor(options: ComponentConfig<T>) {
@@ -28,12 +40,13 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
       animation,
       interactions,
     } = deepAssign({}, this.defaultOptions(), options);
+
     this.attr(style);
-    this.__data = data;
-    this.__layout = layout;
-    this.__events = events;
-    this.__animation = animation;
-    this.__interactions__ = interactions;
+    this.data = data;
+    this.layout = layout;
+    this.events = events;
+    this.animation = animation;
+    this.interactions = interactions;
   }
 
   connectedCallback() {

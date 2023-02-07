@@ -6,12 +6,14 @@ export const Slider2 = () => {
 
   group.appendChild(
     new Slider({
+      layout: {
+        orient: 'vertical',
+      },
       style: {
         x: 10,
         y: 10,
         trackLength: 300,
         trackSize: 50,
-        orient: 'vertical',
       },
     })
   );

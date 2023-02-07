@@ -20,6 +20,7 @@ const canvas = new Canvas({
 function createSparkline(title, x, y, data, options = {}) {
   const text = new Text({ style: { x, y, text: title, fontSize: 12, textBaseline: 'top' } });
   const sparkline = new Sparkline({
+    data,
     style: {
       x: 0,
       y: 0,
@@ -31,7 +32,6 @@ function createSparkline(title, x, y, data, options = {}) {
         lineWidth: 0,
         opacity: 0.5,
       },
-      data,
       ...options,
     },
   });

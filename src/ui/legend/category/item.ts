@@ -40,16 +40,19 @@ export type CategoryItemStyle = { marker?: string | (() => DisplayObject) } & Pr
   PrefixedStyle<ItemBackgroundStyle, 'background'>;
 
 export type CategoryItemCfg = GroupStyleProps & {
-  /** spacing between marker, label and value */
-  spacing?: SeriesAttr;
   // if width and height not specific, set it to actual space occurred
   width?: number;
-  span?: SeriesAttr;
 };
 
 export type CategoryItemStyleProps = CategoryItemStyle & CategoryItemCfg & CategoryItemData;
 
-export type CategoryItemOptions = DisplayObjectConfig<CategoryItemStyleProps>;
+export interface CategoryItemOptions extends DisplayObjectConfig<CategoryItemStyleProps> {
+  layout?: {
+    /** spacing between marker, label and value */
+    spacing?: SeriesAttr;
+    span?: SeriesAttr;
+  };
+}
 
 const CLASS_NAMES = classNames(
   {
@@ -66,25 +69,27 @@ const CLASS_NAMES = classNames(
   'legend-category-item'
 );
 
-const DEFAULT_ITEM_CFG: Partial<CategoryItemStyleProps> = {
-  span: [1, 1],
-  marker: () => new Circle({ style: { r: 6 } }),
-  markerSize: 10,
-  labelFill: '#646464',
-  valueFill: '#646464',
-  labelFontSize: 12,
-  valueFontSize: 12,
-  labelFontFamily: 'sans-serif',
-  valueFontFamily: 'sans-serif',
-  labelTextAlign: 'start',
-  valueTextAlign: 'start',
-  labelTextBaseline: 'middle',
-  valueTextBaseline: 'middle',
-};
-
-export class CategoryItem extends GUI<CategoryItemStyleProps> {
-  constructor(config: DisplayObjectConfig<CategoryItemStyleProps>) {
-    super(deepAssign({}, { style: DEFAULT_ITEM_CFG }, config));
+export class CategoryItem extends GUI<CategoryItemOptions> {
+  public defaultOptions() {
+    return {
+      layout: {
+        span: [1, 1],
+      },
+      style: {
+        marker: () => new Circle({ style: { r: 6 } }),
+        markerSize: 10,
+        labelFill: '#646464',
+        valueFill: '#646464',
+        labelFontSize: 12,
+        valueFontSize: 12,
+        labelFontFamily: 'sans-serif',
+        valueFontFamily: 'sans-serif',
+        labelTextAlign: 'start',
+        valueTextAlign: 'start',
+        labelTextBaseline: 'middle',
+        valueTextBaseline: 'middle',
+      },
+    };
   }
 
   private markerGroup!: Selection<Group>;
@@ -117,10 +122,8 @@ export class CategoryItem extends GUI<CategoryItemStyleProps> {
   }
 
   private get span() {
-    const { attributes } = this;
-    if (!('span' in attributes)) return [1, 1];
-    const { span } = attributes;
-    const [span1, innerSpan] = normalSeriesAttr(span!);
+    if (!('span' in this.layout)) return [1, 1];
+    const [span1, innerSpan] = normalSeriesAttr(this.layout.span);
     const span2 = this.showValue ? innerSpan : 0;
     const basis = span1 + span2;
     return [span1 / basis, span2 / basis];
@@ -151,7 +154,7 @@ export class CategoryItem extends GUI<CategoryItemStyleProps> {
     return [spacing1, 0];
   }
 
-  private get layout() {
+  private get itemLayout() {
     const { markerWidth, labelWidth, valueWidth, width, height } = this.shape;
     const [spacing1, spacing2] = this.spacing;
     return {
@@ -199,7 +202,7 @@ export class CategoryItem extends GUI<CategoryItemStyleProps> {
 
   private adjustLayout() {
     const {
-      layout: {
+      itemLayout: {
         markerWidth,
         labelWidth,
         valueWidth,

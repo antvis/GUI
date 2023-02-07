@@ -34,8 +34,8 @@ canvas.appendChild(tooltipArea);
 
 tooltipArea.appendChild(
   new Sparkline({
+    data,
     style: {
-      data,
       color,
       x: 0,
       y: 0,
@@ -57,6 +57,7 @@ const innerCanvas = new Canvas({
 data.forEach((datum, idx) => {
   innerCanvas.appendChild(
     new Sparkline({
+      data: [datum],
       style: {
         x: 0,
         y: 30 * idx,
@@ -66,7 +67,6 @@ data.forEach((datum, idx) => {
           opacity: 0.5,
         },
         color: color[idx],
-        data: [datum],
       },
     })
   );
@@ -118,7 +118,7 @@ tooltipArea.addEventListener('mouseleave', () => {
   tooltip.hide();
 });
 
-const { left, top } = document.getElementById('container').getBoundingClientRect();
+const { left, top } = document.getElementById('container')?.getBoundingClientRect() || {};
 tooltip.update({
   container: {
     x: left,
