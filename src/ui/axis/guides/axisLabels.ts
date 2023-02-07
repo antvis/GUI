@@ -1,8 +1,10 @@
 import type { DisplayObject, Group, Text } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
-import { isFunction, isString, memoize } from '@antv/util';
+import { get, isFunction, memoize } from '@antv/util';
+import { fadeOut } from '../../../animation';
 import type { Vector2 } from '../../../types';
 import {
+  ellipsisIt,
   getCallbackValue,
   getTransform,
   inRange,
@@ -10,8 +12,8 @@ import {
   radToDeg,
   renderExtDo,
   select,
-  ellipsisIt,
   styleSeparator,
+  transition,
   type Selection,
   type _Element,
 } from '../../../util';
@@ -21,6 +23,7 @@ import type { AxisDatum, AxisStyleProps } from '../types';
 import { getFactor } from '../utils';
 import { getDirectionVector, getLineTangentVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
+import type { StandardAnimationOption, GenericAnimation } from '../../../animation/types';
 
 const angleNormalizer = (angle: number) => {
   let normalizedAngle = angle;
@@ -115,7 +118,7 @@ function setRotateAndAdjustLabelAlign(rotate: number, group: _Element, cfg: Axis
   group.setLocalEulerAngles(+rotate);
   const { value } = group.__data__;
   const textAlign = getLabelAlign(value, rotate, cfg);
-  const label = group.querySelector<DisplayObject>('.axis-label-item');
+  const label = group.querySelector<DisplayObject>(CLASS_NAMES.labelItem.class);
   label?.nodeName === 'text' && select(label).style('textAlign', textAlign);
 }
 
@@ -132,43 +135,13 @@ function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], cfg: Ax
   return { x, y };
 }
 
-function createLabelEl(container: Selection, datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
-  const { labelFormatter: formatter } = cfg;
-  const labelVector = getLabelVector(datum.value, cfg);
-  let el: any = () => renderExtDo(datum.label || '');
-  if (isString(formatter)) el = () => renderExtDo(formatter);
-  else if (isFunction(formatter))
-    el = () => renderExtDo(getCallbackValue(formatter, [datum, index, data, labelVector]));
+function formatter(datum: AxisDatum, index: number, data: AxisDatum[], cfg: AxisStyleProps) {
+  const { labelFormatter } = cfg;
+  const el = isFunction(labelFormatter)
+    ? () => renderExtDo(getCallbackValue(labelFormatter, [datum, index, data, getLabelVector(datum.value, cfg)]))
+    : () => renderExtDo(datum.label || '');
 
-  return container.append(el).attr('className', CLASS_NAMES.labelItem.name);
-}
-
-function applyLabelStyle(
-  datum: AxisDatum,
-  index: number,
-  data: AxisDatum[],
-  group: Group,
-  cfg: AxisStyleProps,
-  style: any
-) {
-  // 1. set style
-  // 2. set position
-  // 3. set rotation
-  // 4. set label align
-  const label = group.getElementsByClassName<DisplayObject>(CLASS_NAMES.labelItem.toString())?.[0];
-  const [labelStyle, { transform, ...groupStyle }] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
-  label?.nodeName === 'text' &&
-    label.attr({
-      fontSize: 12,
-      fontFamily: 'sans-serif',
-      fontWeight: 'normal',
-      textBaseline: 'middle',
-      ...labelStyle,
-    });
-  group.attr({ ...getLabelPos(datum, index, data, cfg), ...groupStyle });
-  percentTransform(group, transform);
-  const rotate = getLabelRotation(datum, group, cfg);
-  setRotateAndAdjustLabelAlign(rotate, group, cfg);
+  return el;
 }
 
 function overlapHandler(cfg: AxisStyleProps) {
@@ -189,34 +162,93 @@ function overlapHandler(cfg: AxisStyleProps) {
   });
 }
 
-export function renderLabels(container: Selection, data: AxisDatum[], cfg: AxisStyleProps, style: any) {
-  const finalData = filterExec(data, cfg.labelFilter);
+function createLabel(
+  datum: AxisDatum,
+  index: number,
+  data: AxisDatum[],
+  cfg: AxisStyleProps,
+  style: any,
+  animation: GenericAnimation
+) {
+  // 1. set style
+  // 2. set position
+  // 3. set rotation
+  // 4. set label align
+  const label = select(this).append(datum.element).attr('className', CLASS_NAMES.labelItem.name).node();
+  const [labelStyle, { transform, ...groupStyle }] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
+  label?.nodeName === 'text' &&
+    label.attr({
+      fontSize: 12,
+      fontFamily: 'sans-serif',
+      fontWeight: 'normal',
+      textAlign: 'center',
+      textBaseline: 'middle',
+      ...labelStyle,
+    });
+  this.attr(groupStyle);
+  return transition(this, getLabelPos(datum, index, data, cfg), animation).then(() => {
+    percentTransform(this, transform);
+    const rotate = getLabelRotation(datum, this, cfg);
+    setRotateAndAdjustLabelAlign(rotate, this, cfg);
+  });
+}
+
+export function renderLabels(
+  container: Selection,
+  data: AxisDatum[],
+  cfg: AxisStyleProps,
+  style: any,
+  animation: StandardAnimationOption,
+  callback?: Function
+) {
+  const finalData = filterExec(data, cfg.labelFilter).map((datum, index, arr) => ({
+    element: formatter(datum, index, arr, cfg),
+    ...datum,
+  }));
+
   container
     .selectAll(CLASS_NAMES.label.class)
-    .data(finalData)
+    .data(finalData, (d) => `${d.value}-${d.label}`)
     .join(
       (enter) =>
         enter
           .append('g')
           .attr('className', CLASS_NAMES.label.name)
-          .each(function (...args) {
-            createLabelEl(select(this), ...args, finalData, cfg);
-            applyLabelStyle(...args, finalData, this, cfg, style);
-          })
-          .call(() => {
-            overlapHandler.call(container, cfg);
+          .call((element) => {
+            const elements = get(element, '_elements');
+            if (elements.length > 0) {
+              Promise.all(
+                get(element, '_elements').map((el: any) =>
+                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, false)
+                )
+              ).then(() => {
+                overlapHandler.call(container, cfg);
+                callback?.();
+              });
+            }
           }),
       (update) =>
         update
-          .each(function (...args) {
-            const group = select(this);
-            group.node().removeChildren();
-            createLabelEl(group, ...args, finalData, cfg);
-            applyLabelStyle(...args, finalData, this, cfg, style);
+          .each(async function (datum, index) {
+            select(this).node().removeChildren();
           })
-          .call(() => {
-            overlapHandler.call(container, cfg);
+          .call((element) => {
+            const elements = get(element, '_elements');
+            if (elements.length > 0) {
+              Promise.all(
+                get(element, '_elements').map((el: any) =>
+                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, animation.update)
+                )
+              ).then(() => {
+                overlapHandler.call(container, cfg);
+                callback?.();
+              });
+            }
           }),
-      (exit) => exit.remove()
+      (exit) =>
+        exit.each(async function (datum) {
+          await fadeOut(this, animation.leave);
+          select(this).remove();
+        })
     );
 }

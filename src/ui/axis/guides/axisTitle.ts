@@ -48,13 +48,20 @@ function createTitleEl(container: Selection, cfg: AxisStyleProps) {
   return [container, titleEl];
 }
 
-function applyTitleStyle(titleEl: Selection, titleGroup: Selection, axis: Selection, cfg: AxisStyleProps, style: any) {
+export function adjustTitleLayout(axis: Selection, cfg: AxisStyleProps, style: any) {
+  const title = axis.select(CLASS_NAMES.title.class);
+  const group = axis.select(CLASS_NAMES.titleGroup.class);
+  const { transform = '' } = style;
+  const { x, y } = getTitleLayout(axis, group, cfg);
+  group.node().setPosition(x, y);
+  percentTransform(title, transform);
+}
+
+function applyTitleStyle(title: Selection, titleGroup: Selection, axis: Selection, cfg: AxisStyleProps, style: any) {
   const [titleStyle, { transform = '', ...groupStyle }] = styleSeparator(style);
-  titleEl.styles(titleStyle);
-  const { x, y } = getTitleLayout(axis, titleGroup, cfg);
+  title.styles(titleStyle);
   titleGroup.styles(groupStyle);
-  titleGroup.node().setPosition(x, y);
-  percentTransform(titleEl, transform);
+  adjustTitleLayout(axis, cfg, style);
 }
 
 export function renderTitle(container: Selection, axis: Selection, cfg: AxisStyleProps, style: any) {

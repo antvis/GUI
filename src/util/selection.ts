@@ -333,17 +333,17 @@ export class Selection<T = any> {
     });
   }
 
-  style(key: string, value: any): Selection<T> {
-    const callback = typeof value !== 'function' ? () => value : value;
+  style(key: string, value: any, callbackable: boolean = true): Selection<T> {
+    const callback = typeof value !== 'function' || !callbackable ? () => value : value;
     return this.each(function (d, i) {
       if (value !== undefined) this.style[key] = callback.call(this, d, i);
     });
   }
 
-  styles(style: Record<string, any>): Selection<T> {
+  styles(style: Record<string, any>, callbackable: boolean = true): Selection<T> {
     return this.each(function (d, i) {
       const finalStyle = Object.entries(style).reduce((acc, [key, value]) => {
-        const callback = typeof value !== 'function' ? () => value : value;
+        const callback = typeof value !== 'function' || !callbackable ? () => value : value;
         if (value !== undefined) acc[key] = callback.call(this, d, i);
         return acc;
       }, {});
@@ -351,8 +351,8 @@ export class Selection<T = any> {
     });
   }
 
-  update(option: any): Selection<T> {
-    const callback = typeof option !== 'function' ? () => option : option;
+  update(option: any, callbackable: boolean = true): Selection<T> {
+    const callback = typeof option !== 'function' || !callbackable ? () => option : option;
     return this.each(function (d, i) {
       if (option && this.update) this.update(callback.call(this, d, i));
     });

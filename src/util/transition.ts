@@ -1,6 +1,7 @@
 import type { DisplayObject } from '@antv/g';
 import { isNil } from '@antv/util';
 import type { GUI } from '../core/gui';
+import type { GenericAnimation } from '../animation';
 
 /**
  * execute transition animation on element
@@ -10,28 +11,18 @@ import type { GUI } from '../core/gui';
  * @param target target properties
  * @param options transition options
  * @param animate whether to animate
- * @param threshold threshold to determine whether to animate
  * @returns transition instance
  */
 export function transition(
   el: DisplayObject | GUI<any>,
   target: { [key: string]: any },
-  options: any = {},
-  animate: boolean = true,
-  threshold: number = 50
+  options: GenericAnimation
 ): Promise<any> {
   const from: typeof target = {};
   const to: typeof target = {};
-  const supportProperties = ['x', 'y', 'width', 'height', 'opacity', 'radius'];
   Object.entries(target).forEach(([key, tarStyle]) => {
     const currStyle = el.attr(key);
-    if (
-      supportProperties.includes(key) &&
-      !isNil(tarStyle) &&
-      !isNil(currStyle) &&
-      currStyle !== tarStyle &&
-      Math.abs(+currStyle - +tarStyle) >= threshold
-    ) {
+    if (!isNil(tarStyle) && !isNil(currStyle) && currStyle !== tarStyle) {
       from[key] = currStyle;
       to[key] = tarStyle;
     }
@@ -43,7 +34,7 @@ export function transition(
     return Promise.resolve();
   };
 
-  if (!animate) return applyStyle();
+  if (!options) return applyStyle();
   if (Object.keys(from).length > 0)
     return el.animate([from, to], { fill: 'both', ...options })?.finished.then(applyStyle) || Promise.resolve();
 
