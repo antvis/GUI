@@ -82,3 +82,5 @@ export { AxisAnimationEnter3 } from './axis-animation-update-3';
 export { AxisAnimationEnter4 } from './axis-animation-update-4';
 export { AxisAnimationEnter5 } from './axis-animation-update-5';
 export { AxisAnimationEnter6 } from './axis-animation-update-6';
+export { AxisAnimationEnter7 } from './axis-animation-update-7';
+export { AxisAnimationEnter8 } from './axis-animation-update-8';
