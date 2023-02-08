@@ -90,7 +90,7 @@ function renderGridLine(
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animation.leave);
+          await fadeOut(this, animation.exit);
           this.remove();
         })
     );
@@ -128,7 +128,7 @@ function renderAlternateRegion(container: Selection<Group>, items: GridStyleProp
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animation.leave);
+          await fadeOut(this, animation.exit);
           this.remove();
         })
     );

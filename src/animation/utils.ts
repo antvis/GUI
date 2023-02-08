@@ -5,16 +5,16 @@ export function parseAnimationOption(option: AnimationOption): StandardAnimation
     return {
       enter: false,
       update: false,
-      leave: false,
+      exit: false,
     };
 
-  if ('enter' in option || 'update' in option || 'leave' in option) {
+  if ('enter' in option || 'update' in option || 'exit' in option) {
     return option as StandardAnimationOption;
   }
 
   return {
     enter: option,
     update: option,
-    leave: option,
+    exit: option,
   };
 }

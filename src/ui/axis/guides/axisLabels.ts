@@ -247,7 +247,7 @@ export function renderLabels(
           }),
       (exit) =>
         exit.each(async function (datum) {
-          await fadeOut(this, animation.leave);
+          await fadeOut(this, animation.exit);
           select(this).remove();
         })
     );

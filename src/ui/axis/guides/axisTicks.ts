@@ -102,7 +102,7 @@ export function renderTicks(
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animation.leave);
+          await fadeOut(this, animation.exit);
           this.remove();
         })
     );
