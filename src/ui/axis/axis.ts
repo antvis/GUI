@@ -95,28 +95,32 @@ export class Axis extends GUI<AxisStyleProps> {
 
     /** line */
     const axisLineGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.lineGroup, 'g');
-    ifShow(showLine!, axisLineGroup, (group) => {
-      renderAxisLine(group, attributes, lineStyle, finalAnimation);
-    });
+    const lineTransitions =
+      ifShow(showLine!, axisLineGroup, (group) => {
+        return renderAxisLine(group, attributes, lineStyle, finalAnimation);
+      }) || [];
 
     /** tick */
     const axisTickGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.tickGroup, 'g');
-    ifShow(showTick!, axisTickGroup, (group) => {
-      renderTicks(group, sampledData, attributes, tickStyle, finalAnimation);
-    });
+    const tickTransitions =
+      ifShow(showTick!, axisTickGroup, (group) => {
+        return renderTicks(group, sampledData, attributes, tickStyle, finalAnimation);
+      }) || [];
 
     /** label */
     const axisLabelGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g');
 
-    const adjustTitle = () => adjustTitleLayout(select(container), attributes, titleStyle);
-    ifShow(showLabel!, axisLabelGroup, (group) => {
-      renderLabels(group, sampledData, attributes, labelStyle, finalAnimation, adjustTitle, adjustTitle);
-    });
+    const labelTransitions =
+      ifShow(showLabel!, axisLabelGroup, (group) => {
+        return renderLabels(group, sampledData, attributes, labelStyle, finalAnimation);
+      }) || [];
 
     /** title */
     const axisTitleGroup = select(container).maybeAppendByClassName(CLASS_NAMES.titleGroup, 'g');
     ifShow(showTitle, axisTitleGroup, (group) => {
-      renderTitle(group, select(container), attributes, titleStyle);
+      renderTitle(group, select(container), attributes, titleStyle, labelTransitions);
     });
+
+    return [...lineTransitions, ...tickTransitions, ...labelTransitions].filter((t) => !!t);
   }
 }

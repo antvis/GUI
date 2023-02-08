@@ -2,6 +2,7 @@
 import { Circle, Ellipse, Group, HTML, IDocument, Image, Line, Path, Polygon, Polyline, Rect, Text } from '@antv/g';
 import type { BaseStyleProps as BP, DisplayObject } from '@antv/g';
 import { group } from 'd3-array';
+import type { AnimationResult } from '../animation';
 
 export type _Element = DisplayObject & {
   // Data for this element.
@@ -61,7 +62,7 @@ export class Selection<T = any> {
 
   private _document: IDocument;
 
-  private _transitions: Promise<void>[];
+  private _transitions: AnimationResult[];
 
   private _facetElements: _Element[];
 
@@ -386,7 +387,7 @@ export class Selection<T = any> {
     return this._elements;
   }
 
-  transitions(): Promise<void>[] {
+  transitions() {
     return this._transitions;
   }
 

@@ -1,7 +1,7 @@
 import type { DisplayObject } from '@antv/g';
 import { isNil } from '@antv/util';
-import type { GUI } from '../core/gui';
 import type { GenericAnimation } from '../animation';
+import type { GUI } from '../core/gui';
 
 /**
  * execute transition animation on element
@@ -13,12 +13,7 @@ import type { GenericAnimation } from '../animation';
  * @param animate whether to animate
  * @returns transition instance
  */
-export function transition(
-  el: DisplayObject | GUI<any>,
-  target: { [key: string]: any },
-  options: GenericAnimation,
-  onframe?: (ev?: AnimationPlaybackEvent) => void
-): Promise<any> {
+export function transition(el: DisplayObject | GUI<any>, target: { [key: string]: any }, options: GenericAnimation) {
   const from: typeof target = {};
   const to: typeof target = {};
   Object.entries(target).forEach(([key, tarStyle]) => {
@@ -32,14 +27,12 @@ export function transition(
   if (!options) {
     if ('update' in el) el.update(target);
     else el.attr(target);
-    return Promise.resolve();
+    return null;
   }
 
   if (Object.keys(from).length > 0) {
-    const animation = el.animate([from, to], { fill: 'both', ...options });
-    if (animation && onframe) animation.onframe = onframe;
-    return Promise.resolve();
+    return el.animate([from, to], { fill: 'both', ...options });
   }
 
-  return Promise.resolve();
+  return null;
 }

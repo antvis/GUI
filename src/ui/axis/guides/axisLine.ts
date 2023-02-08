@@ -1,6 +1,6 @@
 import { ext, vec2 } from '@antv/matrix-util';
-import { memoize } from '@antv/util';
-import type { StandardAnimationOption } from '../../../animation';
+import { memoize, get } from '@antv/util';
+import type { StandardAnimationOption, AnimationResult } from '../../../animation';
 import type { DisplayObject, Point, Vector2 } from '../../../types';
 import { degToRad, keyframeInterpolate, renderExtDo, scaleToPixel, Selection, transition } from '../../../util';
 import { CLASS_NAMES } from '../constant';
@@ -121,7 +121,7 @@ function getArcAttr(arc: DisplayObject) {
 
 function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any, animate: StandardAnimationOption) {
   const { angleRange, center, radius } = cfg;
-  container
+  return container
     .selectAll(CLASS_NAMES.line.class)
     .data([{ path: getArcPath(...angleRange, ...center, radius) }], (d, i) => i)
     .join(
@@ -134,24 +134,28 @@ function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any, ani
       (update) =>
         update
           .styles(style)
-          .each(function () {
-            keyframeInterpolate(
+          .transition(function () {
+            const animation = keyframeInterpolate(
               this,
               getArcAttr(this),
               [...angleRange, ...center, radius] as ReturnType<typeof getArcAttr>,
-              animate.update,
-              (ev, data) => {
-                this.style.path = getArcPath(...data);
-              },
-              (ev, data) => {
-                this.style.path = getArcPath(...data);
-              }
+              animate.update
             );
+            if (animation) {
+              const layout = () => {
+                const data = get(this.style, '__keyframe_data__') as Parameters<typeof getArcPath>;
+                this.style.path = getArcPath(...data);
+              };
+              animation.onframe = layout;
+              animation.onfinish = layout;
+            }
+            return animation;
           })
           .styles({ angleRange, center, radius }),
       (exit) => exit.remove()
     )
-    .styles(style);
+    .styles(style)
+    .transitions();
 }
 
 function renderTruncation<T>(container: Selection, { truncRange, truncShape, lineExtension }: AxisLineCfg, style: any) {
@@ -177,7 +181,7 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
 
   const renderLine = (data: LineDatum[]) => {
-    container
+    return container
       .selectAll(CLASS_NAMES.line.class)
       .data(data, (d, i) => i)
       .join(
@@ -186,18 +190,19 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
             .append('line')
             .attr('className', (d: LineDatum) => `${CLASS_NAMES.line.name} ${d.className}`)
             .styles(style)
-            .each(function ({ line }) {
-              transition(this, getLinePath(line), false);
+            .transition(function ({ line }: LineDatum) {
+              return transition(this, getLinePath(line), false);
             }),
         (update) =>
-          update.styles(style).each(function ({ line }) {
-            transition(this, getLinePath(line), animate.update);
+          update.styles(style).transition(function ({ line }: LineDatum) {
+            return transition(this, getLinePath(line), animate.update);
           }),
         (exit) => exit.remove()
-      );
+      )
+      .transitions();
   };
   if (!truncRange) {
-    renderLine([
+    return renderLine([
       {
         line: [
           [x1 + ox1, y1 + oy1],
@@ -206,12 +211,11 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
         className: CLASS_NAMES.line.name,
       },
     ]);
-    return;
   }
   const [r1, r2] = truncRange;
   const [x3, y3] = [x1 + (x2 - x1) * r1, y1 + (y2 - y1) * r1];
   const [x4, y4] = [x1 + (x2 - x1) * r2, y1 + (y2 - y1) * r2];
-  renderLine([
+  const animation = renderLine([
     {
       line: [
         [x1 + ox1, y1 + oy1],
@@ -228,6 +232,7 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
     },
   ]);
   renderTruncation(container, cfg, style);
+  return animation;
 }
 
 function renderAxisArrow(container: Selection, type: 'linear' | 'arc', cfg: AxisStyleProps, style: any) {
@@ -255,7 +260,9 @@ export function renderAxisLine<T>(
   animate: StandardAnimationOption
 ) {
   const { type } = cfg;
-  if (type === 'linear') renderLinear(container, cfg, style, animate);
-  else renderArc(container, cfg, style, animate);
+  let animation: AnimationResult[];
+  if (type === 'linear') animation = renderLinear(container, cfg, style, animate);
+  else animation = renderArc(container, cfg, style, animate);
   renderAxisArrow(container, type, cfg, style);
+  return animation;
 }

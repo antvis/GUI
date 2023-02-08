@@ -90,7 +90,7 @@ function renderGridLine(
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animate.exit);
+          await fadeOut(this, animate.exit)?.finished;
           this.remove();
         })
     );

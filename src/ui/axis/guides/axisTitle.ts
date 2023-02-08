@@ -1,9 +1,10 @@
 import { vec2 } from '@antv/matrix-util';
-import { renderExtDo, styleSeparator, percentTransform, type Selection } from '../../../util';
+import { renderExtDo, styleSeparator, percentTransform, type Selection, transition } from '../../../util';
 import { parsePosition } from '../../title';
 import type { TitleCfg } from '../../title/types';
 import { CLASS_NAMES } from '../constant';
 import type { AxisStyleProps } from '../types';
+import type { AnimationOption, AnimationResult, GenericAnimation, StandardAnimationOption } from '../../../animation';
 
 function getTitlePosition(
   mainGroup: Selection,
@@ -48,24 +49,53 @@ function createTitleEl(container: Selection, cfg: AxisStyleProps) {
   return [container, titleEl];
 }
 
-export function adjustTitleLayout(axis: Selection, cfg: AxisStyleProps, style: any) {
-  const title = axis.select(CLASS_NAMES.title.class);
-  const group = axis.select(CLASS_NAMES.titleGroup.class);
-  const { transform = '' } = style;
-  const { x, y } = getTitleLayout(axis, group, cfg);
-  group.node().setPosition(x, y);
-  percentTransform(title, transform);
-}
+export function adjustTitleLayout(
+  axis: Selection,
+  cfg: AxisStyleProps,
+  style: any,
+  options: GenericAnimation = false
+) {}
 
-function applyTitleStyle(title: Selection, titleGroup: Selection, axis: Selection, cfg: AxisStyleProps, style: any) {
+function applyTitleStyle(
+  title: Selection,
+  group: Selection,
+  axis: Selection,
+  cfg: AxisStyleProps,
+  style: any,
+  animation: GenericAnimation = false
+) {
   const [titleStyle, { transform = '', ...groupStyle }] = styleSeparator(style);
   title.styles(titleStyle);
-  titleGroup.styles(groupStyle);
-  adjustTitleLayout(axis, cfg, style);
+  group.styles(groupStyle);
+  const { x, y } = getTitleLayout(axis, group, cfg);
+  const animate = transition(group.node(), { x, y }, animation);
+  if (animate) {
+    animate.finished.then(() => {
+      group.node().setPosition(x, y);
+      percentTransform(title, transform);
+    });
+  } else {
+    group.node().setPosition(x, y);
+    percentTransform(title, transform);
+  }
 }
 
-export function renderTitle(container: Selection, axis: Selection, cfg: AxisStyleProps, style: any) {
+export function renderTitle(
+  container: Selection,
+  axis: Selection,
+  cfg: AxisStyleProps,
+  style: any,
+  animateResults: AnimationResult[]
+) {
   if (!cfg.title) return;
   const [titleGroup, titleEl] = createTitleEl(container, cfg);
-  applyTitleStyle(titleEl, titleGroup, axis, cfg, style);
+  const apply = (option?: GenericAnimation) => applyTitleStyle(titleEl, titleGroup, axis, cfg, style, option);
+  const animateResult = animateResults.filter((a) => !!a)[0];
+  if (animateResult) {
+    animateResult.onframe = () => apply();
+    // title animation is independent of axis animation
+    Promise.all(animateResults.map((a) => a?.finished)).then(() => {
+      apply({ duration: 100 });
+    });
+  } else apply();
 }

@@ -1,6 +1,6 @@
 import { CustomElement, DisplayObjectConfig, Group } from '@antv/g';
 import { deepAssign } from '../util';
-import type { GenericAnimation } from '../animation';
+import type { GenericAnimation, AnimationResult } from '../animation';
 
 export abstract class GUI<T> extends CustomElement<T> {
   constructor(config: DisplayObjectConfig<T>) {
@@ -14,7 +14,7 @@ export abstract class GUI<T> extends CustomElement<T> {
 
   public update(cfg: Partial<T> = {}, animate?: GenericAnimation) {
     this.attr(deepAssign({}, this.attributes, cfg));
-    this.render?.(this.attributes as Required<T>, this, animate);
+    return this.render?.(this.attributes as Required<T>, this, animate);
   }
 
   public clear() {
@@ -29,7 +29,7 @@ export abstract class GUI<T> extends CustomElement<T> {
 
   attributeChangedCallback() {}
 
-  public abstract render(attributes: T, container: Group, animate?: GenericAnimation): void;
+  public abstract render(attributes: T, container: Group, animate?: GenericAnimation): any;
 
   public bindEvents(attributes: T, container: Group): void {}
 }

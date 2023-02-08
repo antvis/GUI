@@ -162,14 +162,13 @@ function overlapHandler(cfg: AxisStyleProps) {
   });
 }
 
-async function createLabel(
+function createLabel(
   datum: AxisDatum,
   index: number,
   data: AxisDatum[],
   cfg: AxisStyleProps,
   style: any,
-  animate: GenericAnimation,
-  onframe?: Function
+  animate: GenericAnimation
 ) {
   // 1. set style
   // 2. set position
@@ -187,12 +186,40 @@ async function createLabel(
       ...labelStyle,
     });
   this.attr(groupStyle);
-  await transition(this, getLabelPos(datum, index, data, cfg), animate, () => {
-    onframe?.();
-  });
-  percentTransform(this, transform);
-  const rotate = getLabelRotation(datum, this, cfg);
-  setRotateAndAdjustLabelAlign(rotate, this, cfg);
+  const animation = transition(this, getLabelPos(datum, index, data, cfg), animate);
+
+  const layout = () => {
+    percentTransform(this, transform);
+    const rotate = getLabelRotation(datum, this, cfg);
+    setRotateAndAdjustLabelAlign(rotate, this, cfg);
+  };
+
+  if (animation) {
+    animation.finished.then(layout);
+  } else layout();
+  return animation;
+}
+
+function createLabels(
+  container: Selection,
+  element: Selection,
+  data: any[],
+  cfg: AxisStyleProps,
+  style: any,
+  options: GenericAnimation
+) {
+  const elements = get(element, '_elements') as _Element[];
+  const transitions = get(element, '_transitions');
+  const animations = elements.map((el: any) => createLabel.call(el, el.__data__, 0, data, cfg, style, options));
+  animations.forEach((a, i) => (transitions[i] = a));
+  // to avoid async manipulations
+  if (animations.filter((a) => !!a).length === 0) overlapHandler.call(container, cfg);
+  else {
+    Promise.all(animations).then(() => {
+      overlapHandler.call(container, cfg);
+    });
+  }
+  return animations;
 }
 
 export function renderLabels(
@@ -200,16 +227,14 @@ export function renderLabels(
   data: AxisDatum[],
   cfg: AxisStyleProps,
   style: any,
-  animate: StandardAnimationOption,
-  onframe?: Function,
-  onfinish?: Function
+  animate: StandardAnimationOption
 ) {
   const finalData = filterExec(data, cfg.labelFilter).map((datum, index, arr) => ({
     element: formatter(datum, index, arr, cfg),
     ...datum,
   }));
 
-  container
+  return container
     .selectAll(CLASS_NAMES.label.class)
     .data(finalData, (d) => `${d.value}-${d.label}`)
     .join(
@@ -218,40 +243,21 @@ export function renderLabels(
           .append('g')
           .attr('className', CLASS_NAMES.label.name)
           .call((element) => {
-            const elements = get(element, '_elements');
-            if (elements.length > 0) {
-              Promise.all(
-                get(element, '_elements').map((el: any) =>
-                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, false, onframe)
-                )
-              ).then(() => {
-                overlapHandler.call(container, cfg);
-                onfinish?.();
-              });
-            }
+            createLabels(container, element, finalData, cfg, style, false);
           }),
       (update) =>
         update
-          .each(async function (datum, index) {
+          .each(async function () {
             select(this).node().removeChildren();
           })
           .call((element) => {
-            const elements = get(element, '_elements');
-            if (elements.length > 0) {
-              Promise.all(
-                get(element, '_elements').map((el: any) =>
-                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, animate.update, onframe)
-                )
-              ).then(() => {
-                overlapHandler.call(container, cfg);
-                onfinish?.();
-              });
-            }
+            createLabels(container, element, finalData, cfg, style, animate.update);
           }),
       (exit) =>
         exit.each(async function (datum) {
-          await fadeOut(this, animate.exit);
+          await fadeOut(this, animate.exit)?.finished;
           select(this).remove();
         })
-    );
+    )
+    .transitions();
 }

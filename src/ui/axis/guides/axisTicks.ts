@@ -72,7 +72,7 @@ function createTick(
   const tick = createTickEl(select(this), datum, index, data, cfg);
   applyTickStyle(datum, index, data, tick, this, cfg, style);
   const [x, y] = getValuePos(datum.value, cfg);
-  transition(this, { x, y }, animate);
+  return transition(this, { x, y }, animate);
 }
 
 export function renderTicks(
@@ -84,7 +84,7 @@ export function renderTicks(
 ) {
   const finalData = filterExec(axisData, cfg.tickFilter);
 
-  container
+  return container
     .selectAll(CLASS_NAMES.tick.class)
     .data(finalData, (d) => d.id || d.label)
     .join(
@@ -92,18 +92,19 @@ export function renderTicks(
         enter
           .append('g')
           .attr('className', CLASS_NAMES.tick.name)
-          .each(function (datum, index) {
+          .transition(function (datum: AxisDatum, index: number) {
             createTick.call(this, datum, index, finalData, cfg, callbackableStyle, false);
           }),
       (update) =>
-        update.each(function (datum, index) {
+        update.transition(function (datum: AxisDatum, index: number) {
           this.removeChildren();
-          createTick.call(this, datum, index, finalData, cfg, callbackableStyle, animate.update);
+          return createTick.call(this, datum, index, finalData, cfg, callbackableStyle, animate.update);
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animate.exit);
+          await fadeOut(this, animate.exit)?.finished;
           this.remove();
         })
-    );
+    )
+    .transitions();
 }
