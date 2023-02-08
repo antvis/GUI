@@ -16,7 +16,8 @@ import type { GenericAnimation } from '../animation';
 export function transition(
   el: DisplayObject | GUI<any>,
   target: { [key: string]: any },
-  options: GenericAnimation
+  options: GenericAnimation,
+  onframe?: (ev?: AnimationPlaybackEvent) => void
 ): Promise<any> {
   const from: typeof target = {};
   const to: typeof target = {};
@@ -28,15 +29,17 @@ export function transition(
     }
   });
 
-  const applyStyle = () => {
+  if (!options) {
     if ('update' in el) el.update(target);
     else el.attr(target);
     return Promise.resolve();
-  };
+  }
 
-  if (!options) return applyStyle();
-  if (Object.keys(from).length > 0)
-    return el.animate([from, to], { fill: 'both', ...options })?.finished.then(applyStyle) || Promise.resolve();
+  if (Object.keys(from).length > 0) {
+    const animation = el.animate([from, to], { fill: 'both', ...options });
+    if (animation && onframe) animation.onframe = onframe;
+    return Promise.resolve();
+  }
 
   return Promise.resolve();
 }

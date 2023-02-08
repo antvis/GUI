@@ -1,7 +1,8 @@
-import type { DisplayObject, Group, Text } from '@antv/g';
+import type { DisplayObject, Text } from '@antv/g';
 import { vec2 } from '@antv/matrix-util';
 import { get, isFunction, memoize } from '@antv/util';
 import { fadeOut } from '../../../animation';
+import type { GenericAnimation, StandardAnimationOption } from '../../../animation/types';
 import type { Vector2 } from '../../../types';
 import {
   ellipsisIt,
@@ -23,7 +24,6 @@ import type { AxisDatum, AxisStyleProps } from '../types';
 import { getFactor } from '../utils';
 import { getDirectionVector, getLineTangentVector, getValuePos } from './axisLine';
 import { filterExec, getCallbackStyle } from './utils';
-import type { StandardAnimationOption, GenericAnimation } from '../../../animation/types';
 
 const angleNormalizer = (angle: number) => {
   let normalizedAngle = angle;
@@ -162,13 +162,14 @@ function overlapHandler(cfg: AxisStyleProps) {
   });
 }
 
-function createLabel(
+async function createLabel(
   datum: AxisDatum,
   index: number,
   data: AxisDatum[],
   cfg: AxisStyleProps,
   style: any,
-  animation: GenericAnimation
+  animate: GenericAnimation,
+  onframe?: Function
 ) {
   // 1. set style
   // 2. set position
@@ -186,11 +187,12 @@ function createLabel(
       ...labelStyle,
     });
   this.attr(groupStyle);
-  return transition(this, getLabelPos(datum, index, data, cfg), animation).then(() => {
-    percentTransform(this, transform);
-    const rotate = getLabelRotation(datum, this, cfg);
-    setRotateAndAdjustLabelAlign(rotate, this, cfg);
+  await transition(this, getLabelPos(datum, index, data, cfg), animate, () => {
+    onframe?.();
   });
+  percentTransform(this, transform);
+  const rotate = getLabelRotation(datum, this, cfg);
+  setRotateAndAdjustLabelAlign(rotate, this, cfg);
 }
 
 export function renderLabels(
@@ -198,8 +200,9 @@ export function renderLabels(
   data: AxisDatum[],
   cfg: AxisStyleProps,
   style: any,
-  animation: StandardAnimationOption,
-  callback?: Function
+  animate: StandardAnimationOption,
+  onframe?: Function,
+  onfinish?: Function
 ) {
   const finalData = filterExec(data, cfg.labelFilter).map((datum, index, arr) => ({
     element: formatter(datum, index, arr, cfg),
@@ -219,11 +222,11 @@ export function renderLabels(
             if (elements.length > 0) {
               Promise.all(
                 get(element, '_elements').map((el: any) =>
-                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, false)
+                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, false, onframe)
                 )
               ).then(() => {
                 overlapHandler.call(container, cfg);
-                callback?.();
+                onfinish?.();
               });
             }
           }),
@@ -237,17 +240,17 @@ export function renderLabels(
             if (elements.length > 0) {
               Promise.all(
                 get(element, '_elements').map((el: any) =>
-                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, animation.update)
+                  createLabel.call(el, el.__data__, 0, finalData, cfg, style, animate.update, onframe)
                 )
               ).then(() => {
                 overlapHandler.call(container, cfg);
-                callback?.();
+                onfinish?.();
               });
             }
           }),
       (exit) =>
         exit.each(async function (datum) {
-          await fadeOut(this, animation.exit);
+          await fadeOut(this, animate.exit);
           select(this).remove();
         })
     );

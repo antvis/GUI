@@ -191,7 +191,7 @@ export type AxisBaseStyleProps = GroupStyleProps &
     /**
      * the animation effect when axis is rendered
      */
-    animation?: AnimationOption;
+    animate?: AnimationOption;
     /**
      * a datum corresponding to a tick and label
      */

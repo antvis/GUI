@@ -4,12 +4,12 @@ import { deepAssign } from './deep-assign';
 import type { GenericAnimation } from '../animation';
 
 type Descriptor<T> = {
-  render?: (attributes: Required<T>, container: CustomElement<T>, animation?: GenericAnimation) => void;
+  render?: (attributes: Required<T>, container: CustomElement<T>, animate?: GenericAnimation) => void;
   bindEvents?: (attributes: T, container: CustomElement<T>) => void;
 };
 
 export abstract class GUI<T> extends CustomElement<T> {
-  abstract update(cfg?: Partial<T>, animation?: GenericAnimation): void;
+  abstract update(cfg?: Partial<T>, animate?: GenericAnimation): void;
 }
 
 export function createComponent<T>(
@@ -29,9 +29,9 @@ export function createComponent<T>(
       this.descriptor.bindEvents?.(this.attributes, this);
     }
 
-    public update(cfg: Partial<T> = {}, animation?: GenericAnimation) {
+    public update(cfg: Partial<T> = {}, animate?: GenericAnimation) {
       this.attr(deepMix({}, this.attributes, cfg));
-      this.descriptor.render?.(this.attributes as Required<T>, this, animation);
+      this.descriptor.render?.(this.attributes as Required<T>, this, animate);
     }
   };
 }

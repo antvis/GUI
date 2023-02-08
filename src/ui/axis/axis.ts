@@ -33,7 +33,7 @@ export class Axis extends GUI<AxisStyleProps> {
       class: className,
       dataThreshold = 100,
       crossSize,
-      animation,
+      animate,
       title,
       showTitle,
       titleSpacing,
@@ -84,7 +84,7 @@ export class Axis extends GUI<AxisStyleProps> {
       return true;
     });
 
-    const finalAnimation = parseAnimationOption(specificAnimation === undefined ? animation : specificAnimation);
+    const finalAnimation = parseAnimationOption(specificAnimation === undefined ? animate : specificAnimation);
 
     /** grid */
     const axisGridGroup = select(container).maybeAppendByClassName(CLASS_NAMES.gridGroup, 'g');
@@ -108,10 +108,9 @@ export class Axis extends GUI<AxisStyleProps> {
     /** label */
     const axisLabelGroup = axisMainGroup.maybeAppendByClassName(CLASS_NAMES.labelGroup, 'g');
 
+    const adjustTitle = () => adjustTitleLayout(select(container), attributes, titleStyle);
     ifShow(showLabel!, axisLabelGroup, (group) => {
-      renderLabels(group, sampledData, attributes, labelStyle, finalAnimation, () => {
-        adjustTitleLayout(select(container), attributes, titleStyle);
-      });
+      renderLabels(group, sampledData, attributes, labelStyle, finalAnimation, adjustTitle, adjustTitle);
     });
 
     /** title */

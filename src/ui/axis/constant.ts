@@ -6,7 +6,11 @@ import type { AxisBaseStyleProps } from './types';
 export const AXIS_BASE_DEFAULT_CFG: DisplayObjectConfig<Partial<AxisBaseStyleProps>> = {
   style: {
     data: [],
-    animation: { duration: 100, fill: 'both' },
+    animate: {
+      duration: 100,
+      easing: 'ease-in-out-sine',
+      fill: 'both',
+    },
     dataThreshold: 100,
     showTitle: true,
     titlePosition: 'lb',

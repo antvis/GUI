@@ -27,7 +27,7 @@ export const AxisAnimationEnter2 = () => {
         gridStroke: 'red',
         gridLength: 40,
         gridAreaFill: 'lightgreen',
-        animation: { duration: 300 },
+        animate: { duration: process.env.NODE_ENV === 'test' ? 100 : 1000 },
       },
     })
   );

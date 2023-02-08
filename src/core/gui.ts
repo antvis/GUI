@@ -12,9 +12,9 @@ export abstract class GUI<T> extends CustomElement<T> {
     this.bindEvents(this.attributes, this);
   }
 
-  public update(cfg: Partial<T> = {}, animation?: GenericAnimation) {
+  public update(cfg: Partial<T> = {}, animate?: GenericAnimation) {
     this.attr(deepAssign({}, this.attributes, cfg));
-    this.render?.(this.attributes as Required<T>, this, animation);
+    this.render?.(this.attributes as Required<T>, this, animate);
   }
 
   public clear() {
@@ -29,7 +29,7 @@ export abstract class GUI<T> extends CustomElement<T> {
 
   attributeChangedCallback() {}
 
-  public abstract render(attributes: T, container: Group, animation?: GenericAnimation): void;
+  public abstract render(attributes: T, container: Group, animate?: GenericAnimation): void;
 
   public bindEvents(attributes: T, container: Group): void {}
 }

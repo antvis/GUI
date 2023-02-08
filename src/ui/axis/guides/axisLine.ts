@@ -119,7 +119,7 @@ function getArcAttr(arc: DisplayObject) {
   return [...angleRange, ...center, radius] as [number, number, number, number, number];
 }
 
-function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any, animation: StandardAnimationOption) {
+function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any, animate: StandardAnimationOption) {
   const { angleRange, center, radius } = cfg;
   container
     .selectAll(CLASS_NAMES.line.class)
@@ -139,7 +139,7 @@ function renderArc(container: Selection, cfg: ArcAxisStyleProps, style: any, ani
               this,
               getArcAttr(this),
               [...angleRange, ...center, radius] as ReturnType<typeof getArcAttr>,
-              animation.update,
+              animate.update,
               (ev, data) => {
                 this.style.path = getArcPath(...data);
               },
@@ -171,7 +171,7 @@ function getLinePath(points: [Vector2, Vector2]) {
   return { x1, y1, x2, y2 };
 }
 
-function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: any, animation: StandardAnimationOption) {
+function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: any, animate: StandardAnimationOption) {
   const { startPos, endPos, truncRange, lineExtension } = cfg;
   const [[x1, y1], [x2, y2]] = [startPos, endPos];
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
@@ -191,7 +191,7 @@ function renderLinear(container: Selection, cfg: LinearAxisStyleProps, style: an
             }),
         (update) =>
           update.styles(style).each(function ({ line }) {
-            transition(this, getLinePath(line), animation.update);
+            transition(this, getLinePath(line), animate.update);
           }),
         (exit) => exit.remove()
       );
@@ -252,10 +252,10 @@ export function renderAxisLine<T>(
   container: Selection,
   cfg: AxisStyleProps,
   style: any,
-  animation: StandardAnimationOption
+  animate: StandardAnimationOption
 ) {
   const { type } = cfg;
-  if (type === 'linear') renderLinear(container, cfg, style, animation);
-  else renderArc(container, cfg, style, animation);
+  if (type === 'linear') renderLinear(container, cfg, style, animate);
+  else renderArc(container, cfg, style, animate);
   renderAxisArrow(container, type, cfg, style);
 }

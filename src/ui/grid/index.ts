@@ -61,7 +61,7 @@ function renderGridLine(
   cfg: GridStyleProps,
   style: GridStyle
 ) {
-  const { animation } = cfg;
+  const { animate } = cfg;
   const lines = items.map((item, idx) => ({
     id: item.id || `grid-line-${idx}`,
     path: getLinePath(item.points, cfg),
@@ -86,18 +86,18 @@ function renderGridLine(
       (update) =>
         update.each(function (datum, index) {
           const lineStyle = getCallbackValue({ path: datum.path, ...style }, [datum, index, lines]);
-          transition(this, lineStyle, animation.update);
+          transition(this, lineStyle, animate.update);
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animation.exit);
+          await fadeOut(this, animate.exit);
           this.remove();
         })
     );
 }
 
 function renderAlternateRegion(container: Selection<Group>, items: GridStyleProps['items'], cfg: GridStyleProps) {
-  const { animation, type, center, connect, areaFill, closed } = cfg;
+  const { animate, type, center, connect, areaFill, closed } = cfg;
   if (items.length < 2 || !areaFill || !connect) return;
   const colors: string[] = Array.isArray(areaFill) ? areaFill : [areaFill, 'transparent'];
   const getColor = (idx: number) => colors[idx % colors.length];
@@ -124,11 +124,11 @@ function renderAlternateRegion(container: Selection<Group>, items: GridStyleProp
       (update) =>
         update.each(function (datum, index) {
           const regionStyle = getCallbackValue(datum, [datum, index, regions]);
-          transition(this, regionStyle, animation.update);
+          transition(this, regionStyle, animate.update);
         }),
       (exit) =>
         exit.each(async function () {
-          await fadeOut(this, animation.exit);
+          await fadeOut(this, animate.exit);
           this.remove();
         })
     );
@@ -147,7 +147,7 @@ function dataFormatter(data: GridStyleProps['items'], cfg: GridStyleProps) {
 export class Grid extends GUI<GridStyleProps> {
   render(attributes: GridStyleProps, container: Group) {
     // @ts-ignore do no passBy className
-    const { class: className, items = [], animation, type, center, areaFill, closed, ...style } = attributes;
+    const { class: className, items = [], animate, type, center, areaFill, closed, ...style } = attributes;
     const data = dataFormatter(items, attributes);
     const lineGroup = select(container).maybeAppendByClassName(CLASS_NAMES.lineGroup, 'g');
     const regionGroup = select(container).maybeAppendByClassName(CLASS_NAMES.regionGroup, 'g');

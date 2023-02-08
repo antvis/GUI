@@ -22,6 +22,7 @@ export const AxisAnimationEnter8 = () => {
         labelSpacing: 10,
         labelFormatter: (d, i) => `${i}`,
         data: data(12),
+        animate: { duration: process.env.NODE_ENV === 'test' ? 100 : 1000 },
       },
     })
   );

@@ -5,7 +5,7 @@ import type { StandardAnimationOption } from '../../animation';
 export type GridStyle = LineStyleProps;
 
 export type GridStyleProps = GridStyle & {
-  animation: StandardAnimationOption;
+  animate: StandardAnimationOption;
   items: Array<{ id: string | number; points: Point[] }>;
   /** the connect way of two lines, if arc, center is necessary */
   type?: 'segment' | 'surround';

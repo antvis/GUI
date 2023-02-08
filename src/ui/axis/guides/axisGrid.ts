@@ -62,7 +62,7 @@ export function renderGrid(
   data: AxisDatum[],
   cfg: AxisStyleProps,
   style: any,
-  animation: StandardAnimationOption
+  animate: StandardAnimationOption
 ) {
   const { type, closed, areaFill, connect } = style;
   const center = getGridCenter(cfg);
@@ -72,7 +72,7 @@ export function renderGrid(
     .maybeAppendByClassName(CLASS_NAMES.grid, () => new Grid({}))
     .update({
       type,
-      animation,
+      animate,
       connect,
       closed,
       center,
