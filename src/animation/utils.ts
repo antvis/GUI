@@ -2,6 +2,7 @@
 import type { DisplayObject } from '@antv/g';
 import { isNil } from '@antv/util';
 import type { GUI } from '../core';
+import { visibility } from '../util';
 import type { AnimationOption, AnimationResult, GenericAnimation, StandardAnimationOption } from './types';
 
 export function parseAnimationOption(option: AnimationOption): StandardAnimationOption {
@@ -47,6 +48,73 @@ export function animate(target: DisplayObject | GUI<any>, keyframes: Keyframe[],
     return null;
   }
   return target.animate(keyframes, options);
+}
+
+/**
+ * transition source shape to target shape
+ * @param source
+ * @param target
+ * @param options
+ * @param after destroy or hide source shape after transition
+ */
+export function transitionShape(
+  source: DisplayObject,
+  target: DisplayObject,
+  options: GenericAnimation,
+  after: 'destroy' | 'hide' = 'destroy'
+) {
+  const afterTransition = () => {
+    if (after === 'destroy') source.destroy();
+    else if (after === 'hide') visibility(source, false);
+    visibility(target, true);
+  };
+  if (!options) {
+    afterTransition();
+    return [null];
+  }
+  const { duration = 0, delay = 0 } = options;
+  const middle = Math.ceil(+duration / 2);
+  const offset = +duration / 4;
+
+  const getPosition = (shape: DisplayObject) => {
+    if (shape.nodeName === 'circle') {
+      const [cx, cy] = shape.getLocalPosition();
+      const r = shape.attr('r');
+      return [cx - r, cy - r];
+    }
+    return shape.getLocalPosition();
+  };
+
+  const [sx, sy] = getPosition(source);
+  const [ex, ey] = getPosition(target);
+  const [mx, my] = [(sx + ex) / 2 - sx, (sy + ey) / 2 - sy];
+
+  const sourceAnimation = source.animate(
+    [
+      { opacity: 1, transform: 'translate(0, 0)' },
+      { opacity: 0, transform: `translate(${mx}, ${my})` },
+    ],
+    {
+      fill: 'both',
+      ...options,
+      duration: delay + middle + offset,
+    }
+  );
+  const targetAnimation = target.animate(
+    [
+      { opacity: 0, transform: `translate(${-mx}, ${-my})`, offset: 0.01 },
+      { opacity: 1, transform: 'translate(0, 0)' },
+    ],
+    {
+      fill: 'both',
+      ...options,
+      duration: middle + offset,
+      delay: delay + middle - offset,
+    }
+  );
+
+  onAnimateFinished(targetAnimation, afterTransition);
+  return [sourceAnimation, targetAnimation];
 }
 
 /**
