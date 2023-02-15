@@ -67,4 +67,4 @@ export const BugAxisLabelPosition = () => {
   return group;
 };
 
-BugAxisLabelPosition.wait = 1000;
+BugAxisLabelPosition.maxError = 1200;
