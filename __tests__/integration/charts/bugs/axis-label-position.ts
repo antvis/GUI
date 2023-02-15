@@ -66,3 +66,5 @@ export const BugAxisLabelPosition = () => {
 
   return group;
 };
+
+BugAxisLabelPosition.wait = 1000;
