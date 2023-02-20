@@ -5,29 +5,31 @@ import type { GUI } from '../core';
 import { visibility } from '../util';
 import type { AnimationOption, AnimationResult, GenericAnimation, StandardAnimationOption } from './types';
 
+function isStandardAnimationOption(option: AnimationOption): option is StandardAnimationOption {
+  if (typeof option === 'boolean') return false;
+  return 'enter' in option && 'update' in option && 'exit' in option;
+}
+
 export function parseAnimationOption(option: AnimationOption): StandardAnimationOption {
-  if (!option)
-    return {
-      enter: false,
-      update: false,
-      exit: false,
-    };
+  // option is false => all animation is false
+  // option is { enter: {}, update: {}, exit: {}, ...baseOption } =>
+  //    { enter: { ...enter, ...baseOption }, update: { ...update, ...baseOption }, exit: { ...exit, ...baseOption } }
+  // option is { enter: {}, update: {}, exit: {} } => option
 
-  if ('enter' in option || 'update' in option || 'exit' in option) {
-    if (Object.keys(option).length > 3) {
-      const inferOption = Object.fromEntries(
-        Object.entries(option).filter(([k, v]) => !['enter', 'update', 'exit'].includes(k))
-      );
-      return { enter: false, update: inferOption, exit: false };
-    }
-    return option as StandardAnimationOption;
-  }
+  if (!option) return { enter: false, update: false, exit: false };
 
-  return {
-    enter: option,
-    update: option,
-    exit: option,
-  };
+  const keys = ['enter', 'update', 'exit'] as const;
+  const baseOption = Object.fromEntries(Object.entries(option).filter(([k]) => !keys.includes(k as any)));
+
+  return Object.fromEntries(
+    keys.map((k) => {
+      if (isStandardAnimationOption(option)) {
+        if (option[k] === false) return [k, false];
+        return [k, { ...option[k], ...baseOption }];
+      }
+      return [k, baseOption];
+    })
+  );
 }
 
 export function onAnimateFinished(animation: AnimationResult, callback: () => void) {
