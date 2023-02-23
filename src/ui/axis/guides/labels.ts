@@ -1,5 +1,4 @@
 import type { DisplayObject, IAnimation, Text } from '@antv/g';
-import { vec2 } from '@antv/matrix-util';
 import { get, isFunction, memoize } from '@antv/util';
 import { RequiredStyleProps } from 'src/core';
 import {
@@ -11,6 +10,7 @@ import {
 } from '../../../animation';
 import type { Vector2 } from '../../../types';
 import {
+  add,
   ellipsisIt,
   getCallbackValue,
   getTransform,
@@ -18,6 +18,7 @@ import {
   percentTransform,
   radToDeg,
   renderExtDo,
+  scale,
   select,
   styleSeparator,
   subStyleProps,
@@ -137,11 +138,7 @@ function getLabelPos(datum: AxisDatum, index: number, data: AxisDatum[], attr: R
   const finalLabelSpacing = getCallbackValue<number>(labelSpacing, [datum, index, data]);
   const [labelVector, unionFactor] = [getLabelVector(datum.value, attr), getFactor(labelDirection!, tickDirection!)];
   const extraLength = unionFactor === 1 ? getCallbackValue<number>(showTick ? tickLength : 0, [datum, index, data]) : 0;
-  const [x, y] = vec2.add(
-    [0, 0],
-    vec2.scale([0, 0], labelVector, finalLabelSpacing + extraLength),
-    getValuePos(datum.value, attr)
-  );
+  const [x, y] = add(scale(labelVector, finalLabelSpacing + extraLength), getValuePos(datum.value, attr));
   return { x, y };
 }
 
