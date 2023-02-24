@@ -29,6 +29,10 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
     this.bindEvents(this.attributes, this);
   }
 
+  disconnectedCallback(): void {
+    this._offscreen.destroy();
+  }
+
   public update(attr: PartialStyleProps<T> = {}, animate?: GenericAnimation) {
     this.attr(deepAssign({}, this.attributes, attr));
     this.attr(getPrimitiveAttributes(this.attributes.style) as any);
@@ -37,12 +41,6 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
 
   public clear() {
     this.removeChildren();
-  }
-
-  public destroy() {
-    this.removeAllEventListeners();
-    this.removeChildren();
-    this.remove();
   }
 
   attributeChangedCallback() {}
