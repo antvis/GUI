@@ -1,4 +1,4 @@
-import type { DisplayObject, IAnimation, Text } from '@antv/g';
+import type { DisplayObject, IAnimation } from '@antv/g';
 import { get, isFunction, memoize } from '@antv/util';
 import { RequiredStyleProps } from 'src/core';
 import {
@@ -25,6 +25,7 @@ import {
   type Selection,
   type _Element,
 } from '../../../util';
+import { Text } from '../../text';
 import { CLASS_NAMES } from '../constant';
 import { processOverlap } from '../overlap';
 import type { AxisDatum, AxisLabelStyleProps, AxisStyleProps } from '../types';
@@ -167,37 +168,6 @@ function overlapHandler(attr: RequiredStyleProps<AxisStyleProps>) {
     },
     getTextShape: (label) => label.querySelector<DisplayObject>('text') as Text,
   });
-}
-
-function createLabel(
-  datum: AxisDatum,
-  index: number,
-  data: AxisDatum[],
-  attr: RequiredStyleProps<AxisStyleProps>,
-  style: AxisLabelStyleProps['style']
-) {
-  // 1. set style
-  // 2. set position
-  // 3. set rotation
-  // 4. set label align
-  const label = select(this).append(datum.element).attr('className', CLASS_NAMES.labelItem.name).node();
-  const [labelStyle, { transform, ...groupStyle }] = styleSeparator(getCallbackStyle(style, [datum, index, data]));
-
-  label?.nodeName === 'text' &&
-    label.attr({
-      fontSize: 12,
-      fontFamily: 'sans-serif',
-      fontWeight: 'normal',
-      textAlign: 'center',
-      textBaseline: 'middle',
-      ...labelStyle,
-    });
-
-  this.attr({ ...groupStyle, ...getLabelPos(datum, index, data, attr) });
-
-  percentTransform(this, transform);
-  const rotate = getLabelRotation(datum, this, attr);
-  setRotateAndAdjustLabelAlign(rotate, this, attr);
 }
 
 export function renderLabels(
