@@ -39,12 +39,6 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
     this.removeChildren();
   }
 
-  public destroy() {
-    this.removeAllEventListeners();
-    this.removeChildren();
-    this.remove();
-  }
-
   attributeChangedCallback() {}
 
   public abstract render(attributes: RequiredStyleProps<T>, container: Group, animate?: GenericAnimation): any;
