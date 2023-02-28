@@ -68,7 +68,7 @@ export function transitionShape(
   const afterTransition = () => {
     if (after === 'destroy') source.destroy();
     else if (after === 'hide') hide(source);
-    show(target);
+    if (target.isVisible()) show(target);
   };
   if (!options) {
     afterTransition();
@@ -94,7 +94,7 @@ export function transitionShape(
   const sourceAnimation = source.animate(
     [
       { opacity: 1, transform: 'translate(0, 0)' },
-      { opacity: 1, transform: `translate(${mx}, ${my})` },
+      { opacity: 0, transform: `translate(${mx}, ${my})` },
     ],
     {
       fill: 'both',
@@ -104,7 +104,7 @@ export function transitionShape(
   );
   const targetAnimation = target.animate(
     [
-      { opacity: 1, transform: `translate(${-mx}, ${-my})`, offset: 0.01 },
+      { opacity: 0, transform: `translate(${-mx}, ${-my})`, offset: 0.01 },
       { opacity: 1, transform: 'translate(0, 0)' },
     ],
     {

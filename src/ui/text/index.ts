@@ -14,7 +14,7 @@ export class Text extends GText {
   }
 
   disconnectedCallback(): void {
-    this._offscreen.destroy();
+    this._offscreen?.destroy();
   }
 
   constructor(options: DisplayObjectConfig<TextStyleProps> = {}) {
@@ -38,7 +38,7 @@ export class Text extends GText {
     );
   }
 
-  public get length() {
-    return measureTextWidth(this);
-  }
+  // public get length() {
+  //   return measureTextWidth(this);
+  // }
 }
