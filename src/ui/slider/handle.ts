@@ -2,7 +2,7 @@ import type { DisplayObject, GroupStyleProps, PathStyleProps, TextStyleProps } f
 import { Group } from '@antv/g';
 import { GUI, PrefixStyleProps, type ComponentOptions, type RequiredStyleProps } from '../../core';
 import type { MergeMultiple } from '../../types';
-import { classNames, ifShow, select, styleSeparator, subStyleProps, type Selection } from '../../util';
+import { classNames, ifShow, select, styleSeparator, subStyleProps, visibility, type Selection } from '../../util';
 import { createComponent } from '../../util/create';
 import { HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
 
@@ -126,5 +126,12 @@ export class Handle extends GUI<RequiredStyleProps<HandleStyleProps>> {
   public render(attributes: HandleStyleProps, container: Group) {
     this.renderIcon(container);
     this.renderLabel(container);
+  }
+
+  attributeChangedCallback(key: string, value: any) {
+    if (key === 'style') {
+      const isVisible = value?.visibility !== 'hidden';
+      visibility(this, isVisible);
+    }
   }
 }

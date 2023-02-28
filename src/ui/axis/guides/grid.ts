@@ -81,5 +81,5 @@ export function renderGrid(
     data: gridItems,
   };
 
-  container.maybeAppendByClassName(CLASS_NAMES.grid, () => new Grid({ style })).update(style);
+  container.maybeAppendByClassName(CLASS_NAMES.grid, () => new Grid({ style: {} })).update(style);
 }

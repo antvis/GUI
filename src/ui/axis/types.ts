@@ -123,7 +123,7 @@ export type AxisTickStyleProps = {
    * tick formatter
    * the callback will additionally return the tick direction
    */
-  formatter: Callbackable<ExtendDisplayObject, CallbackParameter<AxisDatum, [Vector2]>>;
+  formatter: (...params: CallbackParameter<AxisDatum, [Vector2]>) => DisplayObject;
 };
 
 export type AxisLabelStyleProps = {

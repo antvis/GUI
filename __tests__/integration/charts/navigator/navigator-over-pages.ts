@@ -1,5 +1,6 @@
-import { Group, Rect, Text } from '@antv/g';
+import { Group, Rect } from '@antv/g';
 import { Navigator } from '../../../../src/ui/navigator';
+import { Text } from '../../../../src/ui/text';
 import { timeout } from '../../utils';
 
 export const NavigatorOverPages = () => {

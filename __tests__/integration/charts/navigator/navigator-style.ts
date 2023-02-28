@@ -1,4 +1,5 @@
-import { Group, Text, Rect } from '@antv/g';
+import { Group, Rect } from '@antv/g';
+import { Text } from '../../../../src/ui/text';
 import { Navigator } from '../../../../src/ui/navigator';
 
 export const NavigatorStyle = () => {

@@ -366,6 +366,7 @@ export class Continuous extends GUI<RequiredStyleProps<ContinuousStyleProps>> {
     this.indicator = container
       .maybeAppendByClassName(CLASS_NAMES.indicator, () => new Indicator({ style }))
       .update(style);
+    this.hideIndicator();
   }
 
   private get labelData(): ContinuousDatum[] {
@@ -596,13 +597,13 @@ export class Continuous extends GUI<RequiredStyleProps<ContinuousStyleProps>> {
     const pos: Point = this.ifHorizontal([offset + x, y], [x, offset + y]);
     this.indicator.update({
       style: {
+        x: pos[0],
+        y: pos[1],
         position: this.ifHorizontal('top', 'left'),
         labelText: text,
       },
     });
     show(this.indicator.node());
-    this.indicator.node().attributes.style.x = pos[0];
-    this.indicator.node().attributes.style.y = pos[1];
   }
 
   private hideIndicator() {

@@ -18,7 +18,7 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
     return this._defaultOptions;
   }
 
-  constructor(options: ComponentOptions<T>, defaultStyleProps: PartialStyleProps<T> = {}) {
+  constructor(options: ComponentOptions<T>, defaultStyleProps: PartialStyleProps<T> = { style: {} }) {
     super(deepAssign({}, { style: defaultStyleProps }, options));
     this._defaultOptions = defaultStyleProps;
     this.attr(getPrimitiveAttributes(this.attributes.style) as any);
@@ -42,8 +42,6 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<T
   public clear() {
     this.removeChildren();
   }
-
-  attributeChangedCallback() {}
 
   public abstract render(attributes: RequiredStyleProps<T>, container: Group, animate?: GenericAnimation): any;
 

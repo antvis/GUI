@@ -1,5 +1,6 @@
-import { Group, Rect, Text } from '@antv/g';
+import { Group, Rect } from '@antv/g';
 import { Layout } from '../../../../src/ui/layout';
+import { Text } from '../../../../src/ui/text';
 import { createGrid } from '../../utils';
 
 export const LayoutFlexUpdateLayout = () => {

@@ -1,4 +1,5 @@
-import { Group, Image, Text } from '@antv/g';
+import { Group, Image } from '@antv/g';
+import { Text } from '../../../../src/ui/text';
 import { axisWarper } from '../../utils';
 
 export const AxisLinearTitle = () => {

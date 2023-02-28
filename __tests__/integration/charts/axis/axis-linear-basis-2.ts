@@ -1,4 +1,5 @@
-import { Group, Text } from '@antv/g';
+import { Group } from '@antv/g';
+import { Text } from '../../../../src/ui/text';
 import { mockData } from '../../utils/mock-data';
 import { Axis } from '../../../../src/ui/axis';
 
@@ -23,6 +24,14 @@ export const AxisLinearBasis2 = () => {
               textBaseline: 'middle',
             },
           }),
+        labelTransform: [
+          {
+            type: 'rotate',
+            optionalAngles: [0, 30, 45, 60],
+          },
+          { type: 'hide' },
+          { type: 'ellipsis', minLength: 50, maxLength: 60 },
+        ],
         style: {
           startPos: [50, 50],
           endPos: [50, 500],

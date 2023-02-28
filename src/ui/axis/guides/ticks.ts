@@ -52,8 +52,7 @@ function createTickEl(
   const { tickFormatter: formatter } = attr;
   const tickVector = getTickVector(datum.value, attr);
   let el: any = 'line';
-  if (formatter instanceof DisplayObject) el = () => formatter;
-  else if (isFunction(formatter)) el = () => getCallbackValue(formatter, [datum, index, data, tickVector]);
+  if (isFunction(formatter)) el = () => getCallbackValue(formatter, [datum, index, data, tickVector]);
   return container.append(el).attr('className', CLASS_NAMES.tickItem.name);
 }
 

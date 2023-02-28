@@ -47,6 +47,7 @@ export class Category extends GUI<RequiredStyleProps<CategoryStyleProps>> {
     this.itemsGroup = container
       .maybeAppendByClassName<Group>(CLASS_NAMES.itemsGroup, 'g')
       .styles({ x, y, ...groupStyle });
+
     this.items = this.itemsGroup
       .maybeAppendByClassName(
         CLASS_NAMES.items,

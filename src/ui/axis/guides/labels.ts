@@ -66,7 +66,7 @@ function correctLabelRotation(_rotate: number) {
 function getLabelRotation(datum: AxisDatum, label: DisplayObject, attr: RequiredStyleProps<AxisStyleProps>) {
   const { labelAlign } = attr.style;
   // if label rotate is set, use it
-  const customRotate = label.style.transform.includes('rotate');
+  const customRotate = label.style.transform?.includes('rotate');
   if (customRotate) return label.getLocalEulerAngles();
   let rotate = 0;
   const labelVector = getLabelVector(datum.value, attr);

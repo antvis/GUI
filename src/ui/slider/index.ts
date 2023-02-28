@@ -131,7 +131,7 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
       options,
       deepAssign(
         {
-          formatter: (val: string) => val,
+          formatter: (val: string) => val.toString(),
           showHandle: true,
           style: {
             values: [0, 1],
@@ -231,7 +231,6 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
       const className = `${type}-handle`;
       const style = this.getHandleShapeCfg(type);
       const handle = this.foregroundGroup.maybeAppendByClassName(className, () => new Handle({ style })).update(style);
-      // handle.node().attributes.style.type = type;
       return handle;
     };
     this.startHandle = createHandle('start');

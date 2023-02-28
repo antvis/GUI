@@ -1,8 +1,8 @@
 import { Group, parseColor, type GroupStyleProps, type PathStyleProps, type RectStyleProps } from '@antv/g';
 import { isFunction } from '@antv/util';
-import type { PrefixObject } from '../../../types';
 import { GUI, type RequiredStyleProps } from '../../../core';
-import { classNames, createComponent, select, Selection, subObjects, subStyleProps } from '../../../util';
+import type { PrefixObject } from '../../../types';
+import { classNames, select, Selection, subStyleProps } from '../../../util';
 import { ifHorizontal } from '../utils';
 import { getBlockColor } from './utils';
 

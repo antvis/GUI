@@ -36,3 +36,4 @@ export * from './offscreen';
 export * from './string';
 export * from './matrix';
 export * from './path';
+export * from './omit';

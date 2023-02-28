@@ -25,29 +25,32 @@ export const RibbonColor = () => {
 
   createRibbon({ style: { color: ['#f00', '#0f0', '#00f'] } });
 
-  createRibbon({ style: { y: 30, color: ['red', 'green', 'blue'] } });
+  createRibbon({ style: { x: 0, y: 30, color: ['red', 'green', 'blue'] } });
 
-  createRibbon({ style: { y: 60, color: ['gray', 'lightgray'] } });
+  createRibbon({ style: { x: 0, y: 60, color: ['gray', 'lightgray'] } });
 
-  createRibbon({ style: { y: 90, color: ['pink'] } });
+  createRibbon({ style: { x: 0, y: 90, color: ['pink'] } });
 
-  createRibbon({ style: { y: 120, color: ['rgb(255, 0, 0)', 'rgb(0, 255, 0)', 'rgb(0, 0, 255)'] } });
+  createRibbon({ style: { x: 0, y: 120, color: ['rgb(255, 0, 0)', 'rgb(0, 255, 0)', 'rgb(0, 0, 255)'] } });
 
-  createRibbon({ style: { y: 150, color: ['rgb(255, 0, 0)', '#0f0', 'rgb(0, 0, 255)'] } });
+  createRibbon({ style: { x: 0, y: 150, color: ['rgb(255, 0, 0)', '#0f0', 'rgb(0, 0, 255)'] } });
 
-  createRibbon({ style: { y: 180, color: ['rgba(255, 0, 0, 0)', 'rgba(0, 255, 0, 0.5)', 'rgba(0, 0, 255, 1)'] } });
+  createRibbon({
+    style: { x: 0, y: 180, color: ['rgba(255, 0, 0, 0)', 'rgba(0, 255, 0, 0.5)', 'rgba(0, 0, 255, 1)'] },
+  });
 
-  createRibbon({ style: { x: 200, length: 210, orientation: 'vertical', color: ['#f00', '#0f0', '#00f'] } });
+  createRibbon({ style: { x: 200, y: 0, length: 210, orientation: 'vertical', color: ['#f00', '#0f0', '#00f'] } });
 
-  createRibbon({ style: { x: 230, length: 210, orientation: 'vertical', color: ['red', 'green', 'blue'] } });
+  createRibbon({ style: { x: 230, y: 0, length: 210, orientation: 'vertical', color: ['red', 'green', 'blue'] } });
 
-  createRibbon({ style: { x: 260, length: 210, orientation: 'vertical', color: ['gray', 'lightgray'] } });
+  createRibbon({ style: { x: 260, y: 0, length: 210, orientation: 'vertical', color: ['gray', 'lightgray'] } });
 
-  createRibbon({ style: { x: 290, length: 210, orientation: 'vertical', color: ['pink'] } });
+  createRibbon({ style: { x: 290, y: 0, length: 210, orientation: 'vertical', color: ['pink'] } });
 
   createRibbon({
     style: {
       x: 320,
+      y: 0,
       length: 210,
       orientation: 'vertical',
       color: ['rgb(255, 0, 0)', 'rgb(0, 255, 0)', 'rgb(0, 0, 255)'],
@@ -55,12 +58,13 @@ export const RibbonColor = () => {
   });
 
   createRibbon({
-    style: { x: 350, length: 210, orientation: 'vertical', color: ['rgb(255, 0, 0)', '#0f0', 'rgb(0, 0, 255)'] },
+    style: { x: 350, y: 0, length: 210, orientation: 'vertical', color: ['rgb(255, 0, 0)', '#0f0', 'rgb(0, 0, 255)'] },
   });
 
   createRibbon({
     style: {
       x: 380,
+      y: 0,
       length: 210,
       orientation: 'vertical',
       color: ['rgba(255, 0, 0, 0)', 'rgba(0, 255, 0, 0.5)', 'rgba(0, 0, 255, 1)'],

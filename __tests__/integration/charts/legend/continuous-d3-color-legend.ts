@@ -41,6 +41,7 @@ export const ContinuousD3ColorLegend = () => {
         showHandle: false,
         showTick: true,
         style: {
+          x: 0,
           y: 60,
           width: 400,
           height: 60,
@@ -64,6 +65,7 @@ export const ContinuousD3ColorLegend = () => {
         showLabel: true,
         showHandle: false,
         style: {
+          x: 0,
           y: 120,
           width: 400,
           height: 60,
@@ -87,6 +89,7 @@ export const ContinuousD3ColorLegend = () => {
         showHandle: false,
         showLabel: true,
         style: {
+          x: 0,
           y: 180,
           width: 400,
           height: 60,

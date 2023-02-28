@@ -1,6 +1,6 @@
-import { Group, Image, Rect, Text } from '@antv/g';
-import { CategoryItems } from './utils';
+import { Group } from '@antv/g';
 import { flowItemData } from './data';
+import { CategoryItems } from './utils';
 
 export const CategoryItems7 = () => {
   const group = new Group();

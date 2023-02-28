@@ -1,5 +1,6 @@
-import { Circle, Group, Text } from '@antv/g';
+import { Circle, Group } from '@antv/g';
 import { Indicator } from '../../../../src/ui/indicator';
+import { Text } from '../../../../src/ui/text';
 import { createGrid } from '../../utils/grid';
 import { deepAssign } from '../../../../src/util';
 

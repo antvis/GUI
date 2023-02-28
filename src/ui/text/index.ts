@@ -1,7 +1,6 @@
 import { Group, Text as GText, type DisplayObjectConfig, type TextStyleProps } from '@antv/g';
 import { deepAssign } from '../../util/deep-assign';
 import { createOffscreenGroup } from '../../util/offscreen';
-import { measureTextWidth } from '../../util/text';
 
 /** for internal use */
 
@@ -22,23 +21,19 @@ export class Text extends GText {
       deepAssign(
         {
           style: {
-            text: '',
+            fill: 'black',
             fontFamily: 'sans-serif',
             fontSize: 16,
             fontStyle: 'normal',
             fontVariant: 'normal',
             fontWeight: 'normal',
+            lineWidth: 1,
             textAlign: 'start',
             textBaseline: 'alphabetic',
-            lineWidth: 1,
           },
         },
         options
       )
     );
   }
-
-  // public get length() {
-  //   return measureTextWidth(this);
-  // }
 }

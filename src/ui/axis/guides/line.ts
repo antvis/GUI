@@ -11,6 +11,7 @@ import {
   Selection,
   subStyleProps,
   vertical,
+  omit,
 } from '../../../util';
 import { CLASS_NAMES } from '../constant';
 import type { ArcAxisStyleProps, AxisLineStyleProps, AxisStyleProps, Direction, LinearAxisStyleProps } from '../types';
@@ -117,7 +118,11 @@ function getArcPath(startAngle: number, endAngle: number, cx: number, cy: number
   if (isCircle(startAngle, endAngle)) {
     const middleAngleRadians = (endAngleRadians + startAngleRadians) / 2;
     const [xm, ym] = getPosByAngle(middleAngleRadians);
-    return `M${x1},${y1} A ${rx},${ry} 0 1,0 ${xm}, ${ym} A ${rx},${ry} 0 1,0 ${x2}, ${y2}`;
+    return [
+      ['M', x1, y1],
+      ['A', rx, ry, 0, 1, 0, xm, ym],
+      ['A', rx, ry, 0, 1, 0, x2, y2],
+    ];
   }
 
   // 大小弧
@@ -303,18 +308,19 @@ export function renderAxisLine(
   const { type } = attr.style;
   let animation: AnimationResult[];
   const { style } = subStyleProps<RequiredStyleProps<AxisStyleProps>>(attr, 'line');
+
   if (type === 'linear')
     animation = renderLinear(
       container,
       attr as RequiredStyleProps<LinearAxisStyleProps>,
-      style as RequiredStyleProps<LinearAxisStyleProps>['style'],
+      omit(style, 'arrow') as RequiredStyleProps<LinearAxisStyleProps>['style'],
       animate
     );
   else
     animation = renderArc(
       container,
       attr as RequiredStyleProps<ArcAxisStyleProps>,
-      style as RequiredStyleProps<ArcAxisStyleProps>['style'],
+      omit(style, 'arrow') as RequiredStyleProps<ArcAxisStyleProps>['style'],
       animate
     );
   renderAxisArrow(container, type, attr, style);

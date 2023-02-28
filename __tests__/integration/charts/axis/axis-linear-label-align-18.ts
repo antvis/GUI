@@ -1,5 +1,6 @@
-import { Group, Text } from '@antv/g';
+import { Group } from '@antv/g';
 import { Axis } from '../../../../src/ui/axis';
+import { Text } from '../../../../src/ui/text';
 import { data } from '../../utils';
 
 export const AxisLinearLabelAlign18 = () => {

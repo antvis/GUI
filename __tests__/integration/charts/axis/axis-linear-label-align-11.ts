@@ -1,4 +1,5 @@
-import { Group, Text } from '@antv/g';
+import { Group } from '@antv/g';
+import { Text } from '../../../../src/ui/text';
 import { Axis } from '../../../../src/ui/axis';
 import { data } from '../../utils';
 

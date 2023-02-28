@@ -1,5 +1,6 @@
 import { Group } from '@antv/g';
 import { isNil } from '@antv/util';
+import { Text } from '../text';
 import { GUI, type RequiredStyleProps } from '../../core';
 import { maybeAppend, parseSeriesAttr, select, subStyleProps } from '../../util';
 import { Marker } from '../marker';
@@ -66,10 +67,10 @@ export class Tag extends GUI<Required<TagStyleProps>> {
       .node() as Marker;
 
     const { x, y } = getTextPosition(markerShape, spacing);
-    select(group)
-      .maybeAppendByClassName('tag-text', 'text')
+
+    const t = select(group)
+      .maybeAppendByClassName('tag-text', () => new Text())
       .styles({
-        fontFamily: 'sans-serif',
         fontSize: 12,
         text: isNil(text) ? '' : `${text}`,
         x,
@@ -79,10 +80,9 @@ export class Tag extends GUI<Required<TagStyleProps>> {
       })
       .call((selection) => {
         // text 为空字符串或者 false 但 textShape 依然形成了体积
-        if (!text) {
-          selection.remove();
-        }
+        if (!text) selection.remove();
       });
+
     adjust(group, pl, pt, align || 'start', verticalAlign || 'top');
 
     const bounds = group.getLocalBounds();

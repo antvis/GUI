@@ -22,6 +22,7 @@ export const Continuous1 = () => {
     group.appendChild(
       new Rect({
         style: {
+          x: 0,
           y,
           ...shape,
           stroke: 'red',
