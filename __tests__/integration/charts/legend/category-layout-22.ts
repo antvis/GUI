@@ -9,16 +9,14 @@ export const CategoryLayout22 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          y: 30,
-          layout: 'grid',
-          orientation: 'vertical',
-          width: 200,
-          height: 200,
-          gridRow: 10,
-          gridCol: 1,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        y: 30,
+        layout: 'grid',
+        orientation: 'vertical',
+        width: 200,
+        height: 200,
+        gridRow: 10,
+        gridCol: 1,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

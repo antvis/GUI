@@ -15,17 +15,15 @@ export const AxisLinearLabelAlign3 = () => {
       style: {
         data: data(12),
         labelFormatter: (_: any, index: number) => 'ABC',
-        style: {
-          type: 'linear',
-          lineLineWidth: 5,
-          tickLineWidth: 5,
-          labelSpacing: 5,
-          tickLength: 10,
-          startPos: [50, 150],
-          endPos: [50, 500],
-          tickDirection: 'positive',
-          labelDirection: 'negative',
-        },
+        type: 'linear',
+        lineLineWidth: 5,
+        tickLineWidth: 5,
+        labelSpacing: 5,
+        tickLength: 10,
+        startPos: [50, 150],
+        endPos: [50, 500],
+        tickDirection: 'positive',
+        labelDirection: 'negative',
       },
     })
   );

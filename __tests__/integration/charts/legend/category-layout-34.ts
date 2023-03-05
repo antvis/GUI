@@ -14,21 +14,18 @@ export const CategoryLayout34 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          height: 40,
-          titleText: 'Legend Title',
-          orientation: 'vertical',
-          width: 600,
-          rowPadding: 10,
-          colPadding: 10,
-          itemSpacing: 5,
-          itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
-          itemMarkerLineWidth: 3,
-          itemMarkerFill: 'transparent',
-          itemValue: '',
-          navButtonFillOpacity: 0.5,
-        },
+        layout: 'flex',
+        height: 40,
+        titleText: 'Legend Title',
+        orientation: 'vertical',
+        width: 600,
+        rowPadding: 10,
+        colPadding: 10,
+        itemSpacing: 5,
+        itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
+        itemMarkerLineWidth: 3,
+        itemMarkerFill: 'transparent',
+        navButtonFillOpacity: 0.5,
       },
     })
   );

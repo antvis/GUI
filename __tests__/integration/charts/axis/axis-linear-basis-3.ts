@@ -14,19 +14,17 @@ export const AxisLinearBasis3 = () => {
     new Axis({
       style: {
         data: mockData,
-        style: {
-          startPos: [50, 100],
-          endPos: [450, 500],
-          lineLineWidth: 5,
-          lineStroke: 'orange',
-          tickStroke: 'black',
-          tickLength: 10,
-          tickLineWidth: 5,
-          labelDirection: 'negative',
-          labelSpacing: 5,
-          labelTransform: 'rotate(-45)',
-          type: 'linear',
-        },
+        startPos: [50, 100],
+        endPos: [450, 500],
+        lineLineWidth: 5,
+        lineStroke: 'orange',
+        tickStroke: 'black',
+        tickLength: 10,
+        tickLineWidth: 5,
+        labelDirection: 'negative',
+        labelSpacing: 5,
+        labelTransform: 'rotate(-45)',
+        type: 'linear',
       },
     })
   );

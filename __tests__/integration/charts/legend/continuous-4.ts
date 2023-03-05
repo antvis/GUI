@@ -1,5 +1,4 @@
 import { Group, Rect } from '@antv/g';
-import { deepAssign } from '../../../../src/util';
 import { Continuous } from './utils';
 
 export const Continuous4 = () => {
@@ -16,19 +15,19 @@ export const Continuous4 = () => {
   };
 
   const conditions = [
-    { style: { labelDirection: 'positive' } },
-    { style: { labelDirection: 'negative' } },
-    { style: { labelDirection: 'positive', titleText: 'title' } },
-    { style: { labelDirection: 'negative', titleText: 'title' } },
-    { style: { labelDirection: 'positive' }, showHandle: false },
-    { style: { labelDirection: 'negative' }, showHandle: false },
-    { style: { labelDirection: 'positive' }, showTick: true },
-    { style: { labelDirection: 'negative' }, showTick: true },
-    { style: { labelDirection: 'positive', titleText: 'title' }, showTick: true },
-    { style: { labelDirection: 'negative', titleText: 'title' }, showTick: true },
-    { style: { labelDirection: 'positive' }, showHandle: false, showTick: true },
-    { style: { labelDirection: 'negative' }, showHandle: false, showTick: true },
-  ];
+    { labelDirection: 'positive' },
+    { labelDirection: 'negative' },
+    { labelDirection: 'positive', titleText: 'title' },
+    { labelDirection: 'negative', titleText: 'title' },
+    { labelDirection: 'positive', showHandle: false },
+    { labelDirection: 'negative', showHandle: false },
+    { labelDirection: 'positive', showTick: true },
+    { labelDirection: 'negative', showTick: true },
+    { labelDirection: 'positive', titleText: 'title', showTick: true },
+    { labelDirection: 'negative', titleText: 'title', showTick: true },
+    { labelDirection: 'positive', showHandle: false, showTick: true },
+    { labelDirection: 'negative', showHandle: false, showTick: true },
+  ] as const;
 
   conditions.forEach((con, i) => {
     const x = Math.floor(i / 6) * (shape.width + 5);
@@ -45,23 +44,19 @@ export const Continuous4 = () => {
     );
     group.appendChild(
       new Continuous({
-        style: deepAssign(
-          {
-            data: new Array(10).fill(0).map((d: any, i: number) => ({ value: i * 100 })),
-            handleFormatter: (str: any) => `${str}°C`,
-            style: {
-              x,
-              y,
-              block: true,
-              labelSpacing: 10,
-              labelFontSize: 10,
-              labelTickStroke: 'red',
-              handleMarkerSize: 20,
-              ...shape,
-            },
-          },
-          con
-        ),
+        style: {
+          block: true,
+          data: new Array(10).fill(0).map((d: any, i: number) => ({ value: i * 100 })),
+          handleFormatter: (str: any) => `${str}°C`,
+          handleMarkerSize: 20,
+          labelFontSize: 10,
+          labelSpacing: 10,
+          labelTickStroke: 'red',
+          x,
+          y,
+          ...shape,
+          ...con,
+        },
       })
     );
   });

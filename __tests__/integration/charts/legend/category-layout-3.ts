@@ -14,26 +14,24 @@ export const CategoryLayout3 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          height: 40,
-          titleText: 'Legend Title',
-          orientation: 'vertical',
-          width: 600,
-          rowPadding: 10,
-          colPadding: 10,
-          itemSpacing: 5,
-          itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
-          itemMarkerLineWidth: 3,
-          itemMarkerFill: 'transparent',
-          itemValue: '',
-          itemMarker: () => () =>
-            new Path({
-              style: {
-                path: smooth(0, 0, 6),
-              },
-            }),
-        },
+        layout: 'flex',
+        height: 40,
+        titleText: 'Legend Title',
+        orientation: 'vertical',
+        width: 600,
+        rowPadding: 10,
+        colPadding: 10,
+        itemSpacing: 5,
+        itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
+        itemMarkerLineWidth: 3,
+        itemMarkerFill: 'transparent',
+
+        itemMarker: () => () =>
+          new Path({
+            style: {
+              path: smooth(0, 0, 6),
+            },
+          }),
       },
     })
   );

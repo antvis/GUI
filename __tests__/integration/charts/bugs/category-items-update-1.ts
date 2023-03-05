@@ -10,17 +10,15 @@ export const BugCategoryItemsUpdate1 = () => {
     new CategoryItems({
       style: {
         data: flowItemData,
-        style: {
-          width: 400,
-          height: 100,
-          gridRow: 2,
-          layout: 'grid',
-          itemLabelFill: 'green',
-          itemValueFill: 'green',
-          colPadding: 10,
-          rowPadding: 5,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        width: 400,
+        height: 100,
+        gridRow: 2,
+        layout: 'grid',
+        itemLabelFill: 'green',
+        itemValueFill: 'green',
+        colPadding: 10,
+        rowPadding: 5,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );
@@ -28,10 +26,8 @@ export const BugCategoryItemsUpdate1 = () => {
   timeout(() => {
     // 期望变成红色
     items.update({
-      style: {
-        itemLabelFill: 'red',
-        itemMarkerFill: 'red',
-      },
+      itemLabelFill: 'red',
+      itemMarkerFill: 'red',
     });
   }, 1000);
 

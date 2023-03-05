@@ -22,17 +22,15 @@ export const AxisLinearCustomTick = () => {
             ? new Circle({ style: { r: index % 10 === 0 ? 10 : 5 } })
             : new Line({ style: { x1: 0, x2: 0, y1: 50 * cx, y2: 10 * cy } });
         },
-        style: {
-          type: 'linear',
-          startPos: [50, 50],
-          endPos: [500, 50],
-          lineLineWidth: 5,
-          tickStroke: (datum: any, index: number) => (index % 2 === 0 ? 'blue' : 'green'),
-          tickLength: (datum: any, index: number) => index * 5,
-          tickFill: (datum: any, index: number) => (index % 5 === 0 ? 'pink' : 'white'),
-          tickLineWidth: (datum: any, index: number) => (index % 5 === 0 ? 5 : 3),
-          labelSpacing: 10,
-        },
+        type: 'linear',
+        startPos: [50, 50],
+        endPos: [500, 50],
+        lineLineWidth: 5,
+        tickStroke: (datum: any, index: number) => (index % 2 === 0 ? 'blue' : 'green'),
+        tickLength: (datum: any, index: number) => index * 5,
+        tickFill: (datum: any, index: number) => (index % 5 === 0 ? 'pink' : 'white'),
+        tickLineWidth: (datum: any, index: number) => (index % 5 === 0 ? 5 : 3),
+        labelSpacing: 10,
       },
     })
   );

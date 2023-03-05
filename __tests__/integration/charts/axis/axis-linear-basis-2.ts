@@ -1,5 +1,5 @@
 import { Group } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { mockData } from '../../utils/mock-data';
 import { Axis } from '../../../../src/ui/axis';
 
@@ -24,7 +24,7 @@ export const AxisLinearBasis2 = () => {
               textBaseline: 'middle',
             },
           }),
-        labelTransform: [
+        labelOverlap: [
           {
             type: 'rotate',
             optionalAngles: [0, 30, 45, 60],
@@ -32,19 +32,17 @@ export const AxisLinearBasis2 = () => {
           { type: 'hide' },
           { type: 'ellipsis', minLength: 50, maxLength: 60 },
         ],
-        style: {
-          startPos: [50, 50],
-          endPos: [50, 500],
-          labelSpacing: 5,
-          labelDirection: 'negative',
-          labelAlign: 'horizontal',
-          lineStroke: 'green',
-          tickLength: 10,
-          type: 'linear',
-          lineLineWidth: 5,
-          tickLineWidth: 5,
-          tickStroke: 'green',
-        },
+        startPos: [50, 50],
+        endPos: [50, 500],
+        labelSpacing: 5,
+        labelDirection: 'negative',
+        labelAlign: 'horizontal',
+        lineStroke: 'green',
+        tickLength: 10,
+        type: 'linear',
+        lineLineWidth: 5,
+        tickLineWidth: 5,
+        tickStroke: 'green',
       },
     })
   );

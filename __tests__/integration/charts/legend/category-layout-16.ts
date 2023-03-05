@@ -14,15 +14,13 @@ export const CategoryLayout16 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          y: 30,
-          layout: 'flex',
-          width: 200,
-          height: 300,
-          gridRow: 5,
-          gridCol: 1,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        y: 30,
+        layout: 'flex',
+        width: 200,
+        height: 300,
+        gridRow: 5,
+        gridCol: 1,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

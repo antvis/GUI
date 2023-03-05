@@ -1,6 +1,7 @@
-import { CustomEvent, Group, Rect, type Cursor } from '@antv/g';
-import { transition } from '../../animation';
-import { GUI, RequiredStyleProps } from '../../core';
+import { CustomEvent, type Cursor } from '@antv/g';
+import { transition, type GenericAnimation } from '../../animation';
+import { GUI } from '../../core';
+import { Group, Rect, Text } from '../../shapes';
 import {
   deepAssign,
   getEventPos,
@@ -9,12 +10,10 @@ import {
   select,
   subStyleProps,
   superStyleProps,
-  TEXT_INHERITABLE_PROPS,
   toPrecision,
   type Selection,
 } from '../../util';
 import { Sparkline, type SparklineStyleProps } from '../sparkline';
-import { Text } from '../text';
 import { HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
 import { Handle, type IconStyleProps, type LabelStyleProps } from './handle';
 import type { SliderOptions, SliderStyleProps } from './types';
@@ -23,17 +22,17 @@ export type { SliderStyleProps, SliderOptions };
 
 type HandleType = 'start' | 'end';
 
-export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
+export class Slider extends GUI<SliderStyleProps> {
   public static tag = 'slider';
 
   private range = [0, 1];
 
   public get values(): [number, number] {
-    return this.attributes.style!.values as [number, number];
+    return this.attributes.values as [number, number];
   }
 
-  public set values(values: RequiredStyleProps<SliderStyleProps>['style']['values']) {
-    this.attributes.style!.values = this.clampValues(values);
+  public set values(values: Required<SliderStyleProps>['values']) {
+    this.attributes.values = this.clampValues(values);
   }
 
   // 背景、滑道
@@ -48,10 +47,10 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   private selectionShape!: Selection<Rect>;
 
   // 开始滑块
-  private startHandle!: Selection;
+  private startHandle?: Handle;
 
   // 结束滑块
-  private endHandle!: Selection;
+  private endHandle?: Handle;
 
   /**
    * 选区开始的位置
@@ -73,38 +72,26 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
    */
   private target: string;
 
-  private animation: any = {
-    duration: 100,
-    fill: 'both',
-  };
-
   private get sparklineShapeCfg() {
-    const {
-      style: { orientation, trackLineWidth = 0 },
-    } = this.attributes;
-
+    const { orientation, trackLineWidth = 0, padding } = this.attributes;
     // 暂时只在水平模式下绘制
     if (orientation !== 'horizontal') return null;
-    const attr = subStyleProps(this.attributes, 'sparkline');
-    const { padding } = attr.style;
+    const attr = subStyleProps<SparklineStyleProps>(this.attributes, 'sparkline');
     const [top, right, bottom, left] = parseSeriesAttr(padding!);
     const { width, height } = this.availableSpace;
     const bkgLW = +trackLineWidth;
-    return deepAssign(attr, {
-      style: {
-        x: bkgLW / 2 + left,
-        y: bkgLW / 2 + top,
-        zIndex: 0,
-        width: width - bkgLW - left - right,
-        height: height - bkgLW - top - bottom,
-      },
-    }) as SparklineStyleProps;
+    return {
+      ...attr,
+      x: bkgLW / 2 + left,
+      y: bkgLW / 2 + top,
+      zIndex: 0,
+      width: width - bkgLW - left - right,
+      height: height - bkgLW - top - bottom,
+    } as SparklineStyleProps;
   }
 
   private get shape() {
-    const {
-      style: { trackLength, trackSize },
-    } = this.attributes;
+    const { trackLength, trackSize } = this.attributes;
     const [width, height] = this.getOrientVal([
       [trackLength, trackSize],
       [trackSize, trackLength],
@@ -113,9 +100,7 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   }
 
   private get availableSpace() {
-    const {
-      style: { padding },
-    } = this.attributes;
+    const { padding } = this.attributes;
     const [top, right, bottom, left] = parseSeriesAttr(padding!);
     const { width, height } = this.shape;
     return {
@@ -127,37 +112,31 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   }
 
   constructor(options: SliderOptions) {
-    super(
-      options,
-      deepAssign(
-        {
-          formatter: (val: string) => val.toString(),
-          showHandle: true,
-          style: {
-            values: [0, 1],
-            trackLength: 200,
-            trackSize: 20,
-            slidable: true,
-            brushable: true,
-            scrollable: true,
-            orientation: 'horizontal',
-            trackZIndex: -1,
-            trackFill: '#416180',
-            trackOpacity: 0.05,
-            selectionCursor: 'move',
-            selectionZIndex: 2,
-            selectionFill: '#5B8FF9',
-            selectionFillOpacity: 0.45,
-            sparklinePadding: 1,
-            padding: 0,
-            handleSpacing: 2,
-          },
-        },
-        superStyleProps(HANDLE_DEFAULT_CFG, 'handle'),
-        superStyleProps(HANDLE_ICON_DEFAULT_CFG, 'handleIcon'),
-        superStyleProps(HANDLE_LABEL_DEFAULT_CFG, 'handleLabel')
-      )
-    );
+    super(options, {
+      animate: { duration: 100, fill: 'both' },
+      brushable: true,
+      formatter: (val: any) => val.toString(),
+      handleSpacing: 2,
+      orientation: 'horizontal',
+      padding: 1,
+      scrollable: true,
+      selectionCursor: 'move',
+      selectionFill: '#5B8FF9',
+      selectionFillOpacity: 0.45,
+      selectionZIndex: 2,
+      showHandle: true,
+      showLabel: true,
+      slidable: true,
+      trackFill: '#416180',
+      trackLength: 200,
+      trackOpacity: 0.05,
+      trackSize: 20,
+      trackZIndex: -1,
+      values: [0, 1],
+      ...superStyleProps(HANDLE_DEFAULT_CFG, 'handle'),
+      ...superStyleProps(HANDLE_ICON_DEFAULT_CFG, 'handleIcon'),
+      ...superStyleProps(HANDLE_LABEL_DEFAULT_CFG, 'handleLabel'),
+    });
 
     this.selectionStartPos = 0;
     this.selectionWidth = 0;
@@ -170,41 +149,39 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   }
 
   /** 不触发重绘 */
-  public setValues(values: RequiredStyleProps<SliderStyleProps>['style']['values'] = [0, 0], animate: boolean = false) {
-    this.attributes.style!.values = values;
-    const animation = animate === false ? false : this.animation;
-    transition(this.selectionShape.node(), this.selectionCfg, animation);
-    transition(this.startHandle.node(), this.getHandleShapeCfg('start').style, animation);
-    transition(this.endHandle.node(), this.getHandleShapeCfg('end').style, animation);
+  public setValues(values: Required<SliderStyleProps>['values'] = [0, 0], animate: boolean = false) {
+    this.attributes.values = values;
+    const animation = animate === false ? false : this.attributes.animate;
+    transition(this.selectionShape.node(), this.selectionStyle, animation);
+    this.updateHandlesPosition(animation);
   }
 
-  private innerSetValues(
-    values: RequiredStyleProps<SliderStyleProps>['style']['values'] = [0, 0],
-    trigger: boolean = false
-  ) {
+  private updateHandlesPosition(animation: GenericAnimation) {
+    if (!this.attributes.showHandle) return;
+    transition(this.startHandle!, this.getHandleShapeStyle('start'), animation);
+    transition(this.endHandle!, this.getHandleShapeStyle('end'), animation);
+  }
+
+  private innerSetValues(values: Required<SliderStyleProps>['values'] = [0, 0], trigger: boolean = false) {
     const oldValues = this.values;
     const newValues = this.clampValues(values);
-    this.update({ style: { values: newValues } });
+    this.update({ values: newValues });
     if (trigger) {
       this.onValueChange(oldValues);
     }
   }
 
   private renderTrack(container: Group) {
-    const {
-      style: { brushable },
-    } = this.attributes;
-    const { style } = subStyleProps(this.attributes, 'track');
+    const { brushable } = this.attributes;
+    const style = subStyleProps(this.attributes, 'track');
 
     this.trackShape = select(container)
       .maybeAppendByClassName('slider-track', 'rect')
-      .styles({ ...this.shape, ...style, cursor: brushable ? 'crosshair' : 'default' });
+      .styles({ cursor: brushable ? 'crosshair' : 'default', ...this.shape, ...style });
   }
 
   private renderSparkline(container: Group) {
-    const {
-      style: { orientation },
-    } = this.attributes;
+    const { orientation } = this.attributes;
     const sparklineGroup = select(container).maybeAppendByClassName('slider-sparkline-group', 'g');
     ifShow(orientation === 'horizontal', sparklineGroup, (group) => {
       const style = this.sparklineShapeCfg as SparklineStyleProps;
@@ -212,12 +189,46 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
     });
   }
 
-  private get selectionCfg() {
-    const { style } = subStyleProps(this.attributes, 'selection');
+  private get selectionStyle() {
+    const style = subStyleProps(this.attributes, 'selection');
     return {
       ...style,
       ...this.calcMask(),
     };
+  }
+
+  private renderHandles() {
+    const { showHandle } = this.attributes;
+    const data = (showHandle ? (['start', 'end'] as HandleType[]) : []).map((type) => ({ type }));
+
+    const that = this;
+    this.foregroundGroup
+      ?.selectAll('.handle')
+      .data(data, (d) => d.type)
+      .join(
+        (enter) =>
+          enter
+            .append(({ type }) => new Handle({ style: this.getHandleShapeStyle(type) }))
+            .each(function ({ type }) {
+              this.attr('class', `handle ${type}-handle`);
+              const name = `${type}Handle` as `${HandleType}Handle`;
+              that[name] = this;
+              this.addEventListener('pointerdown', (e: any) => {
+                that.onDragStart(type)(e);
+              });
+            }),
+        (update) =>
+          update.each(function ({ type }) {
+            this.update(that.getHandleShapeStyle(type));
+          }),
+        (exit) =>
+          exit
+            .each(({ type }) => {
+              const name = `${type}Handle` as `${HandleType}Handle`;
+              that[name] = undefined;
+            })
+            .remove()
+      );
   }
 
   private renderSelection(container: Group) {
@@ -225,16 +236,9 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
 
     this.selectionShape = this.foregroundGroup
       .maybeAppendByClassName('slider-selection', 'rect')
-      .styles(this.selectionCfg);
+      .styles(this.selectionStyle);
 
-    const createHandle = (type: any) => {
-      const className = `${type}-handle`;
-      const style = this.getHandleShapeCfg(type);
-      const handle = this.foregroundGroup.maybeAppendByClassName(className, () => new Handle({ style })).update(style);
-      return handle;
-    };
-    this.startHandle = createHandle('start');
-    this.endHandle = createHandle('end');
+    this.renderHandles();
   }
 
   public render(attributes: SliderStyleProps, container: Group) {
@@ -311,12 +315,9 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
    * @returns
    */
   private calcHandleText(handleType: HandleType) {
-    const {
-      style: { orientation },
-      formatter,
-    } = this.attributes;
-    const { style: handleStyle } = subStyleProps(this.attributes, 'handle');
-    const { style: labelStyle } = subStyleProps(handleStyle, 'label');
+    const { orientation, formatter } = this.attributes;
+    const handleStyle = subStyleProps(this.attributes, 'handle');
+    const labelStyle = subStyleProps(handleStyle, 'label');
     const { spacing } = handleStyle;
     const size = this.getHandleSize();
     const values = this.clampValues();
@@ -325,17 +326,13 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
     const { width: iW, height: iH } = this.availableSpace;
     const { x: fX, y: fY, width: fW, height: fH } = this.calcMask();
     const value = handleType === 'start' ? values[0] : values[1];
-    const formattedText = formatter!(value);
-    const temp = this.appendChild(
-      new Text({
-        style: {
-          visibility: 'hidden',
-          ...TEXT_INHERITABLE_PROPS,
-          ...labelStyle,
-          text: formattedText,
-        },
-      })
-    );
+    const text = formatter(value);
+    const temp = new Text({
+      style: {
+        ...labelStyle,
+        text,
+      },
+    });
     // 文字包围盒的宽高
     const { width: textWidth, height: textHeight } = temp.getBBox();
     temp.destroy();
@@ -360,64 +357,57 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
         y = iH - fY - fH - size > textHeight ? finalWidth : -finalWidth;
       }
     }
-    return { x, y, text: formattedText };
+    return { x, y, text };
   }
 
-  private getHandleLabelShapeCfg(handleType: HandleType): LabelStyleProps {
+  private getHandleLabelStyle(handleType: HandleType): LabelStyleProps {
     const { showLabel } = this.attributes;
     if (!showLabel) return {} as LabelStyleProps;
-    const { style } = subStyleProps(this.attributes, 'handleLabel');
+    const style = subStyleProps(this.attributes, 'handleLabel');
     return {
-      style: { ...style, ...this.calcHandleText(handleType) },
+      ...style,
+      ...this.calcHandleText(handleType),
     };
   }
 
-  private getHandleIconShapeCfg(): IconStyleProps {
-    const {
-      style: { orientation, handleIconShape },
-    } = this.attributes;
-    const { style } = subStyleProps(this.attributes, 'handleIcon');
+  private getHandleIconStyle(): IconStyleProps {
+    const { handleIconShape: shape } = this.attributes;
+    const style = subStyleProps(this.attributes, 'handleIcon');
     const cursor = this.getOrientVal(['ew-resize', 'ns-resize']) as Cursor;
     const size = this.getHandleSize();
 
     return {
-      style: { ...style, shape: handleIconShape, orientation, cursor, size },
+      cursor,
+      shape,
+      size,
+      ...style,
     };
   }
 
-  private getHandleShapeCfg(handleType: HandleType) {
-    const { showHandle, showLabel } = this.attributes;
-    const { x, y } = this.calcHandlePosition(handleType);
-    const textCfg = this.calcHandleText(handleType);
-    return deepAssign(
-      superStyleProps(this.getHandleIconShapeCfg(), 'icon'),
-      superStyleProps({ ...this.getHandleLabelShapeCfg(handleType), ...textCfg }, 'label'),
-      {
-        showLabel,
-        style: {
-          type: handleType,
-          zIndex: 3,
-          visibility: showHandle ? 'visible' : 'hidden',
-          x,
-          y,
-        },
-      }
-    );
+  private getHandleShapeStyle(handleType: HandleType) {
+    const { showLabel, orientation } = this.attributes;
+    const handlePosition = this.calcHandlePosition(handleType);
+    const textStyle = this.calcHandleText(handleType);
+    return {
+      ...superStyleProps(this.getHandleIconStyle(), 'icon'),
+      ...superStyleProps({ ...this.getHandleLabelStyle(handleType), ...textStyle }, 'label'),
+      ...handlePosition,
+      orientation,
+      showLabel,
+      type: handleType,
+      zIndex: 3,
+    } as const;
   }
 
   private getHandleSize() {
-    const {
-      style: { handleIconSize: size, width, height },
-    } = this.attributes;
+    const { handleIconSize: size, width, height } = this.attributes;
     if (size) return size;
     // 没设置 size 的话，高度就取 height + 4 高度，手柄宽度是高度的 1/ 2.4
     return Math.floor((this.getOrientVal([+height!, +width!]) + 4) / 2.4);
   }
 
   private getOrientVal<T>([x, y]: [T, T]): T {
-    const {
-      style: { orientation },
-    } = this.attributes;
+    const { orientation } = this.attributes;
     return orientation === 'horizontal' ? x : y;
   }
 
@@ -451,15 +441,6 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
     this.dispatchCustomEvent(selection, 'mouseenter', 'selectionMouseenter');
     this.dispatchCustomEvent(selection, 'mouseleave', 'selectionMouseleave');
     this.dispatchCustomEvent(selection, 'click', 'selectionClick');
-    [this.startHandle, this.endHandle].forEach((handle) => {
-      const type = handle.node().attributes.style.type;
-      handle.on('mousedown', (e: any) => {
-        this.onDragStart(type)(e);
-      });
-      handle.on('touchstart', (e: any) => {
-        this.onDragStart(type)(e);
-      });
-    });
     const track = this.trackShape;
     this.dispatchCustomEvent(track, 'click', 'trackClick');
     this.dispatchCustomEvent(track, 'mouseenter', 'trackMouseenter');
@@ -470,9 +451,7 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   }
 
   private onScroll(event: WheelEvent) {
-    const {
-      style: { scrollable },
-    } = this.attributes;
+    const { scrollable } = this.attributes;
     if (scrollable) {
       const { deltaX, deltaY } = event;
       const offset = deltaY || deltaX;
@@ -497,9 +476,7 @@ export class Slider extends GUI<RequiredStyleProps<SliderStyleProps>> {
   };
 
   private onDragging = (e: any) => {
-    const {
-      style: { slidable, brushable },
-    } = this.attributes;
+    const { slidable, brushable } = this.attributes;
     e.stopPropagation();
 
     const currPos = this.getOrientVal(getEventPos(e));

@@ -1,5 +1,5 @@
 import { Group, Rect } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { Navigator } from '../../../../src/ui/navigator';
 import { timeout } from '../../utils';
 
@@ -36,9 +36,7 @@ export const NavigatorNull = () => {
   const nav = group.appendChild(
     new Navigator({
       style: {
-        style: {
-          loop: true,
-        },
+        loop: true,
       },
     })
   );
@@ -48,13 +46,11 @@ export const NavigatorNull = () => {
       nav.getContainer().appendChild(page);
     });
     nav.update({
-      style: {
-        initPage: 1,
-        x: 150,
-        y: 150,
-        pageWidth: 100,
-        pageHeight: 100,
-      },
+      initPage: 1,
+      x: 150,
+      y: 150,
+      pageWidth: 100,
+      pageHeight: 100,
     });
   }, 1000);
 

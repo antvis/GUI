@@ -8,29 +8,24 @@ export const HandleDemo = () => {
   const createHandle = (args: any = {}) => {
     group.appendChild(
       new Handle({
-        style: deepAssign(
-          {},
-          {
-            style: {
-              x: 100,
-              y: 100,
-              orientation: 'horizontal',
-              labelText: 'labelText',
-            },
-          },
-          args
-        ),
+        style: {
+          x: 100,
+          y: 100,
+          orientation: 'horizontal',
+          labelText: 'labelText',
+          ...args,
+        },
       })
     );
   };
 
   createHandle({ showLabel: false });
 
-  createHandle({ style: { y: 150, orientation: 'vertical' } });
+  createHandle({ y: 150, orientation: 'vertical' });
 
-  createHandle({ style: { y: 200, spacing: 10 }, formatter: (str: string) => `formatted text - ${str}` });
+  createHandle({ y: 200, spacing: 10, formatter: (str: string) => `formatted text - ${str}` });
 
-  createHandle({ style: { y: 250, markerSize: 40, markerFill: '#c13836', markerStroke: '#fdf1f0', spacing: 10 } });
+  createHandle({ y: 250, markerSize: 40, markerFill: '#c13836', markerStroke: '#fdf1f0', spacing: 10 });
 
   return group;
 };

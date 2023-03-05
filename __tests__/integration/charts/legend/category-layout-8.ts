@@ -9,20 +9,18 @@ export const CategoryLayout8 = () => {
     new Category({
       style: {
         data: createItemData(20),
-        style: {
-          layout: 'grid',
-          orientation: 'vertical',
-          width: 120,
-          height: 128,
-          navLoop: true,
-          gridRow: 8,
-          gridCol: 1,
-          itemSpacing: 5,
-          itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
-          itemMarkerLineWidth: 3,
-          itemMarkerFill: 'transparent',
-          itemValue: '',
-        },
+        layout: 'grid',
+        orientation: 'vertical',
+        width: 120,
+        height: 128,
+        navLoop: true,
+        gridRow: 8,
+        gridCol: 1,
+        itemSpacing: 5,
+        itemMarkerStroke: (_: any, i: number) => colors[i % colors.length],
+        itemMarkerLineWidth: 3,
+        itemMarkerFill: 'transparent',
+        itemValueText: '',
       },
     })
   );

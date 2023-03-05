@@ -18,24 +18,22 @@ export const Tooltip1 = () => {
     new Tooltip({
       style: {
         data: [],
-        style: {
-          title: '标题',
-          x: 100,
-          y: 100,
-          offset: [20, 20],
-          autoPosition: true,
-          container: {
-            x: 28,
-            y: 80,
-          },
-          bounding: {
-            x: 0,
-            y: 0,
-            width: len,
-            height: len,
-          },
-          customContent: '<span id="pos">Tooltip内容</span>',
+        title: '标题',
+        x: 100,
+        y: 100,
+        offset: [20, 20],
+        autoPosition: true,
+        container: {
+          x: 28,
+          y: 80,
         },
+        bounding: {
+          x: 0,
+          y: 0,
+          width: len,
+          height: len,
+        },
+        customContent: '<span id="pos">Tooltip内容</span>',
       },
     })
   );

@@ -1,6 +1,6 @@
 import { Group, Image } from '@antv/g';
 import { Axis } from '../../../../src/ui/axis';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { data } from '../../utils';
 
 export const AxisLinearLabel = () => {
@@ -24,14 +24,12 @@ export const AxisLinearLabel = () => {
           );
         },
         data: data(10, 1),
-        style: {
-          type: 'linear',
-          startPos: [50, 50],
-          endPos: [500, 50],
-          lineLineWidth: 5,
-          lineExtension: [30, 30],
-          labelSpacing: 20,
-        },
+        type: 'linear',
+        startPos: [50, 50],
+        endPos: [500, 50],
+        lineLineWidth: 5,
+        lineExtension: [30, 30],
+        labelSpacing: 20,
       },
     })
   );

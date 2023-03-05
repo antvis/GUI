@@ -13,18 +13,16 @@ export const AxisArcBasis1 = () => {
       style: {
         data: data(12),
         showArrow: false,
-        style: {
-          center: [150, 150],
-          endAngle: 135,
-          labelSpacing: 10,
-          lineLineWidth: 5,
-          lineStroke: 'red',
-          radius: 80,
-          startAngle: -135,
-          tickLength: 10,
-          tickStroke: 'red',
-          type: 'arc',
-        },
+        center: [150, 150],
+        endAngle: 135,
+        labelSpacing: 10,
+        lineLineWidth: 5,
+        lineStroke: 'red',
+        radius: 80,
+        startAngle: -135,
+        tickLength: 10,
+        tickStroke: 'red',
+        type: 'arc',
       },
     })
   );

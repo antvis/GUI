@@ -1,20 +1,25 @@
 import { get, memoize } from '@antv/util';
 import { transition, type AnimationResult, type StandardAnimationOption } from '../../../animation';
-import type { RequiredStyleProps } from '../../../core';
-import type { DisplayObject, Point, Vector2 } from '../../../types';
+import type { DisplayObject, Line } from '../../../shapes';
+import type { Point, Vector2 } from '../../../types';
 import {
   degToRad,
   keyframeInterpolate,
   normalize,
+  omit,
   renderExtDo,
   scaleToPixel,
   Selection,
   subStyleProps,
   vertical,
-  omit,
 } from '../../../util';
 import { CLASS_NAMES } from '../constant';
-import type { ArcAxisStyleProps, AxisLineStyleProps, AxisStyleProps, Direction, LinearAxisStyleProps } from '../types';
+import type {
+  Direction,
+  RequiredArcAxisStyleProps,
+  RequiredAxisStyleProps,
+  RequiredLinearAxisStyleProps,
+} from '../types';
 import { baseDependencies } from './utils';
 
 type LineDatum = {
@@ -23,20 +28,20 @@ type LineDatum = {
 };
 
 export const getLineAngle = memoize(
-  (value: number, attr: RequiredStyleProps<ArcAxisStyleProps>) => {
-    const { startAngle, endAngle } = attr.style;
+  (value: number, attr: RequiredArcAxisStyleProps) => {
+    const { startAngle, endAngle } = attr;
     return (endAngle - startAngle) * value + startAngle;
   },
-  (value, attr) => [value, attr.style.startAngle, attr.style.endAngle].join()
+  (value, attr) => [value, attr.startAngle, attr.endAngle].join()
 );
 
 export const getLineTangentVector = memoize(
-  (value: number, attr: RequiredStyleProps<AxisStyleProps>) => {
-    if (attr.style.type === 'linear') {
+  (value: number, attr: RequiredAxisStyleProps) => {
+    if (attr.type === 'linear') {
       const {
         startPos: [startX, startY],
         endPos: [endX, endY],
-      } = attr.style;
+      } = attr;
       const [dx, dy] = [endX - startX, endY - startY];
       return normalize([dx, dy]);
     }
@@ -44,61 +49,55 @@ export const getLineTangentVector = memoize(
     const angle = degToRad(getLineAngle(value, attr));
     return [-Math.sin(angle), Math.cos(angle)] as Vector2;
   },
-  (value, attr: RequiredStyleProps<AxisStyleProps>) => {
+  (value, attr: RequiredAxisStyleProps) => {
     const dependencies = baseDependencies(attr);
-    attr.style.type === 'arc' && dependencies.push(value);
+    attr.type === 'arc' && dependencies.push(value);
     return dependencies.join();
   }
 );
 
-export function getDirectionVector(
-  value: number,
-  direction: Direction,
-  attr: RequiredStyleProps<AxisStyleProps>
-): Vector2 {
+export function getDirectionVector(value: number, direction: Direction, attr: RequiredAxisStyleProps): Vector2 {
   const tangentVector = getLineTangentVector(value, attr);
   return vertical(tangentVector, direction !== 'positive') as Vector2;
 }
 
 export const getLinearValuePos = memoize(
-  (value: number, attr: RequiredStyleProps<LinearAxisStyleProps>): Vector2 => {
+  (value: number, attr: RequiredLinearAxisStyleProps): Vector2 => {
     const {
       startPos: [sx, sy],
       endPos: [ex, ey],
-    } = attr.style;
+    } = attr;
     const [dx, dy] = [ex - sx, ey - sy];
     return [sx + dx * value, sy + dy * value];
   },
-  (value, attr) => [value, ...attr.style.startPos, ...attr.style.endPos].join()
+  (value, attr) => [value, ...attr.startPos, ...attr.endPos].join()
 );
 
 export const getArcValuePos = memoize(
-  (value: number, attr: RequiredStyleProps<ArcAxisStyleProps>): Vector2 => {
+  (value: number, attr: RequiredArcAxisStyleProps): Vector2 => {
     const {
       radius,
       center: [cx, cy],
-    } = attr.style;
+    } = attr;
     const angle = degToRad(getLineAngle(value, attr));
     return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
   },
-  (value, attr: RequiredStyleProps<ArcAxisStyleProps>) => {
-    const {
-      style: { startAngle, endAngle, radius, center },
-    } = attr;
+  (value, attr: RequiredArcAxisStyleProps) => {
+    const { startAngle, endAngle, radius, center } = attr;
     return [value, startAngle, endAngle, radius, ...center].join();
   }
 );
 
-export function getValuePos(value: number, attr: RequiredStyleProps<AxisStyleProps>) {
-  if (attr.style.type === 'linear') return getLinearValuePos(value, attr);
+export function getValuePos(value: number, attr: RequiredAxisStyleProps) {
+  if (attr.type === 'linear') return getLinearValuePos(value, attr);
   return getArcValuePos(value, attr);
 }
 
-export function isAxisHorizontal(attr: RequiredStyleProps<LinearAxisStyleProps>): boolean {
+export function isAxisHorizontal(attr: RequiredLinearAxisStyleProps): boolean {
   return getLineTangentVector(0, attr)[1] === 0;
 }
 
-export function isAxisVertical(attr: RequiredStyleProps<LinearAxisStyleProps>): boolean {
+export function isAxisVertical(attr: RequiredLinearAxisStyleProps): boolean {
   return getLineTangentVector(0, attr)[0] === 0;
 }
 
@@ -143,11 +142,11 @@ function getArcAttr(arc: DisplayObject) {
 
 function renderArc(
   container: Selection,
-  attr: RequiredStyleProps<ArcAxisStyleProps>,
-  style: RequiredStyleProps<ArcAxisStyleProps>['style'],
+  attr: RequiredArcAxisStyleProps,
+  style: RequiredArcAxisStyleProps,
   animate: StandardAnimationOption
 ) {
-  const { startAngle, endAngle, center, radius } = attr.style;
+  const { startAngle, endAngle, center, radius } = attr;
 
   return container
     .selectAll(CLASS_NAMES.line.class)
@@ -157,7 +156,7 @@ function renderArc(
         enter
           .append('path')
           .attr('className', CLASS_NAMES.line.name)
-          .styles(attr.style)
+          .styles(attr)
           .styles({ path: (d: any) => d.path }),
       (update) =>
         update
@@ -178,17 +177,14 @@ function renderArc(
             }
             return animation;
           })
-          .styles(attr.style),
+          .styles(attr),
       (exit) => exit.remove()
     )
     .styles(style)
     .transitions();
 }
 
-function renderTruncation<T>(
-  container: Selection,
-  { style: { truncRange, truncShape, lineExtension } }: RequiredStyleProps<AxisStyleProps>
-) {
+function renderTruncation<T>(container: Selection, { truncRange, truncShape, lineExtension }: RequiredAxisStyleProps) {
   // TODO
 }
 
@@ -207,17 +203,13 @@ function getLinePath(points: [Vector2, Vector2]) {
 
 function renderLinear(
   container: Selection,
-  attr: RequiredStyleProps<LinearAxisStyleProps>,
-  style: RequiredStyleProps<LinearAxisStyleProps>['style'],
+  attr: RequiredLinearAxisStyleProps,
+  style: RequiredLinearAxisStyleProps,
   animate: StandardAnimationOption
 ) {
-  const {
-    showTrunc,
-    style: { startPos, endPos, truncRange, lineExtension },
-  } = attr;
+  const { showTrunc, startPos, endPos, truncRange, lineExtension } = attr;
   const [[x1, y1], [x2, y2]] = [startPos, endPos];
   const [ox1, oy1, ox2, oy2] = lineExtension ? extendLine(startPos, endPos, lineExtension) : new Array(4).fill(0);
-
   const renderLine = (data: LineDatum[]) => {
     return container
       .selectAll(CLASS_NAMES.line.class)
@@ -277,21 +269,18 @@ function renderLinear(
 function renderAxisArrow(
   container: Selection,
   type: 'linear' | 'arc',
-  attr: RequiredStyleProps<AxisStyleProps>,
-  style: AxisLineStyleProps['style']
+  attr: RequiredAxisStyleProps,
+  style: RequiredAxisStyleProps
 ) {
-  const {
-    showArrow,
-    showTrunc,
-    style: { lineArrow, lineArrowOffset, lineArrowSize },
-  } = attr;
+  const { showArrow, showTrunc, lineArrow, lineArrowOffset, lineArrowSize } = attr;
 
   let shapeToAddArrow: Selection;
   if (type === 'arc') shapeToAddArrow = container.select(CLASS_NAMES.line.class);
   else if (showTrunc) shapeToAddArrow = container.select(CLASS_NAMES.lineSecond.class);
   else shapeToAddArrow = container.select(CLASS_NAMES.line.class);
-  if (!showArrow || !lineArrow || (attr.style.type === 'arc' && isCircle(attr.style.startAngle, attr.style.endAngle))) {
-    shapeToAddArrow.style('markerEnd', null);
+  if (!showArrow || !lineArrow || (attr.type === 'arc' && isCircle(attr.startAngle, attr.endAngle))) {
+    const node = shapeToAddArrow.node<Line>();
+    if (node) node.style.markerEnd = undefined;
     return;
   }
   const arrow = renderExtDo(lineArrow);
@@ -300,27 +289,23 @@ function renderAxisArrow(
   shapeToAddArrow.style('markerEnd', arrow).style('markerEndOffset', -lineArrowOffset);
 }
 
-export function renderAxisLine(
-  container: Selection,
-  attr: RequiredStyleProps<AxisStyleProps>,
-  animate: StandardAnimationOption
-) {
-  const { type } = attr.style;
+export function renderAxisLine(container: Selection, attr: RequiredAxisStyleProps, animate: StandardAnimationOption) {
+  const { type } = attr;
   let animation: AnimationResult[];
-  const { style } = subStyleProps<RequiredStyleProps<AxisStyleProps>>(attr, 'line');
+  const style = subStyleProps<RequiredAxisStyleProps>(attr, 'line');
 
   if (type === 'linear')
     animation = renderLinear(
       container,
-      attr as RequiredStyleProps<LinearAxisStyleProps>,
-      omit(style, 'arrow') as RequiredStyleProps<LinearAxisStyleProps>['style'],
+      attr as RequiredLinearAxisStyleProps,
+      omit(style, 'arrow') as RequiredLinearAxisStyleProps,
       animate
     );
   else
     animation = renderArc(
       container,
-      attr as RequiredStyleProps<ArcAxisStyleProps>,
-      omit(style, 'arrow') as RequiredStyleProps<ArcAxisStyleProps>['style'],
+      attr as RequiredArcAxisStyleProps,
+      omit(style, 'arrow') as RequiredArcAxisStyleProps,
       animate
     );
   renderAxisArrow(container, type, attr, style);

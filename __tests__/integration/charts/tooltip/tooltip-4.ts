@@ -23,25 +23,23 @@ export const Tooltip4 = () => {
   const tooltip = group.appendChild(
     new Tooltip({
       style: {
-        style: {
-          title: 'Tooltip',
-          x: 100,
-          y: 100,
-          offset: [20, 20],
-          enterable: true,
-          autoPosition: false,
-          container: {
-            x: 28,
-            y: 80,
-          },
-          bounding: {
-            x: 0,
-            y: 0,
-            width: len,
-            height: len,
-          },
-          customContent,
+        title: 'Tooltip',
+        x: 100,
+        y: 100,
+        offset: [20, 20],
+        enterable: true,
+        autoPosition: false,
+        container: {
+          x: 28,
+          y: 80,
         },
+        bounding: {
+          x: 0,
+          y: 0,
+          width: len,
+          height: len,
+        },
+        customContent,
       },
     })
   );

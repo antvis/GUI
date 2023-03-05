@@ -12,12 +12,10 @@ export const AxisLinearLabelOverlap = () => {
   const createAxis = axisWarper(group, {
     data: data(12),
     labelFormatter: () => 'ABCDEF',
-    style: {
-      type: 'linear',
-      lineLineWidth: 5,
-      tickLineWidth: 5,
-      labelSpacing: 5,
-    },
+    type: 'linear',
+    lineLineWidth: 5,
+    tickLineWidth: 5,
+    labelSpacing: 5,
   });
 
   const transforms = {
@@ -29,41 +27,49 @@ export const AxisLinearLabelOverlap = () => {
     ellipsis: { type: 'ellipsis', minLength: 10, maxLength: 50 },
   };
 
-  createAxis({ style: { startPos: [50, 50], endPos: [500, 50], titleText: 'default' }, labelTransform: [] });
+  createAxis({ startPos: [50, 50], endPos: [500, 50], titleText: 'default', labelOverlap: [] });
 
   createAxis({
-    style: { startPos: [50, 100], endPos: [500, 100], titleText: 'auto rotate' },
-    labelTransform: [transforms.rotate],
+    startPos: [50, 100],
+    endPos: [500, 100],
+    titleText: 'auto rotate',
+    labelOverlap: [transforms.rotate],
   });
 
   createAxis({
-    style: { startPos: [50, 200], endPos: [500, 200], titleText: 'auto hide' },
-    labelTransform: [transforms.hide],
+    startPos: [50, 200],
+    endPos: [500, 200],
+    titleText: 'auto hide',
+    labelOverlap: [transforms.hide],
   });
 
   createAxis({
-    style: { startPos: [50, 300], endPos: [500, 300], titleText: 'auto ellipsis' },
-    labelTransform: [transforms.ellipsis],
+    startPos: [50, 300],
+    endPos: [500, 300],
+    titleText: 'auto ellipsis',
+    labelOverlap: [transforms.ellipsis],
   });
 
   createAxis({
-    style: { startPos: [500, 400], endPos: [50, 400] },
-    labelTransform: [transforms.rotate],
+    startPos: [500, 400],
+    endPos: [50, 400],
+    labelOverlap: [transforms.rotate],
   });
-  createAxis({ style: { startPos: [500, 450], endPos: [50, 450] }, labelTransform: [transforms.hide] });
+  createAxis({ startPos: [500, 450], endPos: [50, 450], labelOverlap: [transforms.hide] });
   createAxis({
-    style: { startPos: [500, 500], endPos: [50, 500] },
-    labelTransform: [{ ...transforms.ellipsis, suffix: '!!' }],
+    startPos: [500, 500],
+    endPos: [50, 500],
+    labelOverlap: [{ ...transforms.ellipsis, suffix: '!!' }],
   });
 
-  createAxis({ style: { startPos: [575, 50], endPos: [575, 450] } });
-  createAxis({ style: { startPos: [650, 50], endPos: [650, 450] }, labelTransform: [transforms.rotate] });
-  createAxis({ style: { startPos: [700, 50], endPos: [700, 450] }, labelTransform: [transforms.hide] });
-  createAxis({ style: { startPos: [750, 50], endPos: [750, 450] }, labelTransform: [transforms.ellipsis] });
-  createAxis({ style: { startPos: [800, 450], endPos: [800, 50] } });
-  createAxis({ style: { startPos: [850, 450], endPos: [850, 50] }, labelTransform: [transforms.rotate] });
-  createAxis({ style: { startPos: [925, 450], endPos: [925, 50] }, labelTransform: [transforms.hide] });
-  createAxis({ style: { startPos: [975, 450], endPos: [975, 50] }, labelTransform: [transforms.ellipsis] });
+  createAxis({ startPos: [575, 50], endPos: [575, 450] });
+  createAxis({ startPos: [650, 50], endPos: [650, 450], labelOverlap: [transforms.rotate] });
+  createAxis({ startPos: [700, 50], endPos: [700, 450], labelOverlap: [transforms.hide] });
+  createAxis({ startPos: [750, 50], endPos: [750, 450], labelOverlap: [transforms.ellipsis] });
+  createAxis({ startPos: [800, 450], endPos: [800, 50] });
+  createAxis({ startPos: [850, 450], endPos: [850, 50], labelOverlap: [transforms.rotate] });
+  createAxis({ startPos: [925, 450], endPos: [925, 50], labelOverlap: [transforms.hide] });
+  createAxis({ startPos: [975, 450], endPos: [975, 50], labelOverlap: [transforms.ellipsis] });
 
   return group;
 };

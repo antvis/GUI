@@ -7,11 +7,9 @@ export function Checkbox1() {
   group.appendChild(
     new Checkbox({
       style: {
-        style: {
-          x: 10,
-          y: 10,
-          labelText: 'Checkbox',
-        },
+        x: 10,
+        y: 10,
+        labelText: 'Checkbox',
       },
     })
   );
@@ -19,12 +17,10 @@ export function Checkbox1() {
   group.appendChild(
     new Checkbox({
       style: {
-        style: {
-          x: 10,
-          y: 30,
-          labelText: 'Checkbox',
-          checked: true,
-        },
+        x: 10,
+        y: 30,
+        labelText: 'Checkbox',
+        checked: true,
       },
     })
   );

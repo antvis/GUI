@@ -1,6 +1,6 @@
 /* global Keyframe */
-import type { DisplayObject } from '@antv/g';
 import { isNil } from '@antv/util';
+import type { DisplayObject } from '../shapes';
 import type { GUI } from '../core';
 import { show, hide } from '../util';
 import type { AnimationOption, AnimationResult, GenericAnimation, StandardAnimationOption } from './types';
@@ -140,7 +140,7 @@ export function transition(
     if (!isNil(tarStyle)) {
       // 关闭 CSS 解析后，attr / getAttribute 只能获取到用户显式传入的属性，此时可以
       // 获取解析值，如果仍获取不到（例如 x/y），则使用 0 作为默认值
-      const currStyle = target.attr(key) || target.parsedStyle[key] || 0; // x/y
+      const currStyle = target.style[key] || target.parsedStyle[key] || 0; // x/y
       if (currStyle !== tarStyle) {
         from[key] = currStyle;
         to[key] = tarStyle;

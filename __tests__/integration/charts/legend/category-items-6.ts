@@ -11,14 +11,12 @@ export const CategoryItems6 = () => {
     new CategoryItems({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          itemLabelFill: 'red',
-          itemValueFill: 'green',
-          width: 1000,
-          height: 100,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        layout: 'flex',
+        itemLabelFill: 'red',
+        itemValueFill: 'green',
+        width: 1000,
+        height: 100,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

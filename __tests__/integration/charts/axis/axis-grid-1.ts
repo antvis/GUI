@@ -15,18 +15,16 @@ export const AxisGrid1 = () => {
       style: {
         showLabel: false,
         data: data(12),
-        style: {
-          type: 'linear',
-          startPos: [50, 50],
-          endPos: [500, 50],
-          tickDirection: 'negative',
-          gridLength: 200,
-          gridAreaFill: 'rgba(0,0,0,0.05)',
-          gridLineWidth: 0,
-          lineLineWidth: 1,
-          tickLength: 10,
-          labelSpacing: 10,
-        },
+        type: 'linear',
+        startPos: [50, 50],
+        endPos: [500, 50],
+        tickDirection: 'negative',
+        gridLength: 200,
+        gridAreaFill: 'rgba(0,0,0,0.05)',
+        gridLineWidth: 0,
+        lineLineWidth: 1,
+        tickLength: 10,
+        labelSpacing: 10,
       },
     })
   );

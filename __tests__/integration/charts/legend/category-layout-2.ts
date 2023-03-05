@@ -9,14 +9,11 @@ export const CategoryLayout2 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          height: 40,
-          titleText: 'Legend Title',
-          width: 600,
-          itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
-          itemValue: '',
-        },
+        layout: 'flex',
+        height: 40,
+        titleText: 'Legend Title',
+        width: 600,
+        itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
       },
     })
   );

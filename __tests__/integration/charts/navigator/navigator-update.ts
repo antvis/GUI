@@ -1,6 +1,6 @@
 import { Group, Rect } from '@antv/g';
 import { Navigator } from '../../../../src/ui/navigator';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { timeout } from '../../utils';
 
 export const NavigatorUpdate = () => {
@@ -35,18 +35,16 @@ export const NavigatorUpdate = () => {
 
   const nav = group.appendChild(
     new Navigator({
-      style: { style: {} },
+      style: {},
     })
   );
 
   // update page views
   timeout(() => {
     nav.update({
-      style: {
-        x: 100,
-        y: 100,
-        loop: true,
-      },
+      x: 100,
+      y: 100,
+      loop: true,
     });
     createPageViews(10, [100, 100], (str) => `page - ${str} \n updated`).forEach((page) => {
       nav.getContainer().appendChild(page);
@@ -56,10 +54,8 @@ export const NavigatorUpdate = () => {
   // update page size
   timeout(() => {
     nav.update({
-      style: {
-        pageWidth: 200,
-        pageHeight: 200,
-      },
+      pageWidth: 200,
+      pageHeight: 200,
     });
     nav.getContainer().destroyChildren();
     createPageViews(10, [200, 200], (str) => `page - ${str} \n update \n page size`).forEach((page) => {
@@ -70,18 +66,14 @@ export const NavigatorUpdate = () => {
   // set page num
   timeout(() => {
     nav.update({
-      style: {
-        initPage: 4,
-      },
+      initPage: 4,
     });
   }, 3000);
 
   timeout(() => {
     nav.update({
-      style: {
-        pageWidth: 100,
-        pageHeight: 100,
-      },
+      pageWidth: 100,
+      pageHeight: 100,
     });
     nav.getContainer().destroyChildren();
     createPageViews(10, [100, 100], (str) => `page - ${str} \n updated`).forEach((page) => {

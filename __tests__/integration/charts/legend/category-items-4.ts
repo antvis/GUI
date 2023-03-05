@@ -1,5 +1,5 @@
 import { Group, Image } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { CategoryItems, createItemData } from './utils';
 
 export const CategoryItems4 = () => {
@@ -15,43 +15,41 @@ export const CategoryItems4 = () => {
       style: {
         data: createItemData(20),
         navFormatter: (curr: number, total: number) => `第${curr}页(共${total}页)`,
-        animate: {
-          navDuration: 1000,
+        navAnimate: {
+          duration: 1000,
         },
-        style: {
-          layout: 'grid',
-          itemLabelFill: 'red',
-          itemValueFill: 'green',
-          gridCol: 4,
-          gridRow: 1,
-          width: 555,
-          height: 30,
-          navLoop: true,
-          colPadding: 10,
-          // 注意这里是一个高阶函数
-          itemMarker: (_: any) => () =>
-            new Image({
-              style: {
-                x: -8,
-                y: -8,
-                width: 16,
-                height: 16,
-                src: 'https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*N4ZMS7gHsUIAAAAAAAAAAABkARQnAQ',
-              },
-            }),
-          navButtonFill: 'blue',
-          navButtonTransform: 'scale(0.8)',
-          navControllerSpacing: 10,
-          navPageNumFill: 'red',
-          click: (el: any) => {
-            alert(`you clicked item: ${el.attributes.style.label} - ${el.attributes.style.value}`);
-          },
-          mouseenter: (el: any) => {
-            el.querySelector('.legend-category-item-background').attr('fill', '#f4bb51');
-          },
-          mouseleave: (el: any) => {
-            el.querySelector('.legend-category-item-background').attr('fill', 'white');
-          },
+        layout: 'grid',
+        itemLabelFill: 'red',
+        itemValueFill: 'green',
+        gridCol: 4,
+        gridRow: 1,
+        width: 555,
+        height: 30,
+        navLoop: true,
+        colPadding: 10,
+        // 注意这里是一个高阶函数
+        itemMarker: (_: any) => () =>
+          new Image({
+            style: {
+              x: -8,
+              y: -8,
+              width: 16,
+              height: 16,
+              src: 'https://gw.alipayobjects.com/mdn/rms_6ae20b/afts/img/A*N4ZMS7gHsUIAAAAAAAAAAABkARQnAQ',
+            },
+          }),
+        navButtonFill: 'blue',
+        navButtonTransform: 'scale(0.8)',
+        navControllerSpacing: 10,
+        navPageNumFill: 'red',
+        click: (el: any) => {
+          alert(`you clicked item: ${el.attributes.labelText} - ${el.attributes.valueText}`);
+        },
+        mouseenter: (el: any) => {
+          el.querySelector('.legend-category-item-background').attr('fill', '#f4bb51');
+        },
+        mouseleave: (el: any) => {
+          el.querySelector('.legend-category-item-background').attr('fill', 'white');
         },
       },
     })

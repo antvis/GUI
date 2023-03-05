@@ -7,11 +7,9 @@ export function Button1() {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 100,
-          y: 100,
-          text: 'Hello',
-        },
+        x: 100,
+        y: 100,
+        text: 'Hello',
       },
     })
   );

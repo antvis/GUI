@@ -7,9 +7,7 @@ export const Switch1 = () => {
   group.appendChild(
     new Switch({
       style: {
-        style: {
-          checked: false,
-        },
+        checked: false,
       },
     })
   );
@@ -17,10 +15,8 @@ export const Switch1 = () => {
   group.appendChild(
     new Switch({
       style: {
-        style: {
-          y: 40,
-          checked: true,
-        },
+        y: 40,
+        checked: true,
       },
     })
   );
@@ -28,19 +24,15 @@ export const Switch1 = () => {
   const sw = group.appendChild(
     new Switch({
       style: {
-        style: {
-          y: 80,
-          checked: false,
-        },
+        y: 80,
+        checked: false,
       },
     })
   );
 
   sw.addEventListener('click', () => {
     sw.update({
-      style: {
-        checked: !sw.attributes.style?.checked,
-      },
+      checked: !sw.attributes.checked,
     });
   });
 

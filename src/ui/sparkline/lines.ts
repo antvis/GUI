@@ -1,6 +1,6 @@
-import type { BaseStyleProps, PathStyleProps } from '@antv/g';
-import { DisplayObject, Group } from '@antv/g';
 import { deepMix } from '@antv/util';
+import type { BaseStyleProps, PathStyleProps } from '../../shapes';
+import { DisplayObject, Group } from '../../shapes';
 import { select } from '../../util';
 
 export interface ILinesCfg extends BaseStyleProps {

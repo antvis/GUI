@@ -16,19 +16,19 @@ export const Continuous5 = () => {
   };
 
   const conditions = [
-    { style: { labelDirection: 'positive' } },
-    { style: { labelDirection: 'negative' } },
-    { style: { labelDirection: 'positive', titleText: 'title' } },
-    { style: { labelDirection: 'negative', titleText: 'title' } },
-    { style: { labelDirection: 'positive' }, showHandle: false },
-    { style: { labelDirection: 'negative' }, showHandle: false },
-    { style: { labelDirection: 'positive' }, showTick: true },
-    { style: { labelDirection: 'negative' }, showTick: true },
-    { style: { labelDirection: 'positive', titleText: 'title' }, showTick: true },
-    { style: { labelDirection: 'negative', titleText: 'title' }, showTick: true },
-    { style: { labelDirection: 'positive' }, showHandle: false, showTick: true },
-    { style: { labelDirection: 'negative' }, showHandle: false, showTick: true },
-  ];
+    { labelDirection: 'positive' },
+    { labelDirection: 'negative' },
+    { labelDirection: 'positive', titleText: 'title' },
+    { labelDirection: 'negative', titleText: 'title' },
+    { labelDirection: 'positive', showHandle: false },
+    { labelDirection: 'negative', showHandle: false },
+    { labelDirection: 'positive', showTick: true },
+    { labelDirection: 'negative', showTick: true },
+    { labelDirection: 'positive', titleText: 'title', showTick: true },
+    { labelDirection: 'negative', titleText: 'title', showTick: true },
+    { labelDirection: 'positive', showHandle: false, showTick: true },
+    { labelDirection: 'negative', showHandle: false, showTick: true },
+  ] as const;
 
   conditions.forEach((con, i) => {
     const y = Math.floor(i / 6) * (shape.height + 5);
@@ -46,24 +46,20 @@ export const Continuous5 = () => {
     );
     group.appendChild(
       new Continuous({
-        style: deepAssign(
-          {
-            data: new Array(10).fill(0).map((d: any, i: number) => ({ value: i * 100 })),
-            showLabel: true,
-            handleFormatter: () => '',
-            style: {
-              x,
-              y,
-              block: true,
-              ...shape,
-              orientation: 'vertical',
-              labelSpacing: 10,
-              labelAlign: 'value',
-              handleMarkerSize: 30,
-            },
-          },
-          con
-        ),
+        style: {
+          block: true,
+          data: new Array(10).fill(0).map((d: any, i: number) => ({ value: i * 100 })),
+          handleFormatter: () => '',
+          handleMarkerSize: 30,
+          labelAlign: 'value',
+          labelSpacing: 10,
+          orientation: 'vertical',
+          showLabel: true,
+          x,
+          y,
+          ...shape,
+          ...con,
+        },
       })
     );
   });

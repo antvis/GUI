@@ -8,10 +8,8 @@ export const CrosshairCircle = () => {
   const circle = group.appendChild(
     new CircleCrosshair({
       style: {
-        style: {
-          center: [200, 200],
-          defaultRadius: 50,
-        },
+        center: [200, 200],
+        defaultRadius: 50,
       },
     })
   );

@@ -35,45 +35,41 @@ export const AxisAnimationUpdate12 = () => {
         animate: { duration: process.env.NODE_ENV === 'test' ? 100 : 1000 },
         data: data(12),
         showGrid: true,
-        style: {
-          endPos: [150, 50],
-          gridAreaFill: 'lightgreen',
-          gridLength: 40,
-          gridStroke: 'red',
-          labelDirection: 'negative',
-          labelAlign: 'horizontal',
-          labelSpacing: 10,
-          labelFormatter: (d: any, i: number) => `label-${i}`,
-          lineExtension: [10, 10],
-          startPos: [150, 500],
-          tickLength: 5,
-          titleText: 'title',
-          titleFill: 'red',
-          titleFontSize: 16,
-          titleFontWeight: 'bold',
-          titlePosition: 'l',
-          titleSpacing: 10,
-          type: 'linear',
-        },
+        endPos: [150, 50],
+        gridAreaFill: 'lightgreen',
+        gridLength: 40,
+        gridStroke: 'red',
+        labelDirection: 'negative',
+        labelAlign: 'horizontal',
+        labelSpacing: 10,
+        labelFormatter: (d: any, i: number) => `label-${i}`,
+        lineExtension: [10, 10],
+        startPos: [150, 500],
+        tickLength: 5,
+        titleText: 'title',
+        titleFill: 'red',
+        titleFontSize: 16,
+        titleFontWeight: 'bold',
+        titlePosition: 'l',
+        titleSpacing: 10,
+        type: 'linear',
       },
     })
   );
 
   function update() {
-    axis.update({ style: { startPos: [150, 550] }, labelFormatter: () => 'label.label.label' });
+    axis.update({ startPos: [150, 550], labelFormatter: () => 'label.label.label' });
   }
 
   function reset() {
-    axis.update({ style: { startPos: [150, 500] }, labelFormatter: (d: any, i: number) => `label-${i}` });
+    axis.update({ startPos: [150, 500], labelFormatter: (d: any, i: number) => `label-${i}` });
   }
 
   group.appendChild(
     new Button({
       style: {
-        style: {
-          text: 'update',
-          onClick: update,
-        },
+        text: 'update',
+        onClick: update,
       },
     })
   );
@@ -81,12 +77,10 @@ export const AxisAnimationUpdate12 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 80,
-          y: 0,
-          text: 'reset',
-          onClick: reset,
-        },
+        x: 80,
+        y: 0,
+        text: 'reset',
+        onClick: reset,
       },
     })
   );

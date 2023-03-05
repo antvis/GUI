@@ -11,16 +11,14 @@ export const AxisArcLabelRotate1 = () => {
     new Axis({
       style: {
         data: data(10),
-        style: {
-          type: 'arc',
-          radius: 80,
-          lineLineWidth: 5,
-          tickLength: 10,
-          labelSpacing: 15,
-          startAngle: -90,
-          endAngle: 270,
-          center: [150, 150],
-        },
+        type: 'arc',
+        radius: 80,
+        lineLineWidth: 5,
+        tickLength: 10,
+        labelSpacing: 15,
+        startAngle: -90,
+        endAngle: 270,
+        center: [150, 150],
       },
     })
   );

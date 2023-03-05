@@ -10,29 +10,27 @@ export const BugCategoryUpdate3 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'grid',
-          height: 100,
-          width: 400,
-          gridRow: 1,
-          gridCol: 3,
-          titleText: 'Legend Title',
-          itemMarkerFill: '#d3d2d3',
-        },
+        layout: 'grid',
+        height: 100,
+        width: 400,
+        gridRow: 1,
+        gridCol: 3,
+        titleText: 'Legend Title',
+        itemMarkerFill: '#d3d2d3',
       },
     })
   );
 
   timeout(() => {
-    category.update({ style: { gridRow: 2 } });
+    category.update({ gridRow: 2 });
   }, 1000);
 
   timeout(() => {
-    category.update({ style: { gridCol: 4 } });
+    category.update({ gridCol: 4 });
   }, 2000);
 
   timeout(() => {
-    category.update({ style: { gridRow: 1, gridCol: 3 } });
+    category.update({ gridRow: 1, gridCol: 3 });
   }, 3000);
 
   return group;

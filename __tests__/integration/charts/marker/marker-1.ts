@@ -7,13 +7,11 @@ export const Marker1 = () => {
   group.appendChild(
     new Marker({
       style: {
-        style: {
-          x: 150,
-          y: 150,
-          symbol: 'circle',
-          size: 10,
-          fill: 'red',
-        },
+        x: 150,
+        y: 150,
+        symbol: 'circle',
+        size: 10,
+        fill: 'red',
       },
     })
   );

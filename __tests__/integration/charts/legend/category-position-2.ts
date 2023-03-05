@@ -19,17 +19,15 @@ export const CategoryPosition2 = () => {
       style: {
         showTitle: false,
         data: createItemData(20),
-        style: {
-          x: 50,
-          y: 50,
-          layout: 'grid',
-          titleText: 'Legend Title',
-          width: 455,
-          height: 50,
-          gridCol: 4,
-          gridRow: 1,
-          itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
-        },
+        x: 50,
+        y: 50,
+        layout: 'grid',
+        titleText: 'Legend Title',
+        width: 455,
+        height: 50,
+        gridCol: 4,
+        gridRow: 1,
+        itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
       },
     })
   );

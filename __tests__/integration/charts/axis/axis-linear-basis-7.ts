@@ -14,7 +14,7 @@ export const AxisLinearBasis7 = () => {
     new Axis({
       style: {
         data: mockData,
-        labelTransform: [
+        labelOverlap: [
           {
             type: 'ellipsis',
             minLength: 50,
@@ -23,17 +23,15 @@ export const AxisLinearBasis7 = () => {
           },
         ],
         showTrunc: true,
-        style: {
-          startPos: [50, 50],
-          endPos: [500, 50],
-          truncRange: [0.1, 0.3],
-          lineLineWidth: 2,
-          lineStroke: 'black',
-          tickLineWidth: 2,
-          tickStroke: 'black',
-          labelTransform: 'rotate(90)',
-          type: 'linear',
-        },
+        startPos: [50, 50],
+        endPos: [500, 50],
+        truncRange: [0.1, 0.3],
+        lineLineWidth: 2,
+        lineStroke: 'black',
+        tickLineWidth: 2,
+        tickStroke: 'black',
+        labelTransform: 'rotate(90)',
+        type: 'linear',
       },
     })
   );

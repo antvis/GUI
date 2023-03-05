@@ -1,5 +1,5 @@
 import { Group, Rect } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { Navigator } from '../../../../src/ui/navigator';
 
 export const NavigatorStyle = () => {
@@ -40,9 +40,7 @@ export const NavigatorStyle = () => {
   const nav = group.appendChild(
     new Navigator({
       style: {
-        style: {
-          loop: true,
-        },
+        loop: true,
       },
     })
   );
@@ -51,7 +49,7 @@ export const NavigatorStyle = () => {
     nav.getContainer().appendChild(page);
   });
 
-  nav.update({ style: { buttonFillOpacity: 0.5 } });
+  nav.update({ buttonFillOpacity: 0.5 });
 
   return group;
 };

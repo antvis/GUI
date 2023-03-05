@@ -1,6 +1,6 @@
 import { Group } from '@antv/g';
 import { Axis } from '../../../../src/ui/axis';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { data } from '../../utils';
 
 export const AxisLinearLabelAlign15 = () => {
@@ -10,15 +10,13 @@ export const AxisLinearLabelAlign15 = () => {
       style: {
         data: data(12),
         labelFormatter: (_: any, index: number) => new Text({ style: { text: '666' } }),
-        style: {
-          type: 'linear',
-          lineLineWidth: 5,
-          tickLineWidth: 5,
-          labelSpacing: 5,
-          tickLength: 10,
-          startPos: [50, 100],
-          endPos: [450, 500],
-        },
+        type: 'linear',
+        lineLineWidth: 5,
+        tickLineWidth: 5,
+        labelSpacing: 5,
+        tickLength: 10,
+        startPos: [50, 100],
+        endPos: [450, 500],
       },
     })
   );

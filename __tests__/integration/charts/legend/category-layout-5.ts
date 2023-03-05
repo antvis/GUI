@@ -9,16 +9,14 @@ export const CategoryLayout5 = () => {
     new Category({
       style: {
         data: createItemData(6),
-        style: {
-          layout: 'grid',
-          titleText: 'Legend Title',
-          width: 455,
-          height: 50,
-          gridCol: 6,
-          gridRow: 1,
-          itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
-          itemValue: '',
-        },
+        layout: 'grid',
+        titleText: 'Legend Title',
+        width: 455,
+        height: 50,
+        gridCol: 6,
+        gridRow: 1,
+        itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
+        itemValueText: '',
       },
     })
   );

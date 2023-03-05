@@ -21,15 +21,13 @@ export const BugCategoryWithShape2 = () => {
   rect2.appendChild(
     new Category({
       style: {
-        style: {
-          titleText: 'title',
-          titleFontSize: 20,
-          width,
-          height,
-          gridCol: 10,
-          gridRow: 10,
-          itemMarkerFill: '#d3d2d3',
-        },
+        titleText: 'title',
+        titleFontSize: 20,
+        width,
+        height,
+        gridCol: 10,
+        gridRow: 10,
+        itemMarkerFill: '#d3d2d3',
         data: new Array(20).fill(0).map((d: any, i: number) => ({
           label: `label-${i}`,
           value: `value-${i}`,

@@ -7,15 +7,13 @@ export const BugCategoryWithShape3 = () => {
   group.appendChild(
     new Category({
       style: {
-        style: {
-          x: 50,
-          y: 50,
-          width: 300,
-          height: 300,
-          gridRow: undefined,
-          gridCol: 1,
-          itemMarkerFill: '#d3d2d3',
-        },
+        x: 50,
+        y: 50,
+        width: 300,
+        height: 300,
+        gridRow: undefined,
+        gridCol: 1,
+        itemMarkerFill: '#d3d2d3',
         data: [
           { label: 'Under 5 Years' },
           { label: '5 to 13 Years' },

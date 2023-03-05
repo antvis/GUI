@@ -11,22 +11,20 @@ export const BugCategoryUpdate1 = () => {
       className: 'category-legend',
       style: {
         data: flowItemData,
-        style: {
-          y: 30,
-          layout: 'flex',
-          width: 400,
-          height: 100,
-          gridRow: 2,
-          itemLabelFill: 'green',
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        y: 30,
+        layout: 'flex',
+        width: 400,
+        height: 100,
+        gridRow: 2,
+        itemLabelFill: 'green',
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );
 
   timeout(() => {
     // 期望变成红色
-    category.update({ style: { itemLabelFill: 'red' } });
+    category.update({ itemLabelFill: 'red' });
   }, 1000);
 
   return group;

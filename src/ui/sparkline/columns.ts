@@ -1,12 +1,8 @@
-import { DisplayObject, BaseStyleProps, Rect, Group } from '@antv/g';
 import { deepMix } from '@antv/util';
-import type { ShapeAttrs } from '../../types';
+import { BaseStyleProps, DisplayObject, Group, GroupStyleProps } from '../../shapes';
 import { select } from '../../util';
 
-export interface ColumnStyleProps extends ShapeAttrs {
-  width: number;
-  height: number;
-}
+export type ColumnStyleProps = GroupStyleProps;
 
 export interface ColumnsStyleProps extends BaseStyleProps {
   columns: ColumnStyleProps[][];

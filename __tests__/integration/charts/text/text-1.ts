@@ -1,5 +1,5 @@
 import { Group } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 
 export function Text1() {
   const group = new Group();

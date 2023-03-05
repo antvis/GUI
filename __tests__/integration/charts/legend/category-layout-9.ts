@@ -9,14 +9,12 @@ export const CategoryLayout9 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          width: 1000,
-          height: 100,
-          gridRow: 1,
-          gridCol: undefined,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        layout: 'flex',
+        width: 1000,
+        height: 100,
+        gridRow: 1,
+        gridCol: undefined,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

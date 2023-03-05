@@ -17,25 +17,23 @@ export const AxisAnimationDisable = () => {
         data: data(12),
         showGrid: true,
         animate: false,
-        style: {
-          endPos: [150, 50],
-          gridAreaFill: 'lightgreen',
-          gridLength: 40,
-          gridStroke: 'red',
-          labelDirection: 'negative',
-          labelAlign: 'horizontal',
-          labelSpacing: 10,
-          lineExtension: [10, 10],
-          startPos: [150, 500],
-          tickLength: 5,
-          titleText: 'title',
-          titleFill: 'red',
-          titleFontSize: 16,
-          titleFontWeight: 'bold',
-          titlePosition: 'l',
-          titleSpacing: 10,
-          type: 'linear',
-        },
+        endPos: [150, 50],
+        gridAreaFill: 'lightgreen',
+        gridLength: 40,
+        gridStroke: 'red',
+        labelDirection: 'negative',
+        labelAlign: 'horizontal',
+        labelSpacing: 10,
+        lineExtension: [10, 10],
+        startPos: [150, 500],
+        tickLength: 5,
+        titleText: 'title',
+        titleFill: 'red',
+        titleFontSize: 16,
+        titleFontWeight: 'bold',
+        titlePosition: 'l',
+        titleSpacing: 10,
+        type: 'linear',
       },
     })
   );
@@ -50,17 +48,13 @@ export const AxisAnimationDisable = () => {
 
   group.appendChild(
     new Button({
-      style: {
-        style: { x: 250, y: 100, text: 'update', onClick: update },
-      },
+      style: { x: 250, y: 100, text: 'update', onClick: update },
     })
   );
 
   group.appendChild(
     new Button({
-      style: {
-        style: { x: 250, y: 150, text: 'reset', onClick: reset },
-      },
+      style: { x: 250, y: 150, text: 'reset', onClick: reset },
     })
   );
 

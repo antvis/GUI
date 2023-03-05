@@ -14,17 +14,15 @@ export const AxisLinearBasis6 = () => {
     new Axis({
       style: {
         data: mockData,
-        style: {
-          startPos: [50, 500],
-          endPos: [50, 50],
-          lineLineWidth: 5,
-          lineStroke: 'purple',
-          tickLength: 10,
-          labelSpacing: 5,
-          labelAlign: 'horizontal',
-          type: 'linear',
-          tickLineWidth: 5,
-        },
+        startPos: [50, 500],
+        endPos: [50, 50],
+        lineLineWidth: 5,
+        lineStroke: 'purple',
+        tickLength: 10,
+        labelSpacing: 5,
+        labelAlign: 'horizontal',
+        type: 'linear',
+        tickLineWidth: 5,
       },
     })
   );

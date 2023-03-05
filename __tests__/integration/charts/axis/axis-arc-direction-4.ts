@@ -11,19 +11,17 @@ export const AxisArcDirection4 = () => {
     new Axis({
       style: {
         data: data(8),
-        style: {
-          center: [150, 150],
-          endAngle: 270,
-          labelAlign: 'perpendicular',
-          labelDirection: 'positive',
-          labelSpacing: 15,
-          lineLineWidth: 5,
-          radius: 80,
-          startAngle: -90,
-          tickDirection: 'negative',
-          tickLength: 10,
-          type: 'arc',
-        },
+        center: [150, 150],
+        endAngle: 270,
+        labelAlign: 'perpendicular',
+        labelDirection: 'positive',
+        labelSpacing: 15,
+        lineLineWidth: 5,
+        radius: 80,
+        startAngle: -90,
+        tickDirection: 'negative',
+        tickLength: 10,
+        type: 'arc',
       },
     })
   );

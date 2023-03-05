@@ -14,18 +14,16 @@ export const CategoryItems1 = () => {
     new CategoryItems({
       style: {
         data: createItemData(20),
-        style: {
-          width,
-          height,
-          gridRow,
-          gridCol,
-          layout: 'grid',
-          itemLabelFill: 'red',
-          itemValueFill: 'green',
-          colPadding: 10,
-          rowPadding: 5,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        width,
+        height,
+        gridRow,
+        gridCol,
+        layout: 'grid',
+        itemLabelFill: 'red',
+        itemValueFill: 'green',
+        colPadding: 10,
+        rowPadding: 5,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

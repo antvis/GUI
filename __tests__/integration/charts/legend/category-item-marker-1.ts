@@ -14,33 +14,30 @@ export const CategoryItemMarker1 = () => {
     new Category({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          height: 40,
-          titleText: 'Legend Title',
-          width: 1000,
-          itemMarker: (d: any, i: number) =>
-            i % 2 === 0
-              ? () =>
-                  new Rect({
-                    style: {
-                      x: -5,
-                      y: -5,
-                      width: 10,
-                      height: 10,
-                      transformOrigin: 'center',
-                      transform: 'rotate(45)',
-                    },
-                  })
-              : () =>
-                  new Circle({
-                    style: {
-                      r: 5,
-                    },
-                  }),
-          itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
-          itemValue: '',
-        },
+        layout: 'flex',
+        height: 40,
+        titleText: 'Legend Title',
+        width: 1000,
+        itemMarker: (d: any, i: number) =>
+          i % 2 === 0
+            ? () =>
+                new Rect({
+                  style: {
+                    x: -5,
+                    y: -5,
+                    width: 10,
+                    height: 10,
+                    transformOrigin: 'center',
+                    transform: 'rotate(45)',
+                  },
+                })
+            : () =>
+                new Circle({
+                  style: {
+                    r: 5,
+                  },
+                }),
+        itemMarkerFill: (_: any, i: number) => colors[i % colors.length],
       },
     })
   );

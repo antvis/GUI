@@ -10,17 +10,15 @@ export const CategoryItems8 = () => {
     new CategoryItems({
       style: {
         data: flowItemData,
-        style: {
-          layout: 'flex',
-          itemLabelFill: 'red',
-          itemValueFill: 'green',
-          colPadding: 10,
-          gridRow: 2,
-          gridCol: 5,
-          width: 650,
-          height: 50,
-          itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
-        },
+        layout: 'flex',
+        itemLabelFill: 'red',
+        itemValueFill: 'green',
+        colPadding: 10,
+        gridRow: 2,
+        gridCol: 5,
+        width: 650,
+        height: 50,
+        itemMarkerFill: (_: any, index: number) => colors[index % colors.length],
       },
     })
   );

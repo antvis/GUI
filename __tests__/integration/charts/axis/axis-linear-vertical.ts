@@ -1,5 +1,5 @@
 import { Group } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { axisWarper } from '../../utils';
 
 export const AxisLinearVertical = () => {
@@ -53,24 +53,21 @@ export const AxisLinearVertical = () => {
           textBaseline: 'middle',
         },
       }),
-    style: {
-      type: 'linear',
-      lineLineWidth: 5,
-      lineStroke: 'purple',
-      labelSpacing: 10,
-      labelAlign: 'horizontal',
-    },
+    type: 'linear',
+    lineLineWidth: 5,
+    lineStroke: 'purple',
+    labelSpacing: 10,
+    labelAlign: 'horizontal',
   });
 
   createAxis({
-    style: { startPos: [220, 500], endPos: [220, 50] },
+    startPos: [220, 500],
+    endPos: [220, 50],
   });
 
   createAxis({
-    style: {
-      startPos: [550, 50],
-      endPos: [550, 500],
-    },
+    startPos: [550, 50],
+    endPos: [550, 500],
   });
 
   return group;

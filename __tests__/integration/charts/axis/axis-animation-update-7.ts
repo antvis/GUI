@@ -17,15 +17,13 @@ export const AxisAnimationUpdate7 = () => {
         animate: { duration: process.env.NODE_ENV === 'test' ? 100 : 1000 },
         data: data(12),
         labelFormatter: (d: any, i: number) => `${i}`,
-        style: {
-          center: [150, 150],
-          endAngle: 360,
-          labelSpacing: 10,
-          radius: 80,
-          startAngle: 0,
-          tickLength: 10,
-          type: 'arc',
-        },
+        center: [150, 150],
+        endAngle: 360,
+        labelSpacing: 10,
+        radius: 80,
+        startAngle: 0,
+        tickLength: 10,
+        type: 'arc',
       },
     })
   );
@@ -41,10 +39,8 @@ export const AxisAnimationUpdate7 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          text: 'update',
-          onClick: update,
-        },
+        text: 'update',
+        onClick: update,
       },
     })
   );
@@ -52,12 +48,10 @@ export const AxisAnimationUpdate7 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 80,
-          y: 0,
-          text: 'reset',
-          onClick: reset,
-        },
+        x: 80,
+        y: 0,
+        text: 'reset',
+        onClick: reset,
       },
     })
   );

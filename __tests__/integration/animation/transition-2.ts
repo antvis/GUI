@@ -1,5 +1,5 @@
 import { Group, Rect, Circle } from '@antv/g';
-import { Text } from '../../../src/ui/text';
+import { Text } from '../../../src/shapes';
 import { transitionShape } from '../../../src/animation';
 
 export function Transition2() {

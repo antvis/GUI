@@ -7,22 +7,20 @@ export const Slider11 = () => {
   group.appendChild(
     new Slider({
       style: {
-        showLabel: false,
+        brushable: false,
+        orientation: 'vertical',
+        padding: 2,
+        selectionRadius: 5,
         showHandle: false,
-        style: {
-          x: 10,
-          y: 10,
-          orientation: 'vertical',
-          trackLength: 300,
-          trackSize: 10,
-          values: [0.25, 0.75],
-          brushable: false,
-          padding: 2,
-          selectionRadius: 5,
-          trackRadius: 5,
-          trackFill: '#d8e8fb',
-          trackOpacity: 0.5,
-        },
+        showLabel: false,
+        trackFill: '#d8e8fb',
+        trackLength: 300,
+        trackOpacity: 0.5,
+        trackRadius: 5,
+        trackSize: 10,
+        values: [0.25, 0.75],
+        x: 10,
+        y: 10,
       },
     })
   );

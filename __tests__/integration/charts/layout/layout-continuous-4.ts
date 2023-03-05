@@ -41,12 +41,10 @@ export const LayoutContinuous4 = () => {
           data: [{ value: 0 }, { value: 1000 }],
           handleFormatter: (str: any) => `${str}°C`,
           showLabel: false,
-          style: {
-            width: 300,
-            height: 50,
-            handleMarkerSize: 30,
-            ribbonTrackFill: 'pink',
-          },
+          width: 300,
+          height: 50,
+          handleMarkerSize: 30,
+          ribbonTrackFill: 'pink',
         },
       })
     )

@@ -1,26 +1,26 @@
-import { Group, Rect } from '@antv/g';
-import { clone, deepMix, isNumber, isArray, isFunction } from '@antv/util';
-import { Linear, Band } from '@antv/scale';
-import { GUI, type RequiredStyleProps } from '../../core';
+import { Band, Linear } from '@antv/scale';
+import { clone, isArray, isFunction, isNumber } from '@antv/util';
+import { GUI } from '../../core';
+import { Group, Rect } from '../../shapes';
 import { maybeAppend, subStyleProps } from '../../util';
-import { Lines } from './lines';
+import type { ColumnsStyleProps, ColumnStyleProps } from './columns';
 import { Columns } from './columns';
-import { getRange, getStackedData } from './utils';
 import type { ILinesCfg } from './lines';
-import type { ColumnStyleProps, ColumnsStyleProps } from './columns';
-import type { Data, SparklineStyleProps, SparklineOptions } from './types';
+import { Lines } from './lines';
 import {
   dataToLines,
-  lineToLinePath,
-  lineToCurvePath,
   linesToAreaPaths,
   linesToStackAreaPaths,
   linesToStackCurveAreaPaths,
+  lineToCurvePath,
+  lineToLinePath,
 } from './path';
+import type { Data, SparklineOptions, SparklineStyleProps } from './types';
+import { getRange, getStackedData } from './utils';
 
 export type { SparklineStyleProps, SparklineOptions };
 
-export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
+export class Sparkline extends GUI<SparklineStyleProps> {
   public static tag = 'sparkline';
 
   // sparkline容器
@@ -42,7 +42,7 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
   }
 
   private get data(): Data {
-    if (this.attributes.style?.isStack) return getStackedData(this.rawData);
+    if (this.attributes.isStack) return getStackedData(this.rawData);
     return this.rawData;
   }
 
@@ -64,19 +64,15 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
   }
 
   private get containerCfg() {
-    const {
-      style: { width, height },
-    } = this.attributes;
+    const { width, height } = this.attributes;
     return { width, height } as { width: number; height: number };
   }
 
   private get linesCfg(): ILinesCfg {
-    const {
-      style: { type, isStack, smooth },
-    } = this.attributes;
+    const { type, isStack, smooth } = this.attributes;
     if (type !== 'line') throw new Error('linesCfg can only be used in line type');
-    const { style: areaStyle } = subStyleProps(this.attributes, 'area');
-    const { style: lineStyle } = subStyleProps(this.attributes, 'line');
+    const areaStyle = subStyleProps(this.attributes, 'area');
+    const lineStyle = subStyleProps(this.attributes, 'line');
     const { width } = this.containerCfg;
     const { data } = this;
     if (data[0].length === 0) return { lines: [], areas: [] };
@@ -115,10 +111,8 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
   }
 
   private get columnsCfg(): ColumnsStyleProps {
-    const { style: columnStyle } = subStyleProps(this.attributes, 'column');
-    const {
-      style: { isStack, type },
-    } = this.attributes;
+    const columnStyle = subStyleProps(this.attributes, 'column');
+    const { isStack, type } = this.attributes;
     if (type !== 'column') throw new Error('columnsCfg can only be used in column type');
     const { height } = this.containerCfg;
     let { rawData: data } = this;
@@ -161,28 +155,24 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
 
   constructor(options: SparklineOptions) {
     super(options, {
-      style: {
-        type: 'line',
-        width: 200,
-        height: 20,
-        isStack: false,
-        color: ['#83daad', '#edbf45', '#d2cef9', '#e290b3', '#6f63f4'],
-        smooth: true,
-        lineLineWidth: 1,
-        areaOpacity: 0,
-        isGroup: false,
-        columnLineWidth: 1,
-        columnStroke: '#fff',
-      },
+      type: 'line',
+      width: 200,
+      height: 20,
+      isStack: false,
+      color: ['#83daad', '#edbf45', '#d2cef9', '#e290b3', '#6f63f4'],
+      smooth: true,
+      lineLineWidth: 1,
+      areaOpacity: 0,
+      isGroup: false,
+      columnLineWidth: 1,
+      columnStroke: '#fff',
     });
   }
 
-  public render(attributes: RequiredStyleProps<SparklineStyleProps>, container: Group) {
+  public render(attributes: Required<SparklineStyleProps>, container: Group) {
     this.containerShape = maybeAppend(container, '.container', 'rect').attr('className', 'container').node();
 
-    const {
-      style: { type },
-    } = attributes;
+    const { type } = attributes;
     const className = `spark${type}`;
     const cfg: any = type === 'line' ? this.linesCfg : this.columnsCfg;
     this.sparkShape = maybeAppend(container, `.${className}`, () => {
@@ -206,9 +196,7 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
    * 根据数据索引获取color
    */
   private getColor(index: number) {
-    const {
-      style: { color },
-    } = this.attributes;
+    const { color } = this.attributes;
     if (isArray(color)) {
       return color[index % color.length];
     }
@@ -222,9 +210,7 @@ export class Sparkline extends GUI<RequiredStyleProps<SparklineStyleProps>> {
    * 根据数据生成scale
    */
   private createScales(data: number[][]) {
-    const {
-      style: { type, range = [], isGroup, spacing },
-    } = this.attributes;
+    const { type, range = [], isGroup, spacing } = this.attributes;
     const { width, height } = this.containerCfg;
     const [minVal, maxVal] = getRange(data);
 

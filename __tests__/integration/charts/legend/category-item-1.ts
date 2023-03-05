@@ -12,15 +12,13 @@ export const CategoryItem1 = () => {
   group.appendChild(
     new CategoryItem({
       style: {
-        style: {
-          label: 'pre-colonial Americas1',
-          value: '100%',
-          labelFill: 'red',
-          valueFill: 'green',
-          markerFill: 'red',
-          spacing: [5, 5],
-          backgroundFill: '#f7f7f7',
-        },
+        labelText: 'pre-colonial Americas1',
+        valueText: '100%',
+        labelFill: 'red',
+        valueFill: 'green',
+        markerFill: 'red',
+        spacing: [5, 5],
+        backgroundFill: '#f7f7f7',
       },
     })
   );

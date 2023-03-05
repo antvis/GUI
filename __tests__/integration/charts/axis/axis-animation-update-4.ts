@@ -18,38 +18,34 @@ export const AxisAnimationUpdate4 = () => {
         data: data(12),
         labelFormatter: (d: any, i: number) => `${i}`,
         showGrid: true,
-        style: {
-          endPos: [600, 50],
-          gridAreaFill: 'lightgreen',
-          gridLength: 40,
-          gridStroke: 'red',
-          labelSpacing: 5,
-          lineExtension: [10, 10],
-          startPos: [50, 50],
-          tickLength: 5,
-          type: 'linear',
-        },
+        endPos: [600, 50],
+        gridAreaFill: 'lightgreen',
+        gridLength: 40,
+        gridStroke: 'red',
+        labelSpacing: 5,
+        lineExtension: [10, 10],
+        startPos: [50, 50],
+        tickLength: 5,
+        type: 'linear',
       },
     })
   );
 
   function update() {
-    axis.update({ style: { startPos: [200, 50], endPos: [500, 50] }, data: data(6) });
+    axis.update({ startPos: [200, 50], endPos: [500, 50], data: data(6) });
   }
 
   function reset() {
-    axis.update({ style: { startPos: [50, 50], endPos: [600, 50] }, data: data(12) });
+    axis.update({ startPos: [50, 50], endPos: [600, 50], data: data(12) });
   }
 
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 50,
-          y: 100,
-          text: 'update',
-          onClick: update,
-        },
+        x: 50,
+        y: 100,
+        text: 'update',
+        onClick: update,
       },
     })
   );
@@ -57,12 +53,10 @@ export const AxisAnimationUpdate4 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 150,
-          y: 100,
-          text: 'reset',
-          onClick: reset,
-        },
+        x: 150,
+        y: 100,
+        text: 'reset',
+        onClick: reset,
       },
     })
   );

@@ -1,4 +1,4 @@
-import { Group, Circle } from '@antv/g';
+import { Circle, Group } from '@antv/g';
 import { Slider } from '../../../../src/ui/slider';
 
 export const Slider9 = () => {
@@ -7,18 +7,16 @@ export const Slider9 = () => {
   group.appendChild(
     new Slider({
       style: {
+        handleIconShape: () => new Circle({ style: { r: 5, fill: '#4e76b1' } }),
         showLabel: false,
-        style: {
-          x: 10,
-          y: 10,
-          trackLength: 300,
-          trackSize: 10,
-          values: [0.25, 0.75],
-          handleIconShape: () => new Circle({ style: { r: 5, fill: '#4e76b1' } }),
-          trackRadius: 5,
-          trackFill: '#d8e8fb',
-          trackOpacity: 0.5,
-        },
+        trackFill: '#d8e8fb',
+        trackLength: 300,
+        trackOpacity: 0.5,
+        trackRadius: 5,
+        trackSize: 10,
+        values: [0.25, 0.75],
+        x: 10,
+        y: 10,
       },
     })
   );

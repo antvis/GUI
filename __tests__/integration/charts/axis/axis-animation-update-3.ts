@@ -17,18 +17,16 @@ export const AxisAnimationUpdate3 = () => {
         animate: { duration: process.env.NODE_ENV === 'test' ? 100 : 1000 },
         data: data(12),
         labelFormatter: (d: any, i: number) => `${i}`,
-        style: {
-          endPos: [600, 50],
-          gridAreaFill: 'lightgreen',
-          gridLength: 40,
-          gridStroke: 'red',
-          labelSpacing: 5,
-          lineExtension: [10, 10],
-          showGrid: true,
-          startPos: [50, 50],
-          tickLength: 5,
-          type: 'linear',
-        },
+        endPos: [600, 50],
+        gridAreaFill: 'lightgreen',
+        gridLength: 40,
+        gridStroke: 'red',
+        labelSpacing: 5,
+        lineExtension: [10, 10],
+        showGrid: true,
+        startPos: [50, 50],
+        tickLength: 5,
+        type: 'linear',
       },
     })
   );
@@ -43,12 +41,10 @@ export const AxisAnimationUpdate3 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 50,
-          y: 100,
-          text: 'update',
-          onClick: update,
-        },
+        x: 50,
+        y: 100,
+        text: 'update',
+        onClick: update,
       },
     })
   );
@@ -56,12 +52,10 @@ export const AxisAnimationUpdate3 = () => {
   group.appendChild(
     new Button({
       style: {
-        style: {
-          x: 150,
-          y: 100,
-          text: 'reset',
-          onClick: reset,
-        },
+        x: 150,
+        y: 100,
+        text: 'reset',
+        onClick: reset,
       },
     })
   );

@@ -12,18 +12,16 @@ export const AxisArc = () => {
       style: {
         data: data(60),
         labelFormatter: (d: any, i: number) => (i % 5 === 0 ? i / 5 : ''),
-        style: {
-          type: 'arc',
-          radius: 80,
-          startAngle: -90,
-          endAngle: 270,
-          center: [150, 150],
-          titleText: '极坐标系',
-          titleSpacing: 10,
-          lineLineWidth: 1,
-          tickLength: (d: any, i: number) => (i % 5 === 0 ? 10 : 5),
-          labelSpacing: 10,
-        },
+        type: 'arc',
+        radius: 80,
+        startAngle: -90,
+        endAngle: 270,
+        center: [150, 150],
+        titleText: '极坐标系',
+        titleSpacing: 10,
+        lineLineWidth: 1,
+        tickLength: (d: any, i: number) => (i % 5 === 0 ? 10 : 5),
+        labelSpacing: 10,
       },
     })
   );

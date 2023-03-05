@@ -1,5 +1,5 @@
 import { Group, Rect } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { Navigator } from '../../../../src/ui/navigator';
 
 export const NavigatorWithoutShape = () => {
@@ -39,10 +39,8 @@ export const NavigatorWithoutShape = () => {
   const createNav = (args = {}, size = 5) => {
     const nav = new Navigator({
       style: {
-        style: {
-          loop: true,
-          ...args,
-        },
+        loop: true,
+        ...args,
       },
     });
     createPageViews(size, [100, 100]).forEach((page) => {
@@ -70,10 +68,8 @@ export const NavigatorWithoutShape = () => {
   });
 
   nav3.update({
-    style: {
-      pageWidth: 100,
-      pageHeight: 100,
-    },
+    pageWidth: 100,
+    pageHeight: 100,
   });
 
   return group;

@@ -6,9 +6,7 @@ export const Scrollbar2 = () => {
 
   group.appendChild(
     new Scrollbar({
-      style: {
-        style: { x: 20, y: 20, value: 0.5, orientation: 'horizontal', contentLength: 1000, viewportLength: 300 },
-      },
+      style: { x: 20, y: 20, value: 0.5, orientation: 'horizontal', contentLength: 1000, viewportLength: 300 },
     })
   );
 

@@ -1,5 +1,5 @@
 import { Group, Rect } from '@antv/g';
-import { Text } from '../../../../src/ui/text';
+import { Text } from '../../../../src/shapes';
 import { Navigator } from '../../../../src/ui/navigator';
 
 export const NavigatorSingle = () => {
@@ -35,13 +35,11 @@ export const NavigatorSingle = () => {
   const nav = group.appendChild(
     new Navigator({
       style: {
-        style: {
-          x: 100,
-          y: 100,
-          pageWidth: 100,
-          pageHeight: 100,
-          loop: true,
-        },
+        x: 100,
+        y: 100,
+        pageWidth: 100,
+        pageHeight: 100,
+        loop: true,
       },
     })
   );
