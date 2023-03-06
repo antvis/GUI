@@ -36,7 +36,7 @@ export function subStyleProps<T = Record<string, any>>(
   const result: Record<string, any> = {};
   Object.entries(style).forEach(([key, value]) => {
     // never transfer class property
-    if (key === 'class') {
+    if (key === 'className' || key === 'class') {
       // do nothing
     }
     // @example showHandle -> showHandle, showHandleLabel -> showLabel
@@ -73,7 +73,10 @@ export function superStyleProps<T extends Record<string, any>, P extends string>
  * @param ignoreStyleDict style will be ignore from style
  * @returns shape style and rest style
  */
-export function splitStyle(style: { [keys: string]: any }, ignoreStyleDict: string[] = ['x', 'y', 'class']) {
+export function splitStyle(
+  style: { [keys: string]: any },
+  ignoreStyleDict: string[] = ['x', 'y', 'class', 'className']
+) {
   const groupStyleDict: string[] = [
     'transform',
     'transformOrigin',

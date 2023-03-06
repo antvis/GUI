@@ -204,7 +204,7 @@ export class Poptip extends GUI<PoptipStyleProps> {
     const { id } = this.style;
 
     this.container = getSingleTonElement(id);
-    this.container.setAttribute('class', this.getClassName());
+    this.container.className = this.getClassName();
 
     // 盒子添加交互
     this.container.addEventListener('mousemove', () => this.showTip());
@@ -221,7 +221,7 @@ export class Poptip extends GUI<PoptipStyleProps> {
     const { id, template, text } = this.style;
 
     this.container.setAttribute('id', id);
-    this.container.setAttribute('class', this.getClassName());
+    this.container.className = this.getClassName();
 
     // 增加 arrow 元素
     const arrowNode = `<span class="${CLASS_NAME.ARROW}"></span>`;

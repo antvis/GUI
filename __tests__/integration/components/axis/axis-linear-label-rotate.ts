@@ -12,14 +12,12 @@ export const AxisLinearLabelRotate = () => {
   const createAxis = axisWarper(group, {
     labelFormatter: () => 'ABC',
     data: data(24),
-    style: {
-      type: 'linear',
-      titleTransform: 'translate(100%, 0)',
-      lineLineWidth: 5,
-      tickLineWidth: 5,
-      labelSpacing: 5,
-      titleText: '12',
-    },
+    type: 'linear',
+    titleTransform: 'translate(100%, 0)',
+    lineLineWidth: 5,
+    tickLineWidth: 5,
+    labelSpacing: 5,
+    titleText: '12',
   });
 
   createAxis({ startPos: [50, 50], endPos: [500, 50] });

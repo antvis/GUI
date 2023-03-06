@@ -17,21 +17,14 @@ type LineStyleProps = CallbackableObject<
   CallbackParameter<Data>
 > &
   CallbackableObject<PrefixObject<Omit<PathStyleProps, 'path' | 'd'>, 'area'>, CallbackParameter<Data>> & {
-    /**
-     * @title 是否光滑
-     * @description 折线是否光滑
-     */
+    /** 是否光滑 */
     smooth?: boolean;
   };
 
 type ColumnStyleProps = CallbackableObject<PrefixObject<RectStyleProps, 'column'>, CallbackParameter<Data>> & {
-  /**
-   * @title 是否分组
-   */
+  /** 是否分组 */
   isGroup?: boolean;
-  /**
-   * @title 分组柱子的间距
-   */
+  /** 分组柱子的间距 */
   spacing?: number;
 };
 

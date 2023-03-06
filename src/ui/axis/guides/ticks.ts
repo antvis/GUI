@@ -64,11 +64,11 @@ function applyTickStyle(
   tick: Selection,
   group: Group,
   attr: RequiredAxisStyleProps,
-  style: any
+  style: AxisTickStyleProps
 ) {
   const tickVector = getTickVector(datum.value, attr);
   const { x1, x2, y1, y2 } = getTickLineLayout(datum, index, data, tickVector, attr);
-  const [tickStyle, groupStyle] = splitStyle(getCallbackStyle(style, [datum, index, data]));
+  const [tickStyle, groupStyle] = splitStyle(getCallbackStyle(style, [datum, index, data, tickVector]));
   tick.node().nodeName === 'line' && tick.styles({ x1, x2, y1, y2, ...tickStyle });
   group.attr(groupStyle);
   tick.styles(tickStyle);

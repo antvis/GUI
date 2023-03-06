@@ -3,9 +3,9 @@ import type { CallbackableObject } from '../../../types';
 import { getCallbackValue } from '../../../util';
 import type { AxisDatumCP, AxisStyleProps } from '../types';
 
-export function getCallbackStyle<T extends { [keys: string]: any }>(
-  style: CallbackableObject<T, AxisDatumCP>,
-  params: AxisDatumCP
+export function getCallbackStyle<T extends { [keys: string]: any }, P extends Array<any> = []>(
+  style: CallbackableObject<T, AxisDatumCP<P>>,
+  params: AxisDatumCP<P>
 ) {
   return Object.fromEntries(
     Object.entries(style).map(([key, val]) => {

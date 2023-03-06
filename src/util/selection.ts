@@ -168,10 +168,10 @@ export class Selection<T = any> {
 
   addClassName(name: string) {
     for (const element of this._elements) {
-      const currCls = element.attr('class') || undefined;
+      const currCls = element.className || undefined;
       const currClassSet = new Set(currCls?.split(' ') || []);
       name.split(' ').forEach((cls) => currClassSet.add(cls));
-      element.attr('class', Array.from(currClassSet).join(' '));
+      element.className = Array.from(currClassSet).join(' ');
     }
     return this;
   }

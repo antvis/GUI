@@ -85,11 +85,13 @@ export const AxisLinearTitle = () => {
   titleText.appendChild(
     new Text({
       style: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        text: "I'm title",
+        textAlign: 'start',
+        textBaseline: 'middle',
         x: 80,
         y: 15,
-        text: "I'm title",
-        textBaseline: 'middle',
-        textAlign: 'start',
       },
     })
   );

@@ -285,8 +285,11 @@ export class Continuous extends GUI<ContinuousStyleProps> {
         (enter) =>
           enter
             .append(() => new Handle({ style }))
+            .attr(
+              'className',
+              ({ type }: any) => `${CLASS_NAMES.handle} ${that.getHandleClassName(type as HandleType)}`
+            )
             .each(function ({ type, value: labelText }) {
-              this.attr('class', `${CLASS_NAMES.handle} ${that.getHandleClassName(type as HandleType)}`);
               this.update({ labelText });
               const name = `${type}Handle` as `${HandleType}Handle`;
               that[name] = this;

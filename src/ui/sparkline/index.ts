@@ -5,7 +5,7 @@ import { Group, Rect } from '../../shapes';
 import { maybeAppend, subStyleProps } from '../../util';
 import type { ColumnsStyleProps, ColumnStyleProps } from './columns';
 import { Columns } from './columns';
-import type { ILinesCfg } from './lines';
+import type { LinesStyleProps } from './lines';
 import { Lines } from './lines';
 import {
   dataToLines,
@@ -24,10 +24,10 @@ export class Sparkline extends GUI<SparklineStyleProps> {
   public static tag = 'sparkline';
 
   // sparkline容器
-  private containerShape!: Rect;
+  private container!: Rect;
 
   // Lines或者Columns
-  private sparkShape!: Lines | Columns;
+  private spark!: Lines | Columns;
 
   /**
    * 将data统一格式化为数组形式
@@ -63,17 +63,17 @@ export class Sparkline extends GUI<SparklineStyleProps> {
     return y.map(y1 < 0 ? 0 : y1);
   }
 
-  private get containerCfg() {
+  private get containerShape() {
     const { width, height } = this.attributes;
     return { width, height } as { width: number; height: number };
   }
 
-  private get linesCfg(): ILinesCfg {
+  private get linesStyle(): LinesStyleProps {
     const { type, isStack, smooth } = this.attributes;
-    if (type !== 'line') throw new Error('linesCfg can only be used in line type');
+    if (type !== 'line') throw new Error('linesStyle can only be used in line type');
     const areaStyle = subStyleProps(this.attributes, 'area');
     const lineStyle = subStyleProps(this.attributes, 'line');
-    const { width } = this.containerCfg;
+    const { width } = this.containerShape;
     const { data } = this;
     if (data[0].length === 0) return { lines: [], areas: [] };
     const { x, y } = this.scales as { x: Linear; y: Linear };
@@ -110,11 +110,11 @@ export class Sparkline extends GUI<SparklineStyleProps> {
     };
   }
 
-  private get columnsCfg(): ColumnsStyleProps {
+  private get columnsStyle(): ColumnsStyleProps {
     const columnStyle = subStyleProps(this.attributes, 'column');
     const { isStack, type } = this.attributes;
-    if (type !== 'column') throw new Error('columnsCfg can only be used in column type');
-    const { height } = this.containerCfg;
+    if (type !== 'column') throw new Error('columnsStyle can only be used in column type');
+    const { height } = this.containerShape;
     let { rawData: data } = this;
     if (!data) return { columns: [] };
     if (isStack) data = getStackedData(data);
@@ -170,26 +170,17 @@ export class Sparkline extends GUI<SparklineStyleProps> {
   }
 
   public render(attributes: Required<SparklineStyleProps>, container: Group) {
-    this.containerShape = maybeAppend(container, '.container', 'rect').attr('className', 'container').node();
+    this.container = maybeAppend(container, '.container', 'rect').attr('className', 'container').node();
 
     const { type } = attributes;
     const className = `spark${type}`;
-    const cfg: any = type === 'line' ? this.linesCfg : this.columnsCfg;
-    this.sparkShape = maybeAppend(container, `.${className}`, () => {
-      if (type === 'line') return new Lines({ className, style: cfg });
-      return new Columns({ className, style: cfg });
+    const style: any = type === 'line' ? this.linesStyle : this.columnsStyle;
+    this.spark = maybeAppend(container, `.${className}`, () => {
+      if (type === 'line') return new Lines({ className, style });
+      return new Columns({ className, style });
     })
-      .styles(cfg)
+      .styles(style)
       .node() as any;
-  }
-
-  /**
-   * 组件的清除
-   */
-  public clear() {
-    this.removeChild(this.sparkShape);
-    this.sparkShape.clear();
-    this.sparkShape.destroy();
   }
 
   /**
@@ -211,7 +202,7 @@ export class Sparkline extends GUI<SparklineStyleProps> {
    */
   private createScales(data: number[][]) {
     const { type, range = [], isGroup, spacing } = this.attributes;
-    const { width, height } = this.containerCfg;
+    const { width, height } = this.containerShape;
     const [minVal, maxVal] = getRange(data);
 
     const yScale = new Linear({

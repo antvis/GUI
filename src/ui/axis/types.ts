@@ -16,7 +16,7 @@ export interface AxisDatum {
   [keys: string]: any;
 }
 
-export type AxisDatumCP = CallbackParameter<AxisDatum>;
+export type AxisDatumCP<T extends Array<any> = []> = CallbackParameter<AxisDatum, T>;
 
 export type Direction = 'positive' | 'negative';
 

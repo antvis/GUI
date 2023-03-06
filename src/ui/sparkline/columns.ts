@@ -1,6 +1,6 @@
 import { deepMix } from '@antv/util';
 import { BaseStyleProps, DisplayObject, Group, GroupStyleProps } from '../../shapes';
-import { select } from '../../util';
+import { deepAssign, select } from '../../util';
 
 export type ColumnStyleProps = GroupStyleProps;
 
@@ -12,10 +12,8 @@ export class Columns extends DisplayObject<ColumnsStyleProps> {
   columnsGroup: Group;
 
   constructor({ style, ...rest }: Partial<DisplayObject<ColumnsStyleProps>>) {
-    super(deepMix({}, { type: 'column', style: { width: 0, height: 0 } }, { style, ...rest }));
-    this.columnsGroup = new Group({
-      name: 'columns',
-    });
+    super(deepMix({}, { type: 'column' }, { style, ...rest }));
+    this.columnsGroup = new Group({ name: 'columns' });
     this.appendChild(this.columnsGroup);
     this.render();
   }
@@ -24,28 +22,27 @@ export class Columns extends DisplayObject<ColumnsStyleProps> {
     const { columns } = this.attributes;
 
     select(this.columnsGroup)
-      .selectAll('column-group')
+      .selectAll('.column')
       .data(columns.flat())
       .join(
         (enter) =>
-          enter.append('rect').each(function (cfg) {
-            select(this).styles(cfg);
-          }),
+          enter
+            .append('rect')
+            .attr('className', 'column')
+            .each(function (style) {
+              this.attr(style);
+            }),
         (update) =>
-          update.each(function (cfg) {
-            select(this).styles(cfg);
+          update.each(function (style) {
+            this.attr(style);
           }),
-        (remove) => remove.remove()
+        (exit) => exit.remove()
       );
   }
 
-  public update(cfg: Partial<ColumnsStyleProps>): void {
-    this.attr(deepMix({}, this.attributes, cfg));
-    const { columns } = cfg;
-    if (columns) {
-      this.clear();
-      this.render();
-    }
+  public update(attr: Partial<ColumnsStyleProps>): void {
+    this.attr(deepAssign({}, this.attributes, attr));
+    this.render();
   }
 
   public clear(): void {

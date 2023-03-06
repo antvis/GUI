@@ -3,7 +3,6 @@ import { transition, type GenericAnimation } from '../../animation';
 import { GUI } from '../../core';
 import { Group, Rect, Text } from '../../shapes';
 import {
-  deepAssign,
   getEventPos,
   ifShow,
   parseSeriesAttr,
@@ -38,9 +37,6 @@ export class Slider extends GUI<SliderStyleProps> {
   // 背景、滑道
   private trackShape!: Selection<Rect>;
 
-  // 迷你图
-  private sparklineShape!: Selection;
-
   private foregroundGroup!: Selection<Group>;
 
   // 前景、选区
@@ -72,22 +68,11 @@ export class Slider extends GUI<SliderStyleProps> {
    */
   private target: string;
 
-  private get sparklineShapeCfg() {
-    const { orientation, trackLineWidth = 0, padding } = this.attributes;
-    // 暂时只在水平模式下绘制
+  private get sparklineStyle() {
+    const { orientation } = this.attributes;
     if (orientation !== 'horizontal') return null;
     const attr = subStyleProps<SparklineStyleProps>(this.attributes, 'sparkline');
-    const [top, right, bottom, left] = parseSeriesAttr(padding!);
-    const { width, height } = this.availableSpace;
-    const bkgLW = +trackLineWidth;
-    return {
-      ...attr,
-      x: bkgLW / 2 + left,
-      y: bkgLW / 2 + top,
-      zIndex: 0,
-      width: width - bkgLW - left - right,
-      height: height - bkgLW - top - bottom,
-    } as SparklineStyleProps;
+    return { zIndex: 0, ...this.availableSpace, ...attr };
   }
 
   private get shape() {
@@ -118,7 +103,7 @@ export class Slider extends GUI<SliderStyleProps> {
       formatter: (val: any) => val.toString(),
       handleSpacing: 2,
       orientation: 'horizontal',
-      padding: 1,
+      padding: 0,
       scrollable: true,
       selectionCursor: 'move',
       selectionFill: '#5B8FF9',
@@ -158,14 +143,15 @@ export class Slider extends GUI<SliderStyleProps> {
 
   private updateHandlesPosition(animation: GenericAnimation) {
     if (!this.attributes.showHandle) return;
-    transition(this.startHandle!, this.getHandleShapeStyle('start'), animation);
-    transition(this.endHandle!, this.getHandleShapeStyle('end'), animation);
+    transition(this.startHandle!, this.getHandleStyle('start'), animation);
+    transition(this.endHandle!, this.getHandleStyle('end'), animation);
   }
 
   private innerSetValues(values: Required<SliderStyleProps>['values'] = [0, 0], trigger: boolean = false) {
     const oldValues = this.values;
     const newValues = this.clampValues(values);
-    this.update({ values: newValues });
+    this.attr('values', newValues);
+    this.setValues(newValues);
     if (trigger) {
       this.onValueChange(oldValues);
     }
@@ -183,8 +169,9 @@ export class Slider extends GUI<SliderStyleProps> {
   private renderSparkline(container: Group) {
     const { orientation } = this.attributes;
     const sparklineGroup = select(container).maybeAppendByClassName('slider-sparkline-group', 'g');
+
     ifShow(orientation === 'horizontal', sparklineGroup, (group) => {
-      const style = this.sparklineShapeCfg as SparklineStyleProps;
+      const style = this.sparklineStyle!;
       group.maybeAppendByClassName('slider-sparkline', () => new Sparkline({ style })).update(style);
     });
   }
@@ -208,7 +195,7 @@ export class Slider extends GUI<SliderStyleProps> {
       .join(
         (enter) =>
           enter
-            .append(({ type }) => new Handle({ style: this.getHandleShapeStyle(type) }))
+            .append(({ type }) => new Handle({ style: this.getHandleStyle(type) }))
             .each(function ({ type }) {
               this.attr('class', `handle ${type}-handle`);
               const name = `${type}Handle` as `${HandleType}Handle`;
@@ -219,7 +206,7 @@ export class Slider extends GUI<SliderStyleProps> {
             }),
         (update) =>
           update.each(function ({ type }) {
-            this.update(that.getHandleShapeStyle(type));
+            this.update(that.getHandleStyle(type));
           }),
         (exit) =>
           exit
@@ -300,12 +287,12 @@ export class Slider extends GUI<SliderStyleProps> {
    * 计算手柄的x y
    */
   private calcHandlePosition(handleType: HandleType) {
-    const { width, height } = this.availableSpace;
+    const { x, y, width, height } = this.availableSpace;
     const [stVal, endVal] = this.clampValues();
     const L = (handleType === 'start' ? stVal : endVal) * this.getOrientVal([width, height]);
     return {
-      x: this.getOrientVal([L, width / 2]),
-      y: this.getOrientVal([height / 2, L]),
+      x: x + this.getOrientVal([L, width / 2]),
+      y: y + this.getOrientVal([height / 2, L]),
     };
   }
 
@@ -384,7 +371,7 @@ export class Slider extends GUI<SliderStyleProps> {
     };
   }
 
-  private getHandleShapeStyle(handleType: HandleType) {
+  private getHandleStyle(handleType: HandleType) {
     const { showLabel, orientation } = this.attributes;
     const handlePosition = this.calcHandlePosition(handleType);
     const textStyle = this.calcHandleText(handleType);
