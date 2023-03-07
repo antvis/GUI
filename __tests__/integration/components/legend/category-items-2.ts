@@ -1,5 +1,6 @@
 import { Group } from '@antv/g';
 import { CategoryItems, createItemData } from './utils';
+import { timeout } from '../../utils';
 
 export const CategoryItems2 = () => {
   const group = new Group();

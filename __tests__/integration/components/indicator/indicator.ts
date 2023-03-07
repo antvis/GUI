@@ -21,10 +21,7 @@ export const IndicatorDemo = () => {
       padding: [2, 4],
       ...args,
     };
-    const indicator = group.appendChild(
-      // @ts-ignore
-      new Indicator({ style })
-    );
+    const indicator = group.appendChild(new Indicator({ style }));
 
     group.appendChild(
       new Circle({

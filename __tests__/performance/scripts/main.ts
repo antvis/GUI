@@ -2,7 +2,7 @@ import { Canvas as GCanvas, CanvasEvent, Circle, ElementEvent, Path, Rect, Text,
 import { Renderer } from '@antv/g-canvas';
 import { scheduler } from './runner';
 
-import * as _Cases from '../../integration/charts';
+import * as _Cases from '../../integration/components';
 
 const Cases = {
   ..._Cases,
@@ -212,7 +212,7 @@ async function launch(itera = 1) {
 }
 
 function uploadReport(data: Record<string, any>) {
-  let button = document.getElementById('upload')!;
+  const button = document.getElementById('upload')!;
   button.onclick = async () => {
     const res = await fetch('http://localhost:3000/report', {
       method: 'POST',
