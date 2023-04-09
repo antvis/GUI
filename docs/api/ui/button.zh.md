@@ -10,10 +10,10 @@ import { Button } from '@antv/gui';
 
 | **属性名**      | **类型**                        | **描述**                                                                                    | **默认值** |
 | --------------- | ------------------------------- | ------------------------------------------------------------------------------------------- | ---------- |
-| type            | 按钮类型                        | `primary`\| `dashed`\| `link`\| `text`\| `default`                                          | `default`  |
-| size            | 按钮尺寸                        | `small`\| `medium`\| `large`                                                                | `middle`   |
-| shape           | `circle`\|`round`               | 按钮形状                                                                                    | `round`    |
-| state           | `disabled`\|`active`\|`default` | 按钮状态                                                                                    | `default`  |
+| type            | 按钮类型                        | `primary`&#124; `dashed`&#124; `link`&#124; `text`&#124; `default`                                          | `default`  |
+| size            | 按钮尺寸                        | `small`&#124; `medium`&#124; `large`                                                                | `middle`   |
+| shape           | `circle`&#124;`round`               | 按钮形状                                                                                    | `round`    |
+| state           | `disabled`&#124;`active`&#124;`default` | 按钮状态                                                                                    | `default`  |
 | ellipsis        | `boolean`                       | 文本超长时是否缩略                                                                          | `false`    |
 | padding         | `number`                        | 按钮内边距                                                                                  | `10`       |
 | text            | `string`                        | 按钮文本                                                                                    | `-`        |

@@ -12,12 +12,12 @@ import { Navigator } from '@antv/gui';
 | ----------------- | --------------------------------------- | ---------------- | ------------ |
 | pageWidth         | `number`                                | 页宽             | `-`          |
 | pageHeight        | `number`                                | 页高             | `-`          |
-| controllerPadding | `number`\|`number[]`                    | 按钮与页码的间隔 | `5`          |
-| controllerSpacing | `number`\|`number[]`                    | 按钮与页的间隔   | `5`          |
+| controllerPadding | `number`&#124;`number[]`                    | 按钮与页码的间隔 | `5`          |
+| controllerSpacing | `number`&#124;`number[]`                    | 按钮与页的间隔   | `5`          |
 | formatter         | `(curr: number, total: number)=>string` | 页码格式化       | `-`          |
 | defaultPage       | `number`                                | 默认页码         | `1`          |
 | loop              | `number`                                | 是否可以循环翻页 | `false`      |
-| orientation       | `horizontal`\|`vertical`                | 翻页方向         | `horizontal` |
+| orientation       | `horizontal`&#124;`vertical`                | 翻页方向         | `horizontal` |
 | `pageNum{Style}`  | `TextStyleProps`                        | 页码样式         | `-`          |
 | `button{Style}`   | `ButtonStyleProps`                      | 按钮样式         | `-`          |
 

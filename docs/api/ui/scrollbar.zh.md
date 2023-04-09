@@ -10,14 +10,14 @@ import { Scrollbar } from '@antv/gui';
 
 | **属性**       | **类型**                  | **描述**       | **默认值** |
 | -------------- | ------------------------- | -------------- | ---------- |
-| orientation    | `horizontal \| vertical ` | 滚动方向       | `vertical` |
+| orientation    | `horizontal &#124; vertical ` | 滚动方向       | `vertical` |
 | trackLength    | `number`                  | 轨道长度       | `[]`       |
 | trackSize      | `number`                  | 轨道宽度       | `[]`       |
 | value          | `number` ∈ [0, 1]         | 值             | `0`        |
 | isRound        | `boolean`                 | 滑块是否圆角   | `true`     |
 | contentLength  | `number`                  | 滚动区域的长度 | `[]`       |
 | viewportLength | `number`                  | 可视区域的长度 | `[]`       |
-| padding        | `number` \| `numbe[]`     | 滚动条内边距   | `0`        |
+| padding        | `number` &#124; `numbe[]`     | 滚动条内边距   | `0`        |
 | slidable       | 是否可滑动                | `boolean`      | `true`     |
 | scrollable     | 是否启用滚轮滚动          | `boolean`      | `true`     |
 | `track{Style}` | `StyleProps`              | 轨道样式       | `-`        |

@@ -15,13 +15,13 @@ import { Sparkline } from '@antv/gui';
 
 | **属性**        | **类型**                                           | **描述**       | **默认值**   |
 | --------------- | -------------------------------------------------- | -------------- | ------------ |
-| type            | `line` \| `bar`                                    | sparkline 类型 | `default`    |
+| type            | `line` &#124; `bar`                                    | sparkline 类型 | `default`    |
 | width           | `number`                                           | 宽度           | `200`        |
 | height          | `number`                                           | 高度           | `20`         |
-| data            | `number[]` \| `number[][]`                         | 数据           | `[]`         |
+| data            | `number[]` &#124; `number[][]`                         | 数据           | `[]`         |
 | range           | `[number, number]`                                 | 值范围         | `[min, max]` |
 | isStack         | `boolean`                                          | 是否堆积       | `false`      |
-| color           | `color` \| `color[]` \| `(index: number) => color` | 颜色           | `-`          |
+| color           | `color` &#124; `color[]` &#124; `(index: number) => color` | 颜色           | `-`          |
 | smooth          | `boolean`                                          | 平滑曲线       | `true`       |
 | `line{Style}`   | `LineProps`                                        | 线条样式       | `[]`         |
 | `area{Style}`   | `PathProps`                                        | 线条填充样式   | `[]`         |

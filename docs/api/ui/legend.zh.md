@@ -14,8 +14,8 @@ import { Category, Continuous } from '@antv/gui';
 | -------------- | ------------------------ | ----------------------------------------------------------------------------- | ------------ |
 | width          | `number`                 | 图例宽度                                                                      | `-`          |
 | height         | `number`                 | 图例高度                                                                      | `-`          |
-| orientaion     | `horizontal`\|`vertical` | 图例朝向，对于分类图例来说即滚动方向                                          | `horizontal` |
-| padding        | `number`\|`number[]`     | 图例内边距                                                                    | `10`         |
+| orientaion     | `horizontal`&#124;`vertical` | 图例朝向，对于分类图例来说即滚动方向                                          | `horizontal` |
+| padding        | `number`&#124;`number[]`     | 图例内边距                                                                    | `10`         |
 | showTitle      | `boolean`                | 是否显示图例标题                                                              | `true`       |
 | `title{Style}` | `TextStyleProps`         | 图例标题样式，见 [TextStyleProps](https://g.antv.antgroup.com/api/basic/text) | `-`          |
 
@@ -75,17 +75,17 @@ type ContinuousDatum = {
 
 | **属性名**         | **类型**                                          | **描述**         | **默认值** |
 | ------------------ | ------------------------------------------------- | ---------------- | ---------- |
-| indicatorFormatter | `(value: ContinuousDatum)=>string\|DisplayObject` | 指示器文本格式化 | `-`        |
+| indicatorFormatter | `(value: ContinuousDatum)=>string&#124;DisplayObject` | 指示器文本格式化 | `-`        |
 | indicatorIndicate  | `(value: ContinuousDatum)=>void`                  | 指示器触发事件   | `-`        |
-| indicatorPadding   | `number`\|`number[]`                              | 指示器内边距     | `10`       |
+| indicatorPadding   | `number`&#124;`number[]`                              | 指示器内边距     | `10`       |
 | `indicator{Style}` | `StyleProps`                                      | 指示器样式       | `-`        |
 
 #### 刻度
 
 | **属性名**     | **类型**                                                                       | **描述**                 | **默认值** |
 | -------------- | ------------------------------------------------------------------------------ | ------------------------ | ---------- |
-| labelAlign     | `value`\|`range`                                                               | 刻度值对其位置(值、范围) | `value`    |
-| labelDirection | `positive` \| `negative`                                                       | 刻度值的朝向             | `positive` |
+| labelAlign     | `value`&#124;`range`                                                               | 刻度值对其位置(值、范围) | `value`    |
+| labelDirection | `positive` &#124; `negative`                                                       | 刻度值的朝向             | `positive` |
 | labelSpacing   | `number`                                                                       | 刻度值与图例的间距       | `0`        |
 | labelFilter    | `(datum:ContinuousDatum, index:number, data:ContinuousDatum[])=>boolean`       | 刻度值过滤               | `-`        |
 | labelFormatter | `(datum:ContinuousDatum, index:number, data:ContinuousDatum[])=>DisplayObject` | 刻度值格式化             | `-`        |
@@ -94,8 +94,8 @@ type ContinuousDatum = {
 
 | **属性名**         | **类型**             | **描述**                                                                                         | **默认值** |
 | ------------------ | -------------------- | ------------------------------------------------------------------------------------------------ | ---------- |
-| ribbonType         | `size` \| `color`    | 色带类型                                                                                         | `color`    |
+| ribbonType         | `size` &#124; `color`    | 色带类型                                                                                         | `color`    |
 | ribbonBlock        | `boolean`            | 是否分块                                                                                         | `false`    |
-| ribbonColor        | `string`\|`string[]` | 色带颜色                                                                                         | `[]`       |
+| ribbonColor        | `string`&#124;`string[]` | 色带颜色                                                                                         | `[]`       |
 | `selection{Style}` | `StyleProps`         | 选中区域样式，见 [DisplayObjectStyleProps](https://g.antv.antgroup.com/api/basic/display-object) | `-`        |
 | `track{Style}`     | `StyleProps`         | 轨道样式，见 [DisplayObjectStyleProps](https://g.antv.antgroup.com/api/basic/display-object)     | `-`        |
