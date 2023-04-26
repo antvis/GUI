@@ -46,7 +46,7 @@ export class Tooltip extends GUI<TooltipStyleProps> {
       data: [],
       x: 0,
       y: 0,
-      visibility: 'visible',
+      display: 'block',
       title: '',
       position: 'bottom-right',
       defaultPosition: 'bottom-right',
@@ -102,11 +102,11 @@ export class Tooltip extends GUI<TooltipStyleProps> {
         this.element.style.transition = transition;
       }, 10);
     }
-    this.element.style.visibility = 'visible';
+    this.element.style.display = 'block';
   }
 
   public hide() {
-    this.element.style.visibility = 'hidden';
+    this.element.style.display = 'none';
   }
 
   /**
