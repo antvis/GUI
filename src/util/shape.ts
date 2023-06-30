@@ -44,3 +44,11 @@ export function isVertical(p1: Point, p2: Point): boolean {
   const [x2, y2] = p2;
   return x1 === x2 && y1 !== y2;
 }
+
+export function copyAttributes(target: DisplayObject, source: DisplayObject) {
+  const { attributes } = source;
+  const exclude = new Set(['id', 'className']);
+  for (const [key, value] of Object.entries(attributes)) {
+    if (!exclude.has(key)) target.attr(key, value);
+  }
+}
