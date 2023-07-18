@@ -24,7 +24,7 @@ import {
   subStyleProps,
 } from '../../../util';
 
-type ItemMarkerStyle = { size?: number } & PathStyleProps;
+type ItemMarkerStyle = { size?: number; sizeMax?: number } & PathStyleProps;
 type ItemTextStyle = Omit<TextStyleProps, 'text'>;
 type ItemBackgroundStyle = Omit<RectStyleProps, 'width' | 'height'>;
 
@@ -100,14 +100,14 @@ export class CategoryItem extends GUI<CategoryItemStyleProps> {
   private get actualSpace() {
     const label = this.labelGroup;
     const value = this.valueGroup;
-    const { markerSize } = this.attributes;
+    const { markerSize, markerSizeMax = markerSize } = this.attributes;
     const { width: labelWidth, height: labelHeight } = label.node().getBBox();
     const { width: valueWidth, height: valueHeight } = value.node().getBBox();
     return {
       markerWidth: markerSize,
       labelWidth,
       valueWidth,
-      height: Math.max(markerSize, labelHeight, valueHeight),
+      height: Math.max(markerSize, markerSizeMax, labelHeight, valueHeight),
     };
   }
 
