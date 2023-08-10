@@ -83,9 +83,14 @@ function renderGridLine(
   style: GridStyle
 ) {
   const { animate, isBillboard } = attr;
-
-  console.log(isBillboard);
+  const isSurround = attr.type === 'surround';
   const lines = data.map((item, idx) => {
+    if (isSurround) {
+      return {
+        id: item.id || `grid-line-${idx}`,
+        path: getLinePath(item.points, attr),
+      };
+    }
     const [p1, p2] = item.points;
     return {
       id: item.id || `grid-line-${idx}`,
@@ -95,7 +100,6 @@ function renderGridLine(
       x2: p2[0],
       y2: p2[1],
       z2: 0,
-      // path: getLinePath(item.points, attr),
     };
   });
   return container
@@ -103,15 +107,23 @@ function renderGridLine(
     .data(lines, (d) => d.id)
     .join(
       (enter) =>
-        enter.append('line').each(function (datum, index) {
+        enter.append(isSurround ? 'path' : 'line').each(function (datum, index) {
+          const gridLineStyle = isSurround
+            ? {
+                path: datum.path,
+              }
+            : {
+                x1: datum.x1,
+                x2: datum.x2,
+                y1: datum.y1,
+                y2: datum.y2,
+                z1: datum.z1,
+                z2: datum.z2,
+              };
+
           const lineStyle = getCallbackValue(
             getPrimitiveAttributes({
-              x1: datum.x1,
-              x2: datum.x2,
-              y1: datum.y1,
-              y2: datum.y2,
-              z1: datum.z1,
-              z2: datum.z2,
+              ...gridLineStyle,
               ...style,
             }),
             [datum, index, lines]
@@ -127,14 +139,22 @@ function renderGridLine(
         }),
       (update) =>
         update.transition(function (datum, index) {
+          const gridLineStyle = isSurround
+            ? {
+                path: datum.path,
+              }
+            : {
+                x1: datum.x1,
+                x2: datum.x2,
+                y1: datum.y1,
+                y2: datum.y2,
+                z1: datum.z1,
+                z2: datum.z2,
+              };
+
           const lineStyle = getCallbackValue(
             getPrimitiveAttributes({
-              x1: datum.x1,
-              x2: datum.x2,
-              y1: datum.y1,
-              y2: datum.y2,
-              z1: datum.z1,
-              z2: datum.z2,
+              ...gridLineStyle,
               ...style,
             }),
             [datum, index, lines]
