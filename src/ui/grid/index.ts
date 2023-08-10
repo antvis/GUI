@@ -82,7 +82,7 @@ function renderGridLine(
   attr: GridStyleProps,
   style: GridStyle
 ) {
-  const { animate } = attr;
+  const { animate, isBillboard } = attr;
   const lines = data.map((item, idx) => ({
     id: item.id || `grid-line-${idx}`,
     path: getLinePath(item.points, attr),
@@ -103,6 +103,7 @@ function renderGridLine(
             stroke: '#D9D9D9',
             lineWidth: 1,
             lineDash: [4, 4],
+            isBillboard,
             ...lineStyle,
           });
         }),
