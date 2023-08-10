@@ -1,5 +1,4 @@
 import { Group } from '@antv/g';
-import { mockData } from '../../utils/mock-data';
 import { Axis } from '../../../../src/ui/axis';
 
 export const AxisLinearBasisZ = () => {
@@ -12,22 +11,18 @@ export const AxisLinearBasisZ = () => {
 
   const zAxis = new Axis({
     style: {
-      gridLength: 200,
-      gridDirection: 'positive',
+      gridLength: 300,
+      gridDirection: 'negative',
       gridLineWidth: 2,
       gridLineDash: [0],
-      data: mockData,
-      labelFormatter: () => '123',
-      startPos: [50, 50],
-      endPos: [350, 50],
-      lineStroke: 'red',
-      lineExtension: [10, 10],
-      tickLength: 10,
+      data: new Array(10).fill(0).map((_, i, arr) => ({ value: i / (arr.length - 1), label: '' })),
+      labelFormatter: (a, b) => b,
+      startPos: [50, 350],
+      endPos: [350, 350],
+      tickLength: 4,
       type: 'linear',
-      lineLineWidth: 5,
-      tickLineWidth: 5,
-      tickStroke: 'green',
-      labelSpacing: 10,
+      tickLineWidth: 2,
+      labelSpacing: 4,
       /**
        * enable billboard effect
        */
@@ -36,8 +31,8 @@ export const AxisLinearBasisZ = () => {
       labelIsBillboard: true,
       titleIsBillboard: true,
       gridIsBillboard: true,
-      // titleText: 'zAxis',
-      // titleBillboardRotation: Math.PI / 8,
+      titleText: 'zAxis',
+      titlePosition: 'bottom',
     },
   });
   zAxis.setOrigin(50, 50, 0);
@@ -46,22 +41,20 @@ export const AxisLinearBasisZ = () => {
 
   const yAxis = new Axis({
     style: {
-      gridLength: 200,
-      gridDirection: 'negative',
+      gridLength: 300,
+      gridDirection: 'positive',
       gridLineWidth: 2,
       gridLineDash: [0],
-      data: mockData,
-      labelFormatter: () => '123',
-      startPos: [50, 50],
-      endPos: [50, 350],
-      lineStroke: 'red',
-      lineExtension: [10, 10],
-      tickLength: 10,
+      data: new Array(10).fill(0).map((_, i, arr) => ({ value: i / (arr.length - 1), label: '' })),
+      labelFormatter: (a, b) => b,
+      startPos: [50, 350],
+      endPos: [50, 50],
+      tickLength: 4,
       type: 'linear',
-      lineLineWidth: 5,
-      tickLineWidth: 5,
-      tickStroke: 'green',
-      labelSpacing: 10,
+      tickLineWidth: 2,
+      tickDirection: 'negative',
+      showLabel: false,
+      showTitle: false,
       /**
        * enable billboard effect
        */
@@ -70,6 +63,7 @@ export const AxisLinearBasisZ = () => {
       labelIsBillboard: true,
       titleIsBillboard: true,
       gridIsBillboard: true,
+      titleBillboardRotation: -Math.PI / 2,
     },
   });
   yAxis.setOrigin(50, 50, 0);
@@ -79,22 +73,20 @@ export const AxisLinearBasisZ = () => {
   group.appendChild(
     new Axis({
       style: {
-        gridLength: 200,
-        gridDirection: 'negative',
+        gridLength: 300,
+        gridDirection: 'positive',
         gridLineWidth: 2,
         gridLineDash: [0],
-        data: mockData,
-        labelFormatter: () => '123',
-        startPos: [50, 50],
-        endPos: [50, 350],
-        lineStroke: 'red',
-        lineExtension: [10, 10],
-        tickLength: 10,
+        data: new Array(10).fill(0).map((_, i, arr) => ({ value: i / (arr.length - 1), label: '' })),
+        labelFormatter: (a, b) => b,
+        startPos: [50, 350],
+        endPos: [50, 50],
+        tickLength: 4,
         type: 'linear',
-        lineLineWidth: 5,
-        tickLineWidth: 5,
-        tickStroke: 'green',
-        labelSpacing: 10,
+        tickLineWidth: 2,
+        labelSpacing: 8,
+        tickDirection: 'negative',
+        labelDirection: 'negative',
         /**
          * enable billboard effect
          */
@@ -103,6 +95,9 @@ export const AxisLinearBasisZ = () => {
         labelIsBillboard: true,
         titleIsBillboard: true,
         gridIsBillboard: true,
+        titlePosition: 'left',
+        titleText: 'yAxis',
+        titleBillboardRotation: -Math.PI / 2,
       },
     })
   );
@@ -110,30 +105,28 @@ export const AxisLinearBasisZ = () => {
   group.appendChild(
     new Axis({
       style: {
-        gridLength: 200,
-        gridDirection: 'positive',
+        gridLength: 300,
+        gridDirection: 'negative',
         gridLineWidth: 2,
         gridLineDash: [0],
-        data: mockData,
-        labelFormatter: () => '123',
-        startPos: [50, 50],
-        endPos: [350, 50],
-        lineStroke: 'red',
-        tickLength: 10,
+        data: new Array(10).fill(0).map((_, i, arr) => ({ value: i / (arr.length - 1), label: '' })),
+        labelFormatter: (a, b) => b,
+        startPos: [50, 350],
+        endPos: [350, 350],
+        tickLength: 4,
         type: 'linear',
-        lineLineWidth: 5,
-        tickLineWidth: 5,
-        tickStroke: 'green',
-        labelSpacing: 10,
+        tickLineWidth: 2,
+        labelSpacing: 4,
         /**
          * enable billboard effect
          */
         tickIsBillboard: true,
         lineIsBillboard: true,
         labelIsBillboard: true,
-        // labelBillboardRotation: Math.PI / 8,
         titleIsBillboard: true,
         gridIsBillboard: true,
+        titlePosition: 'bottom',
+        titleText: 'xAxis',
       },
     })
   );

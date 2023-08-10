@@ -1,4 +1,4 @@
-import { Canvas, CanvasEvent, type DisplayObject } from '@antv/g';
+import { CameraType, Canvas, CanvasEvent, type DisplayObject } from '@antv/g';
 import { Renderer as CanvasRenderer } from '@antv/g-canvas';
 import { Renderer as SVGRenderer } from '@antv/g-svg';
 import { Renderer as WebGLRenderer } from '@antv/g-webgl';
@@ -112,6 +112,8 @@ const View: React.FC = () => {
       renderer: getRenderer(),
     });
     canvasRef.current = canvas;
+
+    canvas.getCamera().setType(CameraType.ORBITING);
 
     connectToPlugins(canvas);
 

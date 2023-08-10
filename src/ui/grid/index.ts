@@ -83,21 +83,39 @@ function renderGridLine(
   style: GridStyle
 ) {
   const { animate, isBillboard } = attr;
-  const lines = data.map((item, idx) => ({
-    id: item.id || `grid-line-${idx}`,
-    path: getLinePath(item.points, attr),
-  }));
+
+  console.log(isBillboard);
+  const lines = data.map((item, idx) => {
+    const [p1, p2] = item.points;
+    return {
+      id: item.id || `grid-line-${idx}`,
+      x1: p1[0],
+      y1: p1[1],
+      z1: 0,
+      x2: p2[0],
+      y2: p2[1],
+      z2: 0,
+      // path: getLinePath(item.points, attr),
+    };
+  });
   return container
     .selectAll(CLASS_NAMES.line.class)
     .data(lines, (d) => d.id)
     .join(
       (enter) =>
-        enter.append('path').each(function (datum, index) {
-          const lineStyle = getCallbackValue(getPrimitiveAttributes({ path: datum.path, ...style }), [
-            datum,
-            index,
-            lines,
-          ]);
+        enter.append('line').each(function (datum, index) {
+          const lineStyle = getCallbackValue(
+            getPrimitiveAttributes({
+              x1: datum.x1,
+              x2: datum.x2,
+              y1: datum.y1,
+              y2: datum.y2,
+              z1: datum.z1,
+              z2: datum.z2,
+              ...style,
+            }),
+            [datum, index, lines]
+          );
           this.attr({
             class: CLASS_NAMES.line.name,
             stroke: '#D9D9D9',
@@ -109,11 +127,18 @@ function renderGridLine(
         }),
       (update) =>
         update.transition(function (datum, index) {
-          const lineStyle = getCallbackValue(getPrimitiveAttributes({ path: datum.path, ...style }), [
-            datum,
-            index,
-            lines,
-          ]);
+          const lineStyle = getCallbackValue(
+            getPrimitiveAttributes({
+              x1: datum.x1,
+              x2: datum.x2,
+              y1: datum.y1,
+              y2: datum.y2,
+              z1: datum.z1,
+              z2: datum.z2,
+              ...style,
+            }),
+            [datum, index, lines]
+          );
           return transition(this, lineStyle, animate.update);
         }),
       (exit) =>
