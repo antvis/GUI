@@ -83,23 +83,10 @@ function renderGridLine(
   style: GridStyle
 ) {
   const { animate, isBillboard } = attr;
-  const isSurround = attr.type === 'surround';
   const lines = data.map((item, idx) => {
-    if (isSurround) {
-      return {
-        id: item.id || `grid-line-${idx}`,
-        path: getLinePath(item.points, attr),
-      };
-    }
-    const [p1, p2] = item.points;
     return {
       id: item.id || `grid-line-${idx}`,
-      x1: p1[0],
-      y1: p1[1],
-      z1: 0,
-      x2: p2[0],
-      y2: p2[1],
-      z2: 0,
+      path: getLinePath(item.points, attr),
     };
   });
   return container
@@ -107,23 +94,10 @@ function renderGridLine(
     .data(lines, (d) => d.id)
     .join(
       (enter) =>
-        enter.append(isSurround ? 'path' : 'line').each(function (datum, index) {
-          const gridLineStyle = isSurround
-            ? {
-                path: datum.path,
-              }
-            : {
-                x1: datum.x1,
-                x2: datum.x2,
-                y1: datum.y1,
-                y2: datum.y2,
-                z1: datum.z1,
-                z2: datum.z2,
-              };
-
+        enter.append('path').each(function (datum, index) {
           const lineStyle = getCallbackValue(
             getPrimitiveAttributes({
-              ...gridLineStyle,
+              path: datum.path,
               ...style,
             }),
             [datum, index, lines]
@@ -139,22 +113,9 @@ function renderGridLine(
         }),
       (update) =>
         update.transition(function (datum, index) {
-          const gridLineStyle = isSurround
-            ? {
-                path: datum.path,
-              }
-            : {
-                x1: datum.x1,
-                x2: datum.x2,
-                y1: datum.y1,
-                y2: datum.y2,
-                z1: datum.z1,
-                z2: datum.z2,
-              };
-
           const lineStyle = getCallbackValue(
             getPrimitiveAttributes({
-              ...gridLineStyle,
+              path: datum.path,
               ...style,
             }),
             [datum, index, lines]
