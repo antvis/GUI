@@ -15,6 +15,7 @@ export class Select extends GUI<SelectStyleProps> {
       defaultValue: '',
       selectRadius: 8,
       selectStroke: '#d9d9d9',
+      showDropdownIcon: true,
       placeholderText: '请选择',
       placeholderFontSize: 12,
       placeholderTextBaseline: 'top',
@@ -24,6 +25,7 @@ export class Select extends GUI<SelectStyleProps> {
       dropdownRadius: 8,
       dropdownShadowBlur: 4,
       dropdownShadowColor: 'rgba(0, 0, 0, 0.08)',
+      dropdownPadding: 8,
       optionPadding: [8, 12],
       optionFontSize: 12,
       optionTextBaseline: 'top',
@@ -48,8 +50,8 @@ export class Select extends GUI<SelectStyleProps> {
     return this.currentValue;
   }
 
-  private get padding() {
-    return parseSeriesAttr(8);
+  private get dropdownPadding() {
+    return parseSeriesAttr(this.style.dropdownPadding);
   }
 
   private select = this.appendChild(
@@ -65,23 +67,26 @@ export class Select extends GUI<SelectStyleProps> {
   );
 
   private renderSelect() {
-    const { width, height, bordered } = this.style;
+    const { width, height, bordered, showDropdownIcon } = this.style;
     const selectStyle = subStyleProps(this.attributes, 'select');
     const placeholderStyle = subStyleProps(this.attributes, 'placeholder');
     this.select.attr({ width, height, ...selectStyle, fill: '#fff', strokeWidth: bordered ? 1 : 0 });
-
+    const padding = this.dropdownPadding;
     // dropdown icon
     const iconSize = 10;
-    select(this.select)
-      .maybeAppend('.dropdown-icon', 'path')
-      .style('d', 'M-5,-3.5 L0,3.5 L5,-3.5')
-      .style('transform', `translate(${width - iconSize - this.padding[1] - this.padding[3]}, ${height / 2})`)
-      .style('lineWidth', 1)
-      .style('stroke', this.select.style.stroke);
+    if (showDropdownIcon) {
+      select(this.select)
+        .maybeAppend('.dropdown-icon', 'path')
+        .style('d', 'M-5,-3.5 L0,3.5 L5,-3.5')
+        .style('transform', `translate(${width - iconSize - padding[1] - padding[3]}, ${height / 2})`)
+        .style('lineWidth', 1)
+        .style('stroke', this.select.style.stroke);
+    }
+
     const currentOption = this.style.options?.find((option) => option.value === this.currentValue);
     // placeholder
     const finalPlaceholderStyle = {
-      x: this.padding[3],
+      x: padding[3],
       ...placeholderStyle,
     };
     select(this.select)
@@ -104,7 +109,7 @@ export class Select extends GUI<SelectStyleProps> {
     // value
     const labelStyle = subStyleProps(this.attributes, 'optionLabel');
     const finalValueStyle = {
-      x: this.padding[3],
+      x: padding[3],
       ...labelStyle,
     };
 
@@ -130,8 +135,7 @@ export class Select extends GUI<SelectStyleProps> {
     const { width, height, options, onSelect, open } = this.style;
     const dropdownStyle = subStyleProps(this.attributes, 'dropdown');
     const optionStyle = subStyleProps(this.attributes, 'option');
-    const self = this;
-    const padding = this.padding;
+    const padding = this.dropdownPadding;
     select(this.dropdown)
       .maybeAppend('.dropdown-container', 'g')
       .attr('className', 'dropdown-container')
@@ -169,7 +173,7 @@ export class Select extends GUI<SelectStyleProps> {
               }, 0);
 
               // 设置偏移
-              this.attr('transform', `translate(${self.padding[3]}, ${self.padding[0] + accHeight})`);
+              this.attr('transform', `translate(${padding[3]}, ${padding[0] + accHeight})`);
             }),
         (update) =>
           update.update((datum: any) => {
@@ -183,7 +187,7 @@ export class Select extends GUI<SelectStyleProps> {
     this.dropdown.attr({
       y: height + 10,
       width,
-      height: bbox.height + this.padding[0] + this.padding[2],
+      height: bbox.height + padding[0] + padding[2],
       ...dropdownStyle,
     });
     // 默认隐藏

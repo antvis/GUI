@@ -38,6 +38,10 @@ export type SelectStyleProps = GroupStyleProps &
     defaultValue?: OptionStyleProps['value'];
     /** 打开下拉框 */
     open?: boolean;
+    /** 是否显示下拉图标 */
+    showDropdownIcon?: boolean;
+    /** 下拉框内边距 */
+    dropdownPadding?: SeriesAttr;
     /** 选项 */
     options?: {
       value: OptionStyleProps['value'];
