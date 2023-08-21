@@ -37,6 +37,8 @@ export class Select extends GUI<SelectStyleProps> {
   /** 当前 value */
   private currentValue: string | number = Select.defaultOptions.style?.defaultValue!;
 
+  private isPointerInSelect = false;
+
   public setValue(value: string | number) {
     this.currentValue = value;
     this.render();
@@ -203,7 +205,23 @@ export class Select extends GUI<SelectStyleProps> {
 
   bindEvents() {
     this.select.addEventListener('click', () => {
-      show(this.dropdown);
+      if (this.dropdown.style.visibility === 'visible') hide(this.dropdown);
+      else show(this.dropdown);
+    });
+
+    // mock blur
+    this.select.addEventListener('mouseenter', () => {
+      this.isPointerInSelect = true;
+    });
+
+    this.select.addEventListener('mouseleave', () => {
+      this.isPointerInSelect = false;
+    });
+
+    document?.addEventListener('click', (e) => {
+      if (!this.isPointerInSelect) {
+        hide(this.dropdown);
+      }
     });
   }
 }
