@@ -4,14 +4,14 @@ import type { ExtendDisplayObject, PrefixObject } from '../../types';
 import type { SeriesAttr } from '../../util';
 import { Option } from './option';
 
-export type OptionStyleProps = Omit<GroupStyleProps, 'width' | 'height'> &
+export type OptionStyleProps = Omit<TextStyleProps, 'text'> &
   PrefixObject<Omit<RectStyleProps, 'width' | 'height'>, 'background'> &
   PrefixObject<Omit<TextStyleProps, 'text'>, 'label'> & {
     value: string | number;
     label: ExtendDisplayObject;
-    padding?: SeriesAttr;
     width?: number;
     height?: number;
+    padding?: SeriesAttr;
     selected?: boolean;
     onClick?: (
       value: OptionStyleProps['value'],
@@ -27,7 +27,7 @@ export type SelectStyleProps = GroupStyleProps &
   PrefixObject<TextStyleProps, 'placeholder'> &
   PrefixObject<Omit<RectStyleProps, 'width' | 'height'>, 'dropdown'> &
   PrefixObject<TextStyleProps, 'option'> &
-  PrefixObject<Omit<OptionStyleProps, 'value' | 'label'>, 'option'> & {
+  PrefixObject<Omit<OptionStyleProps, 'value' | 'label' | 'selected' | 'onClick'>, 'option'> & {
     /** 宽度 */
     width?: number;
     /** 高度 */

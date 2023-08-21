@@ -1,4 +1,4 @@
-import { DisplayObject, Rect } from '@antv/g';
+import { CustomEvent, DisplayObject, Rect } from '@antv/g';
 import { GUI } from '../../core';
 import { hide, parseSeriesAttr, renderExtDo, select, show, subStyleProps } from '../../util';
 import { deepAssign } from '../../util/deep-assign';
@@ -14,6 +14,7 @@ export class Select extends GUI<SelectStyleProps> {
       bordered: true,
       defaultValue: '',
       selectRadius: 8,
+      selectStroke: '#d9d9d9',
       placeholderText: '请选择',
       placeholderFontSize: 12,
       placeholderTextBaseline: 'top',
@@ -23,9 +24,9 @@ export class Select extends GUI<SelectStyleProps> {
       dropdownRadius: 8,
       dropdownShadowBlur: 4,
       dropdownShadowColor: 'rgba(0, 0, 0, 0.08)',
+      optionPadding: [8, 12],
       optionFontSize: 12,
       optionTextBaseline: 'top',
-      optionPadding: [8, 12],
       optionBackgroundFill: '#fff',
       optionBackgroundRadius: 4,
       optionLabelFontSize: 12,
@@ -65,7 +66,7 @@ export class Select extends GUI<SelectStyleProps> {
     const { width, height, bordered } = this.style;
     const selectStyle = subStyleProps(this.attributes, 'select');
     const placeholderStyle = subStyleProps(this.attributes, 'placeholder');
-    this.select.attr({ width, height, ...selectStyle, fill: '#fff', stroke: bordered ? '#d9d9d9' : 'none' });
+    this.select.attr({ width, height, ...selectStyle, fill: '#fff', strokeWidth: bordered ? 1 : 0 });
 
     // dropdown icon
     const iconSize = 10;
@@ -149,9 +150,9 @@ export class Select extends GUI<SelectStyleProps> {
                     onClick: (value, option, item) => {
                       this.setValue(value);
                       // close dropdown
-                      // this.dropdown.attr('visibility', 'hidden');
                       hide(this.dropdown);
                       onSelect?.(value, option, item);
+                      this.dispatchEvent(new CustomEvent('change', { detail: { value, option, item } }));
                     },
                   },
                 })
