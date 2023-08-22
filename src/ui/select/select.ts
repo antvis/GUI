@@ -162,6 +162,7 @@ export class Select extends GUI<SelectStyleProps> {
                       this.setValue(value);
                       onSelect?.(value, option, item);
                       this.dispatchEvent(new CustomEvent('change', { detail: { value, option, item } }));
+                      hide(this.dropdown);
                     },
                   },
                 })
