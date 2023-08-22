@@ -9,6 +9,7 @@ export class Option extends GUI<OptionStyleProps> {
     style: {
       value: '',
       label: '',
+      cursor: 'pointer',
     },
   };
 

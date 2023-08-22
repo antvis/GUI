@@ -57,6 +57,11 @@ export class Select extends GUI<SelectStyleProps> {
   private select = this.appendChild(
     new Rect({
       className: 'select',
+      style: {
+        cursor: 'pointer',
+        width: 0,
+        height: 0,
+      },
     })
   );
 
@@ -155,8 +160,6 @@ export class Select extends GUI<SelectStyleProps> {
                     selected: datum.value === this.currentValue,
                     onClick: (value, option, item) => {
                       this.setValue(value);
-                      // close dropdown
-                      hide(this.dropdown);
                       onSelect?.(value, option, item);
                       this.dispatchEvent(new CustomEvent('change', { detail: { value, option, item } }));
                     },
@@ -214,11 +217,11 @@ export class Select extends GUI<SelectStyleProps> {
     });
 
     // mock blur
-    this.select.addEventListener('mouseenter', () => {
+    this.addEventListener('mouseenter', () => {
       this.isPointerInSelect = true;
     });
 
-    this.select.addEventListener('mouseleave', () => {
+    this.addEventListener('mouseleave', () => {
       this.isPointerInSelect = false;
     });
 
