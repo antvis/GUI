@@ -1,8 +1,8 @@
-import { Group, Rect, Text } from '@antv/g';
 import { GUI } from '../../core';
+import { Group, Rect } from '../../shapes';
+import { parseSeriesAttr, renderExtDo, select, subStyleProps } from '../../util';
 import { deepAssign } from '../../util/deep-assign';
-import { subStyleProps, renderExtDo, select, parseSeriesAttr } from '../../util';
-import type { OptionStyleProps, OptionOptions } from './types';
+import type { OptionOptions, OptionStyleProps } from './types';
 
 export class Option extends GUI<OptionStyleProps> {
   static defaultOptions: OptionOptions = {

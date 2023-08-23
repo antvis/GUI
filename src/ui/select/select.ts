@@ -1,5 +1,6 @@
-import { CustomEvent, DisplayObject, Rect } from '@antv/g';
+import { CustomEvent } from '@antv/g';
 import { GUI } from '../../core';
+import { DisplayObject, Rect } from '../../shapes';
 import { hide, parseSeriesAttr, renderExtDo, select, show, subStyleProps } from '../../util';
 import { deepAssign } from '../../util/deep-assign';
 import { Option } from './option';

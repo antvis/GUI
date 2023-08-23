@@ -1,4 +1,4 @@
-import type { GroupStyleProps, RectStyleProps, TextStyleProps } from '@antv/g';
+import type { GroupStyleProps, RectStyleProps, TextStyleProps } from '../../shapes';
 import type { ComponentOptions } from '../../core';
 import type { ExtendDisplayObject, PrefixObject } from '../../types';
 import type { SeriesAttr } from '../../util';
