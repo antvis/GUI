@@ -1,7 +1,7 @@
 import { Group, Rect } from '@antv/g';
 import { Select } from '../../../../src/ui/select';
 
-export const BasicSelect = () => {
+export const SelectBasic = () => {
   const group = new Group({});
 
   group.appendChild(

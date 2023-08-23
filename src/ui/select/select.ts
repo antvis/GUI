@@ -27,6 +27,7 @@ export class Select extends GUI<SelectStyleProps> {
       dropdownShadowBlur: 4,
       dropdownShadowColor: 'rgba(0, 0, 0, 0.08)',
       dropdownPadding: 8,
+      dropdownSpacing: 10,
       optionPadding: [8, 12],
       optionFontSize: 12,
       optionTextBaseline: 'top',
@@ -47,7 +48,7 @@ export class Select extends GUI<SelectStyleProps> {
     this.render();
   }
 
-  public get value() {
+  public getValue() {
     return this.currentValue;
   }
 
@@ -189,8 +190,9 @@ export class Select extends GUI<SelectStyleProps> {
 
     const bbox = (this.dropdown.getElementsByClassName('dropdown-container')?.[0] as any)?.getBBox();
 
+    const { spacing } = dropdownStyle;
     this.dropdown.attr({
-      y: height + 10,
+      y: height + spacing,
       width,
       height: bbox.height + padding[0] + padding[2],
       ...dropdownStyle,
@@ -213,17 +215,23 @@ export class Select extends GUI<SelectStyleProps> {
   }
 
   bindEvents() {
+    this.addEventListener('click', (e: Event) => {
+      e.stopPropagation();
+    });
+
     this.select.addEventListener('click', () => {
       if (this.dropdown.style.visibility === 'visible') hide(this.dropdown);
-      else show(this.dropdown);
+      else {
+        show(this.dropdown);
+      }
     });
 
     // mock blur
-    this.addEventListener('mouseenter', () => {
+    this.addEventListener('pointerenter', () => {
       this.isPointerInSelect = true;
     });
 
-    this.addEventListener('mouseleave', () => {
+    this.addEventListener('pointerleave', () => {
       this.isPointerInSelect = false;
     });
 

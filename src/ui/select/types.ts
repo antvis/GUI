@@ -40,6 +40,8 @@ export type SelectStyleProps = GroupStyleProps &
     open?: boolean;
     /** 是否显示下拉图标 */
     showDropdownIcon?: boolean;
+    /** 下拉框距离选框的距离 */
+    dropdownSpacing?: number;
     /** 下拉框内边距 */
     dropdownPadding?: SeriesAttr;
     /** 选项 */

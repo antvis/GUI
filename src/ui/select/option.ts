@@ -59,11 +59,11 @@ export class Option extends GUI<OptionStyleProps> {
   }
 
   public bindEvents() {
-    this.addEventListener('mouseenter', () => {
+    this.addEventListener('pointerenter', () => {
       if (this.style.selected) return;
       this.background.attr('fill', this.hoverColor);
     });
-    this.addEventListener('mouseleave', () => {
+    this.addEventListener('pointerleave', () => {
       if (this.style.selected) return;
       this.background.attr('fill', this.style.backgroundFill);
     });
