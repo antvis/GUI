@@ -1,0 +1,583 @@
+import { clamp, omit } from '@antv/util';
+import { ComponentOptions, GUI } from '../../core';
+import type { GroupStyleProps, PolygonStyleProps, RectStyleProps } from '../../shapes';
+import { Group, Path, Rect } from '../../shapes';
+import { PrefixObject } from '../../types';
+import { deepAssign, parseSeriesAttr, select, subStyleProps } from '../../util';
+import { Select, type SelectStyleProps } from '../select';
+
+type IconBaseStyleProps = GroupStyleProps &
+  PrefixObject<RectStyleProps, 'background'> & {
+    x?: number;
+    y?: number;
+    size?: number;
+    color?: string;
+    onClick?: (e: IconBase) => void;
+  };
+type IconBaseOptions = ComponentOptions<IconBaseStyleProps>;
+export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T & IconBaseStyleProps> {
+  public static tag = 'IconBase';
+
+  static defaultOptions: IconBaseOptions = {
+    style: {
+      x: 0,
+      y: 0,
+      size: 10,
+      color: '#565758',
+      backgroundRadius: 4,
+      backgroundFill: '#e2e2e2',
+    },
+  };
+
+  private static backgroundOpacities = {
+    default: 0,
+    hover: 0.8,
+    active: 1,
+  };
+
+  /** 是否显示背景 */
+  protected showBackground = true;
+
+  protected background = this.appendChild(new Rect({}));
+
+  protected icon = this.appendChild(new Group({}));
+
+  get lineWidth() {
+    return Math.log10(this.attributes.size);
+  }
+
+  protected get padding() {
+    return parseSeriesAttr(this.attributes.size / 5);
+  }
+
+  protected get iconSize() {
+    const { size } = this.attributes;
+    const [top, right, bottom, left] = this.padding;
+    return Math.max(size - Math.max(left + right, top + bottom), this.lineWidth * 2 + 1);
+  }
+
+  protected renderBackground() {
+    const { size } = this.attributes;
+    const halfSize = size / 2;
+    const backgroundStyle = subStyleProps(this.attributes, 'background');
+    this.background.attr({ x: -halfSize, y: -halfSize, width: size, height: size, ...backgroundStyle });
+  }
+
+  constructor(options: IconBaseOptions) {
+    super(
+      deepAssign(
+        {},
+        { style: { backgroundOpacity: IconBase.backgroundOpacities.default } },
+        IconBase.defaultOptions,
+        options
+      )
+    );
+  }
+
+  render() {
+    this.renderIcon();
+    if (this.showBackground) this.renderBackground();
+  }
+
+  abstract renderIcon(): void;
+
+  public bindEvents(): void {
+    const { onClick } = this.attributes;
+    this.addEventListener('click', () => {
+      onClick?.(this);
+    });
+
+    if (this.showBackground) {
+      const resetBackground = () => this.background.attr({ opacity: IconBase.backgroundOpacities.default });
+      const hoverBackground = () => this.background.attr({ opacity: IconBase.backgroundOpacities.hover });
+      const activeBackground = () => this.background.attr({ opacity: IconBase.backgroundOpacities.active });
+
+      this.addEventListener('pointerenter', () => {
+        hoverBackground();
+      });
+      this.addEventListener('pointerdown', () => {
+        activeBackground();
+      });
+      this.addEventListener('pointerup', () => {
+        resetBackground();
+      });
+      this.addEventListener('pointerleave', () => {
+        resetBackground();
+      });
+    }
+  }
+}
+
+const arrow = (size: number, color: string = '#565758') => {
+  return new Path({
+    style: {
+      fill: color,
+      anchor: '0.5 0.5',
+      path: `M ${size},${size} L -${size},0 L ${size},-${size} Z`,
+      transformOrigin: 'center',
+    },
+  });
+};
+
+/** 重置 */
+export class Reset extends IconBase {
+  private arcPath(cx: number, cy: number, radius: number) {
+    const [rx, ry] = [radius, radius];
+    const getPosByAngle = (angle: number) => [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
+    const [x1, y1] = getPosByAngle((-5 / 4) * Math.PI);
+    const [x2, y2] = getPosByAngle((1 / 4) * Math.PI);
+    return `M${x1},${y1},A${rx},${ry},0,1,1,${x2},${y2}`;
+  }
+
+  renderIcon() {
+    const { color } = this.attributes;
+    const size = this.iconSize;
+    const { lineWidth } = this;
+    const arrowSize = lineWidth + 0.5;
+
+    select(this.icon)
+      .maybeAppend('.reset', 'path')
+      .styles({
+        stroke: color,
+        lineWidth,
+        path: this.arcPath(0, 0, size / 2 - lineWidth),
+        markerStart: arrow(arrowSize, color),
+      });
+  }
+}
+
+/** 快退 */
+export class Backward extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const size = this.iconSize;
+    const deltaX = size / 2;
+    const deltaY = size / 2 / 3 ** 0.5;
+    const points: PolygonStyleProps['points'] = [
+      [0, 0],
+      [0, -deltaY],
+      [-deltaX, 0],
+      [0, deltaY],
+      [0, 0],
+      [deltaX, -deltaY],
+      [deltaX, deltaY],
+      [0, 0],
+    ];
+    select(this.icon).maybeAppend('.backward', 'polygon').styles({
+      points,
+      fill: color,
+    });
+  }
+}
+
+/** 快进 */
+export class Forward extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const size = this.iconSize;
+    const deltaX = size / 2;
+    const deltaY = size / 2 / 3 ** 0.5;
+    const points: PolygonStyleProps['points'] = [
+      [0, 0],
+      [0, -deltaY],
+      [deltaX, 0],
+      [0, deltaY],
+      [0, 0],
+      [-deltaX, -deltaY],
+      [-deltaX, deltaY],
+      [0, 0],
+    ];
+    select(this.icon).maybeAppend('.forward', 'polygon').styles({
+      points,
+      fill: color,
+    });
+  }
+}
+
+export class Play extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const size = this.iconSize;
+    const deltaX = (size / 3) * 3 ** 0.5 * 0.8;
+    const points: PolygonStyleProps['points'] = [
+      [deltaX, 0],
+      [-deltaX / 2, -(size / 2) * 0.8],
+      [-deltaX / 2, (size / 2) * 0.8],
+      [deltaX, 0],
+    ];
+    select(this.icon).maybeAppend('.play', 'polygon').styles({
+      points,
+      fill: color,
+    });
+  }
+}
+
+export class Pause extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const size = this.iconSize;
+    const deltaX = size / 3;
+    const points: PolygonStyleProps['points'] = [
+      [-deltaX, -size / 2],
+      [-deltaX, size / 2],
+      [-deltaX / 2, size / 2],
+      [-deltaX / 2, -size / 2],
+      [-deltaX, -size / 2],
+      [deltaX / 2, -size / 2],
+      [deltaX / 2, size / 2],
+      [deltaX, size / 2],
+      [deltaX, -size / 2],
+    ];
+    select(this.icon).maybeAppend('.pause', 'polygon').styles({
+      points,
+      fill: color,
+    });
+  }
+}
+
+/** 时间范围 */
+export class Range extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const { iconSize: size, lineWidth } = this;
+    const gap = lineWidth;
+
+    select(this.icon)
+      .maybeAppend('.left-line', 'line')
+      .styles({
+        x1: -size / 2,
+        y1: -size / 2,
+        x2: -size / 2,
+        y2: size / 2,
+        stroke: color,
+        lineWidth,
+      });
+
+    select(this.icon)
+      .maybeAppend('.right-line', 'line')
+      .styles({
+        x1: size / 2,
+        y1: -size / 2,
+        x2: size / 2,
+        y2: size / 2,
+        stroke: color,
+        lineWidth,
+      });
+
+    select(this.icon)
+      .maybeAppend('.left-arrow', 'line')
+      .styles({
+        x1: 0,
+        y1: 0,
+        x2: -size / 2 + gap * 2,
+        y2: 0,
+        stroke: color,
+        lineWidth,
+        markerEnd: arrow(lineWidth * 2, color),
+      });
+
+    select(this.icon)
+      .maybeAppend('.right-arrow', 'line')
+      .styles({
+        x1: 0,
+        y1: 0,
+        x2: size / 2 - gap * 2,
+        y2: 0,
+        stroke: color,
+        lineWidth,
+        markerEnd: arrow(lineWidth * 2, color),
+      });
+  }
+}
+
+/** 值范围 */
+export class Value extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const { iconSize: size, lineWidth } = this;
+
+    select(this.icon)
+      .maybeAppend('.line', 'line')
+      .styles({
+        x1: 0,
+        y1: -size / 2,
+        x2: 0,
+        y2: size / 2,
+        stroke: color,
+        lineWidth,
+      });
+
+    const gap = lineWidth;
+
+    select(this.icon)
+      .maybeAppend('.left-arrow', 'line')
+      .styles({
+        x1: -size / 2 - gap * 2,
+        y1: 0,
+        x2: -gap * 2,
+        y2: 0,
+        stroke: color,
+        lineWidth,
+        markerEnd: arrow(lineWidth * 2, color),
+      });
+
+    select(this.icon)
+      .maybeAppend('.right-arrow', 'line')
+      .styles({
+        x1: size / 2 + gap * 2,
+        y1: 0,
+        x2: gap * 2,
+        y2: 0,
+        stroke: color,
+        lineWidth,
+        markerEnd: arrow(lineWidth * 2, color),
+      });
+  }
+}
+
+const getCoordinatePoints = (size: number) => {
+  return [
+    [-size / 2, -size / 2],
+    [-size / 2, size / 2],
+    [size / 2, size / 2],
+  ];
+};
+
+export class LineChart extends IconBase {
+  renderIcon() {
+    const { color } = this.attributes;
+    const { iconSize: size, lineWidth } = this;
+
+    const gap = lineWidth;
+    const deltaX = (size - gap * 2 - lineWidth) / 4;
+    const deltaY = (size - gap * 2 - lineWidth) / 2;
+    const [ox, oy] = [-size / 2 + gap, size / 2 - gap * 2];
+
+    select(this.icon)
+      .maybeAppend('.coordinate', 'polyline')
+      .styles({
+        points: getCoordinatePoints(size),
+        stroke: color,
+        lineWidth,
+      });
+
+    select(this.icon)
+      .maybeAppend('.line', 'polyline')
+      .styles({
+        points: [
+          [ox, oy],
+          [ox + deltaX, oy - deltaY],
+          [ox + deltaX * 2, oy],
+          [ox + deltaX * 4, oy - deltaY * 2],
+        ],
+        stroke: color,
+        lineWidth,
+      });
+  }
+}
+
+export class BarChart extends IconBase {
+  get data() {
+    return [1, 4, 2, 4, 3];
+  }
+
+  renderIcon() {
+    const { data } = this;
+    const { color } = this.attributes;
+    const { iconSize: size, lineWidth } = this;
+
+    const gap = lineWidth;
+    const deltaX = (size - gap) / data.length;
+    const deltaY = (size - gap * 2) / 4;
+    const [ox, oy] = [-size / 2 + gap * 2, size / 2 - gap];
+
+    select(this.icon)
+      .maybeAppend('.coordinate', 'polyline')
+      .styles({
+        points: getCoordinatePoints(size),
+        stroke: color,
+        lineWidth,
+      });
+
+    select(this.icon)
+      .maybeAppend('.bars', 'g')
+      .selectAll('.bar')
+      .data(this.data.map((value, index) => ({ value, index })))
+      .join((enter) =>
+        enter
+          .append('line')
+          .attr('className', 'bar')
+          .style('x1', ({ index }: any) => ox + deltaX * index)
+          .style('y1', oy)
+          .style('x2', ({ index }: any) => ox + deltaX * index)
+          .style('y2', ({ value }: any) => oy - deltaY * value)
+          .styles({
+            y1: oy,
+            stroke: color,
+            lineWidth,
+          })
+      );
+  }
+}
+
+/** 分割线 */
+export class Split extends IconBase {
+  protected showBackground = false;
+
+  constructor(options: IconBaseOptions) {
+    super(deepAssign({}, { style: { color: '#d8d9d9' } }, options));
+  }
+
+  renderIcon() {
+    const { color } = this.attributes;
+    const { iconSize: size, lineWidth } = this;
+    select(this.icon)
+      .maybeAppend('.split', 'line')
+      .styles({
+        x1: 0,
+        y1: -size / 2,
+        x2: 0,
+        y2: size / 2,
+        stroke: color,
+        lineWidth,
+      });
+  }
+}
+
+export class SpeedSelect extends IconBase<{ onSelect: SelectStyleProps['onSelect'] }> {
+  public static tag = 'SpeedSelect';
+
+  protected showBackground = false;
+
+  protected get padding() {
+    return parseSeriesAttr(0);
+  }
+
+  renderIcon() {
+    const { iconSize } = this;
+    const inheritStyle = omit(this.attributes as any, ['x', 'y', 'width', 'height', 'size', 'color']);
+    const width = clamp(iconSize, 20, Infinity);
+    const height = 20;
+    const x = -width / 2;
+    const y = -height / 2;
+    const style: SelectStyleProps = {
+      ...inheritStyle,
+      x,
+      y,
+      width,
+      height,
+      defaultValue: 1,
+      bordered: false,
+      showDropdownIcon: false,
+      selectRadius: 2,
+      dropdownPadding: 2,
+      dropdownRadius: 2,
+      dropdownSpacing: iconSize / 5,
+      optionPadding: 0,
+      optionLabelFontSize: iconSize / 2,
+      optionBackgroundRadius: 1,
+      options: [
+        { label: '1x', value: 1 },
+        { label: '1.5x', value: 1.5 },
+        { label: '2x', value: 2 },
+      ],
+    };
+
+    select(this.icon)
+      .maybeAppend('.speed', () => new Select({ style }))
+      .attr('className', 'speed')
+      .each(function () {
+        this.update(style);
+      });
+  }
+}
+
+type ToggleIconStyleProps<T extends string> = IconBaseStyleProps & {
+  type: T;
+  onChange?: (type: T) => void;
+};
+type ToggleIconOptions<T extends string> = ComponentOptions<ToggleIconStyleProps<T>>;
+export abstract class ToggleIcon<T extends string> extends GUI<ToggleIconStyleProps<T>> {
+  abstract toggles: Array<[T, typeof Range | typeof Value | typeof LineChart | typeof BarChart]>;
+
+  public static tag = 'ToggleIcon';
+
+  private icon = this.appendChild(new Group({}));
+
+  private currentType: T;
+
+  public getType() {
+    return this.currentType;
+  }
+
+  constructor(options: ToggleIconOptions<T>) {
+    super(options);
+    this.currentType = this.attributes.type;
+  }
+
+  render() {
+    const { x, y, onChange, ...restStyles } = this.attributes;
+    select(this.icon)
+      .selectAll('.icon')
+      .data([this.currentType])
+      .join(
+        (enter) =>
+          enter
+            .append((type) => {
+              const Ctor = this.toggles.find(([key]) => key === type)?.[1];
+              if (!Ctor) throw new Error(`Invalid type: ${type}`);
+              return new Ctor({});
+            })
+            .attr('className', 'icon')
+            .styles(restStyles, false)
+            .update({}),
+        (update) => update.styles({ restStyles }).update({}),
+        (exit) => exit.remove()
+      );
+  }
+
+  bindEvents() {
+    const { onChange } = this.attributes;
+    this.addEventListener('click', (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const nextIndex = (this.toggles.findIndex(([key]) => key === this.currentType) + 1) % this.toggles.length;
+      this.currentType = this.toggles[nextIndex][0];
+      this.render();
+      onChange?.(this.currentType);
+    });
+  }
+}
+
+export class PlayPause extends ToggleIcon<'play' | 'pause'> {
+  toggles: ['play' | 'pause', typeof Play | typeof Pause][] = [
+    ['play', Play],
+    ['pause', Pause],
+  ];
+
+  constructor(options: ToggleIconOptions<'play' | 'pause'>) {
+    super(deepAssign({}, options, { style: { type: 'play' } }));
+  }
+}
+
+export class SelectionType extends ToggleIcon<'range' | 'value'> {
+  toggles: ['range' | 'value', typeof Range | typeof Value][] = [
+    ['range', Range],
+    ['value', Value],
+  ];
+
+  constructor(options: ToggleIconOptions<'range' | 'value'>) {
+    super(deepAssign({}, options, { style: { type: 'range' } }));
+  }
+}
+
+export class ChartType extends ToggleIcon<'line' | 'bar'> {
+  toggles: ['line' | 'bar', typeof LineChart | typeof BarChart][] = [
+    ['line', LineChart],
+    ['bar', BarChart],
+  ];
+
+  constructor(options: ToggleIconOptions<'line' | 'bar'>) {
+    super(deepAssign({}, options, { style: { type: 'bar' } }));
+  }
+}
