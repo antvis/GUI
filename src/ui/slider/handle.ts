@@ -4,10 +4,12 @@ import { Group } from '../../shapes';
 import { classNames, ifShow, select, splitStyle, subStyleProps, type Selection } from '../../util';
 import { HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
 
+export type HandleType = 'start' | 'end';
+
 export type IconStyleProps = PathStyleProps & {
   size?: number;
   radius?: number;
-  shape?: string | (() => DisplayObject);
+  shape?: string | ((type: HandleType) => DisplayObject);
   orientation?: 'horizontal' | 'vertical';
 };
 
@@ -19,7 +21,7 @@ export type HandleStyleProps = GroupStyleProps &
     orientation?: IconStyleProps['orientation'];
     showLabel?: boolean;
     spacing?: number;
-    type?: 'start' | 'end';
+    type?: HandleType;
   };
 
 export type HandleOptions = ComponentOptions<HandleStyleProps>;
@@ -104,7 +106,7 @@ export class Handle extends GUI<HandleStyleProps> {
   }
 
   private renderIcon(container: Group) {
-    const { orientation } = this.attributes;
+    const { orientation, type } = this.attributes;
     const iconStyle = { orientation, ...HANDLE_ICON_DEFAULT_CFG, ...subStyleProps(this.attributes, 'icon') };
     const { iconShape = () => new HandleIcon({ style: iconStyle }) } = this.attributes;
     const iconGroup = select(container).maybeAppendByClassName(CLASS_NAMES.iconGroup, 'g');
@@ -112,7 +114,10 @@ export class Handle extends GUI<HandleStyleProps> {
       .selectAll(CLASS_NAMES.icon.class)
       .data([iconShape])
       .join(
-        (enter) => enter.append(iconShape).attr('className', CLASS_NAMES.icon.name),
+        (enter) =>
+          enter
+            .append(typeof iconShape === 'string' ? iconShape : () => iconShape(type))
+            .attr('className', CLASS_NAMES.icon.name),
         (update) => update.update(iconStyle),
         (exit) => exit.remove()
       );
