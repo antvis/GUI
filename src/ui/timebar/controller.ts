@@ -1,18 +1,7 @@
 import { GUI } from '../../core';
 import { DisplayObject, Group, Rect } from '../../shapes';
 import { deepAssign, parseSeriesAttr, subStyleProps } from '../../util';
-import {
-  Backward,
-  ChartType,
-  Forward,
-  IconBase,
-  PlayPause,
-  Reset,
-  SelectionType,
-  SpeedSelect,
-  Split,
-  ToggleIcon,
-} from './icons';
+import { Backward, ChartType, Forward, PlayPause, Reset, SelectionType, SpeedSelect, Split } from './icons';
 import type { ControllerOptions, ControllerStyleProps, Functions } from './types';
 
 const componentsMap: Record<Functions | 'split', { new (...args: any): DisplayObject }> = {
@@ -34,6 +23,10 @@ export class Controller extends GUI<ControllerStyleProps> {
       padding: 0,
       align: 'center',
       iconSize: 25,
+      speed: 1,
+      playing: false,
+      chartType: 'line',
+      selectionType: 'range',
       backgroundFill: '#fbfdff',
       backgroundStroke: '#ebedf0',
       functions: [
@@ -82,21 +75,26 @@ export class Controller extends GUI<ControllerStyleProps> {
     this.functions.removeChildren();
     components.forEach((name, index) => {
       const Ctor = componentsMap[name];
-      const component = new Ctor({
-        style: {
-          x: index * iconSize + xOffset,
-          y: height / 2,
-          size: iconSize,
-        },
-      });
-      if (component instanceof SpeedSelect) {
-        component.attr('onSelect', (value: any) => this.handleFunctionChange(name, { value }, component));
-      } else if (component instanceof ToggleIcon) {
-        component.attr('onChange', (value: any) => this.handleFunctionChange(name, { value }, component));
-      } else if (component instanceof IconBase) {
-        component.attr('onClick', () => this.handleFunctionChange(name, { value: name }, component));
+      const style: Record<string, any> = {
+        x: index * iconSize + xOffset,
+        y: height / 2,
+        size: iconSize,
+      };
+
+      if (Ctor === SpeedSelect) {
+        style.speed = this.attributes.speed;
+        style.onSelect = (value: any) => this.handleFunctionChange(name, { value });
+      } else if (([PlayPause, SelectionType, ChartType] as any).includes(Ctor)) {
+        style.onChange = (value: any) => this.handleFunctionChange(name, { value });
+        if (Ctor === PlayPause) style.type = this.attributes.playing ? 'pause' : 'play';
+        if (Ctor === SelectionType) style.type = this.attributes.selectionType === 'range' ? 'value' : 'range';
+        if (Ctor === ChartType) style.type = this.attributes.chartType === 'line' ? 'bar' : 'line';
+      } else {
+        // IconBase
+        style.onClick = () => this.handleFunctionChange(name, { value: name });
       }
-      this.functions.appendChild(component);
+
+      this.functions.appendChild(new Ctor({ style }));
     });
   }
 
@@ -109,7 +107,7 @@ export class Controller extends GUI<ControllerStyleProps> {
     this.renderFunctions();
   }
 
-  handleFunctionChange(name: string, value: any, component: DisplayObject) {
+  handleFunctionChange(name: string, value: any) {
     const { onChange } = this.attributes;
     onChange?.(name as Functions, value);
   }

@@ -444,7 +444,7 @@ export class Split extends IconBase {
   }
 }
 
-export class SpeedSelect extends IconBase<{ onSelect: SelectStyleProps['onSelect'] }> {
+export class SpeedSelect extends IconBase<{ speed?: number; onSelect: SelectStyleProps['onSelect'] }> {
   public static tag = 'SpeedSelect';
 
   protected showBackground = false;
@@ -455,7 +455,8 @@ export class SpeedSelect extends IconBase<{ onSelect: SelectStyleProps['onSelect
 
   renderIcon() {
     const { iconSize } = this;
-    const inheritStyle = omit(this.attributes as any, ['x', 'y', 'width', 'height', 'size', 'color']);
+    const { speed = 1 } = this.attributes;
+    const inheritStyle = omit(this.attributes as any, ['x', 'y', 'width', 'height', 'size', 'color', 'speed']);
     const width = clamp(iconSize, 20, Infinity);
     const height = 20;
     const x = -width / 2;
@@ -466,13 +467,14 @@ export class SpeedSelect extends IconBase<{ onSelect: SelectStyleProps['onSelect
       y,
       width,
       height,
-      defaultValue: 1,
+      defaultValue: speed,
       bordered: false,
       showDropdownIcon: false,
       selectRadius: 2,
       dropdownPadding: 2,
       dropdownRadius: 2,
       dropdownSpacing: iconSize / 5,
+      placeholderFontSize: iconSize / 2,
       optionPadding: 0,
       optionLabelFontSize: iconSize / 2,
       optionBackgroundRadius: 1,
@@ -556,7 +558,8 @@ export class PlayPause extends ToggleIcon<'play' | 'pause'> {
   ];
 
   constructor(options: ToggleIconOptions<'play' | 'pause'>) {
-    super(deepAssign({}, options, { style: { type: 'play' } }));
+    super(deepAssign({}, { style: { type: 'play' } }, options));
+    console.log(options, this.attributes);
   }
 }
 
@@ -567,7 +570,7 @@ export class SelectionType extends ToggleIcon<'range' | 'value'> {
   ];
 
   constructor(options: ToggleIconOptions<'range' | 'value'>) {
-    super(deepAssign({}, options, { style: { type: 'range' } }));
+    super(deepAssign({}, { style: { type: 'range' } }, options));
   }
 }
 
@@ -578,6 +581,6 @@ export class ChartType extends ToggleIcon<'line' | 'bar'> {
   ];
 
   constructor(options: ToggleIconOptions<'line' | 'bar'>) {
-    super(deepAssign({}, options, { style: { type: 'bar' } }));
+    super(deepAssign({}, { style: { type: 'bar' } }, options));
   }
 }

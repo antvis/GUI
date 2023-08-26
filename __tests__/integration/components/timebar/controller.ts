@@ -23,6 +23,8 @@ export const TimebarController = it((group) => {
         y: 50,
         width: 300,
         height: 50,
+        speed: 1.5,
+        playing: true,
         align: 'center',
       },
     })
@@ -34,7 +36,10 @@ export const TimebarController = it((group) => {
         y: 100,
         width: 300,
         height: 50,
+        speed: 2,
         align: 'right',
+        chartType: 'bar',
+        selectionType: 'value',
       },
     })
   );

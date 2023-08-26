@@ -14,6 +14,14 @@ export type ControllerStyleProps = GroupStyleProps &
     /** 背景颜色 */
     background?: string;
     iconSize?: number;
+    /** 播放速度 */
+    speed?: number;
+    /** 是否正在播放 */
+    playing?: boolean;
+    /** 选区类型：范围/值 */
+    selectionType?: 'range' | 'value';
+    /** 图表类型：折线图/条形图 */
+    chartType?: 'line' | 'bar';
     /**
      * 启用功能，通过 [] 进行分组
      * @description reset 重置
@@ -30,4 +38,8 @@ export type ControllerStyleProps = GroupStyleProps &
 
 export type ControllerOptions = ComponentOptions<ControllerStyleProps>;
 
-export interface TimebarStyleProps {}
+export type TimebarStyleProps = {
+  type: 'time' | 'chart';
+  onChange?(type: Functions | 'value', value: Record<string, any>): void;
+};
+export type TimebarOptions = ComponentOptions<TimebarStyleProps>;
