@@ -4,7 +4,11 @@ import { Slider } from '../../../../src/ui/slider';
 
 export const SliderInvert = it({ width: 320, height: 50 }, (group) => {
   const createHandle = (type: string) => {
-    const handle = new Group();
+    const handle = new Group({
+      style: {
+        cursor: 'ew-resize',
+      },
+    });
     handle.appendChild(
       new Rect({
         style: {

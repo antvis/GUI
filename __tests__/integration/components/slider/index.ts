@@ -15,3 +15,4 @@ export { Handle1 } from './handle-1';
 export { Handle2 } from './handle-2';
 export { HandleUpdate } from './handle-update';
 export { SliderValueType } from './slider-value-type';
+export { SliderTimebar } from './slider-timebar';
