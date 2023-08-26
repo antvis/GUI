@@ -1,17 +1,16 @@
 import { CustomEvent } from '@antv/g';
 import { noop, set } from '@antv/util';
-import { GUI, type CallbackableStyleProps, type ComponentOptions, type PrefixStyleProps } from '../../../core';
+import { GUI, type CallableStyleProps, type ComponentOptions, type PrefixStyleProps } from '../../../core';
 import { Group, type GroupStyleProps } from '../../../shapes';
 import type { CallbackParameter } from '../../../types';
 import {
+  Selection,
+  SeriesAttr,
   classNames,
   deepAssign,
   getCallbackValue,
-  getRenderBBox,
   groupBy,
   select,
-  Selection,
-  SeriesAttr,
   subStyleProps,
 } from '../../../util';
 import { Navigator, type NavigatorStyleProps } from '../../navigator';
@@ -22,13 +21,13 @@ interface CategoryItemsDatum {
   [keys: string]: any;
 }
 
-type CallbackableItemStyle = CallbackableStyleProps<
+type CallableItemStyle = CallableStyleProps<
   Omit<CategoryItemStyleProps, 'width' | 'height'>,
   CallbackParameter<CategoryItemsDatum>
 >;
 
 export type CategoryItemsStyleProps = GroupStyleProps &
-  PrefixStyleProps<CallbackableItemStyle, 'item'> &
+  PrefixStyleProps<CallableItemStyle, 'item'> &
   PrefixStyleProps<NavigatorStyleProps, 'nav'> & {
     data: CategoryItemsDatum[];
     orientation?: 'horizontal' | 'vertical';
