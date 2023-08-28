@@ -42,6 +42,12 @@ export type SliderStyleProps = GroupStyleProps &
     /** 是否显示标签值 */
     showLabel?: boolean;
 
+    /**
+     * 在调整 handle 或者刷选时才显示 label
+     * 在 showLabel 为 false 时生效
+     */
+    showLabelOnInteraction?: boolean;
+
     /** 是否自动调整文本位置 */
     autoFitLabel?: boolean;
 

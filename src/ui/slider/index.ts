@@ -15,7 +15,7 @@ import {
 } from '../../util';
 import { Sparkline, type SparklineStyleProps } from '../sparkline';
 import { CLASS_NAMES, HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
-import { Handle, type IconStyleProps, type LabelStyleProps, type HandleType } from './handle';
+import { Handle, type IconStyleProps, type LabelStyleProps, type HandleType, HandleStyleProps } from './handle';
 import type { SliderOptions, SliderStyleProps } from './types';
 
 export type { SliderStyleProps, SliderOptions };
@@ -219,9 +219,7 @@ export class Slider extends GUI<SliderStyleProps> {
               this.attr('class', `${CLASS_NAMES.handle.name} ${type}-handle`);
               const name = `${type}Handle` as `${HandleType}Handle`;
               that[name] = this;
-              this.addEventListener('pointerdown', (e: any) => {
-                that.onDragStart(type)(e);
-              });
+              this.addEventListener('pointerdown', that.onDragStart(type));
             }),
         (update) =>
           update.each(function ({ type }) {
@@ -242,51 +240,68 @@ export class Slider extends GUI<SliderStyleProps> {
     this.foregroundGroup = select(container).maybeAppendByClassName(CLASS_NAMES.foreground, 'g');
 
     // value 类型的 slider 不渲染选区
-    if (type === 'range') {
-      const selectionStyle = subStyleProps(this.attributes, 'selection');
-      const applyStyle = (selection: Selection) => {
-        return selection
-          .style('visibility', (d: any) => (d.show ? 'visible' : 'hidden'))
-          .style('cursor', (d: any) => (selectionType === 'select' && d.show ? 'move' : 'default'))
-          .styles(selectionStyle);
-      };
+    const selectionStyle = subStyleProps(this.attributes, 'selection');
+    const applyStyle = (selection: Selection) => {
+      return selection
+        .style('visibility', (d: any) => (d.show ? 'visible' : 'hidden'))
+        .style('cursor', (d: any) => {
+          if (selectionType === 'select') return 'grab';
+          if (selectionType === 'invert') return 'crosshair';
+          return 'default';
+        })
+        .styles(selectionStyle);
+    };
 
-      const that = this;
-      this.foregroundGroup
-        .selectAll(CLASS_NAMES.selection.class)
-        .data(
-          this.calcSelectionArea().map((area, index) => ({
-            style: {
-              ...area,
-            },
-            index,
-            // 是否可见
-            show: selectionType === 'select' ? index === 1 : index !== 1,
-          })),
-          (d) => d.index
-        )
-        .join(
-          (enter) =>
-            enter
-              .append('rect')
-              .attr('className', CLASS_NAMES.selection.name)
-              .call(applyStyle)
-              .each(function (datum, index) {
-                if (index === 1) {
-                  that.selectionShape = select(this);
-                  // 选区drag事件
-                  this.on('pointerdown', that.onDragStart('selection'));
-                  // 选区hover事件
-                  that.dispatchCustomEvent(this, 'pointerenter', 'selectionMouseenter');
-                  that.dispatchCustomEvent(this, 'pointerleave', 'selectionMouseleave');
-                  that.dispatchCustomEvent(this, 'click', 'selectionClick');
-                }
-              }),
-          (update) => update.call(applyStyle),
-          (exit) => exit.remove()
-        );
-      this.updateSelectionArea(false);
-    }
+    const that = this;
+    this.foregroundGroup
+      .selectAll(CLASS_NAMES.selection.class)
+      .data(
+        type === 'value'
+          ? []
+          : this.calcSelectionArea().map((area, index) => ({
+              style: {
+                ...area,
+              },
+              index,
+              // 是否可见
+              show: selectionType === 'select' ? index === 1 : index !== 1,
+            })),
+        (d) => d.index
+      )
+      .join(
+        (enter) =>
+          enter
+            .append('rect')
+            .attr('className', CLASS_NAMES.selection.name)
+            .call(applyStyle)
+            .each(function (datum, index) {
+              if (index === 1) {
+                that.selectionShape = select(this);
+                // 选区drag事件
+                this.on('pointerdown', (e: any) => {
+                  this.attr('cursor', 'grabbing');
+                  that.onDragStart('selection')(e);
+                });
+                // 选区hover事件
+                that.dispatchCustomEvent(this, 'pointerenter', 'selectionMouseenter');
+                that.dispatchCustomEvent(this, 'pointerleave', 'selectionMouseleave');
+                that.dispatchCustomEvent(this, 'click', 'selectionClick');
+
+                // 拖拽交互
+                this.addEventListener('pointerdown', () => {
+                  this.attr('cursor', 'grabbing');
+                });
+                this.addEventListener('pointerup', () => {
+                  this.attr('cursor', 'grab');
+                });
+              } else {
+                this.on('pointerdown', that.onDragStart('track'));
+              }
+            }),
+        (update) => update.call(applyStyle),
+        (exit) => exit.remove()
+      );
+    this.updateSelectionArea(false);
     this.renderHandles();
   }
 
@@ -377,7 +392,7 @@ export class Slider extends GUI<SliderStyleProps> {
    * @returns
    */
   private calcHandleText(handleType: HandleType) {
-    const { orientation, formatter, autoFitLabel } = this.attributes;
+    const { type, orientation, formatter, autoFitLabel } = this.attributes;
     const handleStyle = subStyleProps(this.attributes, 'handle');
     const labelStyle = subStyleProps(handleStyle, 'label');
     const { spacing } = handleStyle;
@@ -399,6 +414,7 @@ export class Slider extends GUI<SliderStyleProps> {
     temp.destroy();
 
     if (!autoFitLabel) {
+      if (type === 'value') return { text, x: 0, y: -textHeight - spacing };
       const finaleWidth = spacing + size + (orientation === 'horizontal' ? textWidth / 2 : 0);
       return { text, [orientation === 'horizontal' ? 'x' : 'y']: handleType === 'start' ? -finaleWidth : finaleWidth };
     }
@@ -431,8 +447,6 @@ export class Slider extends GUI<SliderStyleProps> {
   }
 
   private getHandleLabelStyle(handleType: HandleType): LabelStyleProps {
-    const { showLabel } = this.attributes;
-    if (!showLabel) return {} as LabelStyleProps;
     const style = subStyleProps(this.attributes, 'handleLabel');
     return {
       ...style,
@@ -455,16 +469,23 @@ export class Slider extends GUI<SliderStyleProps> {
     };
   }
 
-  private getHandleStyle(handleType: HandleType) {
-    const { showLabel, orientation } = this.attributes;
+  private getHandleStyle(handleType: HandleType): HandleStyleProps {
+    const { showLabel, showLabelOnInteraction, orientation } = this.attributes;
     const handlePosition = this.calcHandlePosition(handleType);
     const textStyle = this.calcHandleText(handleType);
+
+    let internalShowLabel = showLabel;
+    if (!showLabel && showLabelOnInteraction) {
+      if (this.target) internalShowLabel = true;
+      else internalShowLabel = false;
+    }
+
     return {
       ...superStyleProps(this.getHandleIconStyle(), 'icon'),
       ...superStyleProps({ ...this.getHandleLabelStyle(handleType), ...textStyle }, 'label'),
       ...handlePosition,
       orientation,
-      showLabel,
+      showLabel: internalShowLabel,
       type: handleType,
       zIndex: 3,
     } as const;
@@ -580,6 +601,9 @@ export class Slider extends GUI<SliderStyleProps> {
     document.removeEventListener('pointermove', this.onDragging);
     document.removeEventListener('pointermove', this.onDragging);
     document.removeEventListener('pointerup', this.onDragEnd);
+    this.target = '';
+    // 更新 handle 状态
+    this.updateHandlesPosition(false);
   };
 
   private onValueChange = (oldValue: [number, number]) => {

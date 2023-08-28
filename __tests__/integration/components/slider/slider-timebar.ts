@@ -1,4 +1,3 @@
-import { Circle } from '@antv/g';
 import { Slider } from '../../../../src/ui/slider';
 import { it } from '../../utils';
 import { TimeModeHandle } from '../../../../src/ui/timebar/handle';
