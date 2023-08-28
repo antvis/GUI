@@ -1,33 +1,27 @@
 import { Band, Linear } from '@antv/scale';
 import { clone, isArray, isFunction, isNumber } from '@antv/util';
 import { GUI } from '../../core';
-import { Group, Rect } from '../../shapes';
-import { maybeAppend, subStyleProps } from '../../util';
-import type { ColumnsStyleProps, ColumnStyleProps } from './columns';
+import { Group } from '../../shapes';
+import { maybeAppend, select, subStyleProps } from '../../util';
+import type { ColumnStyleProps, ColumnsStyleProps } from './columns';
 import { Columns } from './columns';
 import type { LinesStyleProps } from './lines';
 import { Lines } from './lines';
 import {
   dataToLines,
+  lineToCurvePath,
+  lineToLinePath,
   linesToAreaPaths,
   linesToStackAreaPaths,
   linesToStackCurveAreaPaths,
-  lineToCurvePath,
-  lineToLinePath,
 } from './path';
 import type { Data, SparklineOptions, SparklineStyleProps } from './types';
 import { getRange, getStackedData } from './utils';
 
-export type { SparklineStyleProps, SparklineOptions };
+export type { SparklineOptions, SparklineStyleProps };
 
 export class Sparkline extends GUI<SparklineStyleProps> {
   public static tag = 'sparkline';
-
-  // sparkline容器
-  private container!: Rect;
-
-  // Lines或者Columns
-  private spark!: Lines | Columns;
 
   /**
    * 将data统一格式化为数组形式
@@ -170,17 +164,26 @@ export class Sparkline extends GUI<SparklineStyleProps> {
   }
 
   public render(attributes: Required<SparklineStyleProps>, container: Group) {
-    this.container = maybeAppend(container, '.container', 'rect').attr('className', 'container').node();
+    maybeAppend(container, '.container', 'rect').attr('className', 'container').node();
 
     const { type } = attributes;
     const className = `spark${type}`;
     const style: any = type === 'line' ? this.linesStyle : this.columnsStyle;
-    this.spark = maybeAppend(container, `.${className}`, () => {
-      if (type === 'line') return new Lines({ className, style });
-      return new Columns({ className, style });
-    })
-      .styles(style)
-      .node() as any;
+
+    select(container)
+      .selectAll('.spark')
+      .data([type])
+      .join(
+        (enter) =>
+          enter
+            .append((type) => {
+              if (type === 'line') return new Lines({ className, style });
+              return new Columns({ className, style });
+            })
+            .attr('className', `spark ${className}`),
+        (update) => update.update(style),
+        (exit) => exit.remove()
+      );
   }
 
   /**
@@ -226,7 +229,7 @@ export class Sparkline extends GUI<SparklineStyleProps> {
       x: new Band({
         domain: data[0].map((val, idx) => idx),
         range: [0, width],
-        paddingInner: isGroup ? spacing : 0,
+        paddingInner: spacing,
       }),
       y: yScale,
     };
