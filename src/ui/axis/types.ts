@@ -12,7 +12,7 @@ export type VerticalFactor = -1 | 1;
 export interface AxisDatum {
   id?: string;
   value: number;
-  label?: string;
+  label?: number | string;
   [keys: string]: any;
 }
 
