@@ -88,7 +88,7 @@ export class Controller extends GUI<ControllerStyleProps> {
         style.onChange = (value: any) => this.handleFunctionChange(name, { value });
         if (Ctor === PlayPause) style.type = this.attributes.playing ? 'pause' : 'play';
         if (Ctor === SelectionType) style.type = this.attributes.selectionType === 'range' ? 'value' : 'range';
-        if (Ctor === ChartType) style.type = this.attributes.chartType === 'line' ? 'bar' : 'line';
+        if (Ctor === ChartType) style.type = this.attributes.chartType === 'line' ? 'column' : 'line';
       } else {
         // IconBase
         style.onClick = () => this.handleFunctionChange(name, { value: name });

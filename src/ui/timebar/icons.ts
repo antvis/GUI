@@ -3,6 +3,7 @@ import { ComponentOptions, GUI } from '../../core';
 import type { GroupStyleProps, PolygonStyleProps, RectStyleProps } from '../../shapes';
 import { Group, Path, Rect } from '../../shapes';
 import { PrefixObject } from '../../types';
+import { Indicator } from '../indicator';
 import { deepAssign, parseSeriesAttr, select, subStyleProps } from '../../util';
 import { Select, type SelectStyleProps } from '../select';
 
@@ -35,8 +36,23 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
     active: 1,
   };
 
-  /** 是否显示背景 */
+  /** hover 时是否显示背景 */
   protected showBackground = true;
+
+  protected get label() {
+    return 'BaseIcon';
+  }
+
+  protected indicator = this.appendChild(
+    new Indicator({
+      style: {
+        y: -10,
+        visibility: 'hidden',
+        position: 'top',
+        radius: 3,
+      },
+    })
+  );
 
   protected background = this.appendChild(new Rect({}));
 
@@ -61,6 +77,18 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
     const halfSize = size / 2;
     const backgroundStyle = subStyleProps(this.attributes, 'background');
     this.background.attr({ x: -halfSize, y: -halfSize, width: size, height: size, ...backgroundStyle });
+  }
+
+  protected showIndicator() {
+    // TODO fixme 层级问题，临时关闭
+    // if (!this.label) return;
+    // const { size } = this.attributes;
+    // const halfSize = size / 2;
+    // this.indicator.update({ y: -halfSize, labelText: this.label, visibility: 'visible' });
+  }
+
+  protected hideIndicator() {
+    this.indicator.update({ visibility: 'hidden' });
   }
 
   constructor(options: IconBaseOptions) {
@@ -94,14 +122,16 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
 
       this.addEventListener('pointerenter', () => {
         hoverBackground();
+        this.showIndicator();
+      });
+      this.addEventListener('pointerleave', () => {
+        resetBackground();
+        this.hideIndicator();
       });
       this.addEventListener('pointerdown', () => {
         activeBackground();
       });
       this.addEventListener('pointerup', () => {
-        resetBackground();
-      });
-      this.addEventListener('pointerleave', () => {
         resetBackground();
       });
     }
@@ -129,6 +159,10 @@ export class Reset extends IconBase {
     return `M${x1},${y1},A${rx},${ry},0,1,1,${x2},${y2}`;
   }
 
+  protected get label() {
+    return '重置';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const size = this.iconSize;
@@ -148,6 +182,10 @@ export class Reset extends IconBase {
 
 /** 快退 */
 export class Backward extends IconBase {
+  protected get label() {
+    return '快退';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const size = this.iconSize;
@@ -172,6 +210,10 @@ export class Backward extends IconBase {
 
 /** 快进 */
 export class Forward extends IconBase {
+  protected get label() {
+    return '快进';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const size = this.iconSize;
@@ -195,6 +237,10 @@ export class Forward extends IconBase {
 }
 
 export class Play extends IconBase {
+  protected get label() {
+    return '播放';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const size = this.iconSize;
@@ -213,6 +259,10 @@ export class Play extends IconBase {
 }
 
 export class Pause extends IconBase {
+  protected get label() {
+    return '暂停';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const size = this.iconSize;
@@ -237,6 +287,10 @@ export class Pause extends IconBase {
 
 /** 时间范围 */
 export class Range extends IconBase {
+  protected get label() {
+    return '范围时间';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const { iconSize: size, lineWidth } = this;
@@ -292,6 +346,10 @@ export class Range extends IconBase {
 
 /** 值范围 */
 export class Value extends IconBase {
+  protected get label() {
+    return '单一时间';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const { iconSize: size, lineWidth } = this;
@@ -344,6 +402,10 @@ const getCoordinatePoints = (size: number) => {
 };
 
 export class LineChart extends IconBase {
+  protected get label() {
+    return '折线图';
+  }
+
   renderIcon() {
     const { color } = this.attributes;
     const { iconSize: size, lineWidth } = this;
@@ -377,6 +439,10 @@ export class LineChart extends IconBase {
 }
 
 export class BarChart extends IconBase {
+  protected get label() {
+    return '条形图';
+  }
+
   get data() {
     return [1, 4, 2, 4, 3];
   }
@@ -401,12 +467,12 @@ export class BarChart extends IconBase {
 
     select(this.icon)
       .maybeAppend('.bars', 'g')
-      .selectAll('.bar')
+      .selectAll('.column')
       .data(this.data.map((value, index) => ({ value, index })))
       .join((enter) =>
         enter
           .append('line')
-          .attr('className', 'bar')
+          .attr('className', 'column')
           .style('x1', ({ index }: any) => ox + deltaX * index)
           .style('y1', oy)
           .style('x2', ({ index }: any) => ox + deltaX * index)
@@ -500,7 +566,9 @@ type ToggleIconStyleProps<T extends string> = IconBaseStyleProps & {
 };
 type ToggleIconOptions<T extends string> = ComponentOptions<ToggleIconStyleProps<T>>;
 export abstract class ToggleIcon<T extends string> extends GUI<ToggleIconStyleProps<T>> {
-  abstract toggles: Array<[T, typeof Range | typeof Value | typeof LineChart | typeof BarChart]>;
+  abstract toggles: Array<
+    [T, typeof Play | typeof Pause | typeof Range | typeof Value | typeof LineChart | typeof BarChart]
+  >;
 
   public static tag = 'ToggleIcon';
 
@@ -544,9 +612,10 @@ export abstract class ToggleIcon<T extends string> extends GUI<ToggleIconStylePr
       e.preventDefault();
       e.stopPropagation();
       const nextIndex = (this.toggles.findIndex(([key]) => key === this.currentType) + 1) % this.toggles.length;
-      this.currentType = this.toggles[nextIndex][0];
-      this.render();
+      const nextType = this.toggles[nextIndex][0];
       onChange?.(this.currentType);
+      this.currentType = nextType;
+      this.render();
     });
   }
 }
@@ -559,7 +628,6 @@ export class PlayPause extends ToggleIcon<'play' | 'pause'> {
 
   constructor(options: ToggleIconOptions<'play' | 'pause'>) {
     super(deepAssign({}, { style: { type: 'play' } }, options));
-    console.log(options, this.attributes);
   }
 }
 
@@ -574,13 +642,13 @@ export class SelectionType extends ToggleIcon<'range' | 'value'> {
   }
 }
 
-export class ChartType extends ToggleIcon<'line' | 'bar'> {
-  toggles: ['line' | 'bar', typeof LineChart | typeof BarChart][] = [
+export class ChartType extends ToggleIcon<'line' | 'column'> {
+  toggles: ['line' | 'column', typeof LineChart | typeof BarChart][] = [
     ['line', LineChart],
-    ['bar', BarChart],
+    ['column', BarChart],
   ];
 
-  constructor(options: ToggleIconOptions<'line' | 'bar'>) {
-    super(deepAssign({}, { style: { type: 'bar' } }, options));
+  constructor(options: ToggleIconOptions<'line' | 'column'>) {
+    super(deepAssign({}, { style: { type: 'column' } }, options));
   }
 }

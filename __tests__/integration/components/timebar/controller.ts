@@ -38,7 +38,7 @@ export const TimebarController = it((group) => {
         height: 50,
         speed: 2,
         align: 'right',
-        chartType: 'bar',
+        chartType: 'column',
         selectionType: 'value',
       },
     })
