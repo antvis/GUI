@@ -40,7 +40,7 @@ export class Layout extends Group {
   }
 
   public appendChild<T extends INode>(child: T, index?: number): T {
-    ((child as unknown) as DisplayObject).isMutationObserved = true;
+    (child as unknown as DisplayObject).isMutationObserved = true;
     super.appendChild(child, index);
     return child;
   }

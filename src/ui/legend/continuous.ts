@@ -205,9 +205,9 @@ export class Continuous extends GUI<ContinuousStyleProps> {
     const { showLabel } = this.attributes;
     if (!showLabel) return new BBox(0, 0, 0, 0);
     if (this.cacheLabelBBox) return this.cacheLabelBBox;
-    const { width, height } = (this.label
-      .querySelector(AXIS_CLASS_NAMES.labelGroup.class)
-      ?.children.slice(-1)[0] as DisplayObject).getBBox();
+    const { width, height } = (
+      this.label.querySelector(AXIS_CLASS_NAMES.labelGroup.class)?.children.slice(-1)[0] as DisplayObject
+    ).getBBox();
     this.cacheLabelBBox = new BBox(0, 0, width, height);
     return this.cacheLabelBBox;
   }

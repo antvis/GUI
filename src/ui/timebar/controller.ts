@@ -60,12 +60,15 @@ export class Controller extends GUI<ControllerStyleProps> {
       padding: [, right, , left],
     } = this;
 
-    const components = functions.reduce((prev, curr) => {
-      if (prev.length && curr.length) {
-        return prev.concat('split', ...curr);
-      }
-      return prev.concat(...curr);
-    }, [] as (keyof typeof componentsMap)[]);
+    const components = functions.reduce(
+      (prev, curr) => {
+        if (prev.length && curr.length) {
+          return prev.concat('split', ...curr);
+        }
+        return prev.concat(...curr);
+      },
+      [] as (keyof typeof componentsMap)[]
+    );
 
     const componentsWidth = components.length * iconSize;
     const xOffset =
@@ -105,7 +108,7 @@ export class Controller extends GUI<ControllerStyleProps> {
         const canvas = this.ownerDocument?.defaultView;
         if (canvas) {
           this.speedSelect = new Ctor({ style: { ...style, zIndex: 100, x: baseX + x, y: baseY + y } }) as SpeedSelect;
-          ((canvas as unknown) as Canvas).appendChild(this.speedSelect);
+          (canvas as unknown as Canvas).appendChild(this.speedSelect);
         }
       } else {
         this.functions.appendChild(new Ctor({ style }));

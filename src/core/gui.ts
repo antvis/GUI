@@ -44,7 +44,7 @@ export abstract class GUI<T extends Record<string, any>> extends CustomElement<R
     }
   }
 
-  public update(attr: Partial<T>, animate?: GenericAnimation) {
+  public update(attr?: Partial<T>, animate?: GenericAnimation) {
     this.attr(deepAssign({}, this.attributes, attr || {}));
     return this.render?.(this.attributes as Required<T>, this, animate);
   }

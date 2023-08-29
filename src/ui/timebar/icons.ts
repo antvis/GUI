@@ -102,7 +102,7 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
     const canvas = this.ownerDocument?.defaultView;
 
     if (canvas) {
-      this.indicator = ((canvas as unknown) as Canvas).appendChild(
+      this.indicator = (canvas as unknown as Canvas).appendChild(
         new Indicator({
           style: {
             x: x + size / 2,

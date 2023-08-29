@@ -64,10 +64,8 @@ export class Handle extends GUI<HandleStyleProps> {
   }
 
   private renderMarker(container: Selection) {
-    const {
-      orientation,
-      markerSymbol = ifHorizontal(orientation, 'horizontalHandle', 'verticalHandle'),
-    } = this.attributes;
+    const { orientation, markerSymbol = ifHorizontal(orientation, 'horizontalHandle', 'verticalHandle') } =
+      this.attributes;
 
     ifShow(!!markerSymbol, container, (group) => {
       const handleStyle = subStyleProps(this.attributes, 'marker');

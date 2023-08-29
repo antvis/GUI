@@ -1,8 +1,8 @@
 // @ts-nocheck
-import type { IDocument } from '@antv/g';
+import type { IAnimation, IDocument } from '@antv/g';
 import { group } from 'd3-array';
 import type { AnimationResult } from '../animation';
-import type { BaseStyleProps as BP, DisplayObject, IAnimation } from '../shapes';
+import type { BaseStyleProps as BP, DisplayObject } from '../shapes';
 import { Circle, Ellipse, Group, HTML, Image, Line, Path, Polygon, Polyline, Rect, Text } from '../shapes';
 
 export type _Element = DisplayObject & {
