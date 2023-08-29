@@ -1,11 +1,13 @@
+import type { Canvas } from '@antv/g';
 import { clamp, omit } from '@antv/util';
 import { ComponentOptions, GUI } from '../../core';
 import type { GroupStyleProps, PolygonStyleProps, RectStyleProps } from '../../shapes';
 import { Group, Path, Rect } from '../../shapes';
 import { PrefixObject } from '../../types';
-import { Indicator } from '../indicator';
 import { deepAssign, parseSeriesAttr, select, subStyleProps } from '../../util';
-import { Select, type SelectStyleProps } from '../select';
+import { Indicator } from '../indicator';
+import type { SelectStyleProps } from '../select';
+import { Select } from '../select';
 
 type IconBaseStyleProps = GroupStyleProps &
   PrefixObject<RectStyleProps, 'background'> & {
@@ -43,16 +45,7 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
     return 'BaseIcon';
   }
 
-  protected indicator = this.appendChild(
-    new Indicator({
-      style: {
-        y: -10,
-        visibility: 'hidden',
-        position: 'top',
-        radius: 3,
-      },
-    })
-  );
+  protected indicator!: Indicator;
 
   protected background = this.appendChild(new Rect({}));
 
@@ -80,11 +73,10 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
   }
 
   protected showIndicator() {
-    // TODO fixme 层级问题，临时关闭
-    // if (!this.label) return;
-    // const { size } = this.attributes;
-    // const halfSize = size / 2;
-    // this.indicator.update({ y: -halfSize, labelText: this.label, visibility: 'visible' });
+    if (!this.label) return;
+    const { size } = this.attributes;
+    const { x, y } = this.background.getBBox();
+    this.indicator.update({ x: x + size / 2, y: y - 5, labelText: this.label, visibility: 'visible' });
   }
 
   protected hideIndicator() {
@@ -100,6 +92,33 @@ export abstract class IconBase<T extends Record<string, any> = {}> extends GUI<T
         options
       )
     );
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // indicator 脱离文档流，需要手动添加到 canvas
+    const { size } = this.attributes;
+    const { x, y } = this.background.getBBox();
+    const canvas = this.ownerDocument?.defaultView;
+
+    if (canvas) {
+      this.indicator = ((canvas as unknown) as Canvas).appendChild(
+        new Indicator({
+          style: {
+            x: x + size / 2,
+            y: y - size / 2,
+            visibility: 'hidden',
+            position: 'top',
+            radius: 3,
+            zIndex: 100,
+          },
+        })
+      );
+    }
+  }
+
+  disconnectedCallback() {
+    this.indicator.destroy();
   }
 
   render() {

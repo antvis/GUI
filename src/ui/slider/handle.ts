@@ -1,7 +1,8 @@
 import { ComponentOptions, GUI, PrefixStyleProps } from '../../core';
 import type { DisplayObject, GroupStyleProps, PathStyleProps, TextStyleProps } from '../../shapes';
 import { Group } from '../../shapes';
-import { classNames, ifShow, select, splitStyle, subStyleProps, type Selection } from '../../util';
+import type { Selection } from '../../util';
+import { classNames, ifShow, select, splitStyle, subStyleProps } from '../../util';
 import { HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
 
 export type HandleType = 'start' | 'end';

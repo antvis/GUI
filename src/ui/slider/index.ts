@@ -1,24 +1,20 @@
-import { CustomEvent, type Cursor } from '@antv/g';
+import type { Cursor } from '@antv/g';
+import { CustomEvent } from '@antv/g';
 import { clamp } from '@antv/util';
-import { transition, type GenericAnimation } from '../../animation';
+import type { GenericAnimation } from '../../animation';
+import { transition } from '../../animation';
 import { GUI } from '../../core';
 import { Group, Rect, Text } from '../../shapes';
-import {
-  getEventPos,
-  ifShow,
-  parseSeriesAttr,
-  select,
-  subStyleProps,
-  superStyleProps,
-  toPrecision,
-  type Selection,
-} from '../../util';
-import { Sparkline, type SparklineStyleProps } from '../sparkline';
+import type { Selection } from '../../util';
+import { getEventPos, ifShow, parseSeriesAttr, select, subStyleProps, superStyleProps, toPrecision } from '../../util';
+import type { SparklineStyleProps } from '../sparkline';
+import { Sparkline } from '../sparkline';
 import { CLASS_NAMES, HANDLE_DEFAULT_CFG, HANDLE_ICON_DEFAULT_CFG, HANDLE_LABEL_DEFAULT_CFG } from './constant';
-import { Handle, type IconStyleProps, type LabelStyleProps, type HandleType, HandleStyleProps } from './handle';
+import type { HandleType, IconStyleProps, LabelStyleProps } from './handle';
+import { Handle, HandleStyleProps } from './handle';
 import type { SliderOptions, SliderStyleProps } from './types';
 
-export type { SliderStyleProps, SliderOptions };
+export type { SliderOptions, SliderStyleProps };
 
 export class Slider extends GUI<SliderStyleProps> {
   public static tag = 'slider';

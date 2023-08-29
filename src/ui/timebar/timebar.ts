@@ -2,12 +2,13 @@ import { clamp } from '@antv/util';
 import { GUI } from '../../core';
 import { Line } from '../../shapes';
 import { BBox, deepAssign } from '../../util';
-import { Slider, type SliderStyleProps } from '../slider';
-import { Controller } from './controller';
 import { Axis } from '../axis';
+import type { LinearAxisStyleProps } from '../axis/types';
+import type { SliderStyleProps } from '../slider';
+import { Slider } from '../slider';
+import { Controller } from './controller';
 import { ChartModeHandle, TimeModeHandle } from './handle';
 import type { ControllerStyleProps, TimebarOptions, TimebarStyleProps } from './types';
-import type { LinearAxisStyleProps } from '../axis/types';
 import { labelFormatter } from './utils';
 
 export class Timebar extends GUI<TimebarStyleProps> {

@@ -1,6 +1,7 @@
 import { GUI } from '../../core';
-import { DisplayObject, Text, type Group } from '../../shapes';
-import { BBox, classNames, ifShow, parseSeriesAttr, select, Selection, splitStyle } from '../../util';
+import type { Group } from '../../shapes';
+import { DisplayObject, Text } from '../../shapes';
+import { BBox, Selection, classNames, ifShow, parseSeriesAttr, select, splitStyle } from '../../util';
 import type { TitleOptions, TitleStyleProps } from './types';
 
 export type { TitleOptions, TitleStyleProps };
@@ -115,13 +116,8 @@ export class Title extends GUI<TitleStyleProps> {
 
   public getAvailableSpace(): DOMRect {
     const container = this;
-    const {
-      width: containerWidth,
-      height: containerHeight,
-      position,
-      spacing,
-      inset,
-    } = this.attributes as Required<TitleStyleProps>;
+    const { width: containerWidth, height: containerHeight, position, spacing, inset } = this
+      .attributes as Required<TitleStyleProps>;
     const title = container.querySelector<DisplayObject>(CLASS_NAMES.text.class);
     if (!title) return new BBox(0, 0, +containerWidth, +containerHeight);
     const { width: titleWidth, height: titleHeight } = title.getBBox();

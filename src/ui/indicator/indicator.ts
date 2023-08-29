@@ -19,7 +19,7 @@ import {
 import { DEFAULT_INDICATOR_STYLE_PROPS } from './constant';
 import type { IndicatorOptions, IndicatorStyleProps, Position } from './types';
 
-export { IndicatorOptions, IndicatorStyleProps };
+export type { IndicatorOptions, IndicatorStyleProps };
 
 type Edge = [Point, Point];
 

@@ -1,3 +1,4 @@
+import type { Canvas } from '@antv/g';
 import { GUI } from '../../core';
 import { DisplayObject, Group, Rect } from '../../shapes';
 import { deepAssign, parseSeriesAttr, subStyleProps } from '../../util';
@@ -41,6 +42,8 @@ export class Controller extends GUI<ControllerStyleProps> {
 
   private functions = this.appendChild(new Group({}));
 
+  private speedSelect!: SpeedSelect;
+
   private get padding() {
     return parseSeriesAttr(this.attributes.padding);
   }
@@ -72,6 +75,7 @@ export class Controller extends GUI<ControllerStyleProps> {
         right: width - componentsWidth - left - right + iconSize / 2,
       }[align] || 0;
 
+    this.speedSelect?.destroy();
     this.functions.removeChildren();
     components.forEach((name, index) => {
       const Ctor = componentsMap[name];
@@ -94,12 +98,28 @@ export class Controller extends GUI<ControllerStyleProps> {
         style.onClick = () => this.handleFunctionChange(name, { value: name });
       }
 
-      this.functions.appendChild(new Ctor({ style }));
+      if (Ctor === SpeedSelect) {
+        // SpeedSelect 直接插入到 canvas
+        const { x: baseX, y: baseY } = this.getBBox();
+        const { x, y } = style;
+        const canvas = this.ownerDocument?.defaultView;
+        if (canvas) {
+          this.speedSelect = new Ctor({ style: { ...style, zIndex: 100, x: baseX + x, y: baseY + y } }) as SpeedSelect;
+          ((canvas as unknown) as Canvas).appendChild(this.speedSelect);
+        }
+      } else {
+        this.functions.appendChild(new Ctor({ style }));
+      }
     });
   }
 
   constructor(options: ControllerOptions) {
     super(deepAssign({}, Controller.defaultOptions, options));
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.speedSelect?.destroy();
   }
 
   render() {

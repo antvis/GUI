@@ -1,8 +1,11 @@
-import { ElementEvent, type FederatedEvent, type INode } from '@antv/g';
-import { Group, type DisplayObject } from '../../shapes';
+import type { FederatedEvent, INode } from '@antv/g';
+import { ElementEvent } from '@antv/g';
+import type { DisplayObject } from '../../shapes';
+import { Group } from '../../shapes';
 import { BBox } from '../../util';
 import { calcLayout } from '../../util/layout';
-import { parseSeriesAttr, type SeriesAttr, type StandardSeriesAttr } from '../../util/series';
+import type { SeriesAttr, StandardSeriesAttr } from '../../util/series';
+import { parseSeriesAttr } from '../../util/series';
 import type { LayoutOptions, LayoutStyleProps } from './types';
 
 export type { LayoutOptions, LayoutStyleProps };
@@ -37,7 +40,7 @@ export class Layout extends Group {
   }
 
   public appendChild<T extends INode>(child: T, index?: number): T {
-    (child as unknown as DisplayObject).isMutationObserved = true;
+    ((child as unknown) as DisplayObject).isMutationObserved = true;
     super.appendChild(child, index);
     return child;
   }
