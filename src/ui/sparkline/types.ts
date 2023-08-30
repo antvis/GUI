@@ -36,6 +36,10 @@ export type SparklineStyleProps = GroupStyleProps &
     isStack?: boolean;
     range?: [number, number];
     type: 'line' | 'column';
+    /**
+     * 缩放比例，0~1
+     */
+    scale?: number;
   };
 
 export type SparklineOptions = ComponentOptions<SparklineStyleProps>;

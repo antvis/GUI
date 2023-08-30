@@ -106,7 +106,7 @@ export class Sparkline extends GUI<SparklineStyleProps> {
 
   private get columnsStyle(): ColumnsStyleProps {
     const columnStyle = subStyleProps(this.attributes, 'column');
-    const { isStack, type } = this.attributes;
+    const { isStack, type, scale } = this.attributes;
     if (type !== 'column') throw new Error('columnsStyle can only be used in column type');
     const { height } = this.containerShape;
     let { rawData: data } = this;
@@ -116,7 +116,7 @@ export class Sparkline extends GUI<SparklineStyleProps> {
     const [minVal, maxVal] = getRange(data);
     const heightScale = new Linear({
       domain: [0, maxVal - (minVal > 0 ? 0 : minVal)],
-      range: [0, height],
+      range: [0, height * scale],
     });
 
     const bandWidth = x.getBandWidth();
@@ -125,22 +125,27 @@ export class Sparkline extends GUI<SparklineStyleProps> {
       columns: data.map((column, i) => {
         return column.map((val, j) => {
           const barWidth = bandWidth / data.length;
+          const getShape = () => {
+            return {
+              x: x.map(j) + barWidth * i,
+              y: val >= 0 ? y.map(val) : y.map(0),
+              width: barWidth,
+              height: heightScale.map(Math.abs(val)),
+            };
+          };
+          const getStackShape = () => {
+            return {
+              x: x.map(j),
+              y: y.map(val),
+              width: bandWidth,
+              height: heightScale.map(rawData[i][j]),
+            };
+          };
+
           return {
             fill: this.getColor(i),
             ...columnStyle,
-            ...(isStack
-              ? {
-                  x: x.map(j),
-                  y: y.map(val),
-                  width: bandWidth,
-                  height: heightScale.map(rawData[i][j]),
-                }
-              : {
-                  x: x.map(j) + barWidth * i,
-                  y: val >= 0 ? y.map(val) : y.map(0),
-                  width: barWidth,
-                  height: heightScale.map(Math.abs(val)),
-                }),
+            ...(isStack ? getStackShape() : getShape()),
           } as ColumnStyleProps;
         });
       }),
@@ -160,6 +165,8 @@ export class Sparkline extends GUI<SparklineStyleProps> {
       isGroup: false,
       columnLineWidth: 1,
       columnStroke: '#fff',
+      scale: 1,
+      spacing: 0,
     });
   }
 
@@ -204,13 +211,13 @@ export class Sparkline extends GUI<SparklineStyleProps> {
    * 根据数据生成scale
    */
   private createScales(data: number[][]) {
-    const { type, range = [], isGroup, spacing } = this.attributes;
+    const { type, scale, range = [], spacing } = this.attributes;
     const { width, height } = this.containerShape;
     const [minVal, maxVal] = getRange(data);
 
     const yScale = new Linear({
       domain: [range[0] ?? minVal, range[1] ?? maxVal],
-      range: [height, 0],
+      range: [height, height * (1 - scale)],
     });
 
     if (type === 'line') {
@@ -224,12 +231,16 @@ export class Sparkline extends GUI<SparklineStyleProps> {
       };
     }
 
+    console.log(spacing);
+
     return {
       type,
       x: new Band({
         domain: data[0].map((val, idx) => idx),
         range: [0, width],
         paddingInner: spacing,
+        paddingOuter: spacing / 2,
+        align: 0.5,
       }),
       y: yScale,
     };
