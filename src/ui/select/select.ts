@@ -158,7 +158,7 @@ export class Select extends GUI<SelectStyleProps> {
                   style: {
                     ...datum,
                     ...optionStyle,
-                    width: width - padding[1] - padding[3],
+                    width,
                     selected: datum.value === this.currentValue,
                     onClick: (value, option, item) => {
                       this.setValue(value);
@@ -193,7 +193,7 @@ export class Select extends GUI<SelectStyleProps> {
     const { spacing } = dropdownStyle;
     this.dropdown.attr({
       y: height + spacing,
-      width,
+      width: bbox.width + padding[1] + padding[3],
       height: bbox.height + padding[0] + padding[2],
       ...dropdownStyle,
     });
@@ -235,7 +235,7 @@ export class Select extends GUI<SelectStyleProps> {
       this.isPointerInSelect = false;
     });
 
-    document?.addEventListener('click', (e) => {
+    document?.addEventListener('click', () => {
       if (!this.isPointerInSelect) {
         hide(this.dropdown);
       }
