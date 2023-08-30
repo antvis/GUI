@@ -67,7 +67,7 @@ export type SliderStyleProps = GroupStyleProps &
     selectionType?: 'select' | 'invert';
 
     /** 选区值 0~1 */
-    values?: [number, number];
+    values?: number | [number, number];
 
     /** 值变化回调，type 为 value 时返回 number，为 range 时返回 [number, number] */
     onChange?: <T extends number | [number, number] = number | [number, number]>(values: T) => void;

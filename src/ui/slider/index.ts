@@ -308,10 +308,11 @@ export class Slider extends GUI<SliderStyleProps> {
     this.renderSelection(container);
   }
 
-  private clampValues(values?: [number, number], precision = 4): [number, number] {
+  private clampValues(values?: Required<SliderStyleProps>['values'], precision = 4): [number, number] {
     const [min, max] = this.range;
     const [prevStart, prevEnd] = this.getValues().map((num) => toPrecision(num, precision));
-    let [startVal, endVal] = (values || [prevStart, prevEnd]).map((num) => toPrecision(num, precision));
+    const internalValues = Array.isArray(values) ? values : [prevStart, values ?? prevEnd];
+    let [startVal, endVal] = (internalValues || [prevStart, prevEnd]).map((num) => toPrecision(num, precision));
 
     if (this.attributes.type === 'value') return [0, clamp(endVal, min, max)];
 
@@ -547,7 +548,7 @@ export class Slider extends GUI<SliderStyleProps> {
     this.target = target;
     this.prevPos = this.getOrientVal(getEventPos(e));
     const { x, y } = this.availableSpace;
-    const { x: X, y: Y } = this.attributes;
+    const { x: X, y: Y } = this.getBBox();
     this.selectionStartPos = this.getRatio(this.prevPos - this.getOrientVal([x, y]) - this.getOrientVal([+X!, +Y!]));
     this.selectionWidth = 0;
     document.addEventListener('pointermove', this.onDragging);
