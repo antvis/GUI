@@ -24,7 +24,7 @@ export const TimebarController = it((group) => {
         width: 300,
         height: 50,
         speed: 1.5,
-        playing: true,
+        state: 'play',
         align: 'center',
       },
     })

@@ -12,14 +12,20 @@ export const TimebarBasic = it({ width: 500, height: 150 }, (group) => {
   group.appendChild(
     new Timebar({
       style: {
+        x: 10,
         type: 'chart',
         width: 500,
         height: 150,
         data,
         interval,
-        values: [0.25, 0.75],
+        loop: true,
+        controllerIconSpacing: 5,
+        values: [data[1].time, data[5].time],
         onChange: (value) => {
-          console.log('onChange', value);
+          console.log(
+            'onChange',
+            (Array.isArray(value) ? value : [value]).map((d) => (d as Date).toLocaleString())
+          );
         },
         onReset: () => {
           console.log('onReset');

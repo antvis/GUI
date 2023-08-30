@@ -1,27 +1,42 @@
 import { clamp } from '@antv/util';
 import { GUI } from '../../core';
 import { Line } from '../../shapes';
-import { BBox, deepAssign } from '../../util';
+import { BBox, deepAssign, subStyleProps, formatTime } from '../../util';
 import { Axis } from '../axis';
 import type { LinearAxisStyleProps } from '../axis/types';
 import type { SliderStyleProps } from '../slider';
 import { Slider } from '../slider';
 import { Controller } from './controller';
 import { ChartModeHandle, TimeModeHandle } from './handle';
-import type { ControllerStyleProps, TimebarOptions, TimebarStyleProps } from './types';
-import { labelFormatter } from './utils';
+import type { ControllerStyleProps, TimebarOptions, TimebarStyleProps, Datum } from './types';
+import { labelFormatter, parseBySeries } from './utils';
+
+type States = Pick<TimebarStyleProps, 'speed' | 'selectionType' | 'chartType' | 'state' | 'playMode'> & {
+  values?: [number, number] | [Date, Date] | [number | Date, typeof Infinity];
+};
 
 export class Timebar extends GUI<TimebarStyleProps> {
   static defaultOptions: TimebarOptions = {
     style: {
-      type: 'time',
-      data: [],
-      values: [0, 0.5],
-      interval: 'day',
+      axisLabelFill: '#6e6e6e',
+      axisLabelTextAlign: 'left',
+      axisLabelTextBaseline: 'top',
+      axisLabelTransform: 'translate(5, -12)',
+      axisLineLineWidth: 1,
+      axisLineStroke: '#cacdd1',
+      axisTickLength: 15,
+      axisTickLineWidth: 1,
+      axisTickStroke: '#cacdd1',
+      chartShowLabel: false,
+      chartType: 'line',
       controllerAlign: 'center',
       controllerHeight: 40,
+      data: [],
+      interval: 'day',
+      loop: false,
+      playMode: 'acc',
       selectionType: 'range',
-      chartType: 'line',
+      type: 'time',
     },
   };
 
@@ -36,10 +51,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
     new Slider({
       style: {
         onChange: (values) => {
-          // this.states.values = values;
-          if (Array.isArray(values)) this.states.values = values;
-          else this.states.values[1] = values;
-          this.attributes.onChange?.(values);
+          this.handleSliderChange(values);
         },
       },
     })
@@ -47,7 +59,19 @@ export class Timebar extends GUI<TimebarStyleProps> {
 
   private controller = this.appendChild(new Controller({}));
 
-  private states: Record<string, any> = {};
+  private states: States = {};
+
+  private playInterval?: number;
+
+  private get data() {
+    const { data } = this.attributes;
+    const compareFn = (a: Datum, b: Datum) => {
+      if (a.time < b.time) return -1;
+      if (a.time > b.time) return 1;
+      return 0;
+    };
+    return data.sort(compareFn);
+  }
 
   /** 计算空间分配 */
   private get space() {
@@ -76,6 +100,68 @@ export class Timebar extends GUI<TimebarStyleProps> {
     return { axisBBox, controllerBBox, timelineBBox };
   }
 
+  private setBySliderValues(val: number | number[]) {
+    const { data } = this;
+    const [startRatio, endRatio] = Array.isArray(val) ? val : [0, val];
+    const length = data.length;
+    const startDatum = data[Math.floor(startRatio * length)];
+    const endDatum = data[Math.ceil(endRatio * length) - (Array.isArray(val) ? 0 : 1)];
+    // 如果 endDatum 不存在，则其已经比最大的时间范围更大
+    this.states.values = [startDatum?.time ?? data[0].time, endDatum?.time ?? Infinity] as any;
+  }
+
+  private setByTimebarValues(val: TimebarStyleProps['values']) {
+    const { data } = this;
+    const [start, end] = Array.isArray(val) ? val : [undefined, val];
+    const startDatum = data.find(({ time }) => time === start);
+    const endDatum = data.find(({ time }) => time === end);
+    this.states.values = [startDatum?.time ?? data[0]?.time, endDatum?.time ?? Infinity] as any;
+  }
+
+  private setByIndex(index: [number, number]) {
+    const { data } = this;
+    const [startIndex, endIndex] = index;
+    this.states.values = [data[startIndex]?.time ?? data[0].time, this.data[endIndex]?.time ?? Infinity] as any;
+  }
+
+  /**
+   * 获取 timebar 的 values
+   */
+  private get sliderValues(): [number, number] {
+    const { values, selectionType } = this.states;
+    const [start, end] = Array.isArray(values) ? values : [undefined, values];
+
+    const { data } = this;
+    const length = data.length;
+    const isValue = selectionType === 'value';
+
+    const getStartValue = () => {
+      const startDatumIndex = data.findIndex(({ time }) => time === start);
+      if (isValue) return 0;
+      if (startDatumIndex > -1) return startDatumIndex / length;
+      // value 模式下默认取 0
+      return 0;
+    };
+
+    const getEndValue = () => {
+      if (end === Infinity) return 1;
+      const endDatumIndex = data.findIndex(({ time }) => time === end);
+      if (endDatumIndex > -1) return endDatumIndex / length;
+      // range 模式下默认取 1，value 模式下默认取 0.5
+      if (isValue) return 0.5;
+      return 1;
+    };
+
+    return [getStartValue(), getEndValue()];
+  }
+
+  private getDatumByRatio(ratio: number) {
+    const { data } = this;
+    const length = data.length;
+    const index = Math.floor(ratio * (length - 1));
+    return data[index];
+  }
+
   private get chartHandleIconShape() {
     const { selectionType } = this.states;
     const {
@@ -90,16 +176,16 @@ export class Timebar extends GUI<TimebarStyleProps> {
 
   private getChartStyle(bbox: BBox): SliderStyleProps {
     const { x, y, width, height } = bbox;
-    const { selectionType, chartType, values } = this.states;
-    const { type, data, labelFormatter = (value) => `${value}` } = this.attributes;
+    const { selectionType, chartType } = this.states;
+    const { data } = this;
+    const { type, labelFormatter: userDefinedLabelFormatter } = this.attributes;
+    const { type: ignoreType, ...userDefinedChartStyle } = subStyleProps(this.attributes, 'chart');
     const isRange = selectionType === 'range';
-    const timelineValues: [number, number] = isRange ? (values as [number, number]) : [0, values[1] as number];
     if (type === 'time') {
       return {
         handleIconShape: () => new TimeModeHandle({}),
         selectionFill: '#2e7ff8',
         selectionFillOpacity: 1,
-        showLabel: false,
         showLabelOnInteraction: true,
         handleLabelDy: isRange ? -15 : 0,
         autoFitLabel: isRange,
@@ -110,11 +196,17 @@ export class Timebar extends GUI<TimebarStyleProps> {
         trackRadius: height / 2,
         trackSize: height / 2,
         type: selectionType,
-        values: timelineValues,
-        formatter: labelFormatter,
+        values: this.sliderValues,
+        formatter: (value) => {
+          if (userDefinedLabelFormatter) return userDefinedLabelFormatter(value);
+          const time = this.getDatumByRatio(value).time;
+          if (typeof time === 'number') return parseBySeries(time);
+          return formatTime(time, 'YYYY-MM-DD HH:mm:ss');
+        },
         x,
         y,
         zIndex: 1,
+        ...userDefinedChartStyle,
       };
     }
     // type === 'chart'
@@ -126,7 +218,6 @@ export class Timebar extends GUI<TimebarStyleProps> {
       selectionFill: '#fff',
       selectionFillOpacity: 0.5,
       selectionType: 'invert',
-      showLabel: false,
       sparklineSpacing: 0.1,
       sparklineColumnLineWidth: 0,
       sparklineColor: '#d4e5fd',
@@ -134,13 +225,15 @@ export class Timebar extends GUI<TimebarStyleProps> {
       sparklineAreaLineWidth: 0,
       sparklineData,
       sparklineType: chartType,
+      sparklineScale: 0.8,
       trackLength: width,
       trackSize: height,
       type: selectionType,
-      values: timelineValues,
+      values: this.sliderValues,
       x,
       y,
       zIndex: 1,
+      ...userDefinedChartStyle,
     };
   }
 
@@ -148,91 +241,85 @@ export class Timebar extends GUI<TimebarStyleProps> {
     this.timeline.update(this.getChartStyle(bbox));
   }
 
+  private updateSelection() {
+    this.timeline.setValues(this.sliderValues, true);
+    this.handleSliderChange(this.sliderValues);
+  }
+
   private getAxisStyle(bbox: BBox) {
-    const { data, interval, labelFormatter: userDefinedLabelFormatter } = this.attributes;
+    const { data } = this;
+    const { interval, labelFormatter: userDefinedLabelFormatter } = this.attributes;
+    const userDefinedAxisStyle = subStyleProps(this.attributes, 'axis');
+
     const { x, y, width } = bbox;
-    const axisData = data.map(({ time }, index) => ({ label: `${time}`, value: index / data.length, time }));
+    // 需要补一个刻度
+    const axisData = [...data, { time: 0 }].map(({ time }, index, arr) => ({
+      label: `${time}`,
+      value: index / (arr.length - 1),
+      time,
+    }));
     const style: Partial<LinearAxisStyleProps> = {
       startPos: [x, y],
       endPos: [x + width, y],
       data: axisData,
+      // hide last label
+      labelFilter: (_datum, index) => index < axisData.length - 1,
       labelFormatter: ({ time }) =>
         userDefinedLabelFormatter ? userDefinedLabelFormatter(time) : labelFormatter(time, interval),
-      lineLineWidth: 1,
-      lineStroke: '#cacdd1',
-      tickLength: 15,
-      tickLineWidth: 1,
-      tickStroke: '#cacdd1',
-      labelTextAlign: 'left',
-      labelTextBaseline: 'top',
-      labelFill: '#6e6e6e',
-      labelTransform: 'translate(5, -12)',
+      ...userDefinedAxisStyle,
     };
     return style;
   }
 
   private renderAxis(bbox: BBox = this.space.axisBBox) {
+    const { type } = this.attributes;
+    if (type !== 'chart') return;
     this.axis.update(this.getAxisStyle(bbox));
   }
 
-  private renderController(bbox: BBox) {
-    const {
-      type,
-      speed,
-      playing,
-      selectionType,
-      chartType,
-      onReset,
-      onSpeedChange,
-      onBackward,
-      onPlay,
-      onPause,
-      onForward,
-      onSelectionTypeChange,
-      onChartTypeChange,
-    } = this.attributes;
+  private renderController(bbox: BBox = this.space.controllerBBox) {
+    const { type } = this.attributes;
+    const { state, speed, selectionType, chartType } = this.states;
+    const userDefinedControllerStyle = subStyleProps(this.attributes, 'controller');
+
     const that = this;
 
     const style: ControllerStyleProps = {
       ...bbox,
       iconSize: 20,
       speed,
-      playing,
+      state,
       selectionType,
       chartType,
       onChange(type, { value }) {
         switch (type) {
           case 'reset':
-            onReset?.();
+            that.reset();
             break;
           case 'speed':
-            onSpeedChange?.(value);
+            that.handleSpeedChange(value);
             break;
           case 'backward':
-            // TODO 更新 timeline values
-            onBackward?.();
+            that.backward();
             break;
           case 'playPause':
-            if (value === 'play') onPlay?.();
-            else onPause?.();
+            if (value === 'play') that.play();
+            else that.pause();
             break;
           case 'forward':
-            onForward?.();
+            that.forward();
             break;
           case 'selectionType':
-            that.states.selectionType = value;
-            that.renderChart();
-            onSelectionTypeChange?.(value);
+            that.handleSelectionTypeChange(value);
             break;
           case 'chartType':
-            that.states.chartType = value;
-            that.renderChart();
-            onChartTypeChange?.(value);
+            that.handleChartTypeChange(value);
             break;
           default:
             break;
         }
       },
+      ...userDefinedControllerStyle,
     };
 
     if (type === 'time') {
@@ -242,13 +329,143 @@ export class Timebar extends GUI<TimebarStyleProps> {
     this.controller.update(style);
   }
 
+  private handleSliderChange = (values: SliderStyleProps['values']) => {
+    const { data } = this;
+    const { selectionType } = this.states;
+    const { onChange } = this.attributes;
+    this.setBySliderValues(values!);
+    const [start, end] = this.states.values as any;
+    const endTime = end === Infinity ? data.at(-1)!.time : end;
+    onChange?.(selectionType === 'range' ? [start, endTime] : endTime);
+  };
+
+  private reset(preventEvent?: boolean) {
+    const { selectionType } = this.states;
+    this.pause();
+    this.setBySliderValues(selectionType === 'range' ? [0, 1] : [0, 0]);
+    this.renderController();
+    this.updateSelection();
+    !preventEvent && this.attributes?.onReset?.();
+  }
+
+  private moveSelection(direction: 'forward' | 'backward', preventEvent?: boolean) {
+    const { data } = this;
+    const length = data.length;
+    const { values, selectionType, playMode } = this.states;
+    const [startTime, endTime] = values!;
+    const startIndex = data.findIndex(({ time }) => time === startTime);
+    let endIndex = data.findIndex(({ time }) => time === endTime);
+    if (endIndex === -1) endIndex = length;
+    const diff = direction === 'backward' ? -1 : 1;
+    let currentIndexes: [number, number];
+    if (selectionType === 'range') {
+      // end 后移一个时间间隔
+      if (playMode === 'acc') {
+        currentIndexes = [startIndex, endIndex + diff];
+        // 如果回退过程中，start 和 end 相遇，则 end 重置到 length
+        if (diff === -1 && startIndex === endIndex) {
+          currentIndexes = [startIndex, length];
+        }
+      }
+      // start, end 后移一个时间间隔
+      else currentIndexes = [startIndex + diff, endIndex + diff];
+    }
+    // end 后移一个时间间隔
+    else currentIndexes = [startIndex, endIndex + diff];
+
+    const normalizeIndexes = (indexes: [number, number]): [number, number] => {
+      // 先进行排序
+      const [start, end] = indexes.sort((a, b) => a - b);
+      // 保证 index 在 [0, length]
+      const clampIndex = (index: number) => clamp(index, 0, length);
+      // 如果 end 超出最大值
+      if (end > length) {
+        // value 模式下，重置到 0
+        if (selectionType === 'value') return [0, 0];
+        // 移动到 start
+        if (playMode === 'acc') return [clampIndex(start), clampIndex(start)];
+        // 整体移动到起始位置
+        return [0, clampIndex(end - start)];
+      }
+      // 如果是倒放，到头时，整体移动到末尾
+      if (start < 0) {
+        if (playMode === 'acc') return [0, clampIndex(end)];
+        return [clampIndex(start + length - end), length];
+      }
+      return [clampIndex(start), clampIndex(end)];
+    };
+
+    const normalizedIndexes = normalizeIndexes(currentIndexes);
+
+    this.setByIndex(normalizedIndexes);
+    this.updateSelection();
+    return normalizedIndexes;
+  }
+
+  private backward(preventEvent?: boolean) {
+    // 手动点击快退时，不触发 moveSelection 内的事件，反之触发
+    const indexes = this.moveSelection('backward', !preventEvent);
+    !preventEvent && this.attributes?.onBackward?.();
+    return indexes;
+  }
+
+  private play(preventEvent?: boolean) {
+    const { data } = this;
+    const { loop } = this.attributes;
+    const { speed = 1 } = this.states;
+    this.playInterval = window.setInterval(() => {
+      const indexes = this.forward(true);
+      // 如果不是循环播放，则播放到最后一个值时暂停
+      if (indexes[1] === data.length && !loop) {
+        // 这里需要抛出暂停事件
+        this.pause();
+        this.renderController();
+      }
+    }, 1000 / speed);
+    this.states.state = 'play';
+    !preventEvent && this.attributes?.onPlay?.();
+  }
+
+  private pause(preventEvent?: boolean) {
+    clearInterval(this.playInterval);
+    this.states.state = 'pause';
+    !preventEvent && this.attributes?.onPause?.();
+  }
+
+  private forward(preventEvent?: boolean) {
+    const indexes = this.moveSelection('forward', !preventEvent);
+    !preventEvent && this.attributes?.onForward?.();
+    return indexes;
+  }
+
+  private handleSpeedChange(value: number) {
+    this.states.speed = value;
+    const { state } = this.states;
+    if (state === 'play') {
+      // 重新设定 interval
+      this.pause(true);
+      this.play(true);
+    }
+    this.attributes?.onSpeedChange?.(value);
+  }
+
+  private handleSelectionTypeChange(type: TimebarStyleProps['selectionType']) {
+    this.states.selectionType = type;
+    this.renderChart();
+    this.attributes?.onSelectionTypeChange?.(type);
+  }
+
+  private handleChartTypeChange(type: TimebarStyleProps['chartType']) {
+    this.states.chartType = type;
+    this.renderChart();
+    this.attributes?.onChartTypeChange?.(type);
+  }
+
   constructor(options: TimebarOptions) {
     super(deepAssign({}, Timebar.defaultOptions, options));
-    this.states = {
-      values: this.attributes.values,
-      selectionType: this.attributes.selectionType,
-      chartType: this.attributes.chartType,
-    };
+    const { selectionType, chartType, speed, state, playMode, values } = this.attributes;
+    this.states = { chartType, playMode, selectionType, speed, state };
+    this.setByTimebarValues(values);
   }
 
   render() {
@@ -256,5 +473,12 @@ export class Timebar extends GUI<TimebarStyleProps> {
     this.renderController(controllerBBox);
     this.renderAxis(axisBBox);
     this.renderChart(timelineBBox);
+
+    if (this.states.state === 'play') this.play();
+  }
+
+  destroy(): void {
+    super.destroy();
+    this.pause(true);
   }
 }

@@ -24,8 +24,9 @@ export class Controller extends GUI<ControllerStyleProps> {
       padding: 0,
       align: 'center',
       iconSize: 25,
+      iconSpacing: 0,
       speed: 1,
-      playing: false,
+      state: 'pause',
       chartType: 'line',
       selectionType: 'range',
       backgroundFill: '#fbfdff',
@@ -55,7 +56,8 @@ export class Controller extends GUI<ControllerStyleProps> {
   }
 
   private renderFunctions() {
-    const { functions, iconSize, width, height, align } = this.attributes;
+    const { functions, iconSize, iconSpacing, width, height, align } = this.attributes;
+
     const {
       padding: [, right, , left],
     } = this;
@@ -70,7 +72,7 @@ export class Controller extends GUI<ControllerStyleProps> {
       [] as (keyof typeof componentsMap)[]
     );
 
-    const componentsWidth = components.length * iconSize;
+    const componentsWidth = components.length * (iconSize + iconSpacing) - iconSpacing;
     const xOffset =
       {
         left: left + iconSize / 2,
@@ -83,7 +85,7 @@ export class Controller extends GUI<ControllerStyleProps> {
     components.forEach((name, index) => {
       const Ctor = componentsMap[name];
       const style: Record<string, any> = {
-        x: index * iconSize + xOffset,
+        x: index * (iconSize + iconSpacing) + xOffset,
         y: height / 2,
         size: iconSize,
       };
@@ -93,7 +95,7 @@ export class Controller extends GUI<ControllerStyleProps> {
         style.onSelect = (value: any) => this.handleFunctionChange(name, { value });
       } else if (([PlayPause, SelectionType, ChartType] as any).includes(Ctor)) {
         style.onChange = (value: any) => this.handleFunctionChange(name, { value });
-        if (Ctor === PlayPause) style.type = this.attributes.playing ? 'pause' : 'play';
+        if (Ctor === PlayPause) style.type = this.attributes.state === 'play' ? 'pause' : 'play';
         if (Ctor === SelectionType) style.type = this.attributes.selectionType === 'range' ? 'value' : 'range';
         if (Ctor === ChartType) style.type = this.attributes.chartType === 'line' ? 'column' : 'line';
       } else {
