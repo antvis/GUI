@@ -191,7 +191,6 @@ export class Select extends GUI<SelectStyleProps> {
     const bbox = (this.dropdown.getElementsByClassName('dropdown-container')?.[0] as any)?.getBBox();
 
     const { spacing } = dropdownStyle;
-    console.log(padding);
 
     this.dropdown.attr({
       y: height + spacing,
