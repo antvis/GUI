@@ -84,7 +84,7 @@ devDependencies:
     version: 6.5.0(eslint@8.48.0)(typescript@5.2.2)
   '@vitejs/plugin-react':
     specifier: ^2.2.0
-    version: 2.2.0(vite@3.1.8)
+    version: 2.2.0(vite@3.2.7)
   ali-oss:
     specifier: ^6.17.1
     version: 6.17.1
@@ -186,7 +186,7 @@ devDependencies:
     version: 5.2.2
   vite:
     specifier: ^3.1.8
-    version: 3.1.8
+    version: 3.2.7
   webpack:
     specifier: ^5.88.2
     version: 5.88.2(webpack-cli@5.1.4)
@@ -2783,7 +2783,7 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@vitejs/plugin-react@2.2.0(vite@3.1.8):
+  /@vitejs/plugin-react@2.2.0(vite@3.2.7):
     resolution: {integrity: sha512-FFpefhvExd1toVRlokZgxgy2JtnBOdp4ZDsq7ldCWaqGSGn9UhWMAVm/1lxPL14JfNS5yGz+s9yFrQY6shoStA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2796,7 +2796,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.22.5(@babel/core@7.22.11)
       magic-string: 0.26.7
       react-refresh: 0.14.0
-      vite: 3.1.8
+      vite: 3.2.7
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8447,8 +8447,8 @@ packages:
     dependencies:
       glob: 7.2.3
 
-  /rollup@2.78.1:
-    resolution: {integrity: sha512-VeeCgtGi4P+o9hIg+xz4qQpRl6R401LWEXBmxYKOV4zlF82lyhgh2hTZnheFUbANE8l2A41F458iwj2vEYaXJg==}
+  /rollup@2.79.1:
+    resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
     engines: {node: '>=10.0.0'}
     hasBin: true
     optionalDependencies:
@@ -9408,21 +9408,27 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: true
 
-  /vite@3.1.8:
-    resolution: {integrity: sha512-m7jJe3nufUbuOfotkntGFupinL/fmuTNuQmiVE7cH2IZMuf4UbfbGYMUT3jVWgGYuRVLY9j8NnrRqgw5rr5QTg==}
+  /vite@3.2.7:
+    resolution: {integrity: sha512-29pdXjk49xAP0QBr0xXqu2s5jiQIXNvE/xwd0vUizYT2Hzqe4BksNNoWllFVXJf4eLZ+UlVQmXfB4lWrc+t18g==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
+      '@types/node': '>= 14'
       less: '*'
       sass: '*'
       stylus: '*'
+      sugarss: '*'
       terser: ^5.4.0
     peerDependenciesMeta:
+      '@types/node':
+        optional: true
       less:
         optional: true
       sass:
         optional: true
       stylus:
+        optional: true
+      sugarss:
         optional: true
       terser:
         optional: true
@@ -9430,7 +9436,7 @@ packages:
       esbuild: 0.15.18
       postcss: 8.4.29
       resolve: 1.22.4
-      rollup: 2.78.1
+      rollup: 2.79.1
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
