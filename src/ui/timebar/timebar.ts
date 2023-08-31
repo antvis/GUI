@@ -155,6 +155,13 @@ export class Timebar extends GUI<TimebarStyleProps> {
     return [getStartValue(), getEndValue()];
   }
 
+  public get values() {
+    const { values, selectionType } = this.states;
+    const [start, end] = Array.isArray(values) ? values : [this.data[0].time, values];
+    if (selectionType === 'value') return end as number | Date;
+    return [start, end] as [number, number] | [Date, Date];
+  }
+
   private getDatumByRatio(ratio: number) {
     const { data } = this;
     const length = data.length;
@@ -379,7 +386,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
   }
 
   public reset() {
-    this.internalReset(true);
+    this.internalReset();
   }
 
   private moveSelection(direction: 'forward' | 'backward', preventEvent?: boolean) {
@@ -447,7 +454,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
   }
 
   public backward() {
-    this.internalBackward(true);
+    this.internalBackward();
   }
 
   private internalPlay(preventEvent?: boolean) {
@@ -468,7 +475,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
   }
 
   public play() {
-    this.internalPlay(true);
+    this.internalPlay();
   }
 
   private internalPause(preventEvent?: boolean) {
@@ -478,7 +485,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
   }
 
   public pause() {
-    this.internalPause(true);
+    this.internalPause();
   }
 
   private internalForward(preventEvent?: boolean) {
@@ -491,7 +498,7 @@ export class Timebar extends GUI<TimebarStyleProps> {
   }
 
   public forward() {
-    this.internalForward(true);
+    this.internalForward();
   }
 
   private handleSpeedChange(value: number) {
