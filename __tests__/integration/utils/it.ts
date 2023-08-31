@@ -1,7 +1,7 @@
 import { Group, GroupStyleProps } from '@antv/g';
 
 type GroupTest = (group: Group) => void;
-type GroupTestReturn = { (): Group; tags?: string[] };
+type GroupTestReturn = { (): Group; [keys: string]: any };
 
 export function it(test: GroupTest): GroupTestReturn;
 export function it(options: GroupStyleProps, test: GroupTest): GroupTestReturn;
