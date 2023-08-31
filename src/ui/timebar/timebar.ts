@@ -294,20 +294,20 @@ export class Timebar extends GUI<TimebarStyleProps> {
       onChange(type, { value }) {
         switch (type) {
           case 'reset':
-            that.reset();
+            that.internalReset();
             break;
           case 'speed':
             that.handleSpeedChange(value);
             break;
           case 'backward':
-            that.backward();
+            that.internalBackward();
             break;
           case 'playPause':
-            if (value === 'play') that.play();
-            else that.pause();
+            if (value === 'play') that.internalPlay();
+            else that.internalPause();
             break;
           case 'forward':
-            that.forward();
+            that.internalForward();
             break;
           case 'selectionType':
             that.handleSelectionTypeChange(value);
@@ -329,23 +329,57 @@ export class Timebar extends GUI<TimebarStyleProps> {
     this.controller.update(style);
   }
 
-  private handleSliderChange = (values: SliderStyleProps['values']) => {
+  private dispatchOnChange(prevValues?: any) {
     const { data } = this;
-    const { selectionType } = this.states;
     const { onChange } = this.attributes;
-    this.setBySliderValues(values!);
-    const [start, end] = this.states.values as any;
+    const { values, selectionType } = this.states;
+    const [start, end] = values as any;
     const endTime = end === Infinity ? data.at(-1)!.time : end;
-    onChange?.(selectionType === 'range' ? [start, endTime] : endTime);
+    const newValues = selectionType === 'range' ? [start, endTime] : endTime;
+
+    const isEqual = (val1: TimebarStyleProps['values'], val2: TimebarStyleProps['values']) => {
+      if (Array.isArray(val1)) {
+        if (!Array.isArray(val2)) return false;
+        if (val1[0] === val2[0]) {
+          if (val1[1] === val2[1]) return true;
+          if (val1[1] === Infinity || val2[1] === Infinity) return true;
+        }
+        return false;
+      }
+      if (Array.isArray(val2)) return false;
+      return val1 === val2;
+    };
+    // 如果和当前值不同，才响应
+    if (!prevValues || !isEqual(prevValues, newValues)) {
+      onChange?.(selectionType === 'range' ? [start, endTime] : endTime);
+    }
+  }
+
+  private handleSliderChange = (values: SliderStyleProps['values']) => {
+    const prevValues: any = (() => {
+      const val = this.states.values;
+      if (Array.isArray(val)) return [...val];
+      return val;
+    })();
+
+    this.setBySliderValues(values!);
+    this.dispatchOnChange(prevValues);
   };
 
-  private reset(preventEvent?: boolean) {
+  private internalReset(preventEvent?: boolean) {
     const { selectionType } = this.states;
-    this.pause();
+    this.internalPause();
     this.setBySliderValues(selectionType === 'range' ? [0, 1] : [0, 0]);
     this.renderController();
     this.updateSelection();
-    !preventEvent && this.attributes?.onReset?.();
+    if (!preventEvent) {
+      this.attributes?.onReset?.();
+      this.dispatchOnChange();
+    }
+  }
+
+  public reset() {
+    this.internalReset(true);
   }
 
   private moveSelection(direction: 'forward' | 'backward', preventEvent?: boolean) {
@@ -402,23 +436,30 @@ export class Timebar extends GUI<TimebarStyleProps> {
     return normalizedIndexes;
   }
 
-  private backward(preventEvent?: boolean) {
-    // 手动点击快退时，不触发 moveSelection 内的事件，反之触发
-    const indexes = this.moveSelection('backward', !preventEvent);
-    !preventEvent && this.attributes?.onBackward?.();
+  private internalBackward(preventEvent?: boolean) {
+    const indexes = this.moveSelection('backward', preventEvent);
+    if (!preventEvent) {
+      this.attributes?.onBackward?.();
+      this.dispatchOnChange();
+    }
+
     return indexes;
   }
 
-  private play(preventEvent?: boolean) {
+  public backward() {
+    this.internalBackward(true);
+  }
+
+  private internalPlay(preventEvent?: boolean) {
     const { data } = this;
     const { loop } = this.attributes;
     const { speed = 1 } = this.states;
     this.playInterval = window.setInterval(() => {
-      const indexes = this.forward(true);
+      const indexes = this.internalForward();
       // 如果不是循环播放，则播放到最后一个值时暂停
       if (indexes[1] === data.length && !loop) {
         // 这里需要抛出暂停事件
-        this.pause();
+        this.internalPause();
         this.renderController();
       }
     }, 1000 / speed);
@@ -426,16 +467,31 @@ export class Timebar extends GUI<TimebarStyleProps> {
     !preventEvent && this.attributes?.onPlay?.();
   }
 
-  private pause(preventEvent?: boolean) {
+  public play() {
+    this.internalPlay(true);
+  }
+
+  private internalPause(preventEvent?: boolean) {
     clearInterval(this.playInterval);
     this.states.state = 'pause';
     !preventEvent && this.attributes?.onPause?.();
   }
 
-  private forward(preventEvent?: boolean) {
-    const indexes = this.moveSelection('forward', !preventEvent);
-    !preventEvent && this.attributes?.onForward?.();
+  public pause() {
+    this.internalPause(true);
+  }
+
+  private internalForward(preventEvent?: boolean) {
+    const indexes = this.moveSelection('forward', preventEvent);
+    if (!preventEvent) {
+      this.attributes?.onForward?.();
+      this.dispatchOnChange();
+    }
     return indexes;
+  }
+
+  public forward() {
+    this.internalForward(true);
   }
 
   private handleSpeedChange(value: number) {
@@ -443,8 +499,8 @@ export class Timebar extends GUI<TimebarStyleProps> {
     const { state } = this.states;
     if (state === 'play') {
       // 重新设定 interval
-      this.pause(true);
-      this.play(true);
+      this.internalPause(true);
+      this.internalPlay(true);
     }
     this.attributes?.onSpeedChange?.(value);
   }
@@ -474,11 +530,11 @@ export class Timebar extends GUI<TimebarStyleProps> {
     this.renderAxis(axisBBox);
     this.renderChart(timelineBBox);
 
-    if (this.states.state === 'play') this.play();
+    if (this.states.state === 'play') this.internalPlay();
   }
 
   destroy(): void {
     super.destroy();
-    this.pause(true);
+    this.internalPause(true);
   }
 }

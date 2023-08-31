@@ -231,8 +231,6 @@ export class Sparkline extends GUI<SparklineStyleProps> {
       };
     }
 
-    console.log(spacing);
-
     return {
       type,
       x: new Band({
