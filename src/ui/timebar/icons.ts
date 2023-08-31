@@ -556,7 +556,7 @@ export class SpeedSelect extends IconBase<{ speed?: number; onSelect: SelectStyl
       bordered: false,
       showDropdownIcon: false,
       selectRadius: 2,
-      dropdownPadding: 2,
+      dropdownPadding: this.padding,
       dropdownRadius: 2,
       dropdownSpacing: iconSize / 5,
       placeholderFontSize: iconSize / 2,

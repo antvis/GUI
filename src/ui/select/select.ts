@@ -158,7 +158,7 @@ export class Select extends GUI<SelectStyleProps> {
                   style: {
                     ...datum,
                     ...optionStyle,
-                    width,
+                    width: width - padding[1] - padding[3],
                     selected: datum.value === this.currentValue,
                     onClick: (value, option, item) => {
                       this.setValue(value);
@@ -191,6 +191,8 @@ export class Select extends GUI<SelectStyleProps> {
     const bbox = (this.dropdown.getElementsByClassName('dropdown-container')?.[0] as any)?.getBBox();
 
     const { spacing } = dropdownStyle;
+    console.log(padding);
+
     this.dropdown.attr({
       y: height + spacing,
       width: bbox.width + padding[1] + padding[3],
